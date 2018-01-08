@@ -791,7 +791,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
         qDebug() << "prepareSpellHtmlList exit point 3";
         return;
     }
-    _spellListHtml = "<table><tr><th>Gestures</th><th>Hint</th><th>Spell name</th></tr>";
+    _spellListHtml = "[";
 
     bool found;
     foreach(QValueName spell, SpellChecker.Spells) {
@@ -809,17 +809,23 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
                 }
                 QString g = QString("<font color=green>%1</font><font color=red>%2</font>")
                         .arg(spell.first.mid(0, spell.first.length() - day_cnt), spell.first.mid(spell.first.length() - day_cnt, day_cnt));
-                _spellListHtml.append(QString("<tr><td>%1</td><td>%2</td><td><a href=\"/show_spell_desc/%3\">%4</a></td></tr>").arg(g, hint, spell.first, WarlockDictionary->getStringByCode(spell.first)));
+                if (_spellListHtml.length() > 1) {
+                    _spellListHtml.append(",");
+                }
+                _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(g, hint, spell.first, WarlockDictionary->getStringByCode(spell.first)));
 
                 found = true;
                 break;
             }
         }
         if (!found) {
-            _spellListHtml.append(QString("<tr><td>%1</td><td>&nbsp;</td><td><a href=\"/show_spell_desc/%2\">%3</a></td></tr>").arg(spell.first, spell.first, WarlockDictionary->getStringByCode(spell.first)));
+            if (_spellListHtml.length() > 1) {
+                _spellListHtml.append(",");
+            }
+            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(spell.first, spell.first, WarlockDictionary->getStringByCode(spell.first)));
         }
     }
-    _spellListHtml.append("</table>");
+    _spellListHtml.append("]");
     if (emit_signal) {
         qDebug() << "emit spellListHtmlChanged() 4";
         emit spellListHtmlChanged();
@@ -828,13 +834,17 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
 }
 
 QString QWarloksDuelCore::defaultSpellListHtml() {
-    QString res = QString("<table><tr><th>%1</th><th>%2</th><th>%3</th></tr>").arg(WarlockDictionary->getStringByCode("Gestures"),
-                                                                                   WarlockDictionary->getStringByCode("Hint"),
-                                                                                   WarlockDictionary->getStringByCode("SpellName"));
+    QString res = "[";
+    bool first = true;
     foreach(QValueName spell, SpellChecker.Spells) {
-        res.append(QString("<tr><td>%1</td><td>&nbsp;</td><td><a href=\"/show_spell_desc/%2\">%3</a></td></tr>").arg(spell.first, spell.first, WarlockDictionary->getStringByCode(spell.first)));
+        if (first) {
+            first = false;
+        } else {
+            res.append(",");
+        }
+        res.append(QString("{\"g\":\"%1\",\"code\":\"%2\",\"n\":\"%3\",\"h\":\"\"}").arg(spell.first, spell.first, WarlockDictionary->getStringByCode(spell.first)));
     }
-    res.append("</table>");
+    res.append("]");
     return res;
     //return "<table><tr><th>Gestures</th><th>Spell name</th></tr><tr><td>cDPW</td><td>Dispel Magic</td></tr><tr><td>cSWWS</td><td>Summon Ice Elemental</td></tr><tr><td>cWSSW</td><td>Summon Fire Elemental</td></tr><tr><td>cw</td><td>Magic Mirror</td></tr><tr><td>DFFDD</td><td>Lightning Bolt</td></tr><tr><td>DFPW</td><td>Cure Heavy Wounds</td></tr><tr><td>DFW</td><td>Cure Light Wounds</td></tr><tr><td>DFWFd</td><td>Blindness</td></tr><tr><td>DPP</td><td>Amnesia</td></tr><tr><td>DSF</td><td>Confusion/Maladroitness</td></tr><tr><td>DSFFFc</td><td>Disease</td></tr><tr><td>DWFFd</td><td>Blindness</td></tr><tr><td>DWSSSP</td><td>Delay Effect</td></tr><tr><td>DWWFWD</td><td>Poison</td></tr><tr><td>FFF</td><td>Paralysis</td></tr><tr><td>WFPSFW</td><td>Summon Giant</td></tr><tr><td>FPSFW</td><td>Summon Troll</td></tr><tr><td>PSFW</td><td>Summon Ogre</td></tr><tr><td>SFW</td><td>Summon Goblin</td></tr><tr><td>FSSDD</td><td>Fireball</td></tr><tr><td>P</td><td>Shield</td></tr><tr><td>p</td><td>Surrender</td></tr><tr><td>PDWP</td><td>Remove Enchantment</td></tr><tr><td>PPws</td><td>Invisibility</td></tr><tr><td>PSDD</td><td>Charm Monster</td></tr><tr><td>PSDF</td><td>Charm Person</td></tr><tr><td>PWPFSSSD</td><td>Finger of Death</td></tr><tr><td>PWPWWc</td><td>Haste</td></tr><tr><td>SD</td><td>Magic Missile</td></tr><tr><td>SPFP</td><td>Anti-spell</td></tr><tr><td>SPFPSDW</td><td>Permanency</td></tr><tr><td>SPPc</td><td>Time Stop</td></tr><tr><td>SPPFD</td><td>Time Stop</td></tr><tr><td>SSFP</td><td>Resist Cold</td></tr><tr><td>SWD</td><td>Fear (No CFDS)</td></tr><tr><td>SWWc</td><td>Fire Storm</td></tr><tr><td>WDDc</td><td>Clap of Lightning</td></tr><tr><td>WFP</td><td>Cause Light Wounds</td></tr><tr><td>WPFD</td><td>Cause Heavy Wounds</td></tr><tr><td>WPP</td><td>Counter Spell</td></tr><tr><td>WSSc</td><td>Ice Storm</td></tr><tr><td>WWFP</td><td>Resist Heat</td></tr><tr><td>WWP</td><td>Protection</td></tr><tr><td>WWS</td><td>Counter Spell</td></tr></table>";
 }

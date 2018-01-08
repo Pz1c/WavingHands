@@ -304,7 +304,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     QString search2 = "</TD>";
     QStringList tmp;
     QString logins, description, battle_id;
-    int need_more, fast, friendly;
+    int need_more = 0, fast = 0, friendly = -1;
     int idx1 = 0, idx2, idx = -1;
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();

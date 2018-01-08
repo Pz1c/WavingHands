@@ -21,6 +21,8 @@ Window {
 
     property real height_koeff: rMain.height / 800
     property bool exit_on_back_button: true
+    property var  battles: MUtils.loadChallengesList(true)
+    property var  spells: MUtils.default_spell_list
 
     MessageDialog {
         id: mdNoGesture
@@ -473,167 +475,87 @@ Window {
         Rectangle {
             id: rChallengeList
             visible: false
-            width: parent.width
-            height: parent.height - tbMain.height
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: tbMain.top
+            //width: parent.width
+            //height: parent.height - tbMain.height
 
-            Controls12.TableView {
+            ListView {
                     id: tvChallengeList
                     parent: rChallengeList
-
                     anchors.fill: parent
-                    frameVisible: false
-                    sortIndicatorVisible: false
-                    //model: JSON.parse(Qt.core.challengeList)
-                    headerDelegate: aldHeader
-                    // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
-                    /* arg(QWarlockDictionary::getInstance()->getStringByCode("Warlocks"),
-                        QWarlockDictionary::getInstance()->getStringByCode("Fast"),
-                        QWarlockDictionary::getInstance()->getStringByCode("Level"),
-                        QWarlockDictionary::getInstance()->getStringByCode("ParaFC"),
-                        QWarlockDictionary::getInstance()->getStringByCode("Maladroit"),
-                        QWarlockDictionary::getInstance()->getStringByCode("Accept"),
-                        QWarlockDictionary::getInstance()->getStringByCode("Description"));*/
+                    model: battles
 
-                    Component {
-                        id: tvcdCheckBox
+                    delegate: Item {
+                        id: lvdItem
+                        height: lvdItemText.height + lvdItemAccept.height + 0.01 * mainWindow.height
+                        width: mainWindow.width
 
-                        Controls12.CheckBox {
-                            anchors.centerIn: parent
-                            checked: styleData.value
-                            enabled: false
-                        }
-                    }
-
-                    Component {
-                        id: tvcdAccept
-
-                        Rectangle {
-                                id: r_accept
-                                anchors.fill: parent
-                                color: ma_accept.pressed ? "blue" : "lightblue"
-                                radius: 7
-                                border.width: 0
-                                border.color: "blue"
-
-                                Text {
-                                    id: label_order_up
-                                    x: 38
-                                    y: 18
-                                    text: warlockDictionary.getStringByCode("Accept")
-                                    anchors.centerIn: parent
-                                    //font.pointSize: 16
-                                }
-
-                                MouseArea {
-                                    id: ma_accept
-                                    anchors.rightMargin: 0
-                                    anchors.bottomMargin: 0
-                                    anchors.leftMargin: 0
-                                    anchors.topMargin: 0
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        console.log("accept battle", styleData.value);
-                                        MUtils.acceptChallenge('/accept/' + styleData.value);
-                                    }
-                                }
-                        }
-                    }
-
-                    Component {
-                        id: aldHeader
-
-                        Rectangle {
-                            id: rHeader
+                        Text {
+                            id: lvdItemText
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            height: 30
-                            color: "lightsteelblue"
-                            border.color: "lightgrey"
-                            border.width: 1
+                            anchors.top: parent.top
+                            anchors.topMargin: 0.01 * mainWindow.height
+                            font.pointSize: 13 * height_koeff
+                            wrapMode: Text.WordWrap
+                            // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
+                            text: battles[index].logins + ".\n" + battles[index].level + " " +
+                             (battles[index].fast === 1 ? "Fast " : "") + (battles[index].parafc === 1? "ParaFC " : "") +
+                             (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + battles[index].desc //*/
+                        }
+
+                        Rectangle {
+                            id: lvdItemAccept
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: lvdItemText.bottom
+                            //anchors.bottom: parent.bottom
+                            height: 0.05 * mainWindow.height
+
+                            color: ma_accept.pressed ? "blue" : "lightblue"
+                            radius: 7
+                            border.width: 0
+                            border.color: "blue"
 
                             Text {
-                                id: tHeader
+                                id: label_order_up
+                                text: warlockDictionary.getStringByCode("Accept")
                                 anchors.centerIn: parent
-                                text: styleData.value
+                                font.pointSize: 13 * height_koeff
                             }
 
-                            ToolTip {
-                                id: ttHeader
-                                visible: styleData.pressed || styleData.containsMouse
-                                text: styleData.value
-                            }
-
-                            Component.onCompleted: {
-                                console.log("tHeader.onCompleted", tHeader.width, width, styleData.column, styleData.value);
-                                /*if (tHeader.paintedWidth > rHeader.width) {
-                                    tHeader.text = '...';
-                                }*/
+                            MouseArea {
+                                id: ma_accept
+                                anchors.rightMargin: 0
+                                anchors.bottomMargin: 0
+                                anchors.leftMargin: 0
+                                anchors.topMargin: 0
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var battle_id = battles[tvChallengeList.currentIndex].battle_id;
+                                    console.log("accept battle", battle_id);
+                                    //MUtils.acceptChallenge('/accept/' + battle_id);
+                                }
                             }
                         }
                     }
 
-                    Controls12.TableViewColumn {
-                        id: tvcLogins
-                        title: warlockDictionary.getStringByCode("Warlocks")
-                        role: "logins"
-                        movable: false
-                        //delegate: aldJira
-                        width: Math.max(100, 0.2 * rChallengeList.width)
-                    }
+                    header: Item {
+                        id: lvdHeader
+                        height: 0.05 * mainWindow.height
+                        width: mainWindow.width
 
-                    Controls12.TableViewColumn {
-                        id: tvcFast
-                        title: warlockDictionary.getStringByCode("Fast")
-                        role: "fast"
-                        movable: false
-                        delegate: tvcdCheckBox
-                        width: Math.max(20, 0.05 * rChallengeList.width)
-                    }
-
-                    Controls12.TableViewColumn {
-                        id: tvcLevel
-                        title: warlockDictionary.getStringByCode("Level")
-                        role: "level"
-                        movable: false
-                        //delegate: aldJira
-                        width: Math.max(30, 0.1 * rChallengeList.width)
-                    }
-
-                    Controls12.TableViewColumn {
-                        id: tvcParaFC
-                        title: warlockDictionary.getStringByCode("ParaFC")
-                        role: "parafc"
-                        movable: false
-                        delegate: tvcdCheckBox
-                        width: Math.max(20, 0.05 * rChallengeList.width)
-                    }
-
-                    Controls12.TableViewColumn {
-                        id: tvcMaladroit
-                        title: warlockDictionary.getStringByCode("Maladroit")
-                        role: "parafc"
-                        movable: false
-                        delegate: tvcdCheckBox
-                        width: Math.max(20, 0.05 * rChallengeList.width)
-                    }
-
-                    Controls12.TableViewColumn {
-                        id: tvcDesc
-                        title: warlockDictionary.getStringByCode("Description")
-                        role: "desc"
-                        movable: false
-                        //delegate: aldJira
-                        width: rChallengeList.width - tvcAccept.width - tvcFast.width - tvcLevel.width - tvcLogins.width - tvcMaladroit.width - tvcParaFC.width
-                    }
-
-                    Controls12.TableViewColumn {
-                        id: tvcAccept
-                        title: warlockDictionary.getStringByCode("Accept")
-                        role: "battle_id"
-                        movable: false
-                        delegate: tvcdAccept
-                        width: Math.max(100, 0.2 * rChallengeList.width)
+                        Text {
+                            id: lvdHeaderText
+                            anchors.centerIn: parent
+                            font.pointSize: 15 * height_koeff
+                            wrapMode: Text.WordWrap
+                            text: warlockDictionary.getStringByCode("BattleList")
+                        }
                     }
             }
         }
@@ -641,10 +563,87 @@ Window {
         Rectangle {
             id: rSpellList
             visible: false
-            width: parent.width
-            height: parent.height - tbMain.height
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: tbMain.top
 
-            Controls12.ScrollView {
+            ListView {
+                    id: tvSpellList
+                    parent: rSpellList
+                    anchors.fill: parent
+                    model: spells
+
+                    delegate: Item {
+                        id: lvsItem
+                        height: lvsItemGestures.height
+                        width: mainWindow.width
+
+                        Text {
+                            id: lvsItemGestures
+                            anchors.left: parent.left
+                            anchors.right: lvsItemHint.left
+                            anchors.rightMargin: 0.01 * mainWindow.width
+                            anchors.top: parent.top
+                            anchors.topMargin: 0.01 * mainWindow.height
+                            font.pointSize: 13 * height_koeff
+                            wrapMode: Text.WordWrap
+                            textFormat: Text.RichText
+                            text: spells[index].g
+                            width: 0.2 * mainWindow.width
+                        }
+
+                        Text {
+                            id: lvsItemHint
+                            anchors.left: lvsItemGestures.right
+                            anchors.right: lvsItemName.left
+                            anchors.rightMargin: 0.01 * mainWindow.width
+                            anchors.top: parent.top
+                            anchors.topMargin: 0.01 * mainWindow.height
+                            font.pointSize: 13 * height_koeff
+                            wrapMode: Text.WordWrap
+                            text: spells[index].h
+                            width: 0.2 * mainWindow.width
+                        }
+
+                        Text {
+                            id: lvsItemName
+                            anchors.left: lvsItemHint.right
+                            anchors.right: parent.left
+                            anchors.top: parent.top
+                            anchors.topMargin: 0.01 * mainWindow.height
+                            font.pointSize: 13 * height_koeff
+                            wrapMode: Text.WordWrap
+                            text: spells[index].n
+                            width: 0.6 * mainWindow.width
+                        }
+
+                        MouseArea {
+                            id: maSpell
+                            anchors.fill: parent
+
+                            onClicked: {
+                                MUtils.linkActivated("/show_spell_desc/" + spells[index].code);
+                            }
+                        }
+                    }
+
+                    header: Item {
+                        id: lvsHeader
+                        height: 0.05 * mainWindow.height
+                        width: mainWindow.width
+
+                        Text {
+                            id: lvsHeaderText
+                            anchors.centerIn: parent
+                            font.pointSize: 15 * height_koeff
+                            wrapMode: Text.WordWrap
+                            text: warlockDictionary.getStringByCode("SpellList")
+                        }
+                    }
+            }
+
+            /*Controls12.ScrollView {
                 id: svSpellList
                 width: rSpellList.width
                 height: rSpellList.height
@@ -663,7 +662,7 @@ Window {
                       textFormat: Text.RichText
                       onLinkActivated: MUtils.linkActivated(link)
                 }
-            }
+            }*/
 
         }
 
@@ -901,7 +900,7 @@ Window {
         onRegisterNewUserChanged: hideNewUserMenu()
         onOrderSubmitedChanged: MUtils.cleanOrders()
         onTimerStateChanged: changeTimerState()
-        onChallengeListChanged: MUtils.loadChallengesList()
+        onChallengeListChanged: MUtils.loadChallengesList(false)
         onSpellListHtmlChanged: MUtils.loadSpellList()
     }
 

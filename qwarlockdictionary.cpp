@@ -90,6 +90,9 @@ QWarlockDictionary::QWarlockDictionary(QObject *parent) :
     fillDictionary("FinishB", "Завершені поєдинки", "Законченые бои", "Finished battles");
     fillDictionary("WaitB", "Незавершені поєдинки", "Незаконченые бои", "Waiting in battles");
     fillDictionary("ReadyB", "Поєдинки, що чекають дій", "Бои которые ожидают действий", "Waiting in battles");
+    fillDictionary("BattleList", "Поєдинки, до яких можна приєднатись", "Бои к которым можно присоединиться", "Battle list");
+    fillDictionary("SpellList", "Список доступних заклять", "Список доступніх заклинаний", "Spell list");
+
 
 
     // spell book name

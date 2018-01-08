@@ -46,8 +46,8 @@ Item {
     // This rectangle is the actual popup
     Rectangle {
         id: dialogWindow
-        width: 2 * dMainItem.width / 3
-        height: (dialogTitle.height + 5) * 6
+        width: 0.8 * dMainItem.width
+        height: btnDoit.y + btnDoit.height + 10
         radius: 10
         anchors.topMargin: 0
         anchors.centerIn: parent
@@ -64,9 +64,8 @@ Item {
 
         Text {
             id: dialogTitle
-            x: 19
-            y: 3
             anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
             text: dict.getStringByCode("EnterNewUser")
             anchors.topMargin: 8
             font.pointSize: 12 * height_koeff
@@ -74,19 +73,24 @@ Item {
 
         Text {
             id: tLogin
-            x: 10
-            y: dialogTitle.y + 3 + dialogTitle.height
-            text: dict.getStringByCode("Login")
+            anchors.top: dialogTitle.bottom
             anchors.topMargin: 8
+            anchors.left: parent.left
+            anchors.leftMargin: 0.01 * parent.width
+            height: dialogTitle.height
+
+            text: dict.getStringByCode("Login")
             font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
             id: rLogin
-            width: dialogWindow.width - 20 - tLogin.width
             height: dialogTitle.height
-            x: tLogin.x + tLogin.width + 3
-            y: tLogin.y
+            anchors.left: tLogin.right
+            anchors.leftMargin: 0.01 * parent.width
+            anchors.right: parent.right
+            anchors.rightMargin: 0.01 * parent.width
+
             radius: 7
             border.width: 1
             border.color: "black"
@@ -95,8 +99,6 @@ Item {
                 id: tiLogin
                 width: parent.width - 6
                 height: parent.height - 2
-                x: 3
-                y: 1
                 anchors.centerIn: parent
                 text: ""
                 font.pointSize: 12 * height_koeff
@@ -107,19 +109,23 @@ Item {
 
         Text {
             id: tPass
-            x: 10
-            y: tLogin.y + 3 + tLogin.height
-            text: dict.getStringByCode("Password")
+            anchors.top: tLogin.bottom
             anchors.topMargin: 8
+            anchors.left: parent.left
+            anchors.leftMargin: 0.01 * parent.width
+            height: dialogTitle.height
+
+            text: dict.getStringByCode("Password")
             font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
             id: rPass
-            width: dialogWindow.width - 20 - tPass.width
             height: dialogTitle.height
-            x: tPass.x + tPass.width + 3
-            y: tPass.y
+            anchors.left: tPass.right
+            anchors.leftMargin: 0.01 * parent.width
+            anchors.right: parent.right
+            anchors.rightMargin: 0.01 * parent.width
             radius: 7
             border.width: 1
             border.color: "black"
@@ -128,8 +134,6 @@ Item {
                 id: tiPass
                 width: parent.width - 6
                 height: parent.height - 2
-                x: 3
-                y: 1
                 anchors.centerIn: parent
                 text: ""
                 font.pointSize: 12 * height_koeff
@@ -140,19 +144,23 @@ Item {
 
         Text {
             id: tEmail
-            x: 10
-            y: tPass.y + 3 + tPass.height
-            text: dict.getStringByCode("Email")
+            height: dialogTitle.height
+            anchors.top: tPass.bottom
             anchors.topMargin: 8
+            anchors.left: parent.left
+            anchors.leftMargin: 0.01 * parent.width
+
+            text: dict.getStringByCode("Email")
             font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
             id: rEmail
-            width: dialogWindow.width - 20 - tEmail.width
             height: dialogTitle.height
-            x: tEmail.x + tEmail.width + 3
-            y: tEmail.y
+            anchors.left: tEmail.right
+            anchors.leftMargin: 0.01 * parent.width
+            anchors.right: parent.right
+            anchors.rightMargin: 0.01 * parent.width
             radius: 7
             border.width: 1
             border.color: "black"
@@ -161,8 +169,6 @@ Item {
                 id: tiEmail
                 width: parent.width - 6
                 height: parent.height - 2
-                x: 3
-                y: 1
                 anchors.centerIn: parent
                 text: ""
                 font.pointSize: 12 * height_koeff
@@ -175,19 +181,22 @@ Item {
             checked: true
             enabled: false
             id: tConfirmation
-            x: 10
-            y: tEmail.y + 3 + tEmail.height
-            text: dict.getStringByCode("Iam13")
+            anchors.top: tEmail.bottom
             anchors.topMargin: 8
+            anchors.left: parent.left
+            anchors.leftMargin: 0.01 * parent.width
+            text: dict.getStringByCode("Iam13")
             //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
                 id: btnDoit
-                x: 0
-                y: parent.height - btnDoit.height
-                width: parent.width / 2
-                height: parent.height / 5
+                height: dialogTitle.height
+                width: 0.5 * parent.width
+                anchors.top: tConfirmation.bottom
+                anchors.topMargin: 8
+                anchors.right: parent.right
+                //anchors.rightMargin: 0.01 * parent.width
                 color: maDoit.pressed ? "green" : "lightgreen"
                 radius: 7
                 border.width: 3
@@ -195,11 +204,8 @@ Item {
 
                 Text {
                     id: labelDoit
-                    x: 38
-                    y: 18
+                    anchors.centerIn: parent
                     text: dict.getStringByCode("Register")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
                     font.pointSize: 16 * height_koeff
                 }
 
@@ -234,10 +240,12 @@ Item {
 
         Rectangle {
                 id: btnSkip
-                x: parent.width / 2
-                y: parent.height - btnDoit.height
-                width: parent.width / 2
-                height: parent.height / 5
+                height: dialogTitle.height
+                width: 0.5 * parent.width
+                anchors.top: tConfirmation.bottom
+                anchors.topMargin: 8
+                anchors.left: parent.left
+                //anchors.leftMargin: 0.01 * parent.width
                 color: maCancel.pressed ? "grey" : "lightgrey"
                 radius: 7
                 border.width: 3

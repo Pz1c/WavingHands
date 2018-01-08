@@ -106,7 +106,7 @@ function sendOrderEx() {
     teChatMsg.text = ""
     console.log("sendOrder", post_request);
     Qt.core.sendOrders(post_request)
-    tSpellList.text = ''
+    //tSpellList.text = ''
     showList()
 }
 
@@ -116,9 +116,15 @@ function acceptChallenge(link) {
     Qt.core.acceptChallenge(link.split("/")[2])
 }
 
-function loadChallengesList() {
-    tvChallengeList.model = JSON.parse(Qt.core.challengeList);
-    // tChallengeList.text =
+function loadChallengesList(need_return) {
+    var list_str = Qt.core.challengeList;
+    mainWindow.battles = JSON.parse(list_str);
+    console.log("loadChallengesList", need_return, list_str)
+    if (need_return) {
+        return JSON.parse(list_str);
+    } else {
+        tvChallengeList.model = JSON.parse(list_str);
+    }
 }
 
 function getSpellList(right) {
@@ -202,10 +208,11 @@ function loadSpellList() {
     var lst = Qt.core.spellListHtml
     if (lst.length === 0) {
         console.log("loadSpellList empty")
-        tSpellList.text = default_spell_list
+        mainWindow.spells = default_spell_list;
     } else {
         console.log("loadSpellList full")
-        tSpellList.text = lst
+        mainWindow.spells = lst;
+        // tSpellList.text = lst
     }
 }
 
@@ -244,12 +251,12 @@ function showDuel() {
 }
 
 function showSpellBook() {
-    if (tSpellList.text == '') {
-        tSpellList.text = Qt.core.spellListHtml
+    mainWindow.spells = Qt.core.spellListHtml;
+    console.log("showSpellBook", mainWindow.spells, default_spell_list);
+    if (mainWindow.spells.length === 0) {
+      mainWindow.spells = default_spell_list;
     }
-    if (tSpellList.text == '') {
-        tSpellList.text = default_spell_list
-    }
+    tvSpellList.model = mainWindow.spells;
     rReadyBattle.visible = false
     rChallengeList.visible = false
     rSpellList.visible = true
@@ -284,7 +291,7 @@ function cleanOrders() {
     tStepMsg.text = ""
     tMonsterList.text = ''
     //tWarlockList.text = ''
-    tCharMessage.text = ''
+    tChatMessage.text = ''
     cleanChildren(svMonsterOrders)
     cleanChildren(svWarlocks)
     cleanChildren(lvaoCharmPerson)
