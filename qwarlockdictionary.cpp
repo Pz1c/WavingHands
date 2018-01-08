@@ -92,6 +92,7 @@ QWarlockDictionary::QWarlockDictionary(QObject *parent) :
     fillDictionary("ReadyB", "Поєдинки, що чекають дій", "Бои которые ожидают действий", "Waiting in battles");
     fillDictionary("BattleList", "Поєдинки, до яких можна приєднатись", "Бои к которым можно присоединиться", "Battle list");
     fillDictionary("SpellList", "Список доступних заклять", "Список доступніх заклинаний", "Spell list");
+    fillDictionary("Iam13", "Мені виповнилось 13", "Мне исполнилось 13", "I am at least 13");
 
 
 

@@ -117,6 +117,10 @@ function acceptChallenge(link) {
 }
 
 function loadChallengesList(need_return) {
+    if (!Qt.core) {
+        return;
+    }
+
     var list_str = Qt.core.challengeList;
     mainWindow.battles = JSON.parse(list_str);
     console.log("loadChallengesList", need_return, list_str)
@@ -204,14 +208,14 @@ function getPossibleSpell(right) {
 }
 
 function loadSpellList() {
-    console.log("loadSpellList")
-    var lst = Qt.core.spellListHtml
-    if (lst.length === 0) {
+    var str = Qt.core.spellListHtml;
+    console.log("loadSpellList", str);
+    if (str.length === 0) {
         console.log("loadSpellList empty")
         mainWindow.spells = default_spell_list;
     } else {
         console.log("loadSpellList full")
-        mainWindow.spells = lst;
+        mainWindow.spells = JSON.parse(str);
         // tSpellList.text = lst
     }
 }
@@ -251,10 +255,12 @@ function showDuel() {
 }
 
 function showSpellBook() {
-    mainWindow.spells = Qt.core.spellListHtml;
-    console.log("showSpellBook", mainWindow.spells, default_spell_list);
-    if (mainWindow.spells.length === 0) {
-      mainWindow.spells = default_spell_list;
+    var str = Qt.core.spellListHtml;
+    console.log("showSpellBook", str, default_spell_list);
+    if (str.length > 0) {
+        mainWindow.spells = JSON.parse(str);
+    }else {
+        mainWindow.spells = default_spell_list;
     }
     tvSpellList.model = mainWindow.spells;
     rReadyBattle.visible = false

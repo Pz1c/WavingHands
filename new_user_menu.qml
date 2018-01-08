@@ -45,14 +45,9 @@ Item {
     // This rectangle is the actual popup
     Rectangle {
         id: dialogWindow
-        //y: 200
-        width: 2 * dMainItem.width / 3
-        height: dMainItem.height - 200
+        width: 0.9 * parent.width
+        height: 0.9 * dMainItem.height
         radius: 10
-        anchors.topMargin: 0
-        //anchors.verticalCenterOffset: 0
-        //anchors.horizontalCenterOffset: -21
-        //anchors.top: parent.top
         anchors.centerIn: parent
 
         focus: true
@@ -67,10 +62,11 @@ Item {
 
         Rectangle {
                 id: btnUser
-                x: parent.width / 2 - btnUser.width / 2
-                y: 10
-                width: parent.width / 2
-                height: parent.height / 5
+                anchors.top: parent.top
+                anchors.topMargin: 0.1 * parent.height
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 0.8 * parent.width
+                height: 0.25 * parent.height
                 color: maUser.pressed ? "grey" : "lightgrey"
                 radius: 7
                 border.width: 3
@@ -78,12 +74,10 @@ Item {
 
                 Text {
                     id: labelUser
-                    x: 38
-                    y: 18
                     text: dict.getStringByCode("LoginIn")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    anchors.centerIn: parent
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 26 * height_koeff
                 }
 
                 MouseArea {
@@ -94,7 +88,7 @@ Item {
                     anchors.topMargin: 0
                     anchors.fill: parent
                     onClicked: {
-                        Qt.mainWindow.getLoginFromUser(dMainItem);
+                        Qt.mainWindow.getLoginFromUser(dMainItem, true);
                     }
                 }
         }
@@ -102,10 +96,9 @@ Item {
 
         Rectangle {
                 id: btnNetwork
-                x: parent.width / 2 - btnNetwork.width / 2
-                y: btnUser.y + btnUser.height + parent.height / 5 - 10
-                width: parent.width / 2
-                height: parent.height / 5
+                anchors.centerIn: parent
+                width: btnUser.width
+                height: btnUser.height
                 color: maNetwork.pressed ? "grey" : "lightgrey"
                 radius: 7
                 border.width: 3
@@ -113,12 +106,10 @@ Item {
 
                 Text {
                     id: labelNetwork
-                    x: 38
-                    y: 18
                     text: dict.getStringByCode("Register")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    anchors.centerIn: parent
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 26 * height_koeff
                 }
 
                 MouseArea {
@@ -137,10 +128,11 @@ Item {
 
         Rectangle {
                 id: btnSkip
-                x: parent.width / 2 - btnSkip.width / 2
-                y: btnNetwork.y + btnUser.height + parent.height / 5 - 10
-                width: parent.width / 2
-                height: parent.height / 5
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0.1 * parent.height
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: btnUser.width
+                height: btnUser.height
                 color: maCancel.pressed ? "grey" : "lightgrey"
                 radius: 7
                 border.width: 3
@@ -148,12 +140,10 @@ Item {
 
                 Text {
                     id: labelSkip
-                    x: 38
-                    y: 18
                     text: dict.getStringByCode("Cancel")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    anchors.centerIn: parent
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 26 * height_koeff
                 }
 
                 MouseArea {

@@ -5,7 +5,7 @@
 // that is the dialog itself. For demo purposes no fancy stuff in the popup
 
 import QtQuick 2.0
-import QtQuick.Controls 1.1
+import QtQuick.Controls 2.0
 // Use an item as container to group both the overlay and the dialog
 // I do this because the overlay itself has an opacity set, and otherwise
 // also the dialog would have been semi-transparent.
@@ -47,7 +47,7 @@ Item {
     Rectangle {
         id: dialogWindow
         width: 0.8 * dMainItem.width
-        height: btnDoit.y + btnDoit.height + 10
+        height: (rEmail.height + 10) * 6
         radius: 10
         anchors.topMargin: 0
         anchors.centerIn: parent
@@ -73,10 +73,9 @@ Item {
 
         Text {
             id: tLogin
-            anchors.top: dialogTitle.bottom
-            anchors.topMargin: 8
             anchors.left: parent.left
             anchors.leftMargin: 0.01 * parent.width
+            anchors.verticalCenter: rLogin.verticalCenter
             height: dialogTitle.height
 
             text: dict.getStringByCode("Login")
@@ -86,10 +85,11 @@ Item {
         Rectangle {
             id: rLogin
             height: dialogTitle.height
-            anchors.left: tLogin.right
-            anchors.leftMargin: 0.01 * parent.width
+            width: parent.width - (tLogin.x + Math.max(tLogin.width, tPass.width, tEmail.width)) - 10
             anchors.right: parent.right
             anchors.rightMargin: 0.01 * parent.width
+            anchors.top: dialogTitle.bottom
+            anchors.topMargin: 2
 
             radius: 7
             border.width: 1
@@ -109,10 +109,9 @@ Item {
 
         Text {
             id: tPass
-            anchors.top: tLogin.bottom
-            anchors.topMargin: 8
             anchors.left: parent.left
             anchors.leftMargin: 0.01 * parent.width
+            anchors.verticalCenter: rPass.verticalCenter
             height: dialogTitle.height
 
             text: dict.getStringByCode("Password")
@@ -122,10 +121,11 @@ Item {
         Rectangle {
             id: rPass
             height: dialogTitle.height
-            anchors.left: tPass.right
-            anchors.leftMargin: 0.01 * parent.width
+            width: rLogin.width
             anchors.right: parent.right
             anchors.rightMargin: 0.01 * parent.width
+            anchors.top: rLogin.bottom
+            anchors.topMargin: 2
             radius: 7
             border.width: 1
             border.color: "black"
@@ -145,10 +145,9 @@ Item {
         Text {
             id: tEmail
             height: dialogTitle.height
-            anchors.top: tPass.bottom
-            anchors.topMargin: 8
             anchors.left: parent.left
             anchors.leftMargin: 0.01 * parent.width
+            anchors.verticalCenter: rEmail.verticalCenter
 
             text: dict.getStringByCode("Email")
             font.pointSize: 12 * height_koeff
@@ -157,10 +156,11 @@ Item {
         Rectangle {
             id: rEmail
             height: dialogTitle.height
-            anchors.left: tEmail.right
-            anchors.leftMargin: 0.01 * parent.width
+            width: rLogin.width
             anchors.right: parent.right
             anchors.rightMargin: 0.01 * parent.width
+            anchors.top: rPass.bottom
+            anchors.topMargin: 2
             radius: 7
             border.width: 1
             border.color: "black"
@@ -181,20 +181,18 @@ Item {
             checked: true
             enabled: false
             id: tConfirmation
-            anchors.top: tEmail.bottom
+            anchors.top: rEmail.bottom
             anchors.topMargin: 8
             anchors.left: parent.left
             anchors.leftMargin: 0.01 * parent.width
             text: dict.getStringByCode("Iam13")
-            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
                 id: btnDoit
-                height: dialogTitle.height
+                height: rEmail.height * 2
                 width: 0.5 * parent.width
-                anchors.top: tConfirmation.bottom
-                anchors.topMargin: 8
+                anchors.bottom: parent.bottom
                 anchors.right: parent.right
                 //anchors.rightMargin: 0.01 * parent.width
                 color: maDoit.pressed ? "green" : "lightgreen"
@@ -240,10 +238,9 @@ Item {
 
         Rectangle {
                 id: btnSkip
-                height: dialogTitle.height
+                height: btnDoit.height
                 width: 0.5 * parent.width
-                anchors.top: tConfirmation.bottom
-                anchors.topMargin: 8
+                anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 //anchors.leftMargin: 0.01 * parent.width
                 color: maCancel.pressed ? "grey" : "lightgrey"

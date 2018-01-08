@@ -78,12 +78,10 @@ Item {
 
                 Text {
                     id: labelUser
-                    x: 38
-                    y: 18
                     text: dict.getStringByCode("LoginSett")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    anchors.centerIn: parent
+                    //font.pointSize: 16 * height_koeff
+                    font.pixelSize: (labelUser.paintedWidth > 0.97 * parent.width) ? (0.97 * parent.width / labelUser.paintedWidth) * 16 * height_koeff : 16 * height_koeff
                 }
 
                 MouseArea {
@@ -112,12 +110,10 @@ Item {
 
                 Text {
                     id: labelLanguage
-                    x: 38
-                    y: 18
                     text: dict.getStringByCode("LangSett")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    anchors.centerIn: parent
+                    //font.pointSize: 16 * height_koeff
+                    font.pixelSize: (labelLanguage.paintedWidth > 0.97 * parent.width) ? (0.97 * parent.width / labelLanguage.paintedWidth) * 16 * height_koeff : 16 * height_koeff
                 }
 
                 MouseArea {
@@ -147,12 +143,10 @@ Item {
 
                 Text {
                     id: labelNetwork
-                    x: 38
-                    y: 18
                     text: dict.getStringByCode("NetworkSett")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    anchors.centerIn: parent
+                    //font.pointSize: 16 * height_koeff
+                    font.pixelSize: (labelNetwork.paintedWidth > 0.97 * parent.width) ? (0.97 * parent.width / labelNetwork.paintedWidth) * 16 * height_koeff : 16 * height_koeff
                 }
 
                 MouseArea {

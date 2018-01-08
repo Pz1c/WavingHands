@@ -582,8 +582,7 @@ Window {
                         Text {
                             id: lvsItemGestures
                             anchors.left: parent.left
-                            anchors.right: lvsItemHint.left
-                            anchors.rightMargin: 0.01 * mainWindow.width
+                            anchors.leftMargin: 0.01 * mainWindow.width
                             anchors.top: parent.top
                             anchors.topMargin: 0.01 * mainWindow.height
                             font.pointSize: 13 * height_koeff
@@ -596,8 +595,7 @@ Window {
                         Text {
                             id: lvsItemHint
                             anchors.left: lvsItemGestures.right
-                            anchors.right: lvsItemName.left
-                            anchors.rightMargin: 0.01 * mainWindow.width
+                            anchors.leftMargin: 0.01 * mainWindow.width
                             anchors.top: parent.top
                             anchors.topMargin: 0.01 * mainWindow.height
                             font.pointSize: 13 * height_koeff
@@ -609,6 +607,7 @@ Window {
                         Text {
                             id: lvsItemName
                             anchors.left: lvsItemHint.right
+                            anchors.leftMargin: 0.01 * mainWindow.width
                             anchors.right: parent.left
                             anchors.top: parent.top
                             anchors.topMargin: 0.01 * mainWindow.height
@@ -675,7 +674,7 @@ Window {
                 id: tbList
                 anchors.top: parent.top
                 anchors.left: parent.left
-                anchors.leftMargin: 0.05 * parent.height
+                anchors.leftMargin: 0.03 * parent.height
                 height: 0.8 * parent.height
                 width: 0.8 * parent.height
                 iconSource: "res/list.png"
@@ -686,7 +685,7 @@ Window {
                 id: tbFight
                 anchors.top: parent.top
                 anchors.left: tbList.right
-                anchors.leftMargin: 0.1 * parent.height
+                anchors.leftMargin: 0.03 * parent.height
                 height: 0.8 * parent.height
                 width: 0.8 * parent.height
                 iconSource: "res/fight.png"
@@ -697,7 +696,7 @@ Window {
                 id: tbBook
                 anchors.top: parent.top
                 anchors.left: tbFight.right
-                anchors.leftMargin: 0.1 * parent.height
+                anchors.leftMargin: 0.03 * parent.height
                 height: 0.8 * parent.height
                 width: 0.8 * parent.height
                 iconSource: "res/spellbook.png"
@@ -708,7 +707,7 @@ Window {
                 id: tbUser
                 anchors.top: parent.top
                 anchors.left: tbBook.right
-                anchors.leftMargin: 0.1 * parent.height
+                anchors.leftMargin: 0.03 * parent.height
                 height: 0.8 * parent.height
                 width: 0.8 * parent.height
                 iconSource: "res/user.png"
@@ -719,7 +718,7 @@ Window {
                 id: tbAdd
                 anchors.top: parent.top
                 anchors.left: tbUser.right
-                anchors.leftMargin: 0.1 * parent.height
+                anchors.leftMargin: 0.03 * parent.height
                 height: 0.8 * parent.height
                 width: 0.8 * parent.height
                 iconSource: "res/add.png"
@@ -730,7 +729,7 @@ Window {
                 id: tbRefresh
                 anchors.top: parent.top
                 anchors.left: tbAdd.right
-                anchors.leftMargin: 0.1 * parent.height
+                anchors.leftMargin: 0.03 * parent.height
                 height: 0.8 * parent.height
                 width: 0.8 * parent.height
                 iconSource: "res/refresh.png"
@@ -741,7 +740,7 @@ Window {
                 id: tbSettings
                 anchors.top: parent.top
                 anchors.left: tbRefresh.right
-                anchors.leftMargin: 0.1 * parent.height
+                anchors.leftMargin: 0.03 * parent.height
                 height: 0.8 * parent.height
                 width: 0.8 * parent.height
                 iconSource: "res/settings.png"
@@ -781,8 +780,12 @@ Window {
         }
     }
 
-    function getLoginFromUser(child_wnd) {
-        MUtils.showWindow("edit_login.qml", child_wnd);
+    function getLoginFromUser(child_wnd, real_login) {
+        if (real_login) {
+            MUtils.showWindow("edit_login.qml", child_wnd);
+        } else {
+            showNewUserMenu(child_wnd);
+        }
     }
 
     function showProxySettings(child_wnd) {
@@ -915,7 +918,7 @@ Window {
     }
 
     function setNewLanguage() {
-        MUtils.default_spell_list = core.defaultSpellListHtml
+        MUtils.default_spell_list = JSON.parse(core.defaultSpellListHtml);
         Qt.core.prepareSpellHtmlList(1==1, 1==1);
         var tmp_l_arr = [warlockDictionary.getStringByCode("Neither"),
                          warlockDictionary.getStringByCode("Left"),
@@ -934,20 +937,20 @@ Window {
     }
 
     function creationFinished() {
-        Qt.core = core
-        Qt.mainWindow = mainWindow
+        Qt.core = core;
+        Qt.mainWindow = mainWindow;
         Qt.height_coeff = height_koeff;
-        MUtils.dict = warlockDictionary
-        MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage")
-        MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " "
-        MUtils.default_spell_list = core.defaultSpellListHtml
+        MUtils.dict = warlockDictionary;
+        MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage");
+        MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " ";
+        MUtils.default_spell_list = JSON.parse(core.defaultSpellListHtml);
         if (core.login === '') {
-            showNewUserMenu()
+            showNewUserMenu();
         } else {
-            core.scanState()
+            core.scanState();
         }
-        MUtils.cleanOrders()
-        MUtils.showList()
+        MUtils.cleanOrders();
+        MUtils.showList();
     }
 
     Component.onCompleted: creationFinished()
