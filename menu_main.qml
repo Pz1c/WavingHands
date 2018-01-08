@@ -80,7 +80,7 @@ Item {
                     id: labelUser
                     text: dict.getStringByCode("LoginSett")
                     anchors.centerIn: parent
-                    //font.pointSize: 16 * height_koeff
+                    ////font.pointSize: 16 * height_koeff
                     font.pixelSize: (labelUser.paintedWidth > 0.97 * parent.width) ? (0.97 * parent.width / labelUser.paintedWidth) * 16 * height_koeff : 16 * height_koeff
                 }
 
@@ -112,7 +112,7 @@ Item {
                     id: labelLanguage
                     text: dict.getStringByCode("LangSett")
                     anchors.centerIn: parent
-                    //font.pointSize: 16 * height_koeff
+                    ////font.pointSize: 16 * height_koeff
                     font.pixelSize: (labelLanguage.paintedWidth > 0.97 * parent.width) ? (0.97 * parent.width / labelLanguage.paintedWidth) * 16 * height_koeff : 16 * height_koeff
                 }
 
@@ -145,7 +145,7 @@ Item {
                     id: labelNetwork
                     text: dict.getStringByCode("NetworkSett")
                     anchors.centerIn: parent
-                    //font.pointSize: 16 * height_koeff
+                    ////font.pointSize: 16 * height_koeff
                     font.pixelSize: (labelNetwork.paintedWidth > 0.97 * parent.width) ? (0.97 * parent.width / labelNetwork.paintedWidth) * 16 * height_koeff : 16 * height_koeff
                 }
 

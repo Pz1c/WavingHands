@@ -94,7 +94,7 @@ Window {
                           //anchors.fill: parent
                           text: ""
                           anchors.topMargin: 8
-                          font.pointSize: 13 * height_koeff
+                          ////font.pointSize: 13 * height_koeff
                           wrapMode: Text.WordWrap
                           textFormat: Text.RichText
                           //elide: Text.ElideMiddle
@@ -123,7 +123,7 @@ Window {
                           width: mainWindow.width - 20
                           text: ""
                           anchors.topMargin: 8
-                          font.pointSize: 13 * height_koeff
+                          ////font.pointSize: 13 * height_koeff
                           textFormat: Text.RichText
                      }
                 }
@@ -174,7 +174,7 @@ Window {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 0.17 * parent.width
                         text: warlockDictionary.getStringByCode("LeftHand")
-                        font.pointSize: 13 * height_koeff
+                        ////font.pointSize: 13 * height_koeff
                     }
 
                     ComboBox {
@@ -227,7 +227,7 @@ Window {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 0.17 * parent.width
                         text: warlockDictionary.getStringByCode("RightHand")
-                        font.pointSize: 13 * height_koeff
+                        ////font.pointSize: 13 * height_koeff
                     }
 
                     ComboBox {
@@ -288,7 +288,7 @@ Window {
                                 x: 0
                                 y: cbDelay.height / 2 - tDelayLabel.height / 2
                                 text: warlockDictionary.getStringByCode("DelaySpell")
-                                font.pointSize: 13 * height_koeff
+                                ////font.pointSize: 13 * height_koeff
                             }
 
                             ComboBox {
@@ -314,7 +314,7 @@ Window {
                                 x: 0
                                 y: cbDelay.height / 2 - tDelayLabel.height / 2
                                 text: warlockDictionary.getStringByCode("MakeSpellPermanent")
-                                font.pointSize: 13 * height_koeff
+                                ////font.pointSize: 13 * height_koeff
                             }
 
                             ComboBox {
@@ -339,7 +339,7 @@ Window {
                                 id: tFireLabel
                                 x: 0
                                 y: 0//cbDelay.height / 2 - tDelayLabel.height / 2
-                                font.pointSize: 13 * height_koeff
+                                ////font.pointSize: 13 * height_koeff
 
                                 MouseArea {
                                     anchors.fill: parent
@@ -351,7 +351,7 @@ Window {
                                 id: cbFire
                                 x: tFireLabel.width + 3
                                 y: tFireLabel.height / 2 - cbFire.height / 2
-                                //font.pointSize: 13
+                                //////font.pointSize: 13
                             }
                         }
 
@@ -412,7 +412,7 @@ Window {
                     anchors.topMargin: 8
                     text: warlockDictionary.getStringByCode("ChatMessage")
 
-                    font.pointSize: 12 * height_koeff
+                    ////font.pointSize: 12 * height_koeff
                 }
 
                 Rectangle {
@@ -431,7 +431,7 @@ Window {
                         height: parent.height - 2
                         anchors.centerIn: parent
                         text: ""
-                        font.pointSize: 12 * height_koeff
+                        ////font.pointSize: 12 * height_koeff
                         inputMethodHints: Qt.ImhNoPredictiveText
                         //echoMode: TextInput.Password
                     }
@@ -453,7 +453,7 @@ Window {
                         id: labelDoit
                         anchors.centerIn: parent
                         text: warlockDictionary.getStringByCode("Submit")
-                        font.pointSize: 16 * height_koeff
+                        ////font.pointSize: 16 * height_koeff
                     }
 
                     MouseArea {
@@ -499,7 +499,7 @@ Window {
                             anchors.right: parent.right
                             anchors.top: parent.top
                             anchors.topMargin: 0.01 * mainWindow.height
-                            font.pointSize: 13 * height_koeff
+                            //////font.pointSize: 13 * height_koeff
                             wrapMode: Text.WordWrap
                             // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
                             text: battles[index].logins + ".\n" + battles[index].level + " " +
@@ -524,7 +524,7 @@ Window {
                                 id: label_order_up
                                 text: warlockDictionary.getStringByCode("Accept")
                                 anchors.centerIn: parent
-                                font.pointSize: 13 * height_koeff
+                                //////font.pointSize: 13 * height_koeff
                             }
 
                             MouseArea {
@@ -552,7 +552,7 @@ Window {
                         Text {
                             id: lvdHeaderText
                             anchors.centerIn: parent
-                            font.pointSize: 15 * height_koeff
+                            //////font.pointSize: 15 * height_koeff
                             wrapMode: Text.WordWrap
                             text: warlockDictionary.getStringByCode("BattleList")
                         }
@@ -585,7 +585,7 @@ Window {
                             anchors.leftMargin: 0.01 * mainWindow.width
                             anchors.top: parent.top
                             anchors.topMargin: 0.01 * mainWindow.height
-                            font.pointSize: 13 * height_koeff
+                            //////font.pointSize: 13 * height_koeff
                             wrapMode: Text.WordWrap
                             textFormat: Text.RichText
                             text: spells[index].g
@@ -598,7 +598,7 @@ Window {
                             anchors.leftMargin: 0.01 * mainWindow.width
                             anchors.top: parent.top
                             anchors.topMargin: 0.01 * mainWindow.height
-                            font.pointSize: 13 * height_koeff
+                            //////font.pointSize: 13 * height_koeff
                             wrapMode: Text.WordWrap
                             text: spells[index].h
                             width: 0.2 * mainWindow.width
@@ -611,7 +611,7 @@ Window {
                             anchors.right: parent.left
                             anchors.top: parent.top
                             anchors.topMargin: 0.01 * mainWindow.height
-                            font.pointSize: 13 * height_koeff
+                            //////font.pointSize: 13 * height_koeff
                             wrapMode: Text.WordWrap
                             text: spells[index].n
                             width: 0.6 * mainWindow.width
@@ -635,48 +635,29 @@ Window {
                         Text {
                             id: lvsHeaderText
                             anchors.centerIn: parent
-                            font.pointSize: 15 * height_koeff
+                            //////font.pointSize: 15 * height_koeff
                             wrapMode: Text.WordWrap
                             text: warlockDictionary.getStringByCode("SpellList")
                         }
                     }
             }
-
-            /*Controls12.ScrollView {
-                id: svSpellList
-                width: rSpellList.width
-                height: rSpellList.height
-
-                Text {
-                      x: 0
-                      y: 0
-                      id: tSpellList
-                      width: mainWindow.width - 20
-                      //height: 200
-                      //anchors.fill: parent
-                      text: ""
-                      anchors.topMargin: 8
-                      font.pointSize: 13 * height_koeff
-                      wrapMode: Text.WordWrap
-                      textFormat: Text.RichText
-                      onLinkActivated: MUtils.linkActivated(link)
-                }
-            }*/
-
         }
 
         ToolBar {
             id: tbMain
+            anchors.left: parent.left
+            anchors.right: parent.right
             anchors.bottom: parent.bottom
             height: 0.1 * parent.height
+
 
             Controls12.ToolButton {
                 id: tbList
                 anchors.top: parent.top
                 anchors.left: parent.left
-                anchors.leftMargin: 0.03 * parent.height
-                height: 0.8 * parent.height
-                width: 0.8 * parent.height
+                anchors.leftMargin: 0.01 * parent.width
+                height: 0.13 * parent.width
+                width: 0.13 * parent.width
                 iconSource: "res/list.png"
                 onClicked: MUtils.showList()
             }
@@ -685,9 +666,9 @@ Window {
                 id: tbFight
                 anchors.top: parent.top
                 anchors.left: tbList.right
-                anchors.leftMargin: 0.03 * parent.height
-                height: 0.8 * parent.height
-                width: 0.8 * parent.height
+                anchors.leftMargin: 0.01 * parent.width
+                height: tbList.height
+                width: tbList.width
                 iconSource: "res/fight.png"
                 onClicked: MUtils.showDuel()
             }
@@ -696,9 +677,9 @@ Window {
                 id: tbBook
                 anchors.top: parent.top
                 anchors.left: tbFight.right
-                anchors.leftMargin: 0.03 * parent.height
-                height: 0.8 * parent.height
-                width: 0.8 * parent.height
+                anchors.leftMargin: 0.01 * parent.width
+                height: tbList.height
+                width: tbList.width
                 iconSource: "res/spellbook.png"
                 onClicked: MUtils.showSpellBook()
             }
@@ -707,9 +688,9 @@ Window {
                 id: tbUser
                 anchors.top: parent.top
                 anchors.left: tbBook.right
-                anchors.leftMargin: 0.03 * parent.height
-                height: 0.8 * parent.height
-                width: 0.8 * parent.height
+                anchors.leftMargin: 0.01 * parent.width
+                height: tbList.height
+                width: tbList.width
                 iconSource: "res/user.png"
                 onClicked: showUserProfile()
             }
@@ -718,9 +699,9 @@ Window {
                 id: tbAdd
                 anchors.top: parent.top
                 anchors.left: tbUser.right
-                anchors.leftMargin: 0.03 * parent.height
-                height: 0.8 * parent.height
-                width: 0.8 * parent.height
+                anchors.leftMargin: 0.01 * parent.width
+                height: tbList.height
+                width: tbList.width
                 iconSource: "res/add.png"
                 onClicked: addDuel()
             }
@@ -729,9 +710,9 @@ Window {
                 id: tbRefresh
                 anchors.top: parent.top
                 anchors.left: tbAdd.right
-                anchors.leftMargin: 0.03 * parent.height
-                height: 0.8 * parent.height
-                width: 0.8 * parent.height
+                anchors.leftMargin: 0.01 * parent.width
+                height: tbList.height
+                width: tbList.width
                 iconSource: "res/refresh.png"
                 onClicked: refreshData()
             }
@@ -739,10 +720,10 @@ Window {
             Controls12.ToolButton {
                 id: tbSettings
                 anchors.top: parent.top
-                anchors.left: tbRefresh.right
-                anchors.leftMargin: 0.03 * parent.height
-                height: 0.8 * parent.height
-                width: 0.8 * parent.height
+                anchors.right: parent.right
+                anchors.rightMargin: 0.01 * parent.width
+                height: tbList.height
+                width: tbList.width
                 iconSource: "res/settings.png"
                 onClicked: showMainMenu()
             }

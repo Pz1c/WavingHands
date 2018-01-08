@@ -70,7 +70,7 @@ Item {
                   //anchors.fill: parent
                   text: ""
                   anchors.topMargin: 8
-                  font.pointSize: 13 * height_koeff
+                  //font.pointSize: 13 * height_koeff
                   wrapMode: Text.WordWrap
                   textFormat: Text.RichText
                   onLinkActivated: UPUtils.linkActivated(link)
@@ -95,7 +95,7 @@ Item {
                     text: dict.getStringByCode("Close")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {

@@ -46,8 +46,8 @@ Item {
     // This rectangle is the actual popup
     Rectangle {
         id: dialogWindow
-        width: 8 * parent.width / 10
-        height: 8 * parent.height / 10
+        width: 0.98 * parent.width
+        height: 0.8 * parent.height
         radius: 10
         anchors.verticalCenterOffset: -30
         anchors.horizontalCenterOffset: 0
@@ -72,7 +72,7 @@ Item {
             text: ""
             anchors.topMargin: 8
             width: svText.width - 20
-            font.pointSize: 16 * height_koeff
+            //font.pointSize: 16 * height_koeff
             wrapMode: Text.WordWrap
             textFormat: Text.RichText
         }
@@ -105,7 +105,7 @@ Item {
                 text: dict.getStringByCode("OK")
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                font.pointSize: 16 * height_koeff
+                //font.pointSize: 16 * height_koeff
             }
 
             MouseArea {

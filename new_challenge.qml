@@ -66,7 +66,7 @@ Item {
             anchors.topMargin: 8
             anchors.horizontalCenter: parent.horizontalCenter
             text: dict.getStringByCode("EnterChallenge")
-            font.pointSize: 16 * height_koeff
+            //font.pointSize: 16 * height_koeff
         }
 
         CheckBox {
@@ -96,7 +96,7 @@ Item {
             anchors.leftMargin: 0.01 * parent.width
             anchors.verticalCenter: cbCount.verticalCenter
             text: dict.getStringByCode("WarlocksCount")
-            font.pointSize: 13 * height_koeff
+            //font.pointSize: 13 * height_koeff
         }
 
         ComboBox {
@@ -107,7 +107,7 @@ Item {
             anchors.topMargin: 0.01 * parent.width
             width: parent.width - (tCountLabel.x + Math.max(tCountLabel.width, tFriendly.width)) - 10
             model: [2, 3, 4, 5, 6]
-            currentIndex: 1
+            currentIndex: 0
         }
 
         Text {
@@ -116,7 +116,7 @@ Item {
             anchors.leftMargin: 0.01 * parent.width
             anchors.verticalCenter: cbFriendly.verticalCenter
             text: dict.getStringByCode("FriendlyLevel")
-            font.pointSize: 13 * height_koeff
+            //font.pointSize: 13 * height_koeff
         }
 
         ComboBox {
@@ -139,7 +139,7 @@ Item {
             anchors.top: cbFriendly.bottom
             anchors.topMargin: 0.01 * parent.width
             text: dict.getStringByCode("Description")
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
@@ -159,7 +159,7 @@ Item {
                 id: tiDescription
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 12 * height_koeff
+                //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhNoPredictiveText
                 //echoMode: TextInput.Password
             }
@@ -180,7 +180,7 @@ Item {
                     id: labelDoit
                     text: dict.getStringByCode("OK")
                     anchors.centerIn: parent
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {
@@ -214,7 +214,7 @@ Item {
                     id: labelSkip
                     text: dict.getStringByCode("Cancel")
                     anchors.centerIn: parent
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {

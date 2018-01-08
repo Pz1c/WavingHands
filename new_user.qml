@@ -47,7 +47,7 @@ Item {
     Rectangle {
         id: dialogWindow
         width: 0.8 * dMainItem.width
-        height: (rEmail.height + 10) * 6
+        height: tConfirmation.y + tConfirmation.height + rEmail.height * 2 + 20
         radius: 10
         anchors.topMargin: 0
         anchors.centerIn: parent
@@ -68,7 +68,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             text: dict.getStringByCode("EnterNewUser")
             anchors.topMargin: 8
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Text {
@@ -79,7 +79,7 @@ Item {
             height: dialogTitle.height
 
             text: dict.getStringByCode("Login")
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
@@ -101,7 +101,7 @@ Item {
                 height: parent.height - 2
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 12 * height_koeff
+                //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhNoPredictiveText
                 //echoMode: TextInput.Password
             }
@@ -115,7 +115,7 @@ Item {
             height: dialogTitle.height
 
             text: dict.getStringByCode("Password")
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
@@ -136,7 +136,7 @@ Item {
                 height: parent.height - 2
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 12 * height_koeff
+                //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhNoPredictiveText
                 echoMode: TextInput.Password
             }
@@ -150,7 +150,7 @@ Item {
             anchors.verticalCenter: rEmail.verticalCenter
 
             text: dict.getStringByCode("Email")
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
@@ -171,7 +171,7 @@ Item {
                 height: parent.height - 2
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 12 * height_koeff
+                //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhEmailCharactersOnly
                 //echoMode: TextInput.Password
             }
@@ -204,7 +204,7 @@ Item {
                     id: labelDoit
                     anchors.centerIn: parent
                     text: dict.getStringByCode("Register")
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {
@@ -255,7 +255,7 @@ Item {
                     text: dict.getStringByCode("Cancel")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {

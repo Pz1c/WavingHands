@@ -72,7 +72,7 @@ Item {
               anchors.top: parent.top
               text: ""
               anchors.topMargin: 8
-              font.pointSize: 16 * height_koeff
+              ////font.pointSize: 16 * height_koeff
               wrapMode: Text.WordWrap
               textFormat: Text.RichText
               onLinkActivated: {
@@ -109,7 +109,7 @@ Item {
                 text: dict.getStringByCode("Close")
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                font.pointSize: 16 * height_koeff
+                //font.pointSize: 16 * height_koeff
                 textFormat: Text.RichText
             }
 
@@ -143,7 +143,7 @@ Item {
                 text: dict.getStringByCode("WatchOnline")
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                font.pointSize: 16 * height_koeff
+                //font.pointSize: 16 * height_koeff
                 textFormat: Text.RichText
             }
 

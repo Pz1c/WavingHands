@@ -68,7 +68,7 @@ Item {
             anchors.top: parent.top
             text: dict.getStringByCode("EnterProxy")
             anchors.topMargin: 8
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Text {
@@ -77,7 +77,7 @@ Item {
             y: dialogTitle.y + 3 + dialogTitle.height
             text: dict.getStringByCode("ProxyHost")
             anchors.topMargin: 8
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
@@ -98,7 +98,7 @@ Item {
                 y: 1
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 12 * height_koeff
+                //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhNoPredictiveText
                 //echoMode: TextInput.Password
             }
@@ -110,7 +110,7 @@ Item {
             y: tIp.y + 3 + tIp.height
             text: dict.getStringByCode("ProxyPort")
             anchors.topMargin: 8
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
@@ -131,7 +131,7 @@ Item {
                 y: 1
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 12 * height_koeff
+                //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhDigitsOnly
                 //echoMode: TextInput.Password
             }
@@ -143,7 +143,7 @@ Item {
             y: tPort.y + 3 + tPort.height
             text: dict.getStringByCode("ProxyUser")
             anchors.topMargin: 8
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
@@ -164,7 +164,7 @@ Item {
                 y: 1
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 12 * height_koeff
+                //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhNoPredictiveText
                 //echoMode: TextInput.Password
             }
@@ -176,7 +176,7 @@ Item {
             y: tUser.y + 3 + tUser.height
             text: dict.getStringByCode("ProxyPass")
             anchors.topMargin: 8
-            font.pointSize: 12 * height_koeff
+            //font.pointSize: 12 * height_koeff
         }
 
         Rectangle {
@@ -197,7 +197,7 @@ Item {
                 y: 1
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 12 * height_koeff
+                //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhNoPredictiveText
                 echoMode: TextInput.Password
             }
@@ -221,7 +221,7 @@ Item {
                     text: dict.getStringByCode("OK")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {
@@ -257,7 +257,7 @@ Item {
                     text: dict.getStringByCode("Cancel")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {

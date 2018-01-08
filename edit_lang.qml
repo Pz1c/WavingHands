@@ -83,7 +83,7 @@ Item {
                     text: dict.getStringByCode("LangUA")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {
@@ -117,7 +117,7 @@ Item {
                     text: dict.getStringByCode("LangEN")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {
@@ -152,7 +152,7 @@ Item {
                     text: dict.getStringByCode("LangRU")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {

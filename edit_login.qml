@@ -68,7 +68,7 @@ Item {
             anchors.top: parent.top
             text: dict.getStringByCode("EnterLoginPass")
             anchors.topMargin: 8
-            font.pointSize: 16 * height_koeff
+            //font.pointSize: 16 * height_koeff
         }
 
         Rectangle {
@@ -89,7 +89,7 @@ Item {
                 y: 1
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 16 * height_koeff
+                //font.pointSize: 16 * height_koeff
                 inputMethodHints: Qt.ImhNoPredictiveText
                 focus: true
             }
@@ -113,7 +113,7 @@ Item {
                 y: 1
                 anchors.centerIn: parent
                 text: ""
-                font.pointSize: 16 * height_koeff
+                //font.pointSize: 16 * height_koeff
                 //validator: IntValidator{bottom: 1; top: 10;}
                 inputMethodHints: Qt.ImhNoPredictiveText
                 echoMode: TextInput.Password
@@ -138,7 +138,7 @@ Item {
                     text: dict.getStringByCode("OK")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {
@@ -174,7 +174,7 @@ Item {
                     text: dict.getStringByCode("Cancel")
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    font.pointSize: 16 * height_koeff
+                    //font.pointSize: 16 * height_koeff
                 }
 
                 MouseArea {

@@ -22,7 +22,7 @@ Rectangle {
        anchors.topMargin: 5
        anchors.left: parent.left
        anchors.right: parent.right
-       font.pointSize: 13 * height_koeff
+       //font.pointSize: 13 * height_koeff
     }
 
     Text {
@@ -30,7 +30,7 @@ Rectangle {
        text: dict.getStringByCode("Left")
        anchors.verticalCenter: cbPossibleLeft.verticalCenter
        anchors.left: parent.left
-       font.pointSize: 13 * height_koeff
+       //font.pointSize: 13 * height_koeff
     }
 
     Text {
@@ -38,7 +38,7 @@ Rectangle {
        text: dict.getStringByCode("Right")
        anchors.verticalCenter: cbPossibleRight.verticalCenter
        anchors.left: parent.left
-       font.pointSize: 13 * height_koeff
+       //font.pointSize: 13 * height_koeff
     }
 
     Text {
@@ -46,7 +46,7 @@ Rectangle {
        text: "<tt>" + w_left_g + "</tt>"
        anchors.right: cbPossibleLeft.left
        anchors.verticalCenter: cbPossibleLeft.verticalCenter
-       font.pointSize: 13 * height_koeff
+       //font.pointSize: 13 * height_koeff
        textFormat: Text.RichText
     }
 
@@ -55,7 +55,7 @@ Rectangle {
        text: "<tt>" + w_right_g + "</tt>"
        anchors.right: cbPossibleRight.left
        anchors.verticalCenter: cbPossibleRight.verticalCenter
-       font.pointSize: 13 * height_koeff
+       //font.pointSize: 13 * height_koeff
        textFormat: Text.RichText
     }
 

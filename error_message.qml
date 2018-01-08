@@ -71,7 +71,7 @@ Item {
             text: ""
             anchors.topMargin: 8
             width: parent.width - 20
-            font.pointSize: 16 * height_koeff
+            //font.pointSize: 16 * height_koeff
             wrapMode: Text.WordWrap
             textFormat: Text.RichText
         }
@@ -95,7 +95,7 @@ Item {
                 text: dict.getStringByCode("OK")
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                font.pointSize: 16 * height_koeff
+                //font.pointSize: 16 * height_koeff
             }
 
             MouseArea {
