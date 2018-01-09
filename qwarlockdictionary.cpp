@@ -26,8 +26,8 @@ QWarlockDictionary::QWarlockDictionary(QObject *parent) :
 
     // fill dictionary
     fillDictionary("AreYouSure", "Ви впевненні?", "Вы уверенны?", "Are you sure?");
-    fillDictionary("NoGestureForTurn", "Ви не задали жестів на цей хід. Ви впевненні?", "Вы не задали жесты для хода. Вы уверенны?", "You have no set gesture for this turn. Are you sure?");
-    fillDictionary("SurrenderForTurn", "Ви хочете здатись? Точно?", "Вы хотите сдаться? Точно?", "Are you really want to surrender? Are you sure?");
+    fillDictionary("NoGestureForTurn", "Ви не задали жестів на цей хід!", "Вы не задали жесты для хода!", "You have no set gesture for this turn!");
+    fillDictionary("SurrenderForTurn", "Ви хочете здатись?", "Вы хотите сдаться?", "Are you really want to surrender?");
     fillDictionary("LeftHand", "Ліва рука", "Левая рука", "Left Hand");
     fillDictionary("RightHand", "Права рука", "Правая рука", "Right Hand");
     fillDictionary("Submit", "Походити", "Походить", "Submit");
@@ -93,7 +93,7 @@ QWarlockDictionary::QWarlockDictionary(QObject *parent) :
     fillDictionary("BattleList", "Поєдинки, до яких можна приєднатись", "Бои к которым можно присоединиться", "Battle list");
     fillDictionary("SpellList", "Список доступних заклять", "Список доступніх заклинаний", "Spell list");
     fillDictionary("Iam13", "Мені виповнилось 13", "Мне исполнилось 13", "I am at least 13");
-
+    fillDictionary("ConfirmExit", "Закрити гру?", "Закрыть игру?", "Leave game?");
 
 
     // spell book name
@@ -134,8 +134,8 @@ QWarlockDictionary::QWarlockDictionary(QObject *parent) :
     fillDictionary("SWD", "Страх (без CFDS)", "Страх (без CFDS)", "Fear (No CFDS)");
     fillDictionary("SWWc", "Пекельний шторм", "Огненный шторм", "Fire Storm");
     fillDictionary("WDDc", "Хлопок Блискавки", "Хлопок Молнии", "Clap of Lightning");
-    fillDictionary("WFP", "Нанести легкі рани", "Нанести легкие раны", "Cause Heavy Wounds");
-    fillDictionary("WPFD", "Нанести тяжкі рани", "Нанести тяжелые раны", "Cause Light Wounds");
+    fillDictionary("WFP", "Нанести легкі рани", "Нанести легкие раны", "Cause Light Wounds");
+    fillDictionary("WPFD", "Нанести тяжкі рани", "Нанести тяжелые раны", "Cause Heavy Wounds");
     fillDictionary("WPP", "Магічний захист", "Магическая защита", "Counter Spell");
     fillDictionary("WSSc", "Крижаний шторм", "Ледяной шторм", "Ice Storm");
     fillDictionary("WWFP", "Захист від вогню", "Защита от жара", "Resist Heat");

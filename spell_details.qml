@@ -79,16 +79,16 @@ Item {
 
         ScrollView {
           id: svText
-          x: 0
-          y: 0
-          width: parent.width
-          height: parent.height - btnDoit.height
+          anchors.top: parent.top
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.bottom: btnDoit.top
           contentItem: tErrMsg
         }
 
         Rectangle {
             id: btnDoit
-            y: parent.height - btnDoit.height
+            anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             width: parent.width / 2
             height: parent.height / 11
@@ -100,11 +100,8 @@ Item {
 
             Text {
                 id: labelDoit
-                x: 38
-                y: 18
                 text: dict.getStringByCode("OK")
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.centerIn: parent
                 //font.pointSize: 16 * height_koeff
             }
 

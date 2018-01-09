@@ -822,7 +822,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
             if (_spellListHtml.length() > 1) {
                 _spellListHtml.append(",");
             }
-            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(spell.first, spell.first, WarlockDictionary->getStringByCode(spell.first)));
+            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(spell.first, "", spell.first, WarlockDictionary->getStringByCode(spell.first)));
         }
     }
     _spellListHtml.append("]");

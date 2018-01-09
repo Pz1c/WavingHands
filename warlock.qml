@@ -30,6 +30,7 @@ Rectangle {
        text: dict.getStringByCode("Left")
        anchors.verticalCenter: cbPossibleLeft.verticalCenter
        anchors.left: parent.left
+       width: 0.2 * parent.width
        //font.pointSize: 13 * height_koeff
     }
 
@@ -38,13 +39,15 @@ Rectangle {
        text: dict.getStringByCode("Right")
        anchors.verticalCenter: cbPossibleRight.verticalCenter
        anchors.left: parent.left
+       width: 0.2 * parent.width
        //font.pointSize: 13 * height_koeff
     }
 
     Text {
        id: tLabelLeftGesture
        text: "<tt>" + w_left_g + "</tt>"
-       anchors.right: cbPossibleLeft.left
+       anchors.right: tLabelLeft.right
+       anchors.rightMargin: 5
        anchors.verticalCenter: cbPossibleLeft.verticalCenter
        //font.pointSize: 13 * height_koeff
        textFormat: Text.RichText
@@ -53,7 +56,8 @@ Rectangle {
     Text {
        id: tLabelRightGesture
        text: "<tt>" + w_right_g + "</tt>"
-       anchors.right: cbPossibleRight.left
+       anchors.right: tLabelRight.right
+       anchors.rightMargin: 5
        anchors.verticalCenter: cbPossibleRight.verticalCenter
        //font.pointSize: 13 * height_koeff
        textFormat: Text.RichText
@@ -63,14 +67,13 @@ Rectangle {
         id: cbPossibleLeft
         anchors.top: tLabel.bottom
         anchors.topMargin: 5
-        //anchors.left: tLabelLeft.right
-        //anchors.leftMargin: 5
+        anchors.left: tLabelLeftGesture.right
+        anchors.leftMargin: 5
         anchors.right: parent.right
         //x: tLabelLeftGesture.x + tLabelLeftGesture.width + 3
         //y: tLabelLeftGesture.y
         //editable: false
         model: []
-        width: 0.5 * parent.width
         visible: false
         onCurrentTextChanged: setGesture(1)
     }
@@ -79,8 +82,8 @@ Rectangle {
         id: cbPossibleRight
         anchors.top: cbPossibleLeft.bottom
         anchors.topMargin: 5
-        //anchors.left: tLabelRight.right
-        //anchors.leftMargin: 5
+        anchors.left: tLabelRightGesture.right
+        anchors.leftMargin: 5
         anchors.right: parent.right
         //x: tLabelRightGesture.x + tLabelRightGesture.width + 3
         //y: tLabelRightGesture.y

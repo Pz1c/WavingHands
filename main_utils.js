@@ -11,6 +11,7 @@ var arrChallengeList;
 var dict, cChatMessage, cMosterFrom, default_spell_list;
 
 function sendOrder() {
+    action_send_order = true;
     if (arrLPG[cbLHG.currentText] === "-" && arrRPG[cbRHG.currentText] === "-") {
         mdNoGesture.text = dict.getStringByCode("NoGestureForTurn")
         mdNoGesture.visible = true
@@ -310,7 +311,7 @@ function cleanOrders() {
 
 function prepareFire(fire) {
     lvaoFire.visible = fire !== ''
-    tFireLabel.text = fire
+    cbFire.text = fire
     resizeAddOrdersWnd(0, "f")
 }
 
@@ -500,8 +501,9 @@ function setPosibleGesture(left, right) {
     var arr_r_res = []
     arrLPG = []
     arrRPG = []
-    for (var i = 0, Ln = arr_l.length; i < Ln; ++i) {
-        var t = arr_l[i].split(";")
+    var t, i, Ln;
+    for (i = 0, Ln = arr_l.length; i < Ln; ++i) {
+        t = arr_l[i].split(";")
         if (t[0] === '' || t[0] === ' ') {
             continue;
         }
@@ -509,8 +511,8 @@ function setPosibleGesture(left, right) {
         arrLPG[t[1]] = t[0]
     }
 
-    for (var i = 0, Ln = arr_r.length; i < Ln; ++i) {
-        var t = arr_r[i].split(";")
+    for (i = 0, Ln = arr_r.length; i < Ln; ++i) {
+        t = arr_r[i].split(";")
         if (t[0] === '' || t[0] === ' ') {
             continue;
         }
@@ -534,13 +536,13 @@ function changeGesture(Gesture, Left) {
     }
     var idx1 = -1, idx2 = -1;
     for (var i = 0, Ln = arr1.length; i < Ln; ++i) {
-        if (arr1[i] == G) {
+        if (arr1[i] === G) {
             idx1 = i;
             break;
         }
     }
-    for (var i = 0, Ln = arr2.length; i < Ln; ++i) {
-        if (arr2[i] == G) {
+    for (i = 0, Ln = arr2.length; i < Ln; ++i) {
+        if (arr2[i] === G) {
             idx2 = i;
             break;
         }
@@ -554,7 +556,7 @@ function changeGesture(Gesture, Left) {
         }
     }
 
-    if ((Gesture != G) && (idx2 != -1)) {
+    if ((Gesture !== G) && (idx2 != -1)) {
         if (Left) {
             cbRHG.currentIndex = idx2;
         } else {
@@ -564,22 +566,23 @@ function changeGesture(Gesture, Left) {
 }
 
 function resizeMonsterOrderWnd(height) {
-    console.log("resizeMonsterOrderWnd", height, " rMonsterOrders.height: ", rMonsterOrders.height)
-    if (rMonsterOrders.height > height) {
+    //console.log("resizeMonsterOrderWnd", height, " rMonsterOrders.height: ", rMonsterOrders.height)
+    /*if (rMonsterOrders.height > height) {
         rMonsterOrders.height = height
-    }
+    }*/
 }
 
 function resizeWarlockWnd(height) {
-    console.log("resizeWarlockWnd", height, " rWarlock.height: ", rWarlocks.height)
-    if (rWarlocks.height > height) {
+    //console.log("resizeWarlockWnd", height, " rWarlock.height: ", rWarlocks.height)
+    /*if (rWarlocks.height > height) {
         rWarlocks.height = height
         //svrWarlocks.height = height
-    }
+    }*/
 }
 
 function resizeAddOrdersWnd(height, type) {
-    console.log("resizeAddOrdersWnd", height, " type: ", type)
+    //console.log("resizeAddOrdersWnd", height, " type: ", type)
+    /*
     if (type === "cp") {
         lvaoCharmPerson.height = height;
     } else if (type === "p") {
@@ -606,29 +609,16 @@ function resizeAddOrdersWnd(height, type) {
     console.log("total_height", total_height, "rAdditionalOrders.height", rAdditionalOrders.height)
     if (rAdditionalOrders.height == 0 || rAdditionalOrders.height > total_height || rAdditionalOrders.height < 150) {
         rAdditionalOrders.height = total_height
-    }
+    }*/
 }
 
 function prepareStepMessage() {
     console.log("prepareStepMessage: " + Qt.core.finishedBattle)
-    //console.log("tStepMsg.height", tStepMsg.height, "rTextLog.height", rTextLog.height)
     tStepMsg.text = Qt.core.finishedBattle
-    /*if (tStepMsg.height < rTextLog.height) {
-        rTextLog.height = tStepMsg.height
-    }*/
 }
 
 function prepareMonsterList() {
-    tMonsterList.text = Qt.core.monsters
-    if (tMonsterList.text === '') {
-        rMonsters.height = 0
-    } else if (tMonsterList.height < rMonsters.height) {
-        rMonsters.height = tMonsterList.height
-    } if ((tMonsterList.height >= rMonsters.height) && (tMonsterList.height < 200)) {
-        rMonsters.height = tMonsterList.height
-    } else {
-        rMonsters.height = 200//(mainWindow.height - tbMain.height) / 4
-    }
+    tMonsterList.text = Qt.core.monsters;
 }
 
 function prepareWarlockList() {
