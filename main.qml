@@ -3,10 +3,9 @@
 //import QtQuick.Controls 1.1
 
 import QtQuick 2.1
-import QtQuick.Controls 1.4 as Controls12
 import QtQuick.Window 2.1
 import QtQuick.Dialogs 1.2
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.3
 
 import ua.sp.warloksduel 1.8
 import ua.sp.warlockdictionary 1.0
@@ -80,15 +79,18 @@ Window {
             anchors.bottom: tbMain.top
             visible: false
 
-            Controls12.ScrollView {
+            ScrollView {
                 id: svReadyBattle
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: rGesture.top
 
-                ListView {
+                Rectangle {
                     id: lvReadyBattle
+                    x: 0
+                    y: 0
+                    width: rReadyBattle.width
 
                     Text {
                           id: tStepMsg
@@ -605,80 +607,80 @@ Window {
             height: 0.1 * parent.height
 
 
-            Controls12.ToolButton {
+            ToolButton {
                 id: tbList
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.leftMargin: 0.01 * parent.width
                 height: 0.13 * parent.width
                 width: 0.13 * parent.width
-                iconSource: "res/list.png"
+                icon.source:  "res/list.png"
                 onClicked: MUtils.showList()
             }
 
-            Controls12.ToolButton {
+            ToolButton {
                 id: tbFight
                 anchors.top: parent.top
                 anchors.left: tbList.right
                 anchors.leftMargin: 0.01 * parent.width
                 height: tbList.height
                 width: tbList.width
-                iconSource: "res/fight.png"
+                icon.source: "res/fight.png"
                 onClicked: MUtils.showDuel()
             }
 
-            Controls12.ToolButton {
+            ToolButton {
                 id: tbBook
                 anchors.top: parent.top
                 anchors.left: tbFight.right
                 anchors.leftMargin: 0.01 * parent.width
                 height: tbList.height
                 width: tbList.width
-                iconSource: "res/spellbook.png"
+                icon.source: "res/spellbook.png"
                 onClicked: MUtils.showSpellBook()
             }
 
-            Controls12.ToolButton {
+            ToolButton {
                 id: tbUser
                 anchors.top: parent.top
                 anchors.left: tbBook.right
                 anchors.leftMargin: 0.01 * parent.width
                 height: tbList.height
                 width: tbList.width
-                iconSource: "res/user.png"
+                icon.source: "res/user.png"
                 onClicked: showUserProfile()
             }
 
-            Controls12.ToolButton {
+            ToolButton {
                 id: tbAdd
                 anchors.top: parent.top
                 anchors.left: tbUser.right
                 anchors.leftMargin: 0.01 * parent.width
                 height: tbList.height
                 width: tbList.width
-                iconSource: "res/add.png"
+                icon.source: "res/add.png"
                 onClicked: addDuel()
             }
 
-            Controls12.ToolButton {
+            ToolButton {
                 id: tbRefresh
                 anchors.top: parent.top
                 anchors.left: tbAdd.right
                 anchors.leftMargin: 0.01 * parent.width
                 height: tbList.height
                 width: tbList.width
-                iconSource: "res/refresh.png"
+                icon.source: "res/refresh.png"
                 onClicked: refreshData()
             }
 
-            Controls12.ToolButton {
+            ToolButton {
                 id: tbSettings
                 anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.rightMargin: 0.01 * parent.width
                 height: tbList.height
                 width: tbList.width
-                iconSource: "res/settings.png"
+                icon.source: "res/settings.png"
                 onClicked: showMainMenu()
             }
         }

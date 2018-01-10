@@ -22,6 +22,7 @@ Rectangle {
        anchors.topMargin: 5
        anchors.left: parent.left
        anchors.right: parent.right
+       fontSizeMode: Text.Fit
        //font.pointSize: 13 * height_koeff
     }
 
@@ -31,7 +32,30 @@ Rectangle {
        anchors.verticalCenter: cbPossibleLeft.verticalCenter
        anchors.left: parent.left
        width: 0.2 * parent.width
+       fontSizeMode: Text.Fit
        //font.pointSize: 13 * height_koeff
+    }
+
+    Text {
+       id: tLabelLeftGesture
+       text: w_left_g
+       anchors.right: cbPossibleLeft.left
+       anchors.verticalCenter: cbPossibleLeft.verticalCenter
+       fontSizeMode: Text.Fit
+       textFormat: Text.PlainText
+       width: 0.3 * parent.width
+       //font.pointSize: 13 * height_koeff
+    }
+
+    ComboBox {
+        id: cbPossibleLeft
+        anchors.top: tLabel.bottom
+        anchors.topMargin: 5
+        anchors.right: parent.right
+        width: 0.5 * parent.width
+        model: []
+        visible: false
+        onCurrentTextChanged: setGesture(1)
     }
 
     Text {
@@ -39,57 +63,29 @@ Rectangle {
        text: dict.getStringByCode("Right")
        anchors.verticalCenter: cbPossibleRight.verticalCenter
        anchors.left: parent.left
-       width: 0.2 * parent.width
+       fontSizeMode: Text.Fit
+       width: tLabelLeft.width
        //font.pointSize: 13 * height_koeff
-    }
-
-    Text {
-       id: tLabelLeftGesture
-       text: "<tt>" + w_left_g + "</tt>"
-       anchors.right: tLabelLeft.right
-       anchors.rightMargin: 5
-       anchors.verticalCenter: cbPossibleLeft.verticalCenter
-       //font.pointSize: 13 * height_koeff
-       textFormat: Text.RichText
     }
 
     Text {
        id: tLabelRightGesture
-       text: "<tt>" + w_right_g + "</tt>"
-       anchors.right: tLabelRight.right
-       anchors.rightMargin: 5
+       text: w_right_g
+       anchors.right: cbPossibleRight.left
        anchors.verticalCenter: cbPossibleRight.verticalCenter
        //font.pointSize: 13 * height_koeff
-       textFormat: Text.RichText
-    }
-
-    ComboBox {
-        id: cbPossibleLeft
-        anchors.top: tLabel.bottom
-        anchors.topMargin: 5
-        anchors.left: tLabelLeftGesture.right
-        anchors.leftMargin: 5
-        anchors.right: parent.right
-        //x: tLabelLeftGesture.x + tLabelLeftGesture.width + 3
-        //y: tLabelLeftGesture.y
-        //editable: false
-        model: []
-        visible: false
-        onCurrentTextChanged: setGesture(1)
+       textFormat: Text.PlainText
+       fontSizeMode: Text.Fit
+       width: tLabelLeftGesture.width
     }
 
     ComboBox {
         id: cbPossibleRight
         anchors.top: cbPossibleLeft.bottom
         anchors.topMargin: 5
-        anchors.left: tLabelRightGesture.right
-        anchors.leftMargin: 5
         anchors.right: parent.right
-        //x: tLabelRightGesture.x + tLabelRightGesture.width + 3
-        //y: tLabelRightGesture.y
-        //editable: false
         model: []
-        width: 0.5 * parent.width
+        width: cbPossibleLeft.width
         visible: false
         onCurrentTextChanged: setGesture(0)
     }
@@ -109,44 +105,47 @@ Rectangle {
         var spell = spell_text.substr(idx3 - idx, 1);
         console.log("setGesture", left, spell_text, idx1, idx2, idx, spell);
         Qt.mainWindow.changeGesture(spell, left);
-
     }
 
     function finishCreation() {
-        console.log("Warlock.qml finishCreation", w_possible_spells)
+        console.log("Warlock.qml finishCreation", w_possible_spells, w_left_g, w_right_g)
         //rWarlock.width = tLabelRight.width + 12 + tLabelRightGesture.width + cbPossibleRight.width
         rWarlock.height = tLabel.height + 15 + cbPossibleLeft.height + cbPossibleRight.height;
-        if (w_possible_spells.length == 0) {
-            return;
-        }
-        var arr = w_possible_spells.split("#");
-        var arr_l = [];
-        var arr_r = [];
-        for(var i = 0, Ln = arr.length; i < Ln; ++i) {
-            if (!arr[i] || arr[i] === '' || arr[i] === ' ') {
-                continue;
+        var is_possible = w_possible_spells.length > 0;
+        if (is_possible) {
+            var arr = w_possible_spells.split("#");
+            var arr_l = [];
+            var arr_r = [];
+            for(var i = 0, Ln = arr.length; i < Ln; ++i) {
+                if (!arr[i] || arr[i] === '' || arr[i] === ' ') {
+                    continue;
+                }
+                var arr2 = arr[i].split(";");
+                if (arr2[0] === "L") {
+                    arr_l.push(arr2[1]);
+                } else if (arr2[0] === "R") {
+                    arr_r.push(arr2[1]);
+                }
             }
-            var arr2 = arr[i].split(";");
-            if (arr2[0] === "L") {
-                arr_l.push(arr2[1]);
-            } else if (arr2[0] === "R") {
-                arr_r.push(arr2[1]);
+            if (arr_l.length != 0) {
+                cbPossibleLeft.model = arr_l
+                cbPossibleLeft.visible = true
             }
-        }
-        if (arr_l.length != 0) {
-            cbPossibleLeft.model = arr_l
-            cbPossibleLeft.visible = true
-        }
-        if (arr_r.length != 0) {
-            cbPossibleRight.model = arr_r
-            cbPossibleRight.visible = true
+            if (arr_r.length != 0) {
+                cbPossibleRight.model = arr_r
+                cbPossibleRight.visible = true
+            }
         }
         var search_login = Qt.core.login + "";
         w_send_gestures = w_warlock_status.toLocaleLowerCase().indexOf(search_login.toLowerCase()) !== -1;
         if (w_send_gestures) {
-            tLabel.text = '* ' + w_warlock_status;
-            setGesture(1);
-            setGesture(0);
+            tLabel.color = "green";
+            if (is_possible) {
+                setGesture(1);
+                setGesture(0);
+            }
+        } else {
+            tLabel.color = "red";
         }
     }
 }

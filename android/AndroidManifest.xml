@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="net.is.games.WarlocksDuel" android:versionName="0.9.8" android:versionCode="14">
-    <application android:icon="@drawable/icon" android:label="Waving hands" android:name="org.qtproject.qt5.android.bindings.QtApplication">
-        <activity android:orientation="vertical" android:screenOrientation="portrait" android:label="Waving hands" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.qtproject.qt5.android.bindings.QtActivity">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="net.is.games.WarlocksDuel" android:versionName="0.9.9" android:versionCode="15">
+    <application android:icon="@drawable/icon" android:label="Spellcaster" android:name="org.qtproject.qt5.android.bindings.QtApplication">
+        <activity android:orientation="vertical" android:screenOrientation="portrait" android:label="Spellcaster" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.qtproject.qt5.android.bindings.QtActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
