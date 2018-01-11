@@ -6,6 +6,7 @@ import QtQuick 2.1
 import QtQuick.Window 2.1
 import QtQuick.Dialogs 1.2
 import QtQuick.Controls 2.3
+import QtQuick.Layouts 1.3
 
 import ua.sp.warloksduel 1.8
 import ua.sp.warlockdictionary 1.0
@@ -79,156 +80,168 @@ Window {
             anchors.bottom: tbMain.top
             visible: false
 
-            ScrollView {
-                id: svReadyBattle
+            Rectangle {
+                id: rsvReadyBattle
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: rGesture.top
 
-                Rectangle {
-                    id: lvReadyBattle
-                    x: 0
-                    y: 0
-                    width: rReadyBattle.width
 
-                    Text {
-                          id: tStepMsg
-                          anchors.left: parent.left
-                          anchors.right: parent.right
-                          anchors.top: parent.top
-                          anchors.topMargin: 8
-                          ////font.pointSize: 13 * height_koeff
-                          wrapMode: Text.WordWrap
-                          textFormat: Text.RichText
-                          //elide: Text.ElideMiddle
-                          text: ""
-                    }
-
-                    Text {
-                        id: tMonsterList
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: tStepMsg.bottom
-                        anchors.topMargin: 8
-                        text: ""
-                        ////font.pointSize: 13 * height_koeff
-                        textFormat: Text.RichText
-                     }
+                ScrollView {
+                    id: svReadyBattle
+                    anchors.fill: parent
+                    clip: true
 
                     Rectangle {
-                        id: svWarlocks
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: tMonsterList.bottom
-                        anchors.topMargin: 8
-                        border.width: 1
-                        border.color: "grey"
-                        radius: 3
-                    }
+                        id: lvReadyBattle
+                        x: 0
+                        y: 0
+                        width: rsvReadyBattle.width
+                        height: 2000
 
-                    Rectangle {
-                        id: svMonsterOrders
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: svWarlocks.bottom
-                        anchors.topMargin: 8
-                        border.width: 1
-                        border.color: "green"
-                        radius: 3
-                    }
-
-                    Rectangle {
-                        id: lvaoDelay
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: svMonsterOrders.bottom
-                        anchors.topMargin: 8
-                        visible: false
 
                         Text {
-                            id: tDelayLabel
-                            anchors.left: parent.left
-                            anchors.verticalCenter: cbDelay.verticalCenter
-                            text: warlockDictionary.getStringByCode("DelaySpell")
-                            ////font.pointSize: 13 * height_koeff
+                              id: tStepMsg
+                              anchors.left: parent.left
+                              anchors.right: parent.right
+                              anchors.top: parent.top
+                              anchors.topMargin: 8
+                              ////font.pointSize: 13 * height_koeff
+                              wrapMode: Text.WordWrap
+                              textFormat: Text.RichText
+                              //elide: Text.ElideMiddle
+                              text: ""
                         }
-
-                        ComboBox {
-                            id: cbDelay
-                            anchors.left: tDelayLabel.right
-                            anchors.leftMargin: 8
-                            anchors.top: parent.top
-                            width: 0.5 * parent.width
-                            model: [warlockDictionary.getStringByCode("Neither"),
-                                    warlockDictionary.getStringByCode("Left"),
-                                    warlockDictionary.getStringByCode("Right"),
-                                    warlockDictionary.getStringByCode("Two-handed")]
-                        }
-                    }
-
-                    Rectangle {
-                        id: lvaoPermanent
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: lvaoDelay.bottom
-                        anchors.topMargin: 8
-                        visible: false
 
                         Text {
-                            id: tPermanentLabel
+                            id: tMonsterList
                             anchors.left: parent.left
-                            anchors.verticalCenter: cbPermanent.verticalCenter
-                            text: warlockDictionary.getStringByCode("MakeSpellPermanent")
-                            ////font.pointSize: 13 * height_koeff
-                        }
-
-                        ComboBox {
-                            id: cbPermanent
-                            anchors.left: tPermanentLabel.right
-                            anchors.leftMargin: 8
-                            anchors.top: parent.top
-                            width: 0.5 * parent.width
-                            model: [warlockDictionary.getStringByCode("Neither"),
-                                    warlockDictionary.getStringByCode("Left"),
-                                    warlockDictionary.getStringByCode("Right"),
-                                    warlockDictionary.getStringByCode("Two-handed")]
-                        }
-                    }
-
-                    Rectangle {
-                        id: lvaoFire
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: lvaoPermanent.bottom
-                        anchors.topMargin: 8
-                        visible: false
-
-                        CheckBox {
-                            id: cbFire
-                            anchors.left: parent.left
-                            anchors.leftMargin: 8
-                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.top: tStepMsg.bottom
+                            anchors.topMargin: 8
                             text: ""
-                            //////font.pointSize: 13
+                            ////font.pointSize: 13 * height_koeff
+                            textFormat: Text.RichText
+                         }
+
+                        Rectangle {
+                            id: svWarlocks
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: tMonsterList.bottom
+                            anchors.topMargin: 8
+                            border.width: 1
+                            border.color: "grey"
+                            radius: 3
                         }
-                    }
 
-                    Rectangle {
-                        id: lvaoCharmPerson
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: lvaoFire.bottom
-                        anchors.topMargin: 8
+                        Rectangle {
+                            id: svMonsterOrders
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: svWarlocks.bottom
+                            anchors.topMargin: 8
+                            border.width: 1
+                            border.color: "green"
+                            radius: 3
+                        }
 
-                    }
+                        Rectangle {
+                            id: lvaoDelay
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: svMonsterOrders.bottom
+                            anchors.topMargin: 8
+                            height: cbDelay.height
+                            visible: false
 
-                    Rectangle {
-                        id: lvaoParalyze
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: lvaoCharmPerson.bottom
-                        anchors.topMargin: 8
+                            Text {
+                                id: tDelayLabel
+                                anchors.left: parent.left
+                                anchors.verticalCenter: cbDelay.verticalCenter
+                                text: warlockDictionary.getStringByCode("DelaySpell")
+                                ////font.pointSize: 13 * height_koeff
+                            }
+
+                            ComboBox {
+                                id: cbDelay
+                                anchors.left: tDelayLabel.right
+                                anchors.leftMargin: 8
+                                anchors.top: parent.top
+                                width: 0.5 * parent.width
+                                model: [warlockDictionary.getStringByCode("Neither"),
+                                        warlockDictionary.getStringByCode("Left"),
+                                        warlockDictionary.getStringByCode("Right"),
+                                        warlockDictionary.getStringByCode("Two-handed")]
+                            }
+                        }
+
+                        Rectangle {
+                            id: lvaoPermanent
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: lvaoDelay.bottom
+                            anchors.topMargin: 8
+                            height: cbPermanent.height
+                            visible: false
+
+                            Text {
+                                id: tPermanentLabel
+                                anchors.left: parent.left
+                                anchors.verticalCenter: cbPermanent.verticalCenter
+                                text: warlockDictionary.getStringByCode("MakeSpellPermanent")
+                                ////font.pointSize: 13 * height_koeff
+                            }
+
+                            ComboBox {
+                                id: cbPermanent
+                                anchors.left: tPermanentLabel.right
+                                anchors.leftMargin: 8
+                                anchors.top: parent.top
+                                width: 0.5 * parent.width
+                                model: [warlockDictionary.getStringByCode("Neither"),
+                                        warlockDictionary.getStringByCode("Left"),
+                                        warlockDictionary.getStringByCode("Right"),
+                                        warlockDictionary.getStringByCode("Two-handed")]
+                            }
+                        }
+
+                        Rectangle {
+                            id: lvaoFire
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: lvaoPermanent.bottom
+                            anchors.topMargin: 8
+                            height: cbFire.height
+                            visible: false
+
+                            CheckBox {
+                                id: cbFire
+                                anchors.left: parent.left
+                                anchors.leftMargin: 8
+                                anchors.top: parent.top
+                                text: ""
+                                //////font.pointSize: 13
+                            }
+                        }
+
+                        Rectangle {
+                            id: lvaoCharmPerson
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: lvaoFire.bottom
+                            anchors.topMargin: 8
+
+                        }
+
+                        Rectangle {
+                            id: lvaoParalyze
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: lvaoCharmPerson.bottom
+                            anchors.topMargin: 8
+                        }
                     }
                 }
             }
@@ -257,18 +270,19 @@ Window {
                         id: tLHGLabel
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 0.17 * parent.width
-                        text: warlockDictionary.getStringByCode("LeftHand")
+                        width: 0.05 * parent.width
+                        text: "L"
+                        //text: warlockDictionary.getStringByCode("LeftHand")
                         ////font.pointSize: 13 * height_koeff
                     }
 
                     ComboBox {
                         id: cbLHG
                         anchors.left: tLHGLabel.right
-                        anchors.leftMargin: 0.01 * parent.width
+                        //anchors.leftMargin: 0.01 * parent.width
                         anchors.verticalCenter: parent.verticalCenter
                         //width: 75
-                        width: 0.1 * parent.width
+                        width: 0.25 * parent.width
                         //onCurrentIndexChanged: MUtils.getPossibleSpell(0)
                         onCurrentTextChanged: MUtils.getPossibleSpell(0)
                         model: [" "]
@@ -277,7 +291,7 @@ Window {
                     ComboBox {
                         id: cbLHS
                         anchors.left: cbLHG.right
-                        anchors.leftMargin: 0.01 * parent.width
+                        //anchors.leftMargin: 0.01 * parent.width
                         anchors.verticalCenter: parent.verticalCenter
                         //x: cbLHG.x + cbLHG.width + 3
                         //y: 0
@@ -289,7 +303,7 @@ Window {
                     ComboBox {
                         id: cbLHT
                         anchors.left: cbLHS.right
-                        anchors.leftMargin: 0.01 * parent.width
+                        //anchors.leftMargin: 0.01 * parent.width
                         anchors.verticalCenter: parent.verticalCenter
                         //x: cbLHS.x + cbLHS.width + 3
                         //y: 0
@@ -311,17 +325,18 @@ Window {
                         id: tRHGLabel
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 0.17 * parent.width
-                        text: warlockDictionary.getStringByCode("RightHand")
+                        width: 0.05 * parent.width
+                        text: "R"
+                        //text: warlockDictionary.getStringByCode("RightHand")
                         ////font.pointSize: 13 * height_koeff
                     }
 
                     ComboBox {
                         id: cbRHG
                         anchors.left: tRHGLabel.right
-                        anchors.leftMargin: 0.01 * parent.width
+                        //anchors.leftMargin: 0.01 * parent.width
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 0.1 * parent.width
+                        width: 0.25 * parent.width
                         model: [" "]
                         //onCurrentIndexChanged: MUtils.getPossibleSpell(1)
                         onCurrentTextChanged: MUtils.getPossibleSpell(1)
@@ -330,7 +345,7 @@ Window {
                     ComboBox {
                         id: cbRHS
                         anchors.left: cbRHG.right
-                        anchors.leftMargin: 0.01 * parent.width
+                        //anchors.leftMargin: 0.01 * parent.width
                         anchors.verticalCenter: parent.verticalCenter
                         width: 0.4 * parent.width
                         model: [" "]
@@ -339,7 +354,7 @@ Window {
                     ComboBox {
                         id: cbRHT
                         anchors.left: cbRHS.right
-                        anchors.leftMargin: 0.01 * parent.width
+                        //anchors.leftMargin: 0.01 * parent.width
                         anchors.verticalCenter: parent.verticalCenter
                         width: 0.3 * parent.width
                         model: [" "]
@@ -354,8 +369,6 @@ Window {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                //x: 0
-                //y: tbMain.y - rSendOrder.height
                 border.width: 1
                 border.color: "grey"
                 radius: 3
@@ -606,82 +619,87 @@ Window {
             anchors.bottom: parent.bottom
             height: 0.1 * parent.height
 
+            RowLayout {
+                anchors.fill: parent
 
-            ToolButton {
-                id: tbList
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.leftMargin: 0.01 * parent.width
-                height: 0.13 * parent.width
-                width: 0.13 * parent.width
-                icon.source:  "res/list.png"
-                onClicked: MUtils.showList()
-            }
+                ToolButton {
+                    id: tbList
+                    /*anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0.01 * parent.width
+                    height: 0.13 * parent.width
+                    width: 0.13 * parent.width*/
+                    // iconSource:"res/list.png"
+                    icon.source:  "res/list.png"
+                    onClicked: MUtils.showList()
+                }
 
-            ToolButton {
-                id: tbFight
-                anchors.top: parent.top
-                anchors.left: tbList.right
-                anchors.leftMargin: 0.01 * parent.width
-                height: tbList.height
-                width: tbList.width
-                icon.source: "res/fight.png"
-                onClicked: MUtils.showDuel()
-            }
+                ToolButton {
+                    id: tbFight
+                    /*anchors.top: parent.top
+                    anchors.left: tbList.right
+                    anchors.leftMargin: 0.01 * parent.width
+                    height: tbList.height
+                    width: tbList.width*/
+                    icon.source: "res/fight.png"
+                    onClicked: MUtils.showDuel()
+                }
 
-            ToolButton {
-                id: tbBook
-                anchors.top: parent.top
-                anchors.left: tbFight.right
-                anchors.leftMargin: 0.01 * parent.width
-                height: tbList.height
-                width: tbList.width
-                icon.source: "res/spellbook.png"
-                onClicked: MUtils.showSpellBook()
-            }
+                ToolButton {
+                    id: tbBook
+                    /*anchors.top: parent.top
+                    anchors.left: tbFight.right
+                    anchors.leftMargin: 0.01 * parent.width
+                    height: tbList.height
+                    width: tbList.width*/
+                    icon.source: "res/spellbook.png"
+                    onClicked: MUtils.showSpellBook()
+                }
 
-            ToolButton {
-                id: tbUser
-                anchors.top: parent.top
-                anchors.left: tbBook.right
-                anchors.leftMargin: 0.01 * parent.width
-                height: tbList.height
-                width: tbList.width
-                icon.source: "res/user.png"
-                onClicked: showUserProfile()
-            }
+                ToolButton {
+                    id: tbUser
+                    /*anchors.top: parent.top
+                    anchors.left: tbBook.right
+                    anchors.leftMargin: 0.01 * parent.width
+                    height: tbList.height
+                    width: tbList.width*/
+                    icon.source: "res/user.png"
+                    onClicked: showUserProfile()
+                }
 
-            ToolButton {
-                id: tbAdd
-                anchors.top: parent.top
-                anchors.left: tbUser.right
-                anchors.leftMargin: 0.01 * parent.width
-                height: tbList.height
-                width: tbList.width
-                icon.source: "res/add.png"
-                onClicked: addDuel()
-            }
+                ToolButton {
+                    id: tbAdd
+                    /*anchors.top: parent.top
+                    anchors.left: tbUser.right
+                    anchors.leftMargin: 0.01 * parent.width
+                    height: tbList.height
+                    width: tbList.width*/
+                    icon.source: "res/add.png"
+                    onClicked: addDuel()
+                }
 
-            ToolButton {
-                id: tbRefresh
-                anchors.top: parent.top
-                anchors.left: tbAdd.right
-                anchors.leftMargin: 0.01 * parent.width
-                height: tbList.height
-                width: tbList.width
-                icon.source: "res/refresh.png"
-                onClicked: refreshData()
-            }
+                ToolButton {
+                    id: tbRefresh
+                    /*anchors.top: parent.top
+                    anchors.left: tbAdd.right
+                    anchors.leftMargin: 0.01 * parent.width
+                    height: tbList.height
+                    width: tbList.width*/
+                    icon.source: "res/refresh.png"
+                    onClicked: refreshData()
+                }
 
-            ToolButton {
-                id: tbSettings
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.rightMargin: 0.01 * parent.width
-                height: tbList.height
-                width: tbList.width
-                icon.source: "res/settings.png"
-                onClicked: showMainMenu()
+                ToolButton {
+                    id: tbSettings
+                    /*anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0.01 * parent.width
+                    height: tbList.height
+                    width: tbList.width*/
+                    icon.source: "res/settings.png"
+                    onClicked: showMainMenu()
+                    Layout.alignment: Qt.AlignRight
+                }
             }
         }
     }
@@ -842,6 +860,7 @@ Window {
         onTimerStateChanged: changeTimerState()
         onChallengeListChanged: MUtils.loadChallengesList(false)
         onSpellListHtmlChanged: MUtils.loadSpellList()
+        onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
     }
 
     property var warlockDictionary: WarlockDictionary

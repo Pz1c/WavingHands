@@ -242,9 +242,9 @@ function showReadyBattle() {
 }
 
 function flatMenuItem() {
-    tbList.y = rChallengeList.visible ? 6 : 3
+    /*tbList.y = rChallengeList.visible ? 6 : 3
     tbBook.y = rSpellList.visible ? 6 : 3
-    tbFight.y = rReadyBattle.visible ? 6 : 3
+    tbFight.y = rReadyBattle.visible ? 6 : 3*/
 }
 
 function showDuel() {
@@ -298,7 +298,7 @@ function cleanOrders() {
     tStepMsg.text = ""
     tMonsterList.text = ''
     //tWarlockList.text = ''
-    tChatMessage.text = ''
+    teChatMsg.text = ''
     cleanChildren(svMonsterOrders)
     cleanChildren(svWarlocks)
     cleanChildren(lvaoCharmPerson)
@@ -567,6 +567,8 @@ function changeGesture(Gesture, Left) {
 
 function resizeMonsterOrderWnd(height) {
     //console.log("resizeMonsterOrderWnd", height, " rMonsterOrders.height: ", rMonsterOrders.height)
+    svMonsterOrders.height = height
+    //console.log("resizeMonsterOrderWnd", height, " rMonsterOrders.height: ", rMonsterOrders.height)
     /*if (rMonsterOrders.height > height) {
         rMonsterOrders.height = height
     }*/
@@ -574,6 +576,7 @@ function resizeMonsterOrderWnd(height) {
 
 function resizeWarlockWnd(height) {
     //console.log("resizeWarlockWnd", height, " rWarlock.height: ", rWarlocks.height)
+    svWarlocks.height = height
     /*if (rWarlocks.height > height) {
         rWarlocks.height = height
         //svrWarlocks.height = height
@@ -582,19 +585,19 @@ function resizeWarlockWnd(height) {
 
 function resizeAddOrdersWnd(height, type) {
     //console.log("resizeAddOrdersWnd", height, " type: ", type)
-    /*
+
     if (type === "cp") {
         lvaoCharmPerson.height = height;
     } else if (type === "p") {
         lvaoParalyze.height = height;
     } else if (type === "d") {
-        //lvaoParalyze.height = height;
+        lvaoParalyze.height = height;
     } else if (type === "f") {
-        //lvaoParalyze.height = height;
+        lvaoParalyze.height = height;
     } if (type === "pr") {
-        //lvaoParalyze.height = height;
+        lvaoParalyze.height = height;
     }
-
+/*
     var total_height = lvaoCharmPerson.height + lvaoParalyze.height;
     if (lvaoDelay.visible) {
         total_height += lvaoDelay.height;
@@ -615,10 +618,12 @@ function resizeAddOrdersWnd(height, type) {
 function prepareStepMessage() {
     console.log("prepareStepMessage: " + Qt.core.finishedBattle)
     tStepMsg.text = Qt.core.finishedBattle
+    tStepMsg.height = tStepMsg.contentHeight
 }
 
 function prepareMonsterList() {
     tMonsterList.text = Qt.core.monsters;
+    tMonsterList.height = tMonsterList.contentHeight
 }
 
 function prepareWarlockList() {

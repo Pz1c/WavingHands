@@ -721,10 +721,9 @@ void QWarloksDuelCore::slotReadyRead() {
             break;
     }
 
-    if (processData(data, statusCode, url, new_url.toString())) {
-        _isLoading = false;
-        emit isLoadingChanged();
-    }
+    processData(data, statusCode, url, new_url.toString());
+    _isLoading = false;
+    emit isLoadingChanged();
 }
 
 void QWarloksDuelCore::slotError(QNetworkReply::NetworkError error) {
