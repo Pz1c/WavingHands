@@ -46,8 +46,8 @@ Item {
     // This rectangle is the actual popup
     Rectangle {
         id: dialogWindow
-        width: 8 * parent.width / 10
-        height: 8 * parent.height / 10
+        width: 0.95 * parent.width
+        height: 0.9 * parent.height
         radius: 10
         anchors.verticalCenterOffset: -30
         anchors.horizontalCenterOffset: 0
@@ -167,8 +167,8 @@ Item {
     }
 
     function initFields() {
-        Qt.mainWindow.storeWnd(dMainItem)
-        tErrMsg.text = Qt.core.finishedBattle
+        Qt.mainWindow.storeWnd(dMainItem);
+        tErrMsg.text = Qt.core.finishedBattle;
     }
 
     Component.onCompleted: initFields()
