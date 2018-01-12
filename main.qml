@@ -5,7 +5,8 @@
 import QtQuick 2.1
 import QtQuick.Window 2.1
 import QtQuick.Dialogs 1.2
-import QtQuick.Controls 2.3
+import QtQuick.Controls 1.4 as Controls1
+import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 
 import ua.sp.warloksduel 1.8
@@ -54,7 +55,7 @@ Window {
                     closeChild();
                 } else {
                     action_send_order = false;
-                    mdNoGesture.text = dict.getStringByCode("ConfirmExit")
+                    mdNoGesture.text = warlockDictionary.getStringByCode("ConfirmExit")
                     mdNoGesture.visible = true
                 }
             }
@@ -88,7 +89,7 @@ Window {
                 anchors.bottom: rGesture.top
 
 
-                ScrollView {
+                Controls1.ScrollView {
                     id: svReadyBattle
                     anchors.fill: parent
                     clip: true
@@ -142,9 +143,9 @@ Window {
                             anchors.right: parent.right
                             anchors.top: svWarlocks.bottom
                             anchors.topMargin: 8
-                            border.width: 1
-                            border.color: "green"
-                            radius: 3
+                            //border.width: 1
+                            //border.color: "red"
+                            //radius: 3
                         }
 
                         Rectangle {
@@ -155,6 +156,9 @@ Window {
                             anchors.topMargin: 8
                             height: cbDelay.height
                             visible: false
+                            //border.width: 1
+                            //border.color: "blue"
+                            //radius: 3
 
                             Text {
                                 id: tDelayLabel
@@ -629,8 +633,9 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: 0.13 * parent.width
                     width: 0.13 * parent.width*/
-                    // iconSource:"res/list.png"
-                    icon.source:  "res/list.png"
+                    //iconSource:"res/list.png"
+                    //icon.source:  "res/list.png"
+
                     onClicked: MUtils.showList()
                 }
 
@@ -641,7 +646,8 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    icon.source: "res/fight.png"
+                    //icon.source: "res/fight.png"
+                    //iconSource: "res/fight.png"
                     onClicked: MUtils.showDuel()
                 }
 
@@ -652,7 +658,8 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    icon.source: "res/spellbook.png"
+                    //icon.source: "res/spellbook.png"
+                    //iconSource: "res/spellbook.png"
                     onClicked: MUtils.showSpellBook()
                 }
 
@@ -663,7 +670,8 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    icon.source: "res/user.png"
+                    //icon.source: "res/user.png"
+                    //iconSource: "res/user.png"
                     onClicked: showUserProfile()
                 }
 
@@ -674,7 +682,8 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    icon.source: "res/add.png"
+                    //icon.source: "res/add.png"
+                    //iconSource: "res/add.png"
                     onClicked: addDuel()
                 }
 
@@ -685,7 +694,8 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    icon.source: "res/refresh.png"
+                    //icon.source: "res/refresh.png"
+                    //iconSource: "res/refresh.png"
                     onClicked: refreshData()
                 }
 
@@ -696,7 +706,8 @@ Window {
                     anchors.rightMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    icon.source: "res/settings.png"
+                    //icon.source: "res/settings.png"
+                    //iconSource: "res/settings.png"
                     onClicked: showMainMenu()
                     Layout.alignment: Qt.AlignRight
                 }
@@ -855,7 +866,10 @@ Window {
         onIsLoadingChanged: MUtils.isLoadingChanged()
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle()
-        onRegisterNewUserChanged: hideNewUserMenu()
+        onRegisterNewUserChanged: {
+                Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "Hi all, it's my first battle, so be friendly!");
+                hideNewUserMenu();
+            }
         onOrderSubmitedChanged: MUtils.cleanOrders()
         onTimerStateChanged: changeTimerState()
         onChallengeListChanged: MUtils.loadChallengesList(false)

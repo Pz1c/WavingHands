@@ -288,25 +288,25 @@ function prepareButton(state) {
 }
 
 function cleanOrders() {
-    console.log("cleanOrders")
-    cbLHG.model = [" "]
-    cbRHG.model = [" "]
-    cbLHS.model = [" "]
-    cbRHS.model = [" "]
-    cbLHT.model = [" "]
-    cbRHT.model = [" "]
-    tStepMsg.text = ""
-    tMonsterList.text = ''
-    //tWarlockList.text = ''
-    teChatMsg.text = ''
-    cleanChildren(svMonsterOrders)
-    cleanChildren(svWarlocks)
-    cleanChildren(lvaoCharmPerson)
-    cleanChildren(lvaoParalyze)
-    lvaoDelay.visible = false
-    lvaoFire.visible = false
-    lvaoPermanent.visible = false
-    prepareButton(0)
+    console.log("cleanOrders");
+    cbLHG.model = [" "];
+    cbRHG.model = [" "];
+    cbLHS.model = [" "];
+    cbRHS.model = [" "];
+    cbLHT.model = [" "];
+    cbRHT.model = [" "];
+    tStepMsg.text = "";
+    tMonsterList.text = '';
+    //tWarlockList.text = '';
+    teChatMsg.text = '';
+    cleanChildren(svMonsterOrders);
+    cleanChildren(svWarlocks);
+    cleanChildren(lvaoCharmPerson);
+    cleanChildren(lvaoParalyze);
+    lvaoDelay.visible = false;
+    lvaoFire.visible = false;
+    lvaoPermanent.visible = false;
+    prepareButton(0);
 }
 
 function prepareFire(fire) {
@@ -591,13 +591,13 @@ function resizeAddOrdersWnd(height, type) {
     } else if (type === "p") {
         lvaoParalyze.height = height;
     } else if (type === "d") {
-        lvaoParalyze.height = height;
+        lvaoDelay.height = height;
     } else if (type === "f") {
-        lvaoParalyze.height = height;
+        lvaoFire.height = height;
     } if (type === "pr") {
-        lvaoParalyze.height = height;
+        lvaoPermanent.height = height;
     }
-/*
+
     var total_height = lvaoCharmPerson.height + lvaoParalyze.height;
     if (lvaoDelay.visible) {
         total_height += lvaoDelay.height;
@@ -608,11 +608,13 @@ function resizeAddOrdersWnd(height, type) {
     if (lvaoPermanent.visible) {
         total_height += lvaoPermanent.height;
     }
+    total_height += tStepMsg.height;
+    total_height += tMonsterList.height;
+    total_height += svWarlocks.height;
+    total_height += svMonsterOrders.height;
 
-    console.log("total_height", total_height, "rAdditionalOrders.height", rAdditionalOrders.height)
-    if (rAdditionalOrders.height == 0 || rAdditionalOrders.height > total_height || rAdditionalOrders.height < 150) {
-        rAdditionalOrders.height = total_height
-    }*/
+    console.log("total_height", total_height);
+    lvReadyBattle.height = total_height;
 }
 
 function prepareStepMessage() {
