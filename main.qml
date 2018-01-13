@@ -6,7 +6,8 @@ import QtQuick 2.1
 import QtQuick.Window 2.1
 import QtQuick.Dialogs 1.2
 import QtQuick.Controls 1.4 as Controls1
-import QtQuick.Controls 2.0
+//import QtQuick.Controls 2.0
+import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.3
 
 import ua.sp.warloksduel 1.8
@@ -461,21 +462,46 @@ Window {
                     anchors.fill: parent
                     model: battles
 
-                    delegate: Item {
+                    delegate: Rectangle {
                         id: lvdItem
-                        height: lvdItemText.height + lvdItemAccept.height + 0.01 * mainWindow.height
+                        height: rlvdItemTitle.height * 2 + lvdItemText.height + 0.01 * mainWindow.height * 2
                         width: mainWindow.width
+
+
+                        Rectangle {
+                            id: rlvdItemTitle
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.topMargin: 0.01 * mainWindow.height
+                            height: lvdItemTitle.height + 0.01 * mainWindow.height
+                            color: "#c6e5bc"
+
+                            Text {
+                                id: lvdItemTitle
+                                anchors.left: parent.left
+                                anchors.leftMargin: 0.05 * parent.width
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.right: parent.right
+                                //anchors.top: parent.top
+                                //anchors.topMargin: 0.01 * mainWindow.height
+                                //////font.pointSize: 13 * height_koeff
+                                wrapMode: Text.WordWrap
+                                font.bold: true
+                                text: battles[index].logins
+                            }
+                        }
 
                         Text {
                             id: lvdItemText
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            anchors.top: parent.top
+                            anchors.top: rlvdItemTitle.bottom
                             anchors.topMargin: 0.01 * mainWindow.height
                             //////font.pointSize: 13 * height_koeff
                             wrapMode: Text.WordWrap
                             // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
-                            text: battles[index].logins + ".\n" + battles[index].level + " " +
+                            text: battles[index].level + " " +
                              (battles[index].fast === 1 ? "Fast " : "") + (battles[index].parafc === 1? "ParaFC " : "") +
                              (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + battles[index].desc //*/
                         }
@@ -486,12 +512,12 @@ Window {
                             anchors.right: parent.right
                             anchors.top: lvdItemText.bottom
                             //anchors.bottom: parent.bottom
-                            height: 0.05 * mainWindow.height
+                            height: rlvdItemTitle.height
 
                             color: ma_accept.pressed ? "blue" : "lightblue"
                             radius: 7
-                            border.width: 0
-                            border.color: "blue"
+                            border.width: 1
+                            border.color: "lightblue"
 
                             Text {
                                 id: label_order_up
@@ -634,7 +660,7 @@ Window {
                     height: 0.13 * parent.width
                     width: 0.13 * parent.width*/
                     //iconSource:"res/list.png"
-                    //icon.source:  "res/list.png"
+                    icon.source: "res/list.png"
 
                     onClicked: MUtils.showList()
                 }
@@ -646,7 +672,7 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    //icon.source: "res/fight.png"
+                    icon.source: "res/fight.png"
                     //iconSource: "res/fight.png"
                     onClicked: MUtils.showDuel()
                 }
@@ -658,7 +684,7 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    //icon.source: "res/spellbook.png"
+                    icon.source: "res/spellbook.png"
                     //iconSource: "res/spellbook.png"
                     onClicked: MUtils.showSpellBook()
                 }
@@ -670,7 +696,7 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    //icon.source: "res/user.png"
+                    icon.source: "res/user.png"
                     //iconSource: "res/user.png"
                     onClicked: showUserProfile()
                 }
@@ -682,7 +708,7 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    //icon.source: "res/add.png"
+                    icon.source: "res/add.png"
                     //iconSource: "res/add.png"
                     onClicked: addDuel()
                 }
@@ -694,7 +720,7 @@ Window {
                     anchors.leftMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    //icon.source: "res/refresh.png"
+                    icon.source: "res/refresh.png"
                     //iconSource: "res/refresh.png"
                     onClicked: refreshData()
                 }
@@ -706,7 +732,7 @@ Window {
                     anchors.rightMargin: 0.01 * parent.width
                     height: tbList.height
                     width: tbList.width*/
-                    //icon.source: "res/settings.png"
+                    icon.source: "res/settings.png"
                     //iconSource: "res/settings.png"
                     onClicked: showMainMenu()
                     Layout.alignment: Qt.AlignRight

@@ -234,7 +234,10 @@ QStringList QWarlockSpellChecker::getStriktSpellsList(QString left, QString righ
     return res;
 }
 
-QString QWarlockSpellChecker::checkSpells(QString left, QString right, bool strikt, bool for_print) {
+QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool strikt, bool for_print) {
+    qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right << strikt << for_print;
+    QString left = Left.replace(" ", "");
+    QString right = Right.replace(" ", "");
     QStringList sl;
     if (strikt) {
         sl = getStriktSpellsList(left, right);

@@ -227,8 +227,8 @@ function showReadyBattle() {
     getPossibleSpell(0)
     getPossibleSpell(1)
     prepareStepMessage()
-    prepareWarlockList()
     prepareMonsterList()
+    prepareWarlockList()
     prepareTargets(Qt.core.targets)
     createMonsterTarget(Qt.core.monsterCommandList)
     prepareCharmList(Qt.core.charmPerson)
@@ -614,18 +614,25 @@ function resizeAddOrdersWnd(height, type) {
     total_height += svMonsterOrders.height;
 
     console.log("total_height", total_height);
-    lvReadyBattle.height = total_height;
+    lvReadyBattle.height = total_height + 100;
 }
 
 function prepareStepMessage() {
-    console.log("prepareStepMessage: " + Qt.core.finishedBattle)
     tStepMsg.text = Qt.core.finishedBattle
+    console.log("prepareStepMessage", tStepMsg.text, tStepMsg.contentHeight, tStepMsg.height);
     tStepMsg.height = tStepMsg.contentHeight
+    if (tStepMsg.text === '') {
+        tStepMsg.height = 0;
+    }
 }
 
 function prepareMonsterList() {
     tMonsterList.text = Qt.core.monsters;
+    console.log("prepareMonsterList", tMonsterList.text, tMonsterList.contentHeight, tMonsterList.height);
     tMonsterList.height = tMonsterList.contentHeight
+    if (tMonsterList.text === '') {
+        tMonsterList.height = 0;
+    }
 }
 
 function prepareWarlockList() {

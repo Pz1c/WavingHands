@@ -157,7 +157,11 @@ Item {
 
             TextEdit {
                 id: tiDescription
-                anchors.centerIn: parent
+                anchors.fill: parent
+                anchors.leftMargin: 0.01 * parent.width
+                anchors.rightMargin: 0.01 * parent.width
+                anchors.topMargin: 0.01 * parent.width
+                anchors.bottomMargin: 0.01 * parent.width
                 text: ""
                 //font.pointSize: 12 * height_koeff
                 inputMethodHints: Qt.ImhNoPredictiveText

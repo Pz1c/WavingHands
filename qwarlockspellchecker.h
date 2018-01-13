@@ -15,7 +15,7 @@ class QWarlockSpellChecker : public QObject
 public:
     explicit QWarlockSpellChecker(QObject *parent = 0);
 
-    QString checkSpells(QString left, QString right, bool strikt, bool for_print = true);
+    QString checkSpells(QString Left, QString Right, bool strikt, bool for_print = true);
     QStringList getPosibleSpellsList(QString left, QString right, bool for_print = false, bool only_best = false);
     QStringList getStriktSpellsList(QString left, QString right);
     QList<QValueName> Spells;

@@ -98,8 +98,8 @@ Rectangle {
         }
         var spell_text = left ? cbPossibleLeft.currentText : cbPossibleRight.currentText;
         //var gesture_text = left ? w_left_g : w_right_g;
-        var idx1 = spell_text.indexOf("(");
-        var idx2 = spell_text.indexOf(")");
+        var idx1 = spell_text.lastIndexOf("(");
+        var idx2 = spell_text.lastIndexOf(")");
         var idx = spell_text.substr(idx1 + 1, idx2 - idx1 - 1) * 1;
         var idx3 = spell_text.indexOf(" ");
         var spell = spell_text.substr(idx3 - idx, 1);
