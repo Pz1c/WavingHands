@@ -36,7 +36,7 @@ public:
     static QString parseChallenge(QString &Data);
     static QString parseChallengePart0(QString &Data);
     static QString parseChallengePart1(QString &Data);
-    static QString parseChallengePart2(QString &Data);
+    static QString parseChallengeDescription(QString &Data);
     static QString parseChallengePart3(QString &Data);
 
 };

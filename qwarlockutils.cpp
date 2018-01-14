@@ -272,7 +272,7 @@ QString QWarlockUtils::parseChallengePart1(QString &Data) {
     return res;
 }
 
-QString QWarlockUtils::parseChallengePart2(QString &Data) {
+QString QWarlockUtils::parseChallengeDescription(QString &Data) {
     QString res;
     //res.append(Data.toLower().indexOf("maladroit") == -1 ? "0#!#" : "1#!#");
     //res.append(Data.toLower().indexOf("parafc") == -1 ? "0#!#" : "1#!#");
@@ -304,7 +304,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     QString search2 = "</TD>";
     QStringList tmp;
     QString logins, description, battle_id;
-    int need_more = 0, fast = 0, friendly = -1;
+    int need_more = 0, fast = 0, friendly = -1, parafc = 0, maladroit = 0;
     int idx1 = 0, idx2, idx = -1;
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
@@ -328,7 +328,9 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
                 friendly = tmp.at(1).toInt();
                 break;
             case 2:
-                description = parseChallengePart2(part);
+                parafc = part.indexOf("ParaFC", 0, Qt::CaseInsensitive) == -1 ? 0 : 1;
+                maladroit = part.indexOf("Maladroit", 0, Qt::CaseInsensitive) == -1 ? 0 : 1;
+                description = parseChallengeDescription(part);
                 break;
             case 3:
                 battle_id = parseChallengePart3(part);
@@ -351,10 +353,10 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     }
     res = QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
             .arg(logins,
-                  QString::number(fast),
-                  level,
-                 description.indexOf("ParaFC", 0, Qt::CaseInsensitive) == -1 ? "0" : "1",
-                 description.indexOf("Maladroit", 0, Qt::CaseInsensitive) == -1 ? "0" : "1",
+                 QString::number(fast),
+                 level,
+                 QString::number(parafc),
+                 QString::number(maladroit),
                  description, battle_id);
             /*QString("<tr><td>%1</td><td><img src=\"/res/checkbox_%2.png\" width=25 height=25 /></td><td>%3</td><td><img src=\"/res/checkbox_%4.png\" width=25 height=25 /></td><td><img src=\"/res/checkbox_%5.png\" width=25 height=25 /></td><td><a href=\"/accept/%7\"><img src=\"/res/accept.png\" width=75 height=25></a></td></tr><tr><td colspan=5>%6</td></tr><tr><td colspan=6 align=center>***</td></tr>")
             .arg(logins,

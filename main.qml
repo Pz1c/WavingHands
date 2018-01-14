@@ -464,7 +464,7 @@ Window {
 
                     delegate: Rectangle {
                         id: lvdItem
-                        height: rlvdItemTitle.height * 2 + lvdItemText.height + 0.01 * mainWindow.height * 2
+                        height: rvChallengeState.height + rlvdItemTitle.height * 2 + lvdItemText.height + 0.01 * mainWindow.height * 3
                         width: mainWindow.width
 
 
@@ -492,18 +492,52 @@ Window {
                             }
                         }
 
-                        Text {
-                            id: lvdItemText
+                        RowLayout {
+                            id: rvChallengeState
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.top: rlvdItemTitle.bottom
                             anchors.topMargin: 0.01 * mainWindow.height
+
+                            Text {
+                                id: lvdItemLevel
+                                text: battles[index].level
+                            }
+
+                            CheckBox {
+                                id: cbItemFast
+                                enabled: false
+                                checked: battles[index].fast === 1
+                                text: warlockDictionary.getStringByCode("Fast")
+                            }
+
+                            CheckBox {
+                                id: cbItemParaFC
+                                enabled: false
+                                checked: battles[index].parafc === 1
+                                text: warlockDictionary.getStringByCode("ParaFC")
+                            }
+
+                            CheckBox {
+                                id: cbItemMaladroit
+                                enabled: false
+                                checked: battles[index].maladroit === 1
+                                text: warlockDictionary.getStringByCode("Maladroit")
+                            }
+                        }
+
+                        Text {
+                            id: lvdItemText
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: rvChallengeState.bottom
+                            anchors.topMargin: 0.01 * mainWindow.height
                             //////font.pointSize: 13 * height_koeff
                             wrapMode: Text.WordWrap
                             // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
-                            text: battles[index].level + " " +
+                            text: /*battles[index].level + " " +
                              (battles[index].fast === 1 ? "Fast " : "") + (battles[index].parafc === 1? "ParaFC " : "") +
-                             (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + battles[index].desc //*/
+                             (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + */battles[index].desc //*/
                         }
 
                         Rectangle {
