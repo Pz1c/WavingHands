@@ -584,7 +584,7 @@ function resizeWarlockWnd(height) {
 }
 
 function resizeAddOrdersWnd(height, type) {
-    //console.log("resizeAddOrdersWnd", height, " type: ", type)
+    console.log("resizeAddOrdersWnd", height, " type: ", type)
 
     if (type === "cp") {
         lvaoCharmPerson.height = height;
@@ -613,8 +613,9 @@ function resizeAddOrdersWnd(height, type) {
     total_height += svWarlocks.height;
     total_height += svMonsterOrders.height;
 
-    console.log("total_height", total_height);
-    lvReadyBattle.height = total_height + 100;
+    console.log("total_height", total_height, lvaoCharmPerson.height, lvaoParalyze.height, tStepMsg.height, tMonsterList.height, svWarlocks.height, svMonsterOrders.height,
+                (lvaoDelay.visible ? lvaoDelay.height : -1), (lvaoFire.visible ? lvaoFire.height : -1), (lvaoPermanent.visible ? lvaoPermanent.height : -1));
+    lvReadyBattle.contentHeight = total_height + 100;
 }
 
 function prepareStepMessage() {
@@ -664,7 +665,7 @@ function finishPrepareWarlockList() {
     }
     var arr = str_warlock_list.split("#;#")
     var curr_y = 0;
-    var total_heght = 0;
+    var total_height = 0;
     for(var i = 0, Ln = arr.length; i < Ln; ++i) {
         if (arr[i] === '') {
             continue;
@@ -680,15 +681,16 @@ function finishPrepareWarlockList() {
         console.log("svWarlocks.w: " + svWarlocks.width);
         console.log("svWarlocks.h: " + svWarlocks.height);
         curr_y += sprite.height;
-        if (i < 2) {
+        total_height += sprite.height;
+        /*if (i < 2) {
             if (total_heght < sprite.y + sprite.height + 3) {
                 total_heght = sprite.y + sprite.height + 3
             }
-        }
+        }*/
     }
-    svWarlocks.height = total_heght
+    //svWarlocks.height = total_height;
     //lvWarlocks.height = total_heght
-    resizeWarlockWnd(total_heght);
+    resizeWarlockWnd(total_height);
 }
 
 function cleanChildren(component) {

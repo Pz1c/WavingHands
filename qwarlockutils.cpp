@@ -98,7 +98,7 @@ bool QWarlockUtils::parseMonster(QString &Data, QList<QMonster *> &result, QStri
 bool QWarlockUtils::parseWarlock(QString &Data, QList<QWarlock *> &result, QString &error) {
     error.clear();
     QString name = getStringFromData(Data, "WIDTH=\"50%\"", "html\">", "</A>");
-    QString state = getStringFromData(Data, "Health", ":", "</TD");
+    QString state = getStringFromData(Data, "a href=\"/player/", "<TD CLASS=lightbg>", "</TD");
     QString lh = getStringFromData(Data, "LH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>").replace("&nbsp;", " ").replace("&gt;", ">");
     QString rh = getStringFromData(Data, "RH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>").replace("&nbsp;", " ").replace("&gt;", ">");
     QWarlock *res = new QWarlock(name, state, lh, rh);

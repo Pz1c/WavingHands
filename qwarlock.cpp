@@ -27,12 +27,12 @@ QString QWarlock::rightGestures() {
 QString QWarlock::separatedString(QString &posible_gestures) {
     int Ln = _leftGestures.length();
     QString l, r;
-    if (Ln <= 13) {
+    if (Ln <= WARLOCK_GESTURE_LENGTH) {
         l = _leftGestures;
         r = _rightGestures;
     } else {
-        l = _leftGestures.mid(Ln - 13, 13);
-        r = _rightGestures.mid(Ln - 13, 13);
+        l = _leftGestures.mid(Ln - WARLOCK_GESTURE_LENGTH, WARLOCK_GESTURE_LENGTH);
+        r = _rightGestures.mid(Ln - WARLOCK_GESTURE_LENGTH, WARLOCK_GESTURE_LENGTH);
     }
     return QString("%1 Health: %2#&#%3#&#%4#&#%5").arg(_name, _status, l, r, posible_gestures);
 }
