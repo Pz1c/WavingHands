@@ -31,3 +31,9 @@ include(deployment.pri)
 OTHER_FILES += \
     android/AndroidManifest.xml \
     android/project.properties
+
+contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
+    ANDROID_EXTRA_LIBS = \
+        C:/Users/Sergii/Dropbox/Work/Qt/WavingHands/../library/openssl/libcrypto.so \
+        $$PWD/../library/openssl/libssl.so
+}

@@ -26,9 +26,6 @@
         <file>res/fight.png</file>
         <file>res/spellbook.png</file>
         <file>html/spelllist_en.htm</file>
-        <file>res/accept.png</file>
-        <file>res/checkbox_0.png</file>
-        <file>res/checkbox_1.png</file>
         <file>warlock.qml</file>
         <file>img/reg.png</file>
         <file>edit_lang.qml</file>

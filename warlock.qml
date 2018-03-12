@@ -110,8 +110,9 @@ Rectangle {
     function finishCreation() {
         console.log("Warlock.qml finishCreation", w_possible_spells, w_left_g, w_right_g)
         //rWarlock.width = tLabelRight.width + 12 + tLabelRightGesture.width + cbPossibleRight.width
+        var dead_or_surrender = (w_warlock_status.indexOf("Surrendered") != -1) || (w_warlock_status.indexOf("Health: 0") != -1);
         rWarlock.height = tLabel.height + 15 + cbPossibleLeft.height + cbPossibleRight.height;
-        var is_possible = w_possible_spells.length > 0;
+        var is_possible = (w_possible_spells.length > 0) && !dead_or_surrender;
         if (is_possible) {
             var arr = w_possible_spells.split("#");
             var arr_l = [];
@@ -144,6 +145,8 @@ Rectangle {
                 setGesture(1);
                 setGesture(0);
             }
+        } else if (dead_or_surrender) {
+            tLabel.color = "grey";
         } else {
             tLabel.color = "red";
         }

@@ -90,17 +90,18 @@ Window {
                 anchors.bottom: rGesture.top
 
 
-                Controls1.ScrollView {
+                /*Controls1.*/ScrollView {
                     id: svReadyBattle
                     anchors.fill: parent
                     clip: true
 
-                    Rectangle {
+                    Flickable {
                         id: lvReadyBattle
-                        x: 0
-                        y: 0
-                        width: rsvReadyBattle.width
-                        height: 2000
+                        //x: 0
+                        //y: 0
+                        anchors.fill: parent
+                        contentWidth: rsvReadyBattle.width
+                        contentHeight: 2000
 
 
                         Text {

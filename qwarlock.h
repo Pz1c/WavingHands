@@ -5,6 +5,8 @@
 #include <QString>
 #include <QStringList>
 
+#define WARLOCK_GESTURE_LENGTH 8
+
 class QWarlock
 {
 public:
