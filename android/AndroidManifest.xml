@@ -1,10 +1,17 @@
 <?xml version="1.0"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="net.is.games.WarlocksDuel" android:versionName="1.0.1" android:versionCode="18">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="net.is.games.WarlocksDuel" android:versionName="1.0.3" android:versionCode="20">
     <application android:icon="@drawable/icon" android:label="Spellcaster" android:name="org.qtproject.qt5.android.bindings.QtApplication">
         <activity android:orientation="vertical" android:screenOrientation="portrait" android:label="Spellcaster" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.qtproject.qt5.android.bindings.QtActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data android:host="games.ravenblack.net" android:path="warlocks" android:scheme="https"/>
             </intent-filter>
             <meta-data android:value="-- %%INSERT_APP_LIB_NAME%% --" android:name="android.app.lib_name"/>
             <meta-data android:resource="@array/qt_sources" android:name="android.app.qt_sources_resource_id"/>
