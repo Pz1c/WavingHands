@@ -104,11 +104,12 @@ int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString
     return 0;
 }
 
-QStringList QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool for_print, bool only_best) {
+QStringList QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right) {
     QString gestures, spell_name, w_left, w_right;
     QStringList res_left;
     QStringList res_right;
-    QString spell_template = for_print ? "%1;%4 %2 (%3)" : "%1;%2;%3;%4;";
+    QString spell_template = "%1;%2;%3;%4;";
+    //bool only_best = false;
 
     foreach(QValueName vn, Spells) {
         gestures = vn.first;
@@ -132,7 +133,8 @@ QStringList QWarlockSpellChecker::getPosibleSpellsList(QString left, QString rig
             qDebug() << "right checkSpellPosible (" << w_right << ", " << w_left << ") " << gestures << r_turn_to_spell;
         }
 
-        if ((l_turn_to_spell > 0) && (!only_best || (r_turn_to_spell == 0) || (l_turn_to_spell < r_turn_to_spell))) {
+        //if ((l_turn_to_spell > 0) && (!only_best || (r_turn_to_spell == 0) || (l_turn_to_spell < r_turn_to_spell))) {
+        if (l_turn_to_spell > 0) {
             if (res_left.count() == 0) {
                 res_left.append(QString(spell_template).arg("L", spell_name, QString::number(l_turn_to_spell), gestures));
             } else {
@@ -234,15 +236,15 @@ QStringList QWarlockSpellChecker::getStriktSpellsList(QString left, QString righ
     return res;
 }
 
-QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool strikt, bool for_print) {
-    qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right << strikt << for_print;
+QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool strikt) {
+    qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right << strikt;
     QString left = Left.replace(" ", "");
     QString right = Right.replace(" ", "");
     QStringList sl;
     if (strikt) {
         sl = getStriktSpellsList(left, right);
     } else {
-        sl = getPosibleSpellsList(left, right, for_print);
+        sl = getPosibleSpellsList(left, right);
     }
     if (sl.count() == 0) {
         return "";

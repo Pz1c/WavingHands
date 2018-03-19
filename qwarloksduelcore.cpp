@@ -269,7 +269,7 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         _isLogined = true;
         QString url = NewUrl.toString().toLower();
         qDebug() << "register sucessfull redirect to " << url;
-        if (url.indexOf("http://") == -1) {
+        if ((url.indexOf("https://") == -1) && (url.indexOf("http://") == -1)) {
             url.prepend("https://games.ravenblack.net/").replace("//", "/").replace(":/", "://");
         }
         qDebug() << "final url " << url;
@@ -554,7 +554,7 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
     return true;
 }
 
-bool QWarloksDuelCore::butifyTurmMessage() {
+bool QWarloksDuelCore::butifyTurnMessage() {
     _finishedBattle = _finishedBattle.replace("<H2>", "").replace("</H2>", "").replace("<p>", "").replace("</p>", "")
             .replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
     return true;
@@ -590,7 +590,7 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
         return false;
     }
 
-    if (!butifyTurmMessage()) {
+    if (!butifyTurnMessage()) {
         return false;
     }
 

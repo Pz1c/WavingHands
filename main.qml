@@ -14,6 +14,7 @@ import ua.sp.warloksduel 1.8
 import ua.sp.warlockdictionary 1.0
 
 import "qrc:/main_utils.js" as MUtils
+import "qrc:/ai_utils.js" as AI
 
 Window {
     id: mainWindow
@@ -928,7 +929,7 @@ Window {
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle()
         onRegisterNewUserChanged: {
-                Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "Hi all, it's my first battle, so be friendly!");
+                Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "Hi all, it's my first battle, so be friendly! TRANING BOT ONLY");
                 hideNewUserMenu();
             }
         onOrderSubmitedChanged: MUtils.cleanOrders()

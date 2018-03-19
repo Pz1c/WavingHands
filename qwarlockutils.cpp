@@ -358,13 +358,6 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
                  QString::number(parafc),
                  QString::number(maladroit),
                  description, battle_id);
-            /*QString("<tr><td>%1</td><td><img src=\"/res/checkbox_%2.png\" width=25 height=25 /></td><td>%3</td><td><img src=\"/res/checkbox_%4.png\" width=25 height=25 /></td><td><img src=\"/res/checkbox_%5.png\" width=25 height=25 /></td><td><a href=\"/accept/%7\"><img src=\"/res/accept.png\" width=75 height=25></a></td></tr><tr><td colspan=5>%6</td></tr><tr><td colspan=6 align=center>***</td></tr>")
-            .arg(logins,
-                  QString::number(fast),
-                  level,
-                 description.indexOf("ParaFC", 0, Qt::CaseInsensitive) == -1 ? "0" : "1",
-                 description.indexOf("Maladroit", 0, Qt::CaseInsensitive) == -1 ? "0" : "1",
-                 description, battle_id);*/
     //qDebug() << res;
     return res;
 }
@@ -372,14 +365,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
 QString QWarlockUtils::parseChallengesList(QString &Data) {
     //qDebug() << "parseChallengesList";
 
-    QString res = "[";/*QString("<table width=\"100%\"><tr><th>%1</th><th>%2</th><th>%3</th><th>%4</th><th>%5</th><th valign=middle>%6</th></tr><tr><th colspan=5 align=center>%7</th></tr>").
-            arg(QWarlockDictionary::getInstance()->getStringByCode("Warlocks"),
-                QWarlockDictionary::getInstance()->getStringByCode("Fast"),
-                QWarlockDictionary::getInstance()->getStringByCode("Level"),
-                QWarlockDictionary::getInstance()->getStringByCode("ParaFC"),
-                QWarlockDictionary::getInstance()->getStringByCode("Maladroit"),
-                QWarlockDictionary::getInstance()->getStringByCode("Accept"),
-                QWarlockDictionary::getInstance()->getStringByCode("Description"));*/
+    QString res = "[";
     QString search1 = "<TR><TD><A HREF=\"/player/";
     QString search2 = "</TR> <TR><TD COLSPAN=4><HR></TD></TR>";
     int idx1 = 0, idx2;

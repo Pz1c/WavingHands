@@ -30,5 +30,6 @@
         <file>img/reg.png</file>
         <file>edit_lang.qml</file>
         <file>spell_details.qml</file>
+        <file>ai_utils.js</file>
     </qresource>
 </RCC>

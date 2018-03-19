@@ -10,6 +10,8 @@ var arrChallengeList;
 // interface constant
 var dict, cChatMessage, cMosterFrom, default_spell_list;
 
+var battle = {};
+
 function sendOrder() {
     action_send_order = true;
     if (arrLPG[cbLHG.currentText] === "-" && arrRPG[cbRHG.currentText] === "-") {
@@ -167,10 +169,10 @@ function getSpellList(right) {
 }
 
 function getPossibleSpell(right) {
-    var currLeftSpell = cbLHS.currentText, currRightSpell = cbRHS.currentText
-    var currLeftSpellIdx = 0, currRightSpellIdx = 0
-    var checkLeft = currLeftSpell != '' && currLeftSpell != ' '
-    var checkRight = currRightSpell != '' && currRightSpell != ' '
+    var currLeftSpell = cbLHS.currentText, currRightSpell = cbRHS.currentText;
+    var currLeftSpellIdx = 0, currRightSpellIdx = 0;
+    var checkLeft = currLeftSpell !== '' && currLeftSpell !== ' ';
+    var checkRight = currRightSpell !== '' && currRightSpell !== ' ';
     var g_list = getSpellList(right);
     var arrL = [' '];
     var arrR = [' '];
@@ -222,23 +224,24 @@ function loadSpellList() {
 }
 
 function showReadyBattle() {
-    showLoading()
-    setPosibleGesture(Qt.core.leftGesture, Qt.core.rightGesture)
-    getPossibleSpell(0)
-    getPossibleSpell(1)
-    prepareStepMessage()
-    prepareMonsterList()
-    prepareWarlockList()
-    prepareTargets(Qt.core.targets)
-    createMonsterTarget(Qt.core.monsterCommandList)
-    prepareCharmList(Qt.core.charmPerson)
-    prepareParalyzeList(Qt.core.paralyze)
-    prepareDelay(Qt.core.isDelay === 1)
-    preparePermanent(Qt.core.isPermanent === 1)
-    prepareFire(Qt.core.fire)
-    prepareButton(1)
-    flatMenuItem()
-    hideLoading()
+    showLoading();
+    battle = {};
+    setPosibleGesture(Qt.core.leftGesture, Qt.core.rightGesture);
+    getPossibleSpell(0);
+    getPossibleSpell(1);
+    prepareStepMessage();
+    prepareMonsterList();
+    prepareWarlockList();
+    prepareTargets(Qt.core.targets);
+    createMonsterTarget(Qt.core.monsterCommandList);
+    prepareCharmList(Qt.core.charmPerson);
+    prepareParalyzeList(Qt.core.paralyze);
+    prepareDelay(Qt.core.isDelay === 1);
+    preparePermanent(Qt.core.isPermanent === 1);
+    prepareFire(Qt.core.fire);
+    prepareButton(1);
+    flatMenuItem();
+    hideLoading();
 }
 
 function flatMenuItem() {

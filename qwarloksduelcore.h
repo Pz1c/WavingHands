@@ -167,7 +167,7 @@ protected:
     bool finishScan(QString &Data, int StatusCode);
     bool finishGetFinishedBattle(QString &Data);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
-    bool butifyTurmMessage();
+    bool butifyTurnMessage();
     bool parseTargetList(QString &Data);
     bool parseUnits(QString &Data);
     bool parseMonsterCommand(QString &Data);
