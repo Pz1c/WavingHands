@@ -334,7 +334,7 @@ function prepareCharmList(char_person_list) {
     console.log("prepareCharmList: " + char_person_list)
     cpTaskList.push(char_person_list)
     if (!cPersonCharmed) {
-        cPersonCharmed = Qt.createComponent("person_charmed.qml");
+        cPersonCharmed = Qt.createComponent("qrc:///qml/person_charmed.qml");
     }
     if (cPersonCharmed.status === Component.Error) {
         console.log("Error loading component: " + cPersonCharmed.errorString());
@@ -418,7 +418,7 @@ function prepareParalyzeList(char_person_list) {
     console.log("prepareParalyzeList: " + char_person_list)
     pTaskList.push(char_person_list)
     if (!cParalyze) {
-        cParalyze = Qt.createComponent("paralyze.qml");
+        cParalyze = Qt.createComponent("qrc:///qml/paralyze.qml");
     }
     if (cParalyze.status === Component.Error) {
         console.log("Error loading component: " + cParalyze.errorString());
@@ -642,7 +642,7 @@ function prepareMonsterList() {
 function prepareWarlockList() {
     console.log("svWarlocks")
     if (!cWarlockObject) {
-        cWarlockObject = Qt.createComponent("warlock.qml");
+        cWarlockObject = Qt.createComponent("qrc:///qml/warlock.qml");
     }
     if (cWarlockObject.status === Component.Error) {
         console.log("Error loading component: " + cWarlockObject.errorString());
@@ -710,7 +710,7 @@ function createMonsterTarget(str_monster_list) {
     console.log("createMonsterTarget: " + str_monster_list)
     mtTaskList.push(str_monster_list)
     if (!cMonsterTarget) {
-        cMonsterTarget = Qt.createComponent("monster_target.qml");
+        cMonsterTarget = Qt.createComponent("qrc:///qml/monster_target.qml");
     }
     if (cMonsterTarget.status === Component.Error) {
         console.log("Error loading component: " + cMonsterTarget.errorString());
@@ -833,7 +833,7 @@ function hideNewUserWnd() {
 
 function showErrorWnd(wnd_name) {
     if (!wndErr) {
-        wndErr = Qt.createComponent(wnd_name);
+        wndErr = Qt.createComponent("qrc:///qml/" + wnd_name);
     }
     if (wndErr.status === Component.Ready) {
         finishedShowErrWindow();
@@ -864,7 +864,7 @@ function showWindow(wnd_name, child_wnd) {
         return;
     }
 
-    wndTmp = Qt.createComponent(wnd_name);
+    wndTmp = Qt.createComponent("qrc:///qml/" + wnd_name);
     if (wndTmp.status === Component.Ready) {
         finishedShowWindow();
     } else {
@@ -891,7 +891,7 @@ function finishedShowWindow(wnd) {
 function showLoading() {
     console.log("showLoading")
     if (!wndLoading) {
-        wndLoading = Qt.createComponent("loading.qml").createObject(mainWindow, {});
+        wndLoading = Qt.createComponent("qrc:///qml/loading.qml").createObject(mainWindow, {});
     }
     wndLoading.visible = true;
 }
@@ -899,7 +899,7 @@ function showLoading() {
 function hideLoading() {
     console.log("hideLoading")
     if (!wndLoading) {
-        wndLoading = Qt.createComponent("loading.qml").createObject(mainWindow, {});
+        wndLoading = Qt.createComponent("qrc:///qml/loading.qml").createObject(mainWindow, {});
     }
     wndLoading.visible = false;
 }

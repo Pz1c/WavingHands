@@ -484,7 +484,7 @@ bool QWarloksDuelCore::prepareMonsterHtml() {
 bool QWarloksDuelCore::prepareWarlockHtml() {
     _WarlockHtml.clear();
     foreach(QWarlock *m, _Warlock) {
-        QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false, true);
+        QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false);
         if (m->name().toLower().compare(_login.toLower()) == 0) {
             _leftGestures = m->leftGestures();
             _rightGestures = m->rightGestures();
@@ -780,7 +780,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
         return;
     }
 
-    QStringList sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, false, true);
+    QStringList sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures);
     if (sl.count() == 0) {
         _spellListHtml.clear();
         if (emit_signal) {

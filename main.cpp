@@ -2,8 +2,8 @@
 #include <QQmlApplicationEngine>
 #include <QtQml>
 #include <qDebug>
-#include "qwarloksduelcore.h"
-#include "qwarlockdictionary.h"
+#include "cpp/qwarloksduelcore.h"
+#include "cpp/qwarlockdictionary.h"
 
 int main(int argc, char *argv[])
 {

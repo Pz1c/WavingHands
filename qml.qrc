@@ -1,35 +1,35 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>edit_login.qml</file>
-        <file>error_message.qml</file>
         <file>res/settings.png</file>
-        <file>menu_main.qml</file>
-        <file>edit_network.qml</file>
         <file>res/user.png</file>
-        <file>user_profile.qml</file>
-        <file>user_profile_utils.js</file>
-        <file>btn_battle.qml</file>
-        <file>main_utils.js</file>
-        <file>finished_battle.qml</file>
-        <file>loading.qml</file>
         <file>res/loading.gif</file>
-        <file>new_user.qml</file>
-        <file>monster_target.qml</file>
-        <file>new_user_menu.qml</file>
-        <file>person_charmed.qml</file>
-        <file>paralyze.qml</file>
         <file>res/refresh.png</file>
         <file>res/add.png</file>
         <file>res/list.png</file>
-        <file>new_challenge.qml</file>
         <file>res/fight.png</file>
         <file>res/spellbook.png</file>
         <file>html/spelllist_en.htm</file>
-        <file>warlock.qml</file>
         <file>img/reg.png</file>
-        <file>edit_lang.qml</file>
-        <file>spell_details.qml</file>
-        <file>ai_utils.js</file>
+        <file>js/ai_utils.js</file>
+        <file>js/main_utils.js</file>
+        <file>js/user_profile_utils.js</file>
+        <file>qml/btn_battle.qml</file>
+        <file>qml/edit_lang.qml</file>
+        <file>qml/edit_login.qml</file>
+        <file>qml/edit_network.qml</file>
+        <file>qml/error_message.qml</file>
+        <file>qml/finished_battle.qml</file>
+        <file>qml/loading.qml</file>
+        <file>qml/menu_main.qml</file>
+        <file>qml/monster_target.qml</file>
+        <file>qml/new_challenge.qml</file>
+        <file>qml/new_user.qml</file>
+        <file>qml/new_user_menu.qml</file>
+        <file>qml/paralyze.qml</file>
+        <file>qml/person_charmed.qml</file>
+        <file>qml/spell_details.qml</file>
+        <file>qml/user_profile.qml</file>
+        <file>qml/warlock.qml</file>
     </qresource>
 </RCC>

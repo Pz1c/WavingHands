@@ -3,20 +3,20 @@ TEMPLATE = app
 QT += qml quick network
 
 HEADERS += \
-    qwarloksduelcore.h \
-    qwarlockdictionary.h \
-    qwarlockutils.h \
-    qwarlock.h \
-    qmonster.h \
-    qwarlockspellchecker.h
+    cpp/qmonster.h \
+    cpp/qwarlock.h \
+    cpp/qwarlockdictionary.h \
+    cpp/qwarlockspellchecker.h \
+    cpp/qwarlockutils.h \
+    cpp/qwarloksduelcore.h
 
 SOURCES += main.cpp \
-    qwarloksduelcore.cpp \
-    qwarlockdictionary.cpp \
-    qwarlockutils.cpp \
-    qwarlock.cpp \
-    qmonster.cpp \
-    qwarlockspellchecker.cpp
+    cpp/qmonster.cpp \
+    cpp/qwarlock.cpp \
+    cpp/qwarlockdictionary.cpp \
+    cpp/qwarlockspellchecker.cpp \
+    cpp/qwarlockutils.cpp \
+    cpp/qwarloksduelcore.cpp
 
 RESOURCES += qml.qrc
 

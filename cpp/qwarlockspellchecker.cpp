@@ -156,7 +156,8 @@ QStringList QWarlockSpellChecker::getPosibleSpellsList(QString left, QString rig
             }
         }
 
-        if ((r_turn_to_spell > 0) && (!only_best || (l_turn_to_spell == 0) || (r_turn_to_spell <= l_turn_to_spell))) {
+        //if ((r_turn_to_spell > 0) && (!only_best || (l_turn_to_spell == 0) || (r_turn_to_spell <= l_turn_to_spell))) {
+        if (r_turn_to_spell > 0) {
             if (res_right.count() == 0) {
               res_right.append(QString(spell_template).arg("R", spell_name, QString::number(r_turn_to_spell), gestures));
             } else {

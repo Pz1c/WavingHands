@@ -13,8 +13,8 @@ import QtQuick.Layouts 1.3
 import ua.sp.warloksduel 1.8
 import ua.sp.warlockdictionary 1.0
 
-import "qrc:/main_utils.js" as MUtils
-import "qrc:/ai_utils.js" as AI
+import "qrc:/js/main_utils.js" as MUtils
+import "qrc:/js/ai_utils.js" as AI
 
 Window {
     id: mainWindow
@@ -792,7 +792,7 @@ Window {
     }
 
     function showUserProfile() {
-        MUtils.wndUP = Qt.createComponent("user_profile.qml");
+        MUtils.wndUP = Qt.createComponent("qrc:///qml/user_profile.qml");
         if (MUtils.wndUP.status === Component.Ready) {
             finishOpenUPWnd();
         } else {
