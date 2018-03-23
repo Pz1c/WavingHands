@@ -3,51 +3,51 @@
 QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     QObject(parent)
 {
-    Spells.append(QPair<QString, QString>("cDPW","Dispel Magic"));
-    Spells.append(QPair<QString, QString>("cSWWS","Summon Ice Elemental"));
-    Spells.append(QPair<QString, QString>("cWSSW","Summon Fire Elemental"));
-    Spells.append(QPair<QString, QString>("cw","Magic Mirror"));
-    Spells.append(QPair<QString, QString>("DFFDD","Lightning Bolt"));
-    Spells.append(QPair<QString, QString>("DFPW","Cure Heavy Wounds"));
-    Spells.append(QPair<QString, QString>("DFW","Cure Light Wounds"));
-    Spells.append(QPair<QString, QString>("DFWFd","Blindness"));
-    Spells.append(QPair<QString, QString>("DPP","Amnesia"));
-    Spells.append(QPair<QString, QString>("DSF","Confusion/Maladroitness"));
-    Spells.append(QPair<QString, QString>("DSFFFc","Disease"));
-    Spells.append(QPair<QString, QString>("DWFFd","Blindness"));
-    Spells.append(QPair<QString, QString>("DWSSSP","Delay Effect"));
-    Spells.append(QPair<QString, QString>("DWWFWD","Poison"));
-    Spells.append(QPair<QString, QString>("FFF","Paralysis"));
-    Spells.append(QPair<QString, QString>("WFPSFW","Summon Giant"));
-    Spells.append(QPair<QString, QString>("FPSFW","Summon Troll"));
-    Spells.append(QPair<QString, QString>("PSFW","Summon Ogre"));
-    Spells.append(QPair<QString, QString>("SFW","Summon Goblin"));
-    Spells.append(QPair<QString, QString>("FSSDD","Fireball"));
-    Spells.append(QPair<QString, QString>("P","Shield"));
-    Spells.append(QPair<QString, QString>("PDWP","Remove Enchantment"));
-    Spells.append(QPair<QString, QString>("PPws","Invisibility"));
-    Spells.append(QPair<QString, QString>("PSDD","Charm Monster"));
-    Spells.append(QPair<QString, QString>("PSDF","Charm Person"));
-    Spells.append(QPair<QString, QString>("PWPFSSSD","Finger of Death"));
-    Spells.append(QPair<QString, QString>("PWPWWc","Haste"));
-    Spells.append(QPair<QString, QString>("SD","Magic Missile"));
-    Spells.append(QPair<QString, QString>("SPFP","Anti-spell"));
-    Spells.append(QPair<QString, QString>("SPFPSDW","Permanency"));
-    Spells.append(QPair<QString, QString>("SPPc","Time Stop"));
-    Spells.append(QPair<QString, QString>("SPPFD","Time Stop"));
-    Spells.append(QPair<QString, QString>("SSFP","Resist Cold"));
-    Spells.append(QPair<QString, QString>("SWD","Fear (No CFDS)"));
-    Spells.append(QPair<QString, QString>("SWWc","Fire Storm"));
-    Spells.append(QPair<QString, QString>("WDDc","Clap of Lightning"));
-    Spells.append(QPair<QString, QString>("WFP","Cause Light Wounds"));
-    Spells.append(QPair<QString, QString>("WPFD","Cause Heavy Wounds"));
-    Spells.append(QPair<QString, QString>("WPP","Counter Spell"));
-    Spells.append(QPair<QString, QString>("WSSc","Ice Storm"));
-    Spells.append(QPair<QString, QString>("WWFP","Resist Heat"));
-    Spells.append(QPair<QString, QString>("WWP","Protection"));
-    Spells.append(QPair<QString, QString>("WWS","Counter Spell"));
-    Spells.append(QPair<QString, QString>("p","Surrender"));
-    Spells.append(QPair<QString, QString>(">","Stab"));
+    Spells.append(new QSpell(0,"cDPW","Dispel Magic", SPELL_TYPE_REMOVE_ENCHANTMENT,0,1,10));
+    Spells.append(new QSpell(1,"cSWWS","Summon Ice Elemental", SPELL_TYPE_ELEMENTAL,4,0,15));
+    Spells.append(new QSpell(2,"cWSSW","Summon Fire Elemental", SPELL_TYPE_ELEMENTAL,5,1,15));
+    Spells.append(new QSpell(3,"cw","Magic Mirror", SPELL_TYPE_MAGIC_SHIELD,0,0,10));
+    Spells.append(new QSpell(4,"DFFDD","Lightning Bolt", SPELL_TYPE_DAMAGE,1,1,16));
+    Spells.append(new QSpell(5,"DFPW","Cure Heavy Wounds", SPELL_TYPE_CURE,0,1,10));
+    Spells.append(new QSpell(6,"DFW","Cure Light Wounds", SPELL_TYPE_CURE,0,0,10));
+    Spells.append(new QSpell(7,"DFWFd","Blindness", SPELL_TYPE_CONFUSION,4,0,15));
+    Spells.append(new QSpell(8,"DPP","Amnesia", SPELL_TYPE_CONFUSION,6,1,12));
+    Spells.append(new QSpell(9,"DSF","Confusion/Maladroitness", SPELL_TYPE_CONFUSION,6,0,12));
+    Spells.append(new QSpell(10,"DSFFFc","Disease", SPELL_TYPE_POISON,4,1,17));
+    Spells.append(new QSpell(11,"DWFFd","Blindness", SPELL_TYPE_CONFUSION,4,0,15));
+    Spells.append(new QSpell(12,"DWSSSP","Delay Effect", SPELL_TYPE_SPEC,0,0,10));
+    Spells.append(new QSpell(13,"DWWFWD","Poison", SPELL_TYPE_POISON,3,1,18));
+    Spells.append(new QSpell(14,"FFF","Paralysis", SPELL_TYPE_CONFUSION,5,0,12));
+    Spells.append(new QSpell(15,"WFPSFW","Summon Giant", SPELL_TYPE_SUMMON_MONSTER,4,4,14));
+    Spells.append(new QSpell(16,"FPSFW","Summon Troll", SPELL_TYPE_SUMMON_MONSTER,3,3,13));
+    Spells.append(new QSpell(17,"PSFW","Summon Ogre", SPELL_TYPE_SUMMON_MONSTER,2,2,12));
+    Spells.append(new QSpell(18,"SFW","Summon Goblin", SPELL_TYPE_SUMMON_MONSTER,1,1,11));
+    Spells.append(new QSpell(19,"FSSDD","Fireball", SPELL_TYPE_DAMAGE,3,1,15));
+    Spells.append(new QSpell(20,"P","Shield", SPELL_TYPE_SHIELD,0,0,10));
+    Spells.append(new QSpell(21,"PDWP","Remove Enchantment", SPELL_TYPE_REMOVE_ENCHANTMENT,0,0,13));
+    Spells.append(new QSpell(22,"PPws","Invisibility", SPELL_TYPE_CONFUSION,3,0,13));
+    Spells.append(new QSpell(23,"PSDD","Charm Monster", SPELL_TYPE_CHARM_MONSTER,0,0,12));
+    Spells.append(new QSpell(24,"PSDF","Charm Person", SPELL_TYPE_CONFUSION,4,2,13));
+    Spells.append(new QSpell(25,"PWPFSSSD","Finger of Death", SPELL_TYPE_DAMAGE,1,0,20));
+    Spells.append(new QSpell(26,"PWPWWc","Haste", SPELL_TYPE_HASTLE,2,0,10));
+    Spells.append(new QSpell(27,"SD","Magic Missile", SPELL_TYPE_DAMAGE,0,0,10));
+    Spells.append(new QSpell(28,"SPFP","Anti-spell", SPELL_TYPE_CONFUSION,5,0,14));
+    Spells.append(new QSpell(29,"SPFPSDW","Permanency", SPELL_TYPE_SPEC,3,0,16));
+    Spells.append(new QSpell(30,"SPPc","Time Stop", SPELL_TYPE_HASTLE,3,0,10));
+    Spells.append(new QSpell(31,"SPPFD","Time Stop", SPELL_TYPE_HASTLE,3,0,10));
+    Spells.append(new QSpell(32,"SSFP","Resist Cold", SPELL_TYPE_RESIST,4,1,10));
+    Spells.append(new QSpell(33,"SWD","Fear (No CFDS)", SPELL_TYPE_CONFUSION,5,0,12));
+    Spells.append(new QSpell(34,"SWWc","Fire Storm", SPELL_TYPE_MASSIVE,3,0,14));
+    Spells.append(new QSpell(35,"WDDc","Clap of Lightning", SPELL_TYPE_DAMAGE,4,0,14));
+    Spells.append(new QSpell(36,"WFP","Cause Light Wounds", SPELL_TYPE_DAMAGE,4,0,12));
+    Spells.append(new QSpell(37,"WPFD","Cause Heavy Wounds", SPELL_TYPE_DAMAGE,3,0,13));
+    Spells.append(new QSpell(38,"WPP","Counter Spell", SPELL_TYPE_MAGIC_SHIELD,0,0,10));
+    Spells.append(new QSpell(39,"WSSc","Ice Storm", SPELL_TYPE_MASSIVE,0,3,14));
+    Spells.append(new QSpell(40,"WWFP","Resist Heat", SPELL_TYPE_RESIST,0,4,10));
+    Spells.append(new QSpell(41,"WWP","Protection", SPELL_TYPE_SHIELD,0,1,10));
+    Spells.append(new QSpell(42,"WWS","Counter Spell", SPELL_TYPE_MAGIC_SHIELD,0,1,10));
+    Spells.append(new QSpell(43,"p","Surrender", SPELL_TYPE_SPEC,-10,0,0));
+    Spells.append(new QSpell(44,">","Stab", SPELL_TYPE_STAB,-1,0,0));
 }
 
 bool QWarlockSpellChecker::checkSpellChar(QChar left, QChar right, QChar spell) {
@@ -104,156 +104,95 @@ int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString
     return 0;
 }
 
-QStringList QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right) {
-    QString gestures, spell_name, w_left, w_right;
-    QStringList res_left;
-    QStringList res_right;
-    QString spell_template = "%1;%2;%3;%4;";
-    //bool only_best = false;
-
-    foreach(QValueName vn, Spells) {
-        gestures = vn.first;
-        spell_name = vn.second;
-        int Ln = gestures.length();
-        if (left.length() > Ln) {
-            w_left = left.mid(left.length() - Ln, Ln);
-            w_right = right.mid(right.length() - Ln, Ln);
-        } else {
-            w_left = left;
-            w_right = right;
-        }
-
-        int l_turn_to_spell = checkSpellPosible(w_left, w_right, gestures);
-        if (l_turn_to_spell > 0) {
-            qDebug() << "left checkSpellPosible (" << w_left << ", " << w_right << ") " << gestures << l_turn_to_spell;
-        }
-
-        int r_turn_to_spell = checkSpellPosible(w_right, w_left, gestures);
-        if (r_turn_to_spell > 0) {
-            qDebug() << "right checkSpellPosible (" << w_right << ", " << w_left << ") " << gestures << r_turn_to_spell;
-        }
-
-        //if ((l_turn_to_spell > 0) && (!only_best || (r_turn_to_spell == 0) || (l_turn_to_spell < r_turn_to_spell))) {
-        if (l_turn_to_spell > 0) {
-            if (res_left.count() == 0) {
-                res_left.append(QString(spell_template).arg("L", spell_name, QString::number(l_turn_to_spell), gestures));
-            } else {
-                bool check_summon = gestures.length() >= 3 && gestures.mid(gestures.length() - 3, 3).compare("SFW") == 0;
-                bool add = true;
-                foreach(QString s, res_left) {
-                    if (s.compare(spell_name) == 0) {
-                        add = false;
-                        break;
-                    }
-                    if (check_summon && s.indexOf("Summon") != -1 && s.indexOf("Ice") == -1 && s.indexOf("Fire") == -1 && s.at(s.length() - 1) == '1') {
-                        add = false;
-                        break;
-                    }
+void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spell, QString left, QString right, int Hand, bool Enemy) {
+    QString gestures = Spell->gesture(), w_left, w_right;
+    int Ln = gestures.length();
+    w_left = left.right(Ln);
+    w_right = right.right(Ln);
+    int l_turn_to_spell = checkSpellPosible(w_left, w_right, gestures);
+    if (l_turn_to_spell > 0) {
+        qDebug() << "left checkSpellPosible (" << w_left << ", " << w_right << ") " << gestures << l_turn_to_spell;
+    } else {
+        return;
+    }
+   // QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy = false);
+    bool add = true;
+    QSpell *hand_spell = new QSpell(Spell, Hand, l_turn_to_spell, Enemy);
+    if (Result.count() > 0) {
+        foreach(QSpell *spell, Result) {
+            bool same_hand = spell->hand() == hand_spell->hand();
+            bool same_spell = spell->spellID() == hand_spell->spellID();
+            bool summon_moster_spell = (spell->spellType() == SPELL_TYPE_SUMMON_MONSTER) && (hand_spell->spellType() == SPELL_TYPE_SUMMON_MONSTER);
+            bool priority_higer = spell->priority() < hand_spell->priority();
+            if (same_hand && (same_spell || (summon_moster_spell && priority_higer))) {
+                add = false;
+                if (priority_higer) {
+                    spell->setPriority(hand_spell->priority());
                 }
-                if (add) {
-                    res_left.append(QString(spell_template).arg("L", spell_name, QString::number(l_turn_to_spell), gestures));
-                }
+                break;
             }
         }
 
-        //if ((r_turn_to_spell > 0) && (!only_best || (l_turn_to_spell == 0) || (r_turn_to_spell <= l_turn_to_spell))) {
-        if (r_turn_to_spell > 0) {
-            if (res_right.count() == 0) {
-              res_right.append(QString(spell_template).arg("R", spell_name, QString::number(r_turn_to_spell), gestures));
-            } else {
-                bool add = true;
-                bool check_summon = gestures.length() >= 3 && gestures.mid(gestures.length() - 3, 3).compare("SFW") == 0;
-                foreach(QString s, res_right) {
-                    if (s.compare(spell_name) == 0) {
-                        add = false;
-                        break;
-                    }
-                    if (check_summon && s.indexOf("Summon") != -1 && s.indexOf("Ice") == -1 && s.indexOf("Fire") == -1 && s.at(s.length() - 1) == '1') {
-                        add = false;
-                        break;
-                    }
-                }
-                if (add) {
-                    res_right.append(QString(spell_template).arg("R", spell_name, QString::number(r_turn_to_spell), gestures));
-                }
-            }
-        }
     }
-    //qDebug() << "spellCheckFinish prepare result";
-    QStringList res;
-    if (res_left.count() > 0) {
-        foreach(QString s, res_left) {
-            res.append(s);
-        }
+    if (add) {
+        Result.append(hand_spell);
+    } else {
+        delete hand_spell;
     }
-    if (res_right.count() > 0) {
-        foreach(QString s, res_right) {
-            res.append(s);
-        }
+}
+
+QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool Enemy) {
+    QList<QSpell *> res;
+
+    foreach(QSpell *vn, Spells) {
+        checkHandOnSpell(res, vn, left, right, WARLOCK_HAND_LEFT, Enemy);
+        checkHandOnSpell(res, vn, right, left, WARLOCK_HAND_RIGHT, Enemy);
     }
-    //qDebug() << "spellCheckFinish result " << res;
+
     return res;
 }
 
-QStringList QWarlockSpellChecker::getStriktSpellsList(QString left, QString right) {
-    QString gestures, spell_name, w_left, w_right;
-    QStringList res_left;
-    QStringList res_right;
+QList<QSpell *> QWarlockSpellChecker::getStriktSpellsList(QString left, QString right, bool Enemy) {
+    QString gestures, w_left, w_right;
+    QList<QSpell *> res;
 
-    foreach(QValueName vn, Spells) {
-        gestures = vn.first;
-        spell_name = vn.second;
+    foreach(QSpell *vn, Spells) {
+        gestures = vn->gesture();
         int Ln = gestures.length();
-        if (left.length() > Ln) {
-            w_left = left.mid(left.length() - Ln, Ln);
-            w_right = right.mid(right.length() - Ln, Ln);
-        } else {
-            w_left = left;
-            w_right = right;
+        w_left = left.right(Ln);
+        w_right = right.right(Ln);
+
+        if (checkStriktSpell(w_left, w_right, gestures)) {
+            res.append(new QSpell(vn, WARLOCK_HAND_LEFT, 0, Enemy));
         }
 
-        if (checkStriktSpell(w_left, w_right, gestures) && (res_left.indexOf(spell_name) == -1)) {
-            res_left.append(spell_name);
-        }
-
-        if (checkStriktSpell(w_right, w_left, gestures) && (res_right.indexOf(spell_name) == -1)) {
-            res_right.append(spell_name);
+        if (checkStriktSpell(w_right, w_left, gestures)) {
+            res.append(new QSpell(vn, WARLOCK_HAND_RIGHT, 0, Enemy));
         }
     }
 
-    //qDebug() << "spellCheckFinish prepare result";
-    QStringList res;
-    if (res_left.count() > 0) {
-        foreach(QString s, res_left) {
-            res.append("L;" + s);
-        }
-    }
-    if (res_right.count() > 0) {
-        foreach(QString s, res_right) {
-            res.append("R;" + s);
-        }
-    }
-    //qDebug() << "spellCheckFinish result " << res;
     return res;
 }
 
-QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool strikt) {
+QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool strikt, bool Enemy) {
     qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right << strikt;
     QString left = Left.replace(" ", "");
     QString right = Right.replace(" ", "");
-    QStringList sl;
+    QList<QSpell *> sl;
     if (strikt) {
-        sl = getStriktSpellsList(left, right);
+        sl = getStriktSpellsList(left, right, Enemy);
     } else {
-        sl = getPosibleSpellsList(left, right);
+        sl = getPosibleSpellsList(left, right, Enemy);
     }
-    if (sl.count() == 0) {
-        return "";
-    }
+    qSort(sl.begin(), sl.end(), QSpell::sortDesc);
     QString res;
-    foreach(QString s, sl) {
-        res.append(s + "#");
+    foreach(QSpell *s, sl) {
+        if (!res.isEmpty()) {
+            res.append(",");
+        }
+        res.append(s->json());
     }
+    res.prepend("[").append("]");
 
     //qDebug() << "spellCheckFinish result " << res;
     return res;

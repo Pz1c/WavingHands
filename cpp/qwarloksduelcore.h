@@ -151,7 +151,7 @@ public slots:
     void slotError(QNetworkReply::NetworkError error);
     void slotSslErrors(QList<QSslError> error_list);
 
-    QString getSpellList(QString left, QString right, int strikt);
+    QString getSpellList(QString left, QString right, bool strikt, bool Enemy);
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
 protected slots:

@@ -26,7 +26,7 @@ public:
     static int getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd);
     static bool parseTargetList(QString &Data, QList<QValueName> &_Targets, QString &error);
     static bool parseMonster(QString &Data, QList<QMonster *> &result, QString &error);
-    static bool parseWarlock(QString &Data, QList<QWarlock *> &result, QString &error);
+    static bool parseWarlock(QString &Data, QList<QWarlock *> &result, QString &error, const QString &player);
     static QList<QValueName> getSelectOptionFromData(QString &Data, QString SearchBegin, QString SearchEnd, QString ValueBegin, QString ValueEnd, QString &error);
     static bool parseGestures(QString &Data, QString &left, QString &right, QString &error);
     static bool parseMonsterCommad(QString &Data, QString &result, QString owner, QStringList &monsters, bool IsCharm);

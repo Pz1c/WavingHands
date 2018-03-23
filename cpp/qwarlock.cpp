@@ -1,11 +1,12 @@
 #include "qwarlock.h"
 
-QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures)
+QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player)
 {
     _name = Name;
     _status = Status;
     _leftGestures = LeftGestures;
     _rightGestures = RightGestures;
+    _player = Player;
 }
 
 QString QWarlock::name() {
@@ -24,11 +25,16 @@ QString QWarlock::rightGestures() {
     return _rightGestures;
 }
 
-QString QWarlock::separatedString(QString &posible_gestures) {
+QString QWarlock::separatedString(QString &posible_spells) {
     //int Ln = _leftGestures.length();
     QString l = _leftGestures.right(WARLOCK_GESTURE_LENGTH);
     QString r = _rightGestures.right(WARLOCK_GESTURE_LENGTH);
-    return QString("%1 Health: %2#&#%3#&#%4#&#%5").arg(_name, _status, l, r, posible_gestures);
+    return QString("{\"name\":\"%1\",\"status\":\"%2\",\"L\":\"%3\",\"R\":\"%4\",\"spells\":%5,\"player\":}").arg(_name, _status, l, r, posible_spells, _player ? "true" : "false");
+}
+
+bool QWarlock::player() const
+{
+    return _player;
 }
 
 QString QWarlock::html(QString &posible_gestures) {

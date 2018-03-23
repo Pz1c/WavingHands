@@ -484,17 +484,19 @@ bool QWarloksDuelCore::prepareMonsterHtml() {
 bool QWarloksDuelCore::prepareWarlockHtml() {
     _WarlockHtml.clear();
     foreach(QWarlock *m, _Warlock) {
-        QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false);
-        if (m->name().toLower().compare(_login.toLower()) == 0) {
+        bool Player = m->name().toLower().compare(_login.toLower()) == 0;
+        QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false, !Player);
+        if (Player) {
             _leftGestures = m->leftGestures();
             _rightGestures = m->rightGestures();
             prepareSpellHtmlList(true, true);
-            _WarlockHtml.append(m->separatedString(ps) + "#;#");
-        } else {
-            _WarlockHtml.prepend(m->separatedString(ps) + "#;#");
         }
+        if (!_WarlockHtml.isEmpty()) {
+            _WarlockHtml.append(",");
+        }
+        _WarlockHtml.append(m->separatedString(ps));
     }
-    //_WarlockHtml.prepend("<table>").append("</table>");
+    _WarlockHtml.prepend("[").append("]");
     return true;
 }
 
@@ -529,7 +531,7 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
         idx2 = Data.indexOf(search2, idx1);
         QString data = Data.mid(idx1, idx2 - idx1);
         if (data.indexOf("/player") != -1) {
-            if (!QWarlockUtils::parseWarlock(data, _Warlock, _errorMsg)) {
+            if (!QWarlockUtils::parseWarlock(data, _Warlock, _errorMsg, _login.toLower())) {
                 emit errorOccurred();
                 return false;
             }
@@ -747,8 +749,8 @@ void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {
     qDebug() << "slotSslErrors " << error_list;
 }
 
-QString QWarloksDuelCore::getSpellList(QString left, QString right, int strikt) {
-    return SpellChecker.checkSpells(left, right, strikt == 1);
+QString QWarloksDuelCore::getSpellList(QString left, QString right, bool strikt, bool Enemy) {
+    return SpellChecker.checkSpells(left, right, strikt, Enemy);
 }
 
 void QWarloksDuelCore::setLogin(QString Login, QString Password) {
@@ -780,7 +782,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
         return;
     }
 
-    QStringList sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures);
+    QList<QSpell *> sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER);
     if (sl.count() == 0) {
         _spellListHtml.clear();
         if (emit_signal) {
@@ -793,25 +795,24 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
     _spellListHtml = "[";
 
     bool found;
-    foreach(QValueName spell, SpellChecker.Spells) {
+    foreach(QSpell *spell, SpellChecker.Spells) {
         found = false;
-        foreach(QString s, sl) {
-            if (s.indexOf(";" + spell.first + ";") != -1) {
-                QStringList spl = s.split(";");
-                int day_cnt = spl.at(2).toInt();
-                QString hint = spl.at(0).compare("L") == 0 ? "Left " : "Right ";
+        foreach(QSpell *s, sl) {
+            if (s->spellID() == spell->spellID()) {
+                int day_cnt = s->turnToCast();
+                QString hint = s->hand() == WARLOCK_HAND_LEFT ? "Left " : "Right ";
                 //hint.append(" in " + spl.at(2) + " turns");
-                if (spell.first.compare("WFP") == 0 || spell.first.compare("SD") == 0) {
+                if (spell->gesture().compare("WFP") == 0 || spell->gesture().compare("SD") == 0) {
                     qDebug() << "day_cnt" << day_cnt;
-                    qDebug() << "fp" << spell.first.mid(0, spell.first.length() - day_cnt);
-                    qDebug() << "sp" << spell.first.mid(spell.first.length() - day_cnt, day_cnt);
+                    qDebug() << "fp" << spell->gesture().mid(0, spell->gesture().length() - day_cnt);
+                    qDebug() << "sp" << spell->gesture().mid(spell->gesture().length() - day_cnt, day_cnt);
                 }
                 QString g = QString("<font color=green>%1</font><font color=red>%2</font>")
-                        .arg(spell.first.mid(0, spell.first.length() - day_cnt), spell.first.mid(spell.first.length() - day_cnt, day_cnt));
+                        .arg(spell->gesture().mid(0, spell->gesture().length() - day_cnt), spell->gesture().mid(spell->gesture().length() - day_cnt, day_cnt));
                 if (_spellListHtml.length() > 1) {
                     _spellListHtml.append(",");
                 }
-                _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(g, hint, spell.first, WarlockDictionary->getStringByCode(spell.first)));
+                _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(g, hint, spell->gesture(), WarlockDictionary->getStringByCode(spell->gesture())));
 
                 found = true;
                 break;
@@ -821,7 +822,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
             if (_spellListHtml.length() > 1) {
                 _spellListHtml.append(",");
             }
-            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(spell.first, "", spell.first, WarlockDictionary->getStringByCode(spell.first)));
+            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(spell->gesture(), "", spell->gesture(), WarlockDictionary->getStringByCode(spell->gesture())));
         }
     }
     _spellListHtml.append("]");
@@ -835,13 +836,13 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
 QString QWarloksDuelCore::defaultSpellListHtml() {
     QString res = "[";
     bool first = true;
-    foreach(QValueName spell, SpellChecker.Spells) {
+    foreach(QSpell *spell, SpellChecker.Spells) {
         if (first) {
             first = false;
         } else {
             res.append(",");
         }
-        res.append(QString("{\"g\":\"%1\",\"code\":\"%2\",\"n\":\"%3\",\"h\":\"\"}").arg(spell.first, spell.first, WarlockDictionary->getStringByCode(spell.first)));
+        res.append(QString("{\"g\":\"%1\",\"code\":\"%2\",\"n\":\"%3\",\"h\":\"\"}").arg(spell->gesture(), spell->gesture(), WarlockDictionary->getStringByCode(spell->gesture())));
     }
     res.append("]");
     return res;

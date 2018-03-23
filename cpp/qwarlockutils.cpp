@@ -95,13 +95,13 @@ bool QWarlockUtils::parseMonster(QString &Data, QList<QMonster *> &result, QStri
     return true;
 }
 
-bool QWarlockUtils::parseWarlock(QString &Data, QList<QWarlock *> &result, QString &error) {
+bool QWarlockUtils::parseWarlock(QString &Data, QList<QWarlock *> &result, QString &error, const QString &player) {
     error.clear();
     QString name = getStringFromData(Data, "WIDTH=\"50%\"", "html\">", "</A>");
     QString state = getStringFromData(Data, "a href=\"/player/", "<TD CLASS=lightbg>", "</TD");
     QString lh = getStringFromData(Data, "LH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>").replace("&nbsp;", " ").replace("&gt;", ">");
     QString rh = getStringFromData(Data, "RH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>").replace("&nbsp;", " ").replace("&gt;", ">");
-    QWarlock *res = new QWarlock(name, state, lh, rh);
+    QWarlock *res = new QWarlock(name, state, lh, rh, name.toLower().indexOf(player) != -1);
     result.append(res);
     return true;
 }

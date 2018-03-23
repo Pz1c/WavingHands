@@ -8,7 +8,8 @@ HEADERS += \
     cpp/qwarlockdictionary.h \
     cpp/qwarlockspellchecker.h \
     cpp/qwarlockutils.h \
-    cpp/qwarloksduelcore.h
+    cpp/qwarloksduelcore.h \
+    cpp/qspell.h
 
 SOURCES += main.cpp \
     cpp/qmonster.cpp \
@@ -16,7 +17,8 @@ SOURCES += main.cpp \
     cpp/qwarlockdictionary.cpp \
     cpp/qwarlockspellchecker.cpp \
     cpp/qwarlockutils.cpp \
-    cpp/qwarloksduelcore.cpp
+    cpp/qwarloksduelcore.cpp \
+    cpp/qspell.cpp
 
 RESOURCES += qml.qrc
 

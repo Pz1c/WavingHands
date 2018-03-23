@@ -10,7 +10,7 @@ Rectangle {
     property string w_warlock_status: ""
     property string w_left_g: ""
     property string w_right_g: ""
-    property string w_possible_spells: ""
+    property var w_possible_spells: []
     property real height_koeff: Qt.height_coeff
     property var dict: Qt.mainWindow.warlockDictionary
     property bool w_send_gestures: false
@@ -98,11 +98,11 @@ Rectangle {
         }
         var spell_text = left ? cbPossibleLeft.currentText : cbPossibleRight.currentText;
         //var gesture_text = left ? w_left_g : w_right_g;
-        var idx1 = spell_text.lastIndexOf("(");
-        var idx2 = spell_text.lastIndexOf(")");
+        var idx1 = spell_text.indexOf("(");
+        var idx2 = spell_text.indexOf(")");
         var idx = spell_text.substr(idx1 + 1, idx2 - idx1 - 1) * 1;
-        var idx3 = spell_text.indexOf(" ");
-        var spell = spell_text.substr(idx3 - idx, 1);
+        //var idx3 = spell_text.indexOf(" ");
+        var spell = spell_text.substr(idx1 - idx, 1);
         console.log("setGesture", left, spell_text, idx1, idx2, idx, spell);
         Qt.mainWindow.changeGesture(spell, left);
     }
@@ -114,18 +114,15 @@ Rectangle {
         rWarlock.height = tLabel.height + 15 + cbPossibleLeft.height + cbPossibleRight.height;
         var is_possible = (w_possible_spells.length > 0) && !dead_or_surrender;
         if (is_possible) {
-            var arr = w_possible_spells.split("#");
+            var arr = w_possible_spells;//.split("#");
             var arr_l = [];
             var arr_r = [];
             for(var i = 0, Ln = arr.length; i < Ln; ++i) {
-                if (!arr[i] || arr[i] === '' || arr[i] === ' ') {
-                    continue;
-                }
-                var arr2 = arr[i].split(";");
-                if (arr2[0] === "L") {
-                    arr_l.push(arr2[1]);
-                } else if (arr2[0] === "R") {
-                    arr_r.push(arr2[1]);
+                var spell_text = arr[i].g + '(' + arr[i].t + ') ' + arr[i].n;
+                if (arr[i].h === 1) { // left
+                    arr_l.push(spell_text);
+                } else if (arr[i].h === 2) { // right
+                    arr_r.push(spell_text);
                 }
             }
             if (arr_l.length != 0) {
@@ -139,6 +136,7 @@ Rectangle {
         }
         var search_login = Qt.core.login + "";
         w_send_gestures = w_warlock_status.toLocaleLowerCase().indexOf(search_login.toLowerCase()) !== -1;
+        console.log("warlock.qml", search_login, w_warlock_status, w_send_gestures);
         if (w_send_gestures) {
             tLabel.color = "green";
             if (is_possible) {

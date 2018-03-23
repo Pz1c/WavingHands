@@ -12,6 +12,10 @@ var dict, cChatMessage, cMosterFrom, default_spell_list;
 
 var battle = {};
 
+var WARLOCK_HAND_NONE = 0;
+var WARLOCK_HAND_LEFT = 1;
+var WARLOCK_HAND_RIGHT= 2;
+
 function sendOrder() {
     action_send_order = true;
     if (arrLPG[cbLHG.currentText] === "-" && arrRPG[cbRHG.currentText] === "-") {
@@ -162,10 +166,10 @@ function getSpellList(right) {
     r_c = Qt.core.rightHand + r_c
 
     console.log("left gesture", l_c , " right gesture", r_c)
-    var g_list = Qt.core.getSpellList(l_c, r_c, 1)
+    var g_list = Qt.core.getSpellList(l_c, r_c, 1, 0)
     console.log("g_list", g_list)
 
-    return g_list
+    return JSON.parse(g_list);
 }
 
 function getPossibleSpell(right) {
@@ -173,29 +177,32 @@ function getPossibleSpell(right) {
     var currLeftSpellIdx = 0, currRightSpellIdx = 0;
     var checkLeft = currLeftSpell !== '' && currLeftSpell !== ' ';
     var checkRight = currRightSpell !== '' && currRightSpell !== ' ';
-    var g_list = getSpellList(right);
+    var arr = getSpellList(right);
     var arrL = [' '];
     var arrR = [' '];
-    var arr = g_list.split("#");
+    //var arr = g_list.split("#");
     for (var i = 0, Ln = arr.length; i < Ln; ++i) {
-        if (!arr[i] || arr[i] === '' || arr[i] === ' ') {
-            continue;
-        }
+        //if (!arr[i] || arr[i] === '' || arr[i] === ' ') {
+        //    continue;
+        //}
 
-        var arr2 = arr[i].split(";")
-        if (!arr2[1] || arr2[1] === '' || arr2[1] === ' ') {
-            continue;
-        }
-        if (arr2[0] === 'L') {
-            arrL.push(arr2[1])
-            if (checkLeft && currLeftSpell === arr2[1]) {
+        //var arr2 = arr[i];
+        //if (!arr2[1] || arr2[1] === '' || arr2[1] === ' ') {
+        //    continue;
+        //}
+        switch(arr[i]) {
+        case WARLOCK_HAND_LEFT:
+            arrL.push(arr[i].n)
+            if (checkLeft && currLeftSpell === arr[i].n) {
                 currLeftSpellIdx = arrL.length - 1
             }
-        } else if (arr2[0] === 'R') {
-            arrR.push(arr2[1])
-            if (checkRight && currRightSpell === arr2[1]) {
+            break;
+        case WARLOCK_HAND_RIGHT:
+            arrR.push(arr[i].n)
+            if (checkRight && currRightSpell === arr[i].n) {
                 currRightSpellIdx = arrR.length - 1
             }
+            break;
         }
     }
 
@@ -242,6 +249,9 @@ function showReadyBattle() {
     prepareButton(1);
     flatMenuItem();
     hideLoading();
+    if (Qt.core.login === "Construct") {
+        startSkynet();
+    }
 }
 
 function flatMenuItem() {
@@ -666,16 +676,17 @@ function finishPrepareWarlockList() {
         console.log("Error loading component:", cWarlockObject.errorString());
         return ;
     }
-    var arr = str_warlock_list.split("#;#")
+    var arr = JSON.parse(str_warlock_list);
+    battle.warlocks = arr;
     var curr_y = 0;
     var total_height = 0;
     for(var i = 0, Ln = arr.length; i < Ln; ++i) {
-        if (arr[i] === '') {
+        if (!arr[i]) {
             continue;
         }
-        var arr_m = arr[i].split("#&#")
-        var sprite = cWarlockObject.createObject(svWarlocks, {w_warlock_status: arr_m[0], w_left_g: arr_m[1], w_right_g: arr_m[2],
-                                                     w_possible_spells: arr_m[3], "height_koeff": Qt.mainWindow.height_koeff, x: 0, y: curr_y});
+        var arr_m = arr[i];
+        var sprite = cWarlockObject.createObject(svWarlocks, {w_warlock_status: arr_m.name + ' ' + arr_m.status, w_left_g: arr_m.L, w_right_g: arr_m.R,
+                                                     w_possible_spells: arr_m.spells, "height_koeff": Qt.mainWindow.height_koeff, x: 0, y: curr_y});
         if (sprite === null) {
             console.log("Error creating object");
             continue;
@@ -923,4 +934,8 @@ function linkActivated(link) {
         case "show_spell_desc":
             Qt.mainWindow.showSpellDetails(a[2]);
     }
+}
+
+function startSkynet() {
+
 }
