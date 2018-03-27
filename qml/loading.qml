@@ -44,6 +44,6 @@ Item {
     AnimatedImage {
         id: aiLoading
         anchors.centerIn: parent
-        source: "res/loading.gif"
+        source: "qrc:///res/loading.gif"
     }
 }

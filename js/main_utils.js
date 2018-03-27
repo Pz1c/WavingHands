@@ -16,6 +16,8 @@ var WARLOCK_HAND_NONE = 0;
 var WARLOCK_HAND_LEFT = 1;
 var WARLOCK_HAND_RIGHT= 2;
 
+Qt.include("ai_utils.js");
+
 function sendOrder() {
     action_send_order = true;
     if (arrLPG[cbLHG.currentText] === "-" && arrRPG[cbRHG.currentText] === "-") {
@@ -190,7 +192,7 @@ function getPossibleSpell(right) {
         //if (!arr2[1] || arr2[1] === '' || arr2[1] === ' ') {
         //    continue;
         //}
-        switch(arr[i]) {
+        switch(arr[i].h) {
         case WARLOCK_HAND_LEFT:
             arrL.push(arr[i].n)
             if (checkLeft && currLeftSpell === arr[i].n) {
@@ -937,5 +939,5 @@ function linkActivated(link) {
 }
 
 function startSkynet() {
-
+    processBattle(battle);
 }

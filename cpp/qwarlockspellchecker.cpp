@@ -132,7 +132,6 @@ void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spe
                 break;
             }
         }
-
     }
     if (add) {
         Result.append(hand_spell);
@@ -142,6 +141,7 @@ void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spe
 }
 
 QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool Enemy) {
+    qDebug() << "QWarlockSpellChecker::getPosibleSpellsList" << left << right << Enemy;
     QList<QSpell *> res;
 
     foreach(QSpell *vn, Spells) {
@@ -153,6 +153,7 @@ QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString
 }
 
 QList<QSpell *> QWarlockSpellChecker::getStriktSpellsList(QString left, QString right, bool Enemy) {
+    qDebug() << "QWarlockSpellChecker::getStriktSpellsList" << left << right << Enemy;
     QString gestures, w_left, w_right;
     QList<QSpell *> res;
 
@@ -174,8 +175,8 @@ QList<QSpell *> QWarlockSpellChecker::getStriktSpellsList(QString left, QString 
     return res;
 }
 
-QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool strikt, bool Enemy) {
-    qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right << strikt;
+QList<QSpell *> QWarlockSpellChecker::getSpellsList(QString Left, QString Right, bool strikt, bool Enemy) {
+    qDebug() << "QWarlockSpellChecker::getSpellsList" << Left << Right << strikt << Enemy;
     QString left = Left.replace(" ", "");
     QString right = Right.replace(" ", "");
     QList<QSpell *> sl;
@@ -184,13 +185,23 @@ QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool stri
     } else {
         sl = getPosibleSpellsList(left, right, Enemy);
     }
+    qDebug() << "before sort" << sl;
     qSort(sl.begin(), sl.end(), QSpell::sortDesc);
+    qDebug() << "after sort" << sl;
+    return sl;
+}
+
+QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool strikt, bool Enemy) {
+    qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right << strikt;
+    QList<QSpell *> sl = getSpellsList(Left, Right, strikt, Enemy);
+
     QString res;
     foreach(QSpell *s, sl) {
         if (!res.isEmpty()) {
             res.append(",");
         }
         res.append(s->json());
+        delete s;
     }
     res.prepend("[").append("]");
 

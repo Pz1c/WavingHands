@@ -485,7 +485,7 @@ bool QWarloksDuelCore::prepareWarlockHtml() {
     _WarlockHtml.clear();
     foreach(QWarlock *m, _Warlock) {
         bool Player = m->name().toLower().compare(_login.toLower()) == 0;
-        QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false, !Player);
+        //QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false, !Player);
         if (Player) {
             _leftGestures = m->leftGestures();
             _rightGestures = m->rightGestures();
@@ -494,7 +494,7 @@ bool QWarloksDuelCore::prepareWarlockHtml() {
         if (!_WarlockHtml.isEmpty()) {
             _WarlockHtml.append(",");
         }
-        _WarlockHtml.append(m->separatedString(ps));
+        _WarlockHtml.append(m->separatedString());
     }
     _WarlockHtml.prepend("[").append("]");
     return true;
@@ -534,6 +534,10 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
             if (!QWarlockUtils::parseWarlock(data, _Warlock, _errorMsg, _login.toLower())) {
                 emit errorOccurred();
                 return false;
+            } else {
+                QWarlock *m = _Warlock.last();
+                QList<QSpell *> sl = SpellChecker.getSpellsList(m->leftGestures(), m->rightGestures(), false, !m->player());
+                m->setPossibleSpells(sl);
             }
         } else {
             if (!QWarlockUtils::parseMonster(data, _Monsters, _errorMsg)) {

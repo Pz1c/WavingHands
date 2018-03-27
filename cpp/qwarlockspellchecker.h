@@ -17,6 +17,7 @@ public:
     explicit QWarlockSpellChecker(QObject *parent = 0);
 
     QString checkSpells(QString Left, QString Right, bool strikt, bool Enemy);
+    QList<QSpell *> getSpellsList(QString Left, QString Right, bool strikt, bool Enemy);
     QList<QSpell *> getPosibleSpellsList(QString left, QString right, bool Enemy = true);
     QList<QSpell *> getStriktSpellsList(QString left, QString right, bool Enemy);
     QList<QSpell *> Spells;
