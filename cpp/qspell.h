@@ -107,7 +107,7 @@ public:
     static bool sortDesc(QSpell *s1, QSpell *s2);
 protected:
 
-    int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy);
+    int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast);
 
 private:
     int _spellID;

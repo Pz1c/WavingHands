@@ -13,12 +13,18 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
     _hand = WARLOCK_HAND_NONE;
 }
 
-int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy) {
+int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast) {
+    int res;
     if (Enemy) {
-      return Danger - TurnToCast;
+      res = Danger - TurnToCast;
     } else {
-      return Priority - TurnToCast;
+      res = Priority - TurnToCast;
     }
+    if (FullTurnToCast == TurnToCast) {
+        res -= 4;
+    }
+
+    return res;
 }
 
 int QSpell::spellType() const
@@ -57,7 +63,7 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _name = Spell->_name;
     _spellType = Spell->_spellType;
     _turnToCast = TurnToCast;
-    _priority = calcPriority(Spell->_priority, Spell->_danger, TurnToCast, Enemy);
+    _priority = calcPriority(Spell->_priority, Spell->_danger, TurnToCast, Enemy, _gesture.length());
     _danger = SPELL_PRIORITY_ZERO;
     _level = Spell->_level;
     _hand = Hand;

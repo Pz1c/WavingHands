@@ -156,24 +156,29 @@ function destroyEnemySpell(self, enemy_spell) {
       return false;
   }
 
+  var anti_spell;
+
   switch(enemy_spell.st) {
     case SPELL_TYPE_SUMMON_MONSTER:
-        var spell = findSpell(self.spells, [SPELL_TYPE_CHARM_MONSTER, SPELL_TYPE_MAGIC_SHIELD], [], [SPELL_MAGIC_MIRROR], enemy_spell.t, enemy_spell.t, hands);
-        if (spell) {
-            setGestureBySpell(self, spell);
-        }
+        anti_spell = findSpell(self.spells, [SPELL_TYPE_CHARM_MONSTER, SPELL_TYPE_MAGIC_SHIELD], [], [SPELL_MAGIC_MIRROR], enemy_spell.t, enemy_spell.t, hands);
     break;
     case SPELL_TYPE_POISON:
+        anti_spell = findSpell(self.spells, [SPELL_TYPE_MAGIC_SHIELD, SPELL_TYPE_REMOVE_ENCHANTMENT], [], [], enemy_spell.t, enemy_spell.t, hands);
     break;
     case SPELL_TYPE_CONFUSION:
+        anti_spell = findSpell(self.spells, [SPELL_TYPE_MAGIC_SHIELD], [], [], enemy_spell.t, enemy_spell.t, hands);
     break;
     case SPELL_TYPE_DAMAGE:
+        if (enemy_spell.id !== SPELL_MAGIC_MISSILE) {
+            anti_spell = findSpell(self.spells, [SPELL_TYPE_MAGIC_SHIELD], [], [], enemy_spell.t, enemy_spell.t, hands);
+        }
     break;
     case SPELL_TYPE_SHIELD:
     break;
     case SPELL_TYPE_MAGIC_SHIELD:
     break;
     case SPELL_TYPE_MASSIVE:
+        anti_spell = findSpell(self.spells, [SPELL_TYPE_MAGIC_SHIELD], [], [], enemy_spell.t, enemy_spell.t, hands);
     break;
     case SPELL_TYPE_HASTLE:
     break;
@@ -184,20 +189,37 @@ function destroyEnemySpell(self, enemy_spell) {
     case SPELL_TYPE_SPEC:
     break;
     case SPELL_TYPE_DEATH:
+        anti_spell = findSpell(self.spells, [SPELL_CONFUSION], [], [], 1, enemy_spell.t - 1, hands);
+        if (!anti_spell) {
+            anti_spell_ids.push(SPELL_ANTI_SPELL);
+            anti_spell_ids.push(SPELL_CHARM_PERSON);
+        }
     break;
     case SPELL_TYPE_RESIST:
     break;
     case SPELL_TYPE_ELEMENTAL:
+        if (enemy_spell.l === 0) {
+            anti_spell = findSpell(self.spells, [], [SPELL_RESIST_COLD], [], 1, enemy_spell.t, hands);
+        } else {
+            anti_spell = findSpell(self.spells, [], [SPELL_RESIST_HEAT], [], 1, enemy_spell.t, hands);
+        }
     break;
     case SPELL_TYPE_REMOVE_ENCHANTMENT:
     break;
     case SPELL_TYPE_STAB:
     break;
   }
+
+  console.log("destroyEnemySpell", enemy_spell, anti_spell);
+
+  if (anti_spell) {
+      setGestureBySpell(self, anti_spell);
+  }
 }
 
 
 function processBattle(battle) {
+  console.log("processBattle", battle);
   for (var i = 0, Ln = battle.warlocks; i < Ln; ++i) {
     if (battle.warlocks[i].player) {
         battle.self = battle.warlocks[i];
@@ -205,8 +227,7 @@ function processBattle(battle) {
         battle.enemy = battle.warlocks[i];
     }
   }
-  battle.self.gL = '';
-  battle.self.gR = '';
+  console.log(battle.self);
   var left_processed = false;
   if ((battle.enemy.bsL.t > 0) && (!battle.enemy.bsR.t || (battle.enemy.bsL.p > battle.enemy.bsR.p))) {
     left_processed = true;

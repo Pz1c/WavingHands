@@ -113,7 +113,7 @@ void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spe
     if (l_turn_to_spell > 0) {
         qDebug() << "left checkSpellPosible (" << w_left << ", " << w_right << ") " << gestures << l_turn_to_spell;
     } else {
-        return;
+        l_turn_to_spell = Spell->gesture().length();
     }
    // QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy = false);
     bool add = true;
@@ -124,7 +124,7 @@ void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spe
             bool same_spell = spell->spellID() == hand_spell->spellID();
             bool summon_moster_spell = (spell->spellType() == SPELL_TYPE_SUMMON_MONSTER) && (hand_spell->spellType() == SPELL_TYPE_SUMMON_MONSTER);
             bool priority_higer = spell->priority() < hand_spell->priority();
-            if (same_hand && (same_spell || (summon_moster_spell && priority_higer))) {
+            if (same_hand && (same_spell || (summon_moster_spell && priority_higer && (spell->turnToCast() == hand_spell->turnToCast())))) {
                 add = false;
                 if (priority_higer) {
                     spell->setPriority(hand_spell->priority());
