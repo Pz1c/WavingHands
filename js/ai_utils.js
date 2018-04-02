@@ -114,136 +114,274 @@ var arr_spells = [
 /* 44*/ {gesture:">",name:"Stab",type:SPELL_TYPE_STAB,priority:-1,level:0,danger:0}
 ];
 
-function findSpell(spell_list, search_types, search_ids, not_ids, turn_from, turn_to, hands) {
+function checkSpell(spell, all_ids, all_types, all_hands, not_ids_empty, search_types, search_ids, not_ids, turn_from, turn_to, hands) {
+    if (!all_types && (search_types.indexOf(spell.st) === -1)) {
+        return false;
+    }
+    if (!all_ids && (search_ids.indexOf(spell.id) === -1)) {
+        return false;
+    }
+    if (!not_ids_empty && (not_ids.indexOf(spell.id) !== -1)) {
+        return false;
+    }
+    if (!all_hands && (hands.indexOf(spell.h) === -1)) {
+        return false;
+    }
+    if ((spell.t < turn_from) || (spell.t > turn_to)) {
+        return false;
+    }
+    return true;
+}
+
+function findSpell(spell_list, param) {
+    var search_types = param.search_types, search_ids = param.search_ids, not_ids = param.not_ids, turn_from = param.turn_from, turn_to = param.turn_to, hands = param.hands;
     var all_ids = search_ids.length === 0;
     var all_types = search_types.length === 0;
     var all_hands = hands.length === 2;
     var not_ids_empty = not_ids.length === 0;
     for (var i = 0, Ln = spell_list.length; i < Ln; ++i) {
-        if (!all_types && (search_types.indexOf(spell_list[i].st) === -1)) {
-            continue;
+        console.log("findSpell", JSON.stringify(spell_list[i]), JSON.stringify(param));
+        if (checkSpell(spell_list[i], all_ids, all_types, all_hands, not_ids_empty, search_types, search_ids, not_ids, turn_from, turn_to, hands)) {
+            console.log("FIND");
+            return spell_list[i];
         }
-        if (!all_ids && (search_ids.indexOf(spell_list[i].id) === -1)) {
-            continue;
-        }
-        if (!not_ids_empty && (not_ids.indexOf(spell_list[i].id) !== -1)) {
-            continue;
-        }
-        if (!all_hands && (hands.indexOf(spell_list[i].h) === -1)) {
-            continue;
-        }
-        if ((spell_list[i].t < turn_from) || (spell_list[i].t > turn_to)) {
-            continue;
-        }
-        return spell_list[i];
     }
     return false;
 }
 
-function setGestureBySpell(warlock, spell) {
+function getGestureBySpell(spell, idx) {
+    if (!idx) {
+        idx = 0;
+    }
 
+    return spell.g.substr(spell.a + idx, 1);
 }
 
-function destroyEnemySpell(self, enemy_spell) {
-  var hands = [];
-  if (self.gL === '') {
-      hands.push(WARLOCK_HAND_LEFT);
-  }
-  if (self.gR === '') {
-      hands.push(WARLOCK_HAND_RIGHT);
-  }
-  if (hands.length === 0) {
-      return false;
-  }
+function setGestureBySpell(warlock, spell) {
+    var gesture = getGestureBySpell(spell);
+    Qt.mainWindow.changeGesture(gesture, spell.h === WARLOCK_HAND_LEFT);
+}
 
-  var anti_spell;
-
-  switch(enemy_spell.st) {
-    case SPELL_TYPE_SUMMON_MONSTER:
-        anti_spell = findSpell(self.spells, [SPELL_TYPE_CHARM_MONSTER, SPELL_TYPE_MAGIC_SHIELD], [], [SPELL_MAGIC_MIRROR], enemy_spell.t, enemy_spell.t, hands);
-    break;
-    case SPELL_TYPE_POISON:
-        anti_spell = findSpell(self.spells, [SPELL_TYPE_MAGIC_SHIELD, SPELL_TYPE_REMOVE_ENCHANTMENT], [], [], enemy_spell.t, enemy_spell.t, hands);
-    break;
-    case SPELL_TYPE_CONFUSION:
-        anti_spell = findSpell(self.spells, [SPELL_TYPE_MAGIC_SHIELD], [], [], enemy_spell.t, enemy_spell.t, hands);
-    break;
+function getAntispellFilter(enemy_spell) {
+    switch(enemy_spell.st) {
+    case SPELL_TYPE_SUMMON_MONSTER: return {search_types:[SPELL_TYPE_CHARM_MONSTER, SPELL_TYPE_MAGIC_SHIELD], search_ids:[], not_ids:[SPELL_MAGIC_MIRROR], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
+    case SPELL_TYPE_POISON: return {search_types:[SPELL_TYPE_MAGIC_SHIELD, SPELL_TYPE_REMOVE_ENCHANTMENT], search_ids:[], not_ids:[], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
+    case SPELL_TYPE_CONFUSION: return {search_types:[SPELL_TYPE_MAGIC_SHIELD], search_ids:[], not_ids:[], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
     case SPELL_TYPE_DAMAGE:
         if (enemy_spell.id !== SPELL_MAGIC_MISSILE) {
-            anti_spell = findSpell(self.spells, [SPELL_TYPE_MAGIC_SHIELD], [], [], enemy_spell.t, enemy_spell.t, hands);
+            return {search_types:[SPELL_TYPE_MAGIC_SHIELD], search_ids:[], not_ids:[], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
         }
-    break;
+        break;
     case SPELL_TYPE_SHIELD:
-    break;
+        break;
     case SPELL_TYPE_MAGIC_SHIELD:
-    break;
-    case SPELL_TYPE_MASSIVE:
-        anti_spell = findSpell(self.spells, [SPELL_TYPE_MAGIC_SHIELD], [], [], enemy_spell.t, enemy_spell.t, hands);
-    break;
+        break;
+    case SPELL_TYPE_MASSIVE: return {search_types:[SPELL_TYPE_MAGIC_SHIELD], search_ids:[], not_ids:[], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
     case SPELL_TYPE_HASTLE:
-    break;
+        break;
     case SPELL_TYPE_CHARM_MONSTER:
-    break;
+        break;
     case SPELL_TYPE_CURE:
-    break;
+        break;
     case SPELL_TYPE_SPEC:
-    break;
-    case SPELL_TYPE_DEATH:
-        anti_spell = findSpell(self.spells, [SPELL_CONFUSION], [], [], 1, enemy_spell.t - 1, hands);
-        if (!anti_spell) {
-            anti_spell_ids.push(SPELL_ANTI_SPELL);
-            anti_spell_ids.push(SPELL_CHARM_PERSON);
-        }
-    break;
+        break;
+    case SPELL_TYPE_DEATH:  return {search_types:[], search_ids:[SPELL_ANTI_SPELL, SPELL_CHARM_PERSON, SPELL_AMNESIA, SPELL_CONFUSION, SPELL_PARALYSIS], not_ids:[], turn_from:0, turn_to:enemy_spell.t - 1};
     case SPELL_TYPE_RESIST:
     break;
-    case SPELL_TYPE_ELEMENTAL:
-        if (enemy_spell.l === 0) {
-            anti_spell = findSpell(self.spells, [], [SPELL_RESIST_COLD], [], 1, enemy_spell.t, hands);
-        } else {
-            anti_spell = findSpell(self.spells, [], [SPELL_RESIST_HEAT], [], 1, enemy_spell.t, hands);
-        }
-    break;
+    case SPELL_TYPE_ELEMENTAL: return {search_types:[], search_ids:[enemy_spell.l === 0 ? SPELL_RESIST_COLD : SPELL_RESIST_HEAT], not_ids:[], turn_from:0, turn_to:enemy_spell.t};
     case SPELL_TYPE_REMOVE_ENCHANTMENT:
     break;
     case SPELL_TYPE_STAB:
     break;
-  }
+    }
+    return false;
+}
 
-  console.log("destroyEnemySpell", enemy_spell, anti_spell);
+function getAntispellByFilter(self, filter) {
+    var anti_spell = findSpell([self.bsL, self.bsR], filter);
+    if (!anti_spell) {
+        anti_spell = findSpell(self.spells, filter);
+    }
+    return anti_spell;
+}
 
-  if (anti_spell) {
-      setGestureBySpell(self, anti_spell);
-  }
+function destroyEnemySpell(self, enemy_spell) {
+    var arr_hands = [];
+    if (self.gL === '') {
+        arr_hands.push(WARLOCK_HAND_LEFT);
+    }
+    if (self.gR === '') {
+        arr_hands.push(WARLOCK_HAND_RIGHT);
+    }
+
+    console.log("destroyEnemySpell", arr_hands, JSON.stringify(enemy_spell));
+
+    if (arr_hands.length === 0) {
+        return false;
+    }
+
+    var anti_spell, need_search = false;
+    var anti_spell_param = {search_types:[SPELL_TYPE_CONFUSION], search_ids:[], not_ids:[], turn_from:0, turn_to:enemy_spell.t - 1};
+    anti_spell_param.hands = arr_hands;
+    anti_spell = getAntispellByFilter(self, anti_spell_param);
+    if (!anti_spell) {
+        anti_spell_param = getAntispellFilter(enemy_spell)
+        if (!anti_spell_param) {
+            return ;
+        }
+        anti_spell_param.hands = arr_hands;
+        anti_spell = getAntispellByFilter(self, anti_spell_param);
+    }
+
+    console.log("destroyEnemySpell", enemy_spell, anti_spell);
+
+    if (anti_spell) {
+        anti_spell.anti_spell = true;
+        if (anti_spell.h === WARLOCK_HAND_LEFT) {
+            self.bsL = anti_spell;
+        } else {
+            self.bsR = anti_spell;
+        }
+    }
+}
+
+function compareSpells(spell_left, spell_right) {
+    if (spell_left.anti_spell && !spell_right.anti_spell) {
+        return WARLOCK_HAND_LEFT;
+    }
+    if (!spell_left.anti_spell && spell_right.anti_spell) {
+        return WARLOCK_HAND_RIGHT;
+    }
+    return spell_left.p > spell_right.p ? WARLOCK_HAND_LEFT : WARLOCK_HAND_RIGHT;
+}
+
+function isSpellsNormal(self) {
+    var bad_hand = compareSpells(self.bsL, self.bsR) === WARLOCK_HAND_LEFT ? WARLOCK_HAND_RIGHT : WARLOCK_HAND_LEFT;
+    var need_change = false;
+    console.log("isSpellsNormal", JSON.stringify(self.bsL), JSON.stringify(self.bsR), bad_hand);
+    if ((self.bsL.st === self.bsR.st) && (self.bsL.t === self.bsR.t)) {
+        console.log("isSpellsNormal", "same type in same turn");
+        need_change = true;
+    }
+    for (var i = 0; i < 3; ++i) {
+        if ((getGestureBySpell(self.bsL, i) === 'P') && (getGestureBySpell(self.bsR, i) === 'P')) {
+            console.log("isSpellsNormal", "try surrender");
+            need_change = true;
+            break;
+        }
+    }
+    if (need_change) {
+        if (bad_hand === WARLOCK_HAND_LEFT) {
+            self.bsL.change = true;
+        } else {
+            self.bsR.change = true;
+        }
+    }
+
+    return !need_change;
+}
+
+function copyObject(from, to) {
+    for(var key in from) {
+        to[key] = from[key];
+    }
+}
+
+function setNextSpell(self) {
+    var hand_left = !!self.bsL.change;
+    var arr_not_ids, hand_id, priority;
+    if (hand_left) {
+        if (self.LnotIds.indexOf(self.bsL.id) === -1) {
+            self.LnotIds.push(self.bsL.id);
+        }
+        arr_not_ids = self.LnotIds;
+        priority = self.bsL.p;
+        hand_id = self.bsL.h;
+    } else {
+        if (self.RnotIds.indexOf(self.bsR.id) === -1) {
+            self.RnotIds.push(self.bsR.id);
+        }
+        arr_not_ids = self.RnotIds;
+        priority = self.bsR.p;
+        hand_id = self.bsR.h;
+    }
+    console.log("setNextSpell", hand_left, arr_not_ids, priority, hand_id);
+    for (var i = 0, Ln = self.spells.length; i < Ln; ++i) {
+        console.log("check spell", JSON.stringify(self.spells[i]));
+        if (self.spells[i].h !== hand_id) {
+            console.log("wrong hand", self.spells[i].h, hand_id);
+            continue;
+        }
+        if (arr_not_ids.indexOf(self.spells[i].id) !== -1) {
+            console.log("banned id", self.spells[i].id, arr_not_ids);
+            continue;
+        }
+        /*if (priority > self.spells[i].p) {
+            console.log("wrong priority", self.spells[i].p, priority);
+            continue;
+        }*/
+        if (hand_left) {
+            console.log("setNextSpell", JSON.stringify(self.bsL), JSON.stringify(self.spells[i]));
+            copyObject(self.spells[i], self.bsL);
+            self.bsR.change = false;
+            console.log("setNextSpell", JSON.stringify(self.bsL));
+        } else {
+            console.log("setNextSpell", JSON.stringify(self.bsR), JSON.stringify(self.spells[i]));
+            copyObject(self.spells[i], self.bsR);
+            self.bsR.change = false;
+            //self.bsR = self.spells[i];
+            console.log("setNextSpell", JSON.stringify(self.bsR));
+        }
+        break;
+    }
 }
 
 
-function processBattle(battle) {
-  console.log("processBattle", battle);
-  for (var i = 0, Ln = battle.warlocks; i < Ln; ++i) {
-    if (battle.warlocks[i].player) {
-        battle.self = battle.warlocks[i];
-    } else {
-        battle.enemy = battle.warlocks[i];
+function processBattle() {
+    //console.log("processBattle", JSON.stringify(battle));
+
+    var idx_enemy, idx_self;
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        if (battle.warlocks[i].player) {
+            battle.self = battle.warlocks[i];
+            battle.self.gL = '';
+            battle.self.gR = '';
+            battle.self.LnotIds = [];
+            battle.self.RnotIds = [];
+        } else {
+            battle.enemy = battle.warlocks[i];
+        }
     }
-  }
-  console.log(battle.self);
-  var left_processed = false;
-  if ((battle.enemy.bsL.t > 0) && (!battle.enemy.bsR.t || (battle.enemy.bsL.p > battle.enemy.bsR.p))) {
-    left_processed = true;
-    destroyEnemySpell(battle.self, battle.enemy.bsL);
-  }
-  if (battle.enemy.bsR.t > 0) {
+    delete battle.warlocks;
+    //console.log("processBattle", JSON.stringify(battle.self), JSON.stringify(battle.enemy));
+    var left_processed = battle.enemy.bsL.p > battle.enemy.bsR.p;
+    if (left_processed) {
+        destroyEnemySpell(battle.self, battle.enemy.bsL);
+    }
     destroyEnemySpell(battle.self, battle.enemy.bsR);
-  }
-  if (!left_processed && (battle.enemy.bsL.t > 0)) {
-    destroyEnemySpell(battle.self, battle.enemy.bsL);
-  }
+    if (!left_processed) {
+        destroyEnemySpell(battle.self, battle.enemy.bsL);
+    }
 
+    var idx = 0;
+    while(!isSpellsNormal(battle.self)) {
+        setNextSpell(battle.self);
+        if (++idx > 50) {
+            break;
+        }
+    }
 
-  //spellDecision(battle);
-  //checkSpellCast(battle);
-  //printBattle(battle, false);
-  //return battle;
-  //*/
+    var left_first = !(battle.self.bsL.anti_spell && !battle.self.bsR.anti_spell) &&
+             ((!battle.self.bsL.anti_spell && battle.self.bsR.anti_spell) ||
+              (battle.self.bsL.p < battle.self.bsR.p));
+    setGestureBySpell(battle.self, left_first ? battle.self.bsL : battle.self.bsR);
+    setGestureBySpell(battle.self, left_first ? battle.self.bsR : battle.self.bsL);
+    console.log("processBattle", JSON.stringify(battle));
+    //sendOrderEx();
+
+    //spellDecision(battle);
+    //checkSpellCast(battle);
+    //printBattle(battle, false);
+    //return battle;
+    //*/
 }

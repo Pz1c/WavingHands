@@ -118,6 +118,10 @@ Rectangle {
             var arr_l = [];
             var arr_r = [];
             for(var i = 0, Ln = arr.length; i < Ln; ++i) {
+                if (arr[i].a === 0) {
+                    continue;
+                }
+
                 var spell_text = arr[i].g + '(' + arr[i].t + ') ' + arr[i].n;
                 if (arr[i].h === 1) { // left
                     arr_l.push(spell_text);

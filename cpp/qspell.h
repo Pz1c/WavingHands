@@ -119,6 +119,7 @@ private:
     int _priority;
     int _danger;
     int _level;
+    int _alreadyCasted;
 };
 
 #endif // QSPELL_H
