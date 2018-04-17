@@ -60,7 +60,18 @@ QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString 
     }
 
     idx2 += ValueBegin.length();
-    int idx3 = Data.indexOf(ValueEnd, idx2);
+
+    int idx3 = -1;
+    QStringList ve = ValueEnd.split("#;#");
+    foreach(QString v, ve) {
+        int idx = Data.indexOf(v, idx2);
+        if (idx == -1) {
+            continue;
+        }
+        if ((idx3 == -1) || (idx < idx3)) {
+            idx3 = idx;
+        }
+    }
     if (idx3 == -1) {
         return 0;
     }
@@ -73,7 +84,9 @@ int QWarlockUtils::getIntFromPlayerData(QString &Data, QString Search, QString V
     QString res = getStringFromData(Data, Search, ValueBegin, ValueEnd);
     bool *ok = new bool();
     int int_res = res.toInt(ok, 10);
-    return *ok ? int_res : 0;
+    int final_res = *ok ? int_res : 0;
+    delete ok;
+    return final_res;
 }
 
 
@@ -235,14 +248,22 @@ QString QWarlockUtils::parseChallengePart0(QString &Data) {
 
     // search login
     int idx1 = 0, idx2;
+    bool first = true;
+    int cnt = 0;
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
         idx1 = Data.indexOf(">", idx1);
         idx2 = Data.indexOf(search2, ++idx1);
         str = Data.mid(idx1, idx2 - idx1).replace("</A> ", "");
         //qDebug() << "Found login: " << str;
-        res.append(str + ", ");
+        if (first) {
+            first = false;
+        } else {
+            res.append(", ");
+        }
+        res.append(str);
         idx1 = idx2;
+        ++cnt;
     }
     res.append("#!#").replace(", #!#", "#!#");
 
@@ -252,10 +273,11 @@ QString QWarlockUtils::parseChallengePart0(QString &Data) {
     idx1 += search3.length();
     idx2 = Data.indexOf(" ", idx1);
     str = Data.mid(idx1, idx2 - idx1);
+    cnt += str.toInt();
     //qDebug() << "Need more meat: " << str;
     res.append(str);
     res.append("#!#");
-
+    res.append(QString::number(cnt));
     return res;
 }
 
@@ -283,7 +305,7 @@ QString QWarlockUtils::parseChallengeDescription(QString &Data) {
     } else {
         res.append(Data.mid(++idx1, Data.length() - idx1));
     }
-    res = res.replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive).trimmed();
+    res = res.replace("\r", "").replace("\n","<br>").replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive).trimmed();
     return res;
 }
 
@@ -304,7 +326,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     QString search2 = "</TD>";
     QStringList tmp;
     QString logins, description, battle_id;
-    int need_more = 0, fast = 0, friendly = -1, parafc = 0, maladroit = 0;
+    int need_more = 0, fast = 0, friendly = -1, parafc = 0, maladroit = 0, total_count;
     int idx1 = 0, idx2, idx = -1;
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
@@ -320,6 +342,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
                 if (need_more > 1) {
                     logins.append(QString(QWarlockDictionary::getInstance()->getStringByCode("NeedMore")).arg(QString::number(need_more)));
                 }
+                total_count = tmp.at(2).toInt();
                 break;
             case 1:
                 challenge_part = parseChallengePart1(part);
@@ -351,13 +374,16 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
         level = QWarlockDictionary::getInstance()->getStringByCode("VFriendly");
         break;
     }
-    res = QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
+    bool for_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("NO BOT") == -1);
+    qDebug() << "for_bot" << level << total_count << description << for_bot;
+    res = QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8}")
             .arg(logins,
                  QString::number(fast),
                  level,
                  QString::number(parafc),
                  QString::number(maladroit),
-                 description, battle_id);
+                 description, battle_id,
+                 for_bot ? "true" : "false");
     //qDebug() << res;
     return res;
 }

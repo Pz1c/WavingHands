@@ -37,12 +37,12 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(31,"SPPFD","Time Stop", SPELL_TYPE_HASTLE,13,0,10));
     Spells.append(new QSpell(32,"SSFP","Resist Cold", SPELL_TYPE_RESIST,14,1,10));
     Spells.append(new QSpell(33,"SWD","Fear (No CFDS)", SPELL_TYPE_CONFUSION,15,0,12));
-    Spells.append(new QSpell(34,"SWWc","Fire Storm", SPELL_TYPE_MASSIVE,13,0,14));
+    Spells.append(new QSpell(34,"SWWc","Fire Storm", SPELL_TYPE_MASSIVE,13,1,14));
     Spells.append(new QSpell(35,"WDDc","Clap of Lightning", SPELL_TYPE_DAMAGE,14,0,14));
     Spells.append(new QSpell(36,"WFP","Cause Light Wounds", SPELL_TYPE_DAMAGE,14,0,12));
     Spells.append(new QSpell(37,"WPFD","Cause Heavy Wounds", SPELL_TYPE_DAMAGE,13,0,13));
     Spells.append(new QSpell(38,"WPP","Counter Spell", SPELL_TYPE_MAGIC_SHIELD,10,0,10));
-    Spells.append(new QSpell(39,"WSSc","Ice Storm", SPELL_TYPE_MASSIVE,10,3,14));
+    Spells.append(new QSpell(39,"WSSc","Ice Storm", SPELL_TYPE_MASSIVE,10,0,14));
     Spells.append(new QSpell(40,"WWFP","Resist Heat", SPELL_TYPE_RESIST,10,4,10));
     Spells.append(new QSpell(41,"WWP","Protection", SPELL_TYPE_SHIELD,10,1,10));
     Spells.append(new QSpell(42,"WWS","Counter Spell", SPELL_TYPE_MAGIC_SHIELD,10,1,10));
@@ -77,7 +77,7 @@ bool QWarlockSpellChecker::checkStriktSpell(QString left, QString right, QString
     return true;
 }
 
-int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString spell) {
+int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString spell, QString possible_left, QString possible_right) {
     int Ln = spell.length() - 1, GLn = left.length() < right.length() ? left.length() : right.length();
     if (Ln == 0) {
         return 0;
@@ -87,6 +87,7 @@ int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString
     bool perhapse;
     int spell_idx;
     QChar spell_char;
+    int res = 0;
     for (int i = 0; i < Ln; ++i) {
         perhapse = true;
         spell_idx = -1;
@@ -98,18 +99,27 @@ int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString
             }
         }
         if (perhapse) {
-            return i + 1;
+            res = i + 1;
+            break;
         }
     }
-    return 0;
+    if (res > 0) {
+        QString g = spell.mid(spell.length() - res, 1);
+        if (possible_left.indexOf(g.toUpper()) == -1) {
+            res = spell.length() + 1;
+        } else if ((g.toUpper().compare(g) != 0) && (possible_right.indexOf(g.toUpper()) == -1)) {
+            res = spell.length() + 1;
+        }
+    }
+    return res;
 }
 
-void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spell, QString left, QString right, int Hand, bool Enemy) {
+void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spell, QString left, QString right, int Hand, bool Enemy, QString possible_left, QString possible_right) {
     QString gestures = Spell->gesture(), w_left, w_right;
     int Ln = gestures.length();
     w_left = left.right(Ln);
     w_right = right.right(Ln);
-    int l_turn_to_spell = checkSpellPosible(w_left, w_right, gestures);
+    int l_turn_to_spell = checkSpellPosible(w_left, w_right, gestures, possible_left, possible_right);
     if (l_turn_to_spell > 0) {
         qDebug() << "left checkSpellPosible (" << w_left << ", " << w_right << ") " << gestures << l_turn_to_spell;
     } else {
@@ -140,13 +150,13 @@ void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spe
     }
 }
 
-QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool Enemy) {
+QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left, QString possible_right) {
     qDebug() << "QWarlockSpellChecker::getPosibleSpellsList" << left << right << Enemy;
     QList<QSpell *> res;
 
     foreach(QSpell *vn, Spells) {
-        checkHandOnSpell(res, vn, left, right, WARLOCK_HAND_LEFT, Enemy);
-        checkHandOnSpell(res, vn, right, left, WARLOCK_HAND_RIGHT, Enemy);
+        checkHandOnSpell(res, vn, left, right, WARLOCK_HAND_LEFT, Enemy, possible_left, possible_right);
+        checkHandOnSpell(res, vn, right, left, WARLOCK_HAND_RIGHT, Enemy, possible_right, possible_left);
     }
 
     return res;
@@ -175,25 +185,24 @@ QList<QSpell *> QWarlockSpellChecker::getStriktSpellsList(QString left, QString 
     return res;
 }
 
-QList<QSpell *> QWarlockSpellChecker::getSpellsList(QString Left, QString Right, bool strikt, bool Enemy) {
-    qDebug() << "QWarlockSpellChecker::getSpellsList" << Left << Right << strikt << Enemy;
-    QString left = Left.replace(" ", "");
-    QString right = Right.replace(" ", "");
-    QList<QSpell *> sl;
-    if (strikt) {
-        sl = getStriktSpellsList(left, right, Enemy);
-    } else {
-        sl = getPosibleSpellsList(left, right, Enemy);
-    }
+QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
+    // QString Left, QString Right, bool strikt, bool Enemy
+    qDebug() << "QWarlockSpellChecker::getSpellsList" << warlock->separatedString();
+    QString left = warlock->leftGestures().replace(" ", "");
+    QString right = warlock->rightGestures().replace(" ", "");
+    QString possible_left = warlock->possibleLeftGestures();
+    QString possible_right = warlock->possibleRightGestures();
+    QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right);
     qDebug() << "before sort" << sl;
     qSort(sl.begin(), sl.end(), QSpell::sortDesc);
     qDebug() << "after sort" << sl;
     return sl;
 }
 
-QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool strikt, bool Enemy) {
-    qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right << strikt;
-    QList<QSpell *> sl = getSpellsList(Left, Right, strikt, Enemy);
+QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool Enemy) {
+    qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right;
+    QList<QSpell *> sl = getStriktSpellsList(Left.replace(" ", ""), Right.replace(" ", ""), Enemy);
+    qSort(sl.begin(), sl.end(), QSpell::sortDesc);
 
     QString res;
     foreach(QSpell *s, sl) {

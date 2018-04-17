@@ -1,7 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QtQml>
-#include <qDebug>
+#include <QDebug>
 #include "cpp/qwarloksduelcore.h"
 #include "cpp/qwarlockdictionary.h"
 

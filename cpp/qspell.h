@@ -93,6 +93,7 @@ public:
 
     int priority() const;
     void setPriority(int priority);
+    void changePriority(int priority);
 
     int turnToCast() const;
     void setTurnToCast(int turnToCast);
@@ -105,6 +106,11 @@ public:
 
     static bool sortAsc(QSpell *s1, QSpell *s2);
     static bool sortDesc(QSpell *s1, QSpell *s2);
+    int level() const;
+
+    bool possibleCast() const;
+    QString nextGesture() const;
+
 protected:
 
     int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast);

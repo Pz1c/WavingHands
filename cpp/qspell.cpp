@@ -28,6 +28,11 @@ int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, i
     return res;
 }
 
+int QSpell::level() const
+{
+    return _level;
+}
+
 int QSpell::spellType() const
 {
     return _spellType;
@@ -58,6 +63,11 @@ void QSpell::setPriority(int priority)
     _priority = priority;
 }
 
+void QSpell::changePriority(int priority)
+{
+    _priority += priority;
+}
+
 QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _spellID = Spell->_spellID;
     _gesture = Spell->_gesture;
@@ -86,9 +96,23 @@ QString QSpell::name() const
     return _name;
 }
 
+bool QSpell::possibleCast() const {
+    return _turnToCast < _gesture.length();
+}
+
+QString QSpell::nextGesture() const {
+    if (possibleCast()) {
+        return _gesture.mid(_gesture.length() - _turnToCast, 1);
+    } else {
+        return _gesture.left(1);
+    }
+}
+
 QString QSpell::json() const {
-    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9}").
-            arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted));
+    QString ng = nextGesture();
+    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11}").
+            arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).
+            arg(ng.toUpper(), ng.compare(ng.toUpper()) == 0 ? "0" : "1");
 }
 
 bool QSpell::sortAsc(QSpell *s1, QSpell *s2) {

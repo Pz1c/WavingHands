@@ -3,8 +3,10 @@
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     QObject(parent)
 {
+    _lstAI << "CONSTRUCT";
     _isLogined = false;
     _isLoading = false;
+    _isAI = false;
     _requestIdx = 0;
     loadParameters();
     applyProxySettings();
@@ -129,6 +131,8 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
 
     if (!NewUrl.isEmpty()) {
         _isLogined = true;
+        emit loginChanged();
+        _isAI = _lstAI.indexOf(_login.toUpper()) != -1;
         QString url = NewUrl.toString().toLower();
         qDebug() << "login sucessfull redirect to " << url;
         if (url.indexOf("https://") == -1) {
@@ -482,6 +486,7 @@ bool QWarloksDuelCore::prepareMonsterHtml() {
 }
 
 bool QWarloksDuelCore::prepareWarlockHtml() {
+    qDebug() << "QWarloksDuelCore::prepareWarlockHtml";
     _WarlockHtml.clear();
     foreach(QWarlock *m, _Warlock) {
         bool Player = m->name().toLower().compare(_login.toLower()) == 0;
@@ -495,6 +500,7 @@ bool QWarloksDuelCore::prepareWarlockHtml() {
             _WarlockHtml.append(",");
         }
         _WarlockHtml.append(m->separatedString());
+        qDebug() << "added" << m->name();
     }
     _WarlockHtml.prepend("[").append("]");
     return true;
@@ -534,10 +540,6 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
             if (!QWarlockUtils::parseWarlock(data, _Warlock, _errorMsg, _login.toLower())) {
                 emit errorOccurred();
                 return false;
-            } else {
-                QWarlock *m = _Warlock.last();
-                QList<QSpell *> sl = SpellChecker.getSpellsList(m->leftGestures(), m->rightGestures(), false, !m->player());
-                m->setPossibleSpells(sl);
             }
         } else {
             if (!QWarlockUtils::parseMonster(data, _Monsters, _errorMsg)) {
@@ -547,6 +549,17 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
         }
 
         idx1 = idx2 + search2.length();
+    }
+
+    QWarlock *enemy = 0;
+    foreach(QWarlock *m, _Warlock) {
+        if (m->player()) {
+            m->setPossibleGestures(_possibleLeftGestures, _possibleRightGestures);
+        } else {
+            enemy = m;
+        }
+        QList<QSpell *> sl = SpellChecker.getSpellsList(m);
+        m->setPossibleSpells(sl, m->player() && _isAI ? enemy : 0);
     }
 
     if (!prepareMonsterHtml()) {
@@ -581,12 +594,12 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
         return false;
     }
 
-    if (!parseUnits(Data)) {
+    if (!QWarlockUtils::parseGestures(Data, _possibleLeftGestures, _possibleRightGestures, _errorMsg)) {
+        emit errorOccurred();
         return false;
     }
 
-    if (!QWarlockUtils::parseGestures(Data, _possibleLeftGestures, _possibleRightGestures, _errorMsg)) {
-        emit errorOccurred();
+    if (!parseUnits(Data)) {
         return false;
     }
 
@@ -646,8 +659,8 @@ bool QWarloksDuelCore::finishScan(QString &Data, int StatusCode) {
         emit errorOccurred();
         return false;
     }
-    getChallengeList();
     parsePlayerInfo(Data);
+    getChallengeList();
     return true;
 }
 
@@ -753,8 +766,8 @@ void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {
     qDebug() << "slotSslErrors " << error_list;
 }
 
-QString QWarloksDuelCore::getSpellList(QString left, QString right, bool strikt, bool Enemy) {
-    return SpellChecker.checkSpells(left, right, strikt, Enemy);
+QString QWarloksDuelCore::getSpellList(QString left, QString right, bool Enemy) {
+    return SpellChecker.checkSpells(left, right, Enemy);
 }
 
 void QWarloksDuelCore::setLogin(QString Login, QString Password) {
@@ -786,7 +799,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
         return;
     }
 
-    QList<QSpell *> sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER);
+    QList<QSpell *> sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER, _possibleLeftGestures, _possibleRightGestures);
     if (sl.count() == 0) {
         _spellListHtml.clear();
         if (emit_signal) {
@@ -911,6 +924,10 @@ void QWarloksDuelCore::applyProxySettings() {
 
 bool QWarloksDuelCore::isNeedLogin() {
     return !_isLogined;
+}
+
+bool QWarloksDuelCore::isAI() {
+    return _isAI;
 }
 
 QString QWarloksDuelCore::login() {

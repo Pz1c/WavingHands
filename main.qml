@@ -792,17 +792,23 @@ Window {
     }
 
     function showUserProfile() {
+        console.log("showUserProfile");
+        //MUtils.showWindow("user_profile.qml");
         MUtils.wndUP = Qt.createComponent("qrc:///qml/user_profile.qml");
         if (MUtils.wndUP.status === Component.Ready) {
+            console.log("showUserProfile", MUtils.wndUP.status, "READY");
             finishOpenUPWnd();
         } else {
+            console.log("showUserProfile", MUtils.wndUP.status, "?", MUtils.wndUP.errorString());
             MUtils.wndUP.statusChanged.connect(finishOpenUPWnd);
-        }
+        }//*/
     }
 
     function finishOpenUPWnd() {
+        console.log("finishOpenUPWnd", MUtils.wndUP.status, "READY");
         if (MUtils.wndUP.status === Component.Ready) {
             MUtils.wndUP.createObject(mainWindow, {})
+            console.log("finishOpenUPWnd", "createObject");
         } else if (MUtils.wndUP.status === Component.Error) {
             console.log("Error loading component:", MUtils.wndUP.errorString())
         }
@@ -937,6 +943,9 @@ Window {
         onChallengeListChanged: MUtils.loadChallengesList(false)
         onSpellListHtmlChanged: MUtils.loadSpellList()
         onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
+        /*onLoginChanged: {
+            MUtils.isAI = Qt.core.login === "Construct";
+        }*/
     }
 
     property var warlockDictionary: WarlockDictionary

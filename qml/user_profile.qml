@@ -1,9 +1,9 @@
 // source https://qt-project.org/forums/viewthread/26455
 
 import QtQuick 2.0
-import QtQuick.Controls 1.1
+import QtQuick.Controls 2.3
 
-import "qrc:/user_profile_utils.js" as UPUtils
+import "qrc:/js/user_profile_utils.js" as UPUtils
 
 Item {
     id: dMainItem
@@ -53,7 +53,7 @@ Item {
             if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {
                 console.log("BACK_KEY_PRESSED: " + event.key)
                 event.accepted = true;
-                clickCancel()
+                clickCancel();
             }
         }
 

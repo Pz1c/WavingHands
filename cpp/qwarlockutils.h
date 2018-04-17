@@ -16,6 +16,8 @@
 #define ORGANIZATION_NAME "Steel Programming"
 #define APPLICATION_NAME "WarloksDuel"
 
+class QWarlock;
+
 class QWarlockUtils
 {
 public:

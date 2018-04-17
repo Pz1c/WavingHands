@@ -150,7 +150,8 @@ function findSpell(spell_list, param) {
 }
 
 function getGestureBySpell(spell, idx) {
-    if (!idx) {
+    console.log("getGestureBySpell", spell, idx);
+    if (!idx || !spell) {
         idx = 0;
     }
 
@@ -259,17 +260,45 @@ function isSpellsNormal(self) {
     var bad_hand = compareSpells(self.bsL, self.bsR) === WARLOCK_HAND_LEFT ? WARLOCK_HAND_RIGHT : WARLOCK_HAND_LEFT;
     var need_change = false;
     console.log("isSpellsNormal", JSON.stringify(self.bsL), JSON.stringify(self.bsR), bad_hand);
-    if ((self.bsL.st === self.bsR.st) && (self.bsL.t === self.bsR.t)) {
-        console.log("isSpellsNormal", "same type in same turn");
-        need_change = true;
-    }
-    for (var i = 0; i < 3; ++i) {
-        if ((getGestureBySpell(self.bsL, i) === 'P') && (getGestureBySpell(self.bsR, i) === 'P')) {
-            console.log("isSpellsNormal", "try surrender");
+
+    if (!need_change) {
+        if ((self.bsL.st === self.bsR.st) && (self.bsL.t === self.bsR.t)) {
+            console.log("isSpellsNormal", "same type in same turn");
             need_change = true;
-            break;
         }
     }
+
+    if (!need_change) {
+        if (((self.bsL.ng === 'C') || (self.bsR.ng === 'C')) && (self.bsL.t === self.bsR.t)) {
+            console.log("isSpellsNormal", "half clap");
+            need_change = true;
+        }
+    }
+
+    if (!need_change) {
+        if (bad_hand === WARLOCK_HAND_RIGHT) {
+            if ((self.bsL.th === 1) && (self.bsL.ng !== self.bsR.ng)) {
+                console.log("isSpellsNormal", "wrong two hand gesture");
+                need_change = true;
+            }
+        } else {
+            if ((self.bsR.th === 1) && (self.bsR.ng !== self.bsL.ng)) {
+                console.log("isSpellsNormal", "wrong two hand gesture");
+                need_change = true;
+            }
+        }
+    }
+
+    if (!need_change) {
+        for (var i = 0; i < 3; ++i) {
+            if ((getGestureBySpell(self.bsL, i) === 'P') && (getGestureBySpell(self.bsR, i) === 'P')) {
+                console.log("isSpellsNormal", "try surrender");
+                need_change = true;
+                break;
+            }
+        }
+    }
+
     if (need_change) {
         if (bad_hand === WARLOCK_HAND_LEFT) {
             self.bsL.change = true;
@@ -289,7 +318,7 @@ function copyObject(from, to) {
 
 function setNextSpell(self) {
     var hand_left = !!self.bsL.change;
-    var arr_not_ids, hand_id, priority;
+    var arr_not_ids, hand_id, priority, next_gesture = '';
     if (hand_left) {
         if (self.LnotIds.indexOf(self.bsL.id) === -1) {
             self.LnotIds.push(self.bsL.id);
@@ -297,6 +326,9 @@ function setNextSpell(self) {
         arr_not_ids = self.LnotIds;
         priority = self.bsL.p;
         hand_id = self.bsL.h;
+        if ((self.maladroit > 0) || (self.bsR.th === 1)) {
+            next_gesture = self.bsR.ng;
+        }
     } else {
         if (self.RnotIds.indexOf(self.bsR.id) === -1) {
             self.RnotIds.push(self.bsR.id);
@@ -304,6 +336,9 @@ function setNextSpell(self) {
         arr_not_ids = self.RnotIds;
         priority = self.bsR.p;
         hand_id = self.bsR.h;
+        if ((self.maladroit > 0) || (self.bsL.th === 1)) {
+            next_gesture = self.bsL.ng;
+        }
     }
     console.log("setNextSpell", hand_left, arr_not_ids, priority, hand_id);
     for (var i = 0, Ln = self.spells.length; i < Ln; ++i) {
@@ -316,6 +351,11 @@ function setNextSpell(self) {
             console.log("banned id", self.spells[i].id, arr_not_ids);
             continue;
         }
+        if ((next_gesture !== '') && (self.spells[i].ng !== next_gesture)) {
+            console.log("wrong gesture", self.spells[i].ng, next_gesture);
+            continue;
+        }
+
         /*if (priority > self.spells[i].p) {
             console.log("wrong priority", self.spells[i].p, priority);
             continue;

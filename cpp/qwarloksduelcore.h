@@ -55,6 +55,7 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(QString challengeList READ challengeList NOTIFY challengeListChanged)
     Q_PROPERTY(QString spellListHtml READ spellListHtml NOTIFY spellListHtmlChanged)
     Q_PROPERTY(QString defaultSpellListHtml READ defaultSpellListHtml NOTIFY defaultSpellListHtmlChanged)
+    Q_PROPERTY(bool isAI READ isAI NOTIFY isAIChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = 0);
@@ -95,6 +96,7 @@ public:
     QString challengeList();
     QString spellListHtml();
     QString defaultSpellListHtml();
+    bool isAI();
 
 signals:
     void needLogin();
@@ -133,6 +135,7 @@ signals:
     void challengeListChanged();
     void spellListHtmlChanged();
     void defaultSpellListHtmlChanged();
+    void isAIChanged();
 
 public slots:
 
@@ -151,7 +154,7 @@ public slots:
     void slotError(QNetworkReply::NetworkError error);
     void slotSslErrors(QList<QSslError> error_list);
 
-    QString getSpellList(QString left, QString right, bool strikt, bool Enemy);
+    QString getSpellList(QString left, QString right, bool Enemy);
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
 protected slots:
@@ -184,9 +187,11 @@ protected:
 private:
     // user login
     bool _isLogined;
+    bool _isAI;
     QString _login;
     QString _password;
     QString _errorMsg;
+    QStringList _lstAI;
 
     // user statistic
     int _played;
