@@ -17,22 +17,41 @@ Rectangle {
        id: tLabel
        text: mt_label
        anchors.left: parent.left
-       anchors.verticalCenter: mt_target.verticalCenter
+       anchors.verticalCenter: cbTarget.verticalCenter
     }
 
     ComboBox {
-        id: mt_target
+        id: cbTarget
         anchors.left: tLabel.right
-        width: 100
+        anchors.right: parent.right
+        //width: 100
         //anchors.right: parent.right
         model: mt_model.split(";")
-        onCurrentTextChanged: mt_value = mt_target.currentText
+        onCurrentTextChanged: mt_value = cbTarget.currentText
     }
 
     Component.onCompleted: finishCreation();
 
+    function setTarget(mt_target) {
+        var idx = -1;
+        if (mt_target !== '') {
+            for(var i = 0, Ln = cbTarget.model.length; i < Ln; ++i) {
+                if (cbTarget.model[i] === mt_target) {
+                    idx = i;
+                    break;
+                }
+            }
+        } else {
+            idx = 0;
+        }
+
+        if (idx !== -1) {
+            cbTarget.currentIndex = idx;
+        }
+    }
+
     function finishCreation() {
-        rTarget.width = tLabel.width + 3 + mt_target.width
-        rTarget.height = mt_target.height
+        //rTarget.width = tLabel.width + 3 + mt_target.width
+        rTarget.height = cbTarget.height;
     }
 }

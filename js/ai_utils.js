@@ -411,13 +411,14 @@ function processBattle() {
         }
     }
 
-    var left_first = !(battle.self.bsL.anti_spell && !battle.self.bsR.anti_spell) &&
+    var left_first = battle.self.bsL.p < battle.self.bsR.p;/*!(battle.self.bsL.anti_spell && !battle.self.bsR.anti_spell) &&
              ((!battle.self.bsL.anti_spell && battle.self.bsR.anti_spell) ||
-              (battle.self.bsL.p < battle.self.bsR.p));
+              (battle.self.bsL.p < battle.self.bsR.p));*/
+    console.log("setGestureBySpell", left_first, battle.self.bsL, battle.self.bsR);
     setGestureBySpell(battle.self, left_first ? battle.self.bsL : battle.self.bsR);
     setGestureBySpell(battle.self, left_first ? battle.self.bsR : battle.self.bsL);
     console.log("processBattle", JSON.stringify(battle));
-    //sendOrderEx();
+    sendOrderEx();
 
     //spellDecision(battle);
     //checkSpellCast(battle);

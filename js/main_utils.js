@@ -772,20 +772,21 @@ function finishLoadMonsterTargetEx(str_monster_list) {
         return ;
     }
     mtMonsterObj = [];
-    var arr = str_monster_list.split(";")
-    var arrL=[],currLIdx=0;
-    var currLeft = 0;
+    var arr = str_monster_list.split(";");
+    //var arrL=[],currLIdx=0;
+    //var currLeft = 0;
     var curr_y = 3;
     var total_heght = 0;
     for(var i = 0, Ln = arr.length; i < Ln; ++i) {
         if (arr[i] === '') {
             continue;
         }
-        var arr_m = arr[i].split(",")
-        var monster_id = arr_m[0]
-        var monster_name = arr_m[1]
+        var arr_m = arr[i].split(",");
+        var monster_id = arr_m[0];
+        var monster_name = arr_m[1];
+        var monster_target = arr_m[2];
 
-        var sprite = cMonsterTarget.createObject(svMonsterOrders, {mt_id: monster_id, mt_label: monster_name, x: 3, y: curr_y, mt_model: strVisibleTarget});
+        var sprite = cMonsterTarget.createObject(svMonsterOrders, {mt_id: monster_id, mt_label: monster_name, x: 3, y: curr_y, width: svMonsterOrders.width, mt_model: strVisibleTarget});
         if (sprite === null) {
             console.log("Error creating object");
             continue;
@@ -793,7 +794,7 @@ function finishLoadMonsterTargetEx(str_monster_list) {
         mtMonsterObj[mtMonsterObj.length] = sprite;
         console.log("looks like created: " + sprite.mt_label + " x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("svMonsterOrders.w: " + svMonsterOrders.width);
-        if (currLeft != 0) {
+        /*if (currLeft != 0) {
             console.log("currentleft.w: " + currLeft.width)
             if (currLeft.width + sprite.width + 6 < svMonsterOrders.width) {
                 sprite.y = currLeft.y
@@ -811,11 +812,11 @@ function finishLoadMonsterTargetEx(str_monster_list) {
                 arrL[arrL.length] = sprite
                 curr_y += sprite.height + 3
             }
-        } else {
-            currLeft = sprite
-            arrL[currLIdx] = sprite
+        } else {*/
+            //currLeft = sprite
+            //arrL[currLIdx] = sprite
             curr_y += sprite.height + 3
-        }
+        //}
         if (total_heght < sprite.y + sprite.height + 3) {
             total_heght = sprite.y + sprite.height + 3
         }
