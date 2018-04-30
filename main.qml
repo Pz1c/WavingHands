@@ -75,6 +75,19 @@ Window {
             }
         }
 
+        Timer {
+            id: tSendOrderTimer
+            interval: 1000
+            running: false
+            repeat: false
+
+            onTriggered: {
+                console.log("tSendOrderTimer");
+                tSendOrderTimer.stop();
+                MUtils.sendOrderEx();
+            }
+        }
+
         Rectangle {
             id: rReadyBattle
             anchors.top: parent.top

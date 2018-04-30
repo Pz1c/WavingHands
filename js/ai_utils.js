@@ -150,7 +150,7 @@ function findSpell(spell_list, param) {
 }
 
 function getGestureBySpell(spell, idx) {
-    console.log("getGestureBySpell", spell, idx);
+    console.log("getGestureBySpell", JSON.stringify(spell), idx);
     if (!idx || !spell) {
         idx = 0;
     }
@@ -159,6 +159,10 @@ function getGestureBySpell(spell, idx) {
 }
 
 function setGestureBySpell(warlock, spell) {
+    /*if (!spell.g) {
+        return;
+    }*/
+
     var gesture = getGestureBySpell(spell);
     Qt.mainWindow.changeGesture(gesture, spell.h === WARLOCK_HAND_LEFT);
 }
@@ -260,6 +264,13 @@ function isSpellsNormal(self) {
     var bad_hand = compareSpells(self.bsL, self.bsR) === WARLOCK_HAND_LEFT ? WARLOCK_HAND_RIGHT : WARLOCK_HAND_LEFT;
     var need_change = false;
     console.log("isSpellsNormal", JSON.stringify(self.bsL), JSON.stringify(self.bsR), bad_hand);
+
+    if (!need_change) {
+        if ((self.bsL.ng === 'X') || (self.bsR.ng === 'X')) {
+            console.log("isSpellsNormal", "spell not set for hand L");
+            need_change = true;
+        }
+    }
 
     if (!need_change) {
         if ((self.bsL.st === self.bsR.st) && (self.bsL.t === self.bsR.t)) {
@@ -394,13 +405,23 @@ function processBattle() {
     }
     delete battle.warlocks;
     //console.log("processBattle", JSON.stringify(battle.self), JSON.stringify(battle.enemy));
+    if (!battle.self.bsL.g) {
+        battle.self.bsL = {id:-1,n:"",g:"XXX",t:1000,st:100,p:-100,h:1,l:100,a:3,ng:"X",th:0};
+    }
+    if (!battle.self.bsR.g) {
+        battle.self.bsL = {id:-1,n:"",g:"XXX",t:1000,st:100,p:-100,h:2,l:100,a:3,ng:"X",th:0};
+    }
+
     var left_processed = battle.enemy.bsL.p > battle.enemy.bsR.p;
     if (left_processed) {
         destroyEnemySpell(battle.self, battle.enemy.bsL);
+        console.log("destroyEnemySpell", "L", JSON.stringify(battle.enemy.bsL), JSON.stringify(battle.self.bsL), JSON.stringify(battle.self.bsR));
     }
     destroyEnemySpell(battle.self, battle.enemy.bsR);
+    console.log("destroyEnemySpell", "R", JSON.stringify(battle.enemy.bsR), JSON.stringify(battle.self.bsL), JSON.stringify(battle.self.bsR));
     if (!left_processed) {
         destroyEnemySpell(battle.self, battle.enemy.bsL);
+        console.log("destroyEnemySpell", "L", JSON.stringify(battle.enemy.bsL), JSON.stringify(battle.self.bsL), JSON.stringify(battle.self.bsR));
     }
 
     var idx = 0;
@@ -418,7 +439,8 @@ function processBattle() {
     setGestureBySpell(battle.self, left_first ? battle.self.bsL : battle.self.bsR);
     setGestureBySpell(battle.self, left_first ? battle.self.bsR : battle.self.bsL);
     console.log("processBattle", JSON.stringify(battle));
-    sendOrderEx();
+    tSendOrderTimer.start();
+    //sendOrderEx();
 
     //spellDecision(battle);
     //checkSpellCast(battle);

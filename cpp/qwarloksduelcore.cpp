@@ -3,7 +3,7 @@
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     QObject(parent)
 {
-    _lstAI << "CONSTRUCT";
+    _lstAI << "CONSTRUCT" << "TEST_01";
     _isLogined = false;
     _isLoading = false;
     _isAI = false;
@@ -394,7 +394,7 @@ void QWarloksDuelCore::sendOrders(QString orders) {
         postData.append(QString(QUrl::toPercentEncoding(value.replace(" ", "+"))).replace("%2B", "+"));
     }
 
-    qDebug() << QString(postData);
+    qDebug() << "QWarloksDuelCore::sendOrders" << QString(postData);
     //return;
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
     _reply = _nam.post(request, postData);
@@ -815,6 +815,9 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
     foreach(QSpell *spell, SpellChecker.Spells) {
         found = false;
         foreach(QSpell *s, sl) {
+            if (!s->possibleCast()) {
+                continue;
+            }
             if (s->spellID() == spell->spellID()) {
                 int day_cnt = s->turnToCast();
                 QString hint = s->hand() == WARLOCK_HAND_LEFT ? "Left " : "Right ";
