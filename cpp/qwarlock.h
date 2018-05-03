@@ -7,6 +7,7 @@
 #include "qspell.h"
 //#include "qwarlockspellchecker.h"
 #include "qwarlockutils.h"
+#include "qmonster.h"
 
 #define WARLOCK_GESTURE_LENGTH 8
 
@@ -23,7 +24,7 @@ public:
     QString separatedString();
     bool player() const;
 
-    void setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock *enemy = 0);
+    void setPossibleSpells(const QList<QSpell *> &possibleSpells, const QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
 
 
@@ -33,8 +34,8 @@ public:
 
 protected:
     void breakEnemySpell(QSpell *spell);
-    void setAntispell(QWarlock *enemy = 0);
-    void setSpellPriority(QWarlock *enemy = 0);
+    void setAntispell(QWarlock *enemy);
+    void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void parseStatus();
     void checkPossibleGesture();
     int strValueToInt(QString val);

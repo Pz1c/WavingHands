@@ -31,5 +31,6 @@
         <file>qml/spell_details.qml</file>
         <file>qml/user_profile.qml</file>
         <file>qml/warlock.qml</file>
+        <file>qml/tip_message.qml</file>
     </qresource>
 </RCC>

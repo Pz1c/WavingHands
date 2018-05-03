@@ -35,6 +35,7 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
                 bool *ok = new bool();
                 int int_res = battle_id.toInt(ok, 10);
                 if (*ok) {
+                    // TODO remove after this battles was finished
                     if ((int_res == 83698) || (int_res == 83676)) {
                         continue;
                     }

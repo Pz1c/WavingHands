@@ -76,7 +76,7 @@ void QWarloksDuelCore::regNewUser(QString Login, QString Password, QString Email
     postData.append("&referrer=Galbarad&email=");
     postData.append(QUrl::toPercentEncoding(Email));
 
-    postData.append("&showemail=8&emailinform=2&icq=&aim=&website=&blurb=I+am+using+Android+application+%22"
+    postData.append("&showemail=8&icq=&aim=&website=&blurb=I+am+using+Android+application+%22"
                     "Warlock+duel%22+too+play%0D%0A+https%3A%2F%2Fplay.google.com%2Fstore%2F"
                     "apps%2Fdetails%3Fid%3Dnet.is.games.WarlockDuel+&preferfast=4&me13=1&update=1");
 
@@ -285,7 +285,10 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
         connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 
+        _allowedAccept = false;
+        _allowedAdd = false;
         emit registerNewUserChanged();
+        saveParameters();
         return true;
     }
     return false;
@@ -559,7 +562,7 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
             enemy = m;
         }
         QList<QSpell *> sl = SpellChecker.getSpellsList(m);
-        m->setPossibleSpells(sl, m->player() && _isAI ? enemy : 0);
+        m->setPossibleSpells(sl, m->player() ? enemy : 0, _Monsters);
     }
 
     if (!prepareMonsterHtml()) {
@@ -637,6 +640,11 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     _ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
     _waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
     _finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
+    if (!_allowedAccept && (_finished_battles.count() > 0)) {
+        _allowedAccept = true;
+        _allowedAdd = true;
+        emit allowedAcceptChanged();
+    }
     qDebug() << "ready: " << _ready_in_battles;
     qDebug() << "waiting: " << _waiting_in_battles;
     qDebug() << "finished: " << _finished_battles;
@@ -883,6 +891,8 @@ void QWarloksDuelCore::saveParameters() {
     settings.beginGroup("User");
     settings.setValue("login", _login);
     settings.setValue("password", _password);
+    settings.setValue("allowed_add", _allowedAdd);
+    settings.setValue("allowed_accept", _allowedAccept);
     settings.endGroup();
 
     settings.beginGroup("Proxy");
@@ -898,6 +908,8 @@ void QWarloksDuelCore::loadParameters() {
     settings.beginGroup("User");
     _login = settings.value("login", "").toString();
     _password = settings.value("password", "").toString();
+    _allowedAdd = settings.value("allowed_add", "true").toBool();
+    _allowedAccept = settings.value("allowed_accept", "true").toBool();
     settings.endGroup();
 
     settings.beginGroup("Proxy");
@@ -906,6 +918,16 @@ void QWarloksDuelCore::loadParameters() {
     _proxyUser = settings.value("user", "").toString();
     _proxyPass = settings.value("password", "").toString();
     settings.endGroup();
+}
+
+bool QWarloksDuelCore::allowedAccept()
+{
+    return _allowedAccept;
+}
+
+bool QWarloksDuelCore::allowedAdd()
+{
+    return _allowedAdd;
 }
 
 void QWarloksDuelCore::applyProxySettings() {

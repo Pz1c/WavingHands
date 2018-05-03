@@ -148,7 +148,7 @@ void QWarlock::setAntispell(QWarlock *enemy) {
     }
 }
 
-void QWarlock::setSpellPriority(QWarlock *enemy) {
+void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters) {
     int _coldproof_in = 999, _fireproof_in = 999;
     foreach(QSpell *spell, _possibleSpells) {
         switch(spell->spellID()) {
@@ -161,16 +161,20 @@ void QWarlock::setSpellPriority(QWarlock *enemy) {
         }
     }
 
+    foreach(QMonster *m,  monsters) {
+
+    }
+
     foreach(QSpell *spell, _possibleSpells) {
         switch(spell->spellType()) {
         case SPELL_TYPE_MASSIVE:
         case SPELL_TYPE_ELEMENTAL:
             if (((spell->level() == 0) && (_coldproof == 0) && (_coldproof_in - 1 > spell->turnToCast())) ||
                 ((spell->level() == 1) && (_fireproof == 0) && (_fireproof_in - 1 > spell->turnToCast()))) {
-                spell->changePriority(-2);
+                spell->changePriority(-4);
             }
             if (enemy && (((spell->level() == 0) && (enemy->_coldproof > 0)) || ((spell->level() == 1) && (enemy->_fireproof > 0)))) {
-                spell->changePriority(-3);
+                spell->changePriority(-4);
             }
             break;
         }
@@ -179,16 +183,16 @@ void QWarlock::setSpellPriority(QWarlock *enemy) {
     qSort(_possibleSpells.begin(), _possibleSpells.end(), QSpell::sortDesc);
 }
 
-void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock *enemy)
+void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QWarlock *enemy, const QList<QMonster *> &monsters)
 {
     qDebug() << "QWarlock::setPossibleSpells" << possibleSpells;
     _possibleSpells = possibleSpells;
     _bestSpellL = 0;
     _bestSpellR = 0;
-    setSpellPriority(enemy);
-    if (enemy) {
+    setSpellPriority(enemy, monsters);
+    /*if (enemy) {
         setAntispell(enemy);
-    }
+    }*/
     checkSpells();
 }
 

@@ -13,6 +13,7 @@ public:
     QString owner();
     QString target();
     QString html(QString &user_login);
+    QString json(QString &user_login);
 
 private:
     QString _name;

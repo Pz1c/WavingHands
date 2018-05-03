@@ -65,7 +65,7 @@ Window {
 
         Timer {
             id: tScanTimer
-            interval: 60000
+            interval: core.isAI ? 8000 : 60000
             running: false
             repeat: true
 
@@ -703,86 +703,43 @@ Window {
 
                 ToolButton {
                     id: tbList
-                    /*anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.leftMargin: 0.01 * parent.width
-                    height: 0.13 * parent.width
-                    width: 0.13 * parent.width*/
-                    //iconSource:"res/list.png"
                     icon.source: "res/list.png"
-
                     onClicked: MUtils.showList()
                 }
 
                 ToolButton {
                     id: tbFight
-                    /*anchors.top: parent.top
-                    anchors.left: tbList.right
-                    anchors.leftMargin: 0.01 * parent.width
-                    height: tbList.height
-                    width: tbList.width*/
                     icon.source: "res/fight.png"
-                    //iconSource: "res/fight.png"
                     onClicked: MUtils.showDuel()
                 }
 
                 ToolButton {
                     id: tbBook
-                    /*anchors.top: parent.top
-                    anchors.left: tbFight.right
-                    anchors.leftMargin: 0.01 * parent.width
-                    height: tbList.height
-                    width: tbList.width*/
                     icon.source: "res/spellbook.png"
-                    //iconSource: "res/spellbook.png"
                     onClicked: MUtils.showSpellBook()
                 }
 
                 ToolButton {
                     id: tbUser
-                    /*anchors.top: parent.top
-                    anchors.left: tbBook.right
-                    anchors.leftMargin: 0.01 * parent.width
-                    height: tbList.height
-                    width: tbList.width*/
                     icon.source: "res/user.png"
-                    //iconSource: "res/user.png"
                     onClicked: showUserProfile()
                 }
 
                 ToolButton {
                     id: tbAdd
-                    /*anchors.top: parent.top
-                    anchors.left: tbUser.right
-                    anchors.leftMargin: 0.01 * parent.width
-                    height: tbList.height
-                    width: tbList.width*/
                     icon.source: "res/add.png"
-                    //iconSource: "res/add.png"
                     onClicked: addDuel()
                 }
 
                 ToolButton {
                     id: tbRefresh
-                    /*anchors.top: parent.top
-                    anchors.left: tbAdd.right
-                    anchors.leftMargin: 0.01 * parent.width
-                    height: tbList.height
-                    width: tbList.width*/
                     icon.source: "res/refresh.png"
-                    //iconSource: "res/refresh.png"
                     onClicked: refreshData()
                 }
 
                 ToolButton {
                     id: tbSettings
-                    /*anchors.top: parent.top
-                    anchors.right: parent.right
-                    anchors.rightMargin: 0.01 * parent.width
-                    height: tbList.height
-                    width: tbList.width*/
                     icon.source: "res/settings.png"
-                    //iconSource: "res/settings.png"
                     onClicked: showMainMenu()
                     Layout.alignment: Qt.AlignRight
                 }
@@ -790,9 +747,17 @@ Window {
         }
     }
 
+    property string tipTxt;
+    property bool allowCloseTip: false;
+
     function addDuel() {
         console.log("add duel");
-        MUtils.showWindow("new_challenge.qml");
+        if (core.allowedAdd) {
+            MUtils.showWindow("new_challenge.qml");
+        } else {
+            tipTxt = warlockDictionary.getStringByCode("WaitTrainingBattle");
+            showTipMessage(true);
+        }
     }
 
     function refreshData() {
@@ -859,6 +824,12 @@ Window {
         }
     }
 
+    function showTipMessage(allowClose) {
+        console.log("Tip: ", tipTxt, allowClose);
+        allowCloseTip = allowClose ? true : false;
+        MUtils.showWindow("tip_message.qml");
+    }
+
     function showErrorMessage() {
         console.log("Error: ", Qt.core.errorMsg)
         MUtils.showWindow("error_message.qml");
@@ -870,7 +841,10 @@ Window {
     }
 
     function showReadyBattle() {
-        console.log("showReadyBattle")
+        console.log("showReadyBattle", allowCloseTip);
+        if (allowCloseTip) {
+            closeChild();
+        }
         MUtils.showReadyBattle();
     }
 
@@ -907,11 +881,12 @@ Window {
     }
 
     function closeChild() {
+        console.log("closeChild", exit_on_back_button, MUtils.wndTmp);
         if (MUtils.wndTmp) {
-            MUtils.wndTmp.destroy()
-            MUtils.wndTmp = null
+            MUtils.wndTmp.destroy();
+            MUtils.wndTmp = null;
         }
-        exit_on_back_button = true
+        exit_on_back_button = true;
     }
 
     property string currSpell: ""
@@ -946,16 +921,27 @@ Window {
         onErrorOccurred: showErrorMessage()
         onIsLoadingChanged: MUtils.isLoadingChanged()
         onFinishedBattleChanged: showFinishedBattle()
-        onReadyBattleChanged: showReadyBattle()
+        onReadyBattleChanged: {
+            console.log("onReadyBattleChanged");
+            showReadyBattle();
+        }
         onRegisterNewUserChanged: {
                 Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "Hi all, it's my first battle, so be friendly! TRANING BOT ONLY");
                 hideNewUserMenu();
+                tipTxt = warlockDictionary.getStringByCode("JustRegistered");
+                showTipMessage(true);
             }
         onOrderSubmitedChanged: MUtils.cleanOrders()
         onTimerStateChanged: changeTimerState()
         onChallengeListChanged: MUtils.loadChallengesList(false)
         onSpellListHtmlChanged: MUtils.loadSpellList()
         onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
+        onAllowedAcceptChanged: {
+            console.log("onAllowedAcceptChanged");
+            closeChild();
+            MUtils.loadChallengesList(false);
+        }
+
         /*onLoginChanged: {
             MUtils.isAI = Qt.core.login === "Construct";
         }*/
@@ -1005,6 +991,9 @@ Window {
         }
         MUtils.cleanOrders();
         MUtils.showList();
+
+        //tipTxt = warlockDictionary.getStringByCode("JustRegistered");
+        //showTipMessage(true);
     }
 
     Component.onCompleted: creationFinished()

@@ -251,6 +251,14 @@ function destroyEnemySpell(self, enemy_spell) {
 }
 
 function compareSpells(spell_left, spell_right) {
+    if (spell_left.ng === 'X') {
+        return WARLOCK_HAND_RIGHT;
+    }
+
+    if (spell_right.ng === 'X') {
+        return WARLOCK_HAND_LEFT;
+    }
+
     if (spell_left.anti_spell && !spell_right.anti_spell) {
         return WARLOCK_HAND_LEFT;
     }
@@ -439,8 +447,8 @@ function processBattle() {
     setGestureBySpell(battle.self, left_first ? battle.self.bsL : battle.self.bsR);
     setGestureBySpell(battle.self, left_first ? battle.self.bsR : battle.self.bsL);
     console.log("processBattle", JSON.stringify(battle));
-    tSendOrderTimer.start();
-    //sendOrderEx();
+    //tSendOrderTimer.start();
+    sendOrderEx();
 
     //spellDecision(battle);
     //checkSpellCast(battle);

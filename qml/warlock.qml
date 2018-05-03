@@ -108,8 +108,12 @@ Rectangle {
     }
 
     function finishCreation() {
-        console.log("Warlock.qml finishCreation", w_possible_spells, w_left_g, w_right_g)
+        console.log("Warlock.qml finishCreation", JSON.stringify(w_possible_spells), w_left_g, w_right_g);
         //rWarlock.width = tLabelRight.width + 12 + tLabelRightGesture.width + cbPossibleRight.width
+
+        var search_login = Qt.core.login + "";
+        w_send_gestures = w_warlock_status.toLocaleLowerCase().indexOf(search_login.toLowerCase()) !== -1;
+        console.log("warlock.qml", search_login, w_warlock_status, w_send_gestures);
         var dead_or_surrender = (w_warlock_status.indexOf("Surrendered") != -1) || (w_warlock_status.indexOf("Health: 0") != -1);
         rWarlock.height = tLabel.height + 15 + cbPossibleLeft.height + cbPossibleRight.height;
         var is_possible = (w_possible_spells.length > 0) && !dead_or_surrender;
@@ -118,7 +122,7 @@ Rectangle {
             var arr_l = [];
             var arr_r = [];
             for(var i = 0, Ln = arr.length; i < Ln; ++i) {
-                if (arr[i].a === 0) {
+                if ((!w_send_gestures) && (arr[i].a === 0)) {
                     continue;
                 }
 
@@ -138,9 +142,6 @@ Rectangle {
                 cbPossibleRight.visible = true
             }
         }
-        var search_login = Qt.core.login + "";
-        w_send_gestures = w_warlock_status.toLocaleLowerCase().indexOf(search_login.toLowerCase()) !== -1;
-        console.log("warlock.qml", search_login, w_warlock_status, w_send_gestures);
         if (w_send_gestures) {
             tLabel.color = "green";
             if (is_possible) {

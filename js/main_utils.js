@@ -51,7 +51,8 @@ function sendOrderEx() {
     post_request += "LHT$"+arrTarget[cbLHT.currentText].replace(" ", "+")+"#";
     post_request += "RHT$"+arrTarget[cbRHT.currentText].replace(" ", "+")+"#";
 
-    for(var i = 0, Ln = mtMonsterObj.length; i < Ln; ++i) {
+    var i, Ln;
+    for(i = 0, Ln = mtMonsterObj.length; i < Ln; ++i) {
         console.log("mt_label", mtMonsterObj[i].mt_id, mtMonsterObj[i].mt_value);
         if (!mtMonsterObj[i].mt_value || mtMonsterObj[i].mt_value === ' ') {
             continue;
@@ -60,7 +61,7 @@ function sendOrderEx() {
         post_request += mtMonsterObj[i].mt_id + "$" + arrTarget[mtMonsterObj[i].mt_value].replace(" ", "+") + "#"
     }
 
-    for(var i = 0, Ln = cpPersonObj.length; i < Ln; ++i) {
+    for(i = 0, Ln = cpPersonObj.length; i < Ln; ++i) {
         console.log("pc_gesture_value", cpPersonObj[i].pc_gesture_value, cpPersonObj[i].pc_gesture_value.replace(">", "&gt;"))
         console.log("cpPersonObj", cpPersonObj[i])
         var pc_gv = cpPersonObj[i].pc_gesture_value;
@@ -75,7 +76,7 @@ function sendOrderEx() {
         post_request += "DIRECTGESTURE" + cpPersonObj[i].pc_target_id + "$" + pc_gv + "#"
     }
 
-    for(var i = 0, Ln = pParalyzeObj.length; i < Ln; ++i) {
+    for(i = 0, Ln = pParalyzeObj.length; i < Ln; ++i) {
         post_request += "PARALYZE" + pParalyzeObj[i].p_target_id + "$" + pParalyzeObj[i].p_hand_value + "#"
     }
 
@@ -132,30 +133,13 @@ function loadChallengesList(need_return) {
     }
 
     var list_str = Qt.core.challengeList;
-    var arr = JSON.parse(list_str);
+    var arr = Qt.core.allowedAccept ? JSON.parse(list_str) : [];
     mainWindow.battles = arr;
     console.log("loadChallengesList", need_return, Qt.core.isAI, list_str, Qt.core.readyInBattles, Qt.core.waitingInBattles);
     if (need_return) {
         return arr;
     } else {
         tvChallengeList.model = arr;
-        if (!Qt.core.isAI) {
-            console.log("loadChallengesList", "not AI");
-            return;
-        }
-        var cnt = Qt.core.readyInBattles.split(",").length + Qt.core.waitingInBattles.split(",").length;
-        if (cnt > 5) {
-            console.log("loadChallengesList", "to much chalenges");
-            return;
-        }
-        for (var i = 0, Ln = arr.length; i < Ln; ++i) {
-            if (arr[i].for_bot) {
-                Qt.core.acceptChallenge(arr[i].battle_id);
-                if (++cnt >= 5) {
-                    break;
-                }
-            }
-        }
     }
 }
 
@@ -898,6 +882,7 @@ function showWindow(wnd_name, child_wnd) {
     }
 
     wndTmp = Qt.createComponent("qrc:///qml/" + wnd_name);
+    wndTmp.window_name = wnd_name;
     if (wndTmp.status === Component.Ready) {
         finishedShowWindow();
     } else {
