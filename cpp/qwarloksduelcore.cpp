@@ -3,7 +3,7 @@
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     QObject(parent)
 {
-    _lstAI << "CONSTRUCT" << "TEST_01";
+    _lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
     _isLogined = false;
     _isLoading = false;
     _isAI = false;
@@ -786,7 +786,7 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
 }
 
 void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
-    qDebug() << "_prevGestures" << _prevGestures << "_leftGestures" << _leftGestures;
+    qDebug() << "QWarloksDuelCore::prepareSpellHtmlList" << "_prevGestures" << _prevGestures << "_leftGestures" << _leftGestures;
     if (_prevGestures.compare(_leftGestures) == 0 && !_spellListHtml.isEmpty()) {
         qDebug() << "prepareSpellHtmlList exit point 1";
         if (force_emit) {
@@ -807,7 +807,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
         return;
     }
 
-    QList<QSpell *> sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER, _possibleLeftGestures, _possibleRightGestures);
+    QList<QSpell *> sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER, _possibleLeftGestures.indexOf("As Right") != -1 ? _possibleRightGestures : _possibleLeftGestures, _possibleRightGestures);
     if (sl.count() == 0) {
         _spellListHtml.clear();
         if (emit_signal) {
@@ -821,14 +821,17 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
 
     bool found;
     foreach(QSpell *spell, SpellChecker.Spells) {
+        qDebug() << "spell" << spell->gesture();
         found = false;
         foreach(QSpell *s, sl) {
             if (!s->possibleCast()) {
                 continue;
             }
             if (s->spellID() == spell->spellID()) {
+
                 int day_cnt = s->turnToCast();
                 QString hint = s->hand() == WARLOCK_HAND_LEFT ? "Left " : "Right ";
+                qDebug() << "s" << spell->gesture() << hint;
                 //hint.append(" in " + spl.at(2) + " turns");
                 if (spell->gesture().compare("WFP") == 0 || spell->gesture().compare("SD") == 0) {
                     qDebug() << "day_cnt" << day_cnt;

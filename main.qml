@@ -63,6 +63,7 @@ Window {
             }
         }
 
+        property int timerCounter: 0
         Timer {
             id: tScanTimer
             interval: core.isAI ? 8000 : 60000
@@ -71,20 +72,10 @@ Window {
 
             onTriggered: {
                 console.log("start scanning");
-                core.scanState()
-            }
-        }
-
-        Timer {
-            id: tSendOrderTimer
-            interval: 1000
-            running: false
-            repeat: false
-
-            onTriggered: {
-                console.log("tSendOrderTimer");
-                tSendOrderTimer.stop();
-                MUtils.sendOrderEx();
+                core.scanState();
+                if (--timerCounter <= 0) {
+                    tScanTimer.interval = 60000;
+                }
             }
         }
 
@@ -832,7 +823,9 @@ Window {
 
     function showErrorMessage() {
         console.log("Error: ", Qt.core.errorMsg)
-        MUtils.showWindow("error_message.qml");
+        if (!core.isAI) {
+            MUtils.showWindow("error_message.qml");
+        }
     }
 
     function showFinishedBattle() {

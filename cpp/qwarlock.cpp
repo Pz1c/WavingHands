@@ -59,8 +59,13 @@ QString QWarlock::possibleLeftGestures() const
 
 void QWarlock::setPossibleGestures(QString left, QString right) {
     qDebug() << "QWarlock::setPossibleGestures" << left << right;
-    _possibleLeftGestures = left;
+    /*_possibleLeftGestures = left;
     _possibleRightGestures = right;
+    if (_possibleLeftGestures.indexOf("As Right") != -1) {
+        _possibleLeftGestures = _possibleRightGestures;
+    }
+    qDebug() << "QWarlock::setPossibleGestures" << _possibleLeftGestures << _possibleRightGestures;
+    //*/
 }
 
 void QWarlock::parseStatus() {
@@ -158,6 +163,7 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
             case SPELL_RESIST_HEAT:
                 _fireproof_in = spell->turnToCast();
                 break;
+
         }
     }
 
@@ -175,6 +181,17 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
             }
             if (enemy && (((spell->level() == 0) && (enemy->_coldproof > 0)) || ((spell->level() == 1) && (enemy->_fireproof > 0)))) {
                 spell->changePriority(-4);
+            }
+            break;
+        case SPELL_CURE_HEAVY_WOUNDS:
+            if (_desease >= spell->turnToCast()) {
+                spell->changePriority(5);
+            }
+            break;
+        case SPELL_REMOVE_ENCHANTMENT:
+        case SPELL_DISPEL_MAGIC:
+            if ((_desease > _poison ? _desease : _poison) >= spell->turnToCast()) {
+                spell->changePriority(5);
             }
             break;
         }

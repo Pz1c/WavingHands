@@ -116,9 +116,12 @@ function sendOrderEx() {
 
     teChatMsg.text = ""
     console.log("sendOrder", post_request);
-    Qt.core.sendOrders(post_request)
+    Qt.core.sendOrders(post_request);
+    tScanTimer.interval = 5000;
+    rMain.timerCounter = 30;
+    tScanTimer.restart();
     //tSpellList.text = ''
-    showList()
+    showList();
 }
 
 function acceptChallenge(link) {

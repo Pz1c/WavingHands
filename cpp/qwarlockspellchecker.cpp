@@ -83,7 +83,7 @@ int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString
         return 0;
     }
     QString work_spell = spell.left(Ln);
-    //qDebug() << "checkSpellPosible " << spell << " work spell " << work_spell << " left " << left << " right" << right;
+    qDebug() << "checkSpellPosible " << spell << " work spell " << work_spell << " left " << left << " right" << right << "possible_left" << possible_left << "possible_right" << possible_right;
     bool perhapse;
     int spell_idx;
     QChar spell_char;
