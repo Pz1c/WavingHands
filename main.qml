@@ -73,8 +73,8 @@ Window {
             onTriggered: {
                 console.log("start scanning");
                 core.scanState();
-                if (--timerCounter <= 0) {
-                    tScanTimer.interval = 60000;
+                if (--rMain.timerCounter <= 0) {
+                    tScanTimer.interval = core.isAI ? 10000 : 60000;
                 }
             }
         }
@@ -919,7 +919,7 @@ Window {
             showReadyBattle();
         }
         onRegisterNewUserChanged: {
-                Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "Hi all, it's my first battle, so be friendly! TRANING BOT ONLY");
+                Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "First battle, TRANING BOT ONLY");
                 hideNewUserMenu();
                 tipTxt = warlockDictionary.getStringByCode("JustRegistered");
                 showTipMessage(true);
@@ -934,10 +934,6 @@ Window {
             closeChild();
             MUtils.loadChallengesList(false);
         }
-
-        /*onLoginChanged: {
-            MUtils.isAI = Qt.core.login === "Construct";
-        }*/
     }
 
     property var warlockDictionary: WarlockDictionary

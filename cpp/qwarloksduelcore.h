@@ -190,12 +190,15 @@ protected:
     void saveParameters();
     void loadParameters();
 
+    void setTimeState(bool State);
+
 private:
     // user login
     bool _isLogined;
     bool _isAI;
     bool _allowedAdd;
     bool _allowedAccept;
+    int _botIdx;
     QString _login;
     QString _password;
     QString _errorMsg;

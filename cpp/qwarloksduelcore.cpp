@@ -7,6 +7,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _isLogined = false;
     _isLoading = false;
     _isAI = false;
+    _botIdx = 0;
     _requestIdx = 0;
     loadParameters();
     applyProxySettings();
@@ -622,13 +623,17 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
 
     prepareSpellHtmlList();
 
-    _isTimerActive = false;
-    emit timerStateChanged();
+    setTimeState(false);
     emit readyBattleChanged();
 
     return true;
 }
 
+
+void QWarloksDuelCore::setTimeState(bool State) {
+    _isTimerActive = State;
+    emit timerStateChanged();
+}
 
 void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     _played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>");
@@ -649,18 +654,16 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     qDebug() << "waiting: " << _waiting_in_battles;
     qDebug() << "finished: " << _finished_battles;
     if (_ready_in_battles.count() > 0) {
-        _isTimerActive = false;
-        emit timerStateChanged();
+        setTimeState(false);
         getBattle(_ready_in_battles.at(0), 0);
     } else {
-        _isTimerActive = true;
-        emit timerStateChanged();
+        setTimeState(true);
     }
 }
 
 bool QWarloksDuelCore::finishScan(QString &Data, int StatusCode) {
     if (StatusCode != 200) {
-        // somethisn wrong try relogin
+        // something wrong try relogin
         _isLogined = false;
         loginToSite();
         _errorMsg = "Can't receive player info, try reconnect";
@@ -668,7 +671,18 @@ bool QWarloksDuelCore::finishScan(QString &Data, int StatusCode) {
         return false;
     }
     parsePlayerInfo(Data);
-    getChallengeList();
+    if (_isAI) {
+        _challengeList = "[]";
+        if (_ready_in_battles.count() == 0) {
+            _isLogined = false;
+            if (++_botIdx >= _lstAI.count()) {
+                _botIdx = 0;
+            }
+            _login = _lstAI.at(_botIdx);
+        }
+    } else {
+        getChallengeList();
+    }
     return true;
 }
 

@@ -136,7 +136,7 @@ function loadChallengesList(need_return) {
     }
 
     var list_str = Qt.core.challengeList;
-    var arr = Qt.core.allowedAccept ? JSON.parse(list_str) : [];
+    var arr = (!Qt.core.isAI && Qt.core.allowedAccept) ? JSON.parse(list_str) : [];
     mainWindow.battles = arr;
     console.log("loadChallengesList", need_return, Qt.core.isAI, list_str, Qt.core.readyInBattles, Qt.core.waitingInBattles);
     if (need_return) {
