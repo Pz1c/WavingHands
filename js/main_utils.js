@@ -781,29 +781,7 @@ function finishLoadMonsterTargetEx(str_monster_list) {
         mtMonsterObj[mtMonsterObj.length] = sprite;
         console.log("looks like created: " + sprite.mt_label + " x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("svMonsterOrders.w: " + svMonsterOrders.width);
-        /*if (currLeft != 0) {
-            console.log("currentleft.w: " + currLeft.width)
-            if (currLeft.width + sprite.width + 6 < svMonsterOrders.width) {
-                sprite.y = currLeft.y
-                sprite.x = currLeft.x + currLeft.width + 3
-                if (arrL[currLIdx + 1]) {
-                    console.log("exists next arrL")
-                    ++currLIdx
-                    currLeft = arrL[currLIdx]
-                } else {
-                    console.log("currLeft = 0")
-                    currLeft = 0
-                }
-            } else {
-                console.log("push into arrL")
-                arrL[arrL.length] = sprite
-                curr_y += sprite.height + 3
-            }
-        } else {*/
-            //currLeft = sprite
-            //arrL[currLIdx] = sprite
-            curr_y += sprite.height + 3
-        //}
+        curr_y += sprite.height + 3
         if (total_heght < sprite.y + sprite.height + 3) {
             total_heght = sprite.y + sprite.height + 3
         }

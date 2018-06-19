@@ -309,7 +309,7 @@ function isSpellsNormal(self) {
     }
 
     if (!need_change) {
-        for (var i = 0; i < 3; ++i) {
+        for (var i = 0; i < 4; ++i) {
             if ((getGestureBySpell(self.bsL, i) === 'P') && (getGestureBySpell(self.bsR, i) === 'P')) {
                 console.log("isSpellsNormal", "try surrender");
                 need_change = true;

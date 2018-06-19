@@ -32,5 +32,6 @@
         <file>qml/user_profile.qml</file>
         <file>qml/warlock.qml</file>
         <file>qml/tip_message.qml</file>
+        <file>qml/LargeText.qml</file>
     </qresource>
 </RCC>
