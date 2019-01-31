@@ -433,6 +433,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
 
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
+    _isParaFDF = Data.indexOf("(ParaFDF)") != -1;
     QString point1 = "<A TARGET=_blank HREF=\"/rules/1/quickref.html\">Spell Reference</A></DIV>";
     QString point2 = _loadedBattleType != 0 ? "</BODY>" : "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">";
     int idx1 = Data.indexOf(point1);
@@ -557,6 +558,7 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
 
     QWarlock *enemy = 0;
     foreach(QWarlock *m, _Warlock) {
+        m->setIsParaFDF(_isParaFDF);
         if (m->player()) {
             m->setPossibleGestures(_possibleLeftGestures, _possibleRightGestures);
         } else {
@@ -590,6 +592,8 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _fire = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=CHECKBOX CLASS=check NAME=FIRE VALUE=1", ">", "<");
     _isDelay = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=DELAY") != -1;
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
+    //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
+    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF;
     return _loadedBattleTurn != 0;
 }
 
@@ -821,7 +825,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
         return;
     }
 
-    QList<QSpell *> sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER, _possibleLeftGestures.indexOf("As Right") != -1 ? _possibleRightGestures : _possibleLeftGestures, _possibleRightGestures);
+    QList<QSpell *> sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER, _possibleLeftGestures.indexOf("As Right") != -1 ? _possibleRightGestures : _possibleLeftGestures, _possibleRightGestures, _isParaFDF);
     if (sl.count() == 0) {
         _spellListHtml.clear();
         if (emit_signal) {
@@ -836,6 +840,9 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
     bool found;
     foreach(QSpell *spell, SpellChecker.Spells) {
         qDebug() << "spell" << spell->gesture();
+        if (!spell->active()) {
+            continue;
+        }
         found = false;
         foreach(QSpell *s, sl) {
             if (!s->possibleCast()) {
@@ -1174,6 +1181,10 @@ int QWarloksDuelCore::isDelay() {
 
 int QWarloksDuelCore::isPermanent() {
     return _isPermanent ? 1 : 0;
+}
+
+int QWarloksDuelCore::isParaFDF() {
+    return _isParaFDF ? 1 : 0;
 }
 
 QString QWarloksDuelCore::fire() {

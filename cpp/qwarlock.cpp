@@ -47,6 +47,16 @@ int QWarlock::strValueToInt(QString val) {
     }
 }
 
+bool QWarlock::isParaFDF() const
+{
+    return _isParaFDF;
+}
+
+void QWarlock::setIsParaFDF(bool isParaFDF)
+{
+    _isParaFDF = isParaFDF;
+}
+
 QString QWarlock::possibleRightGestures() const
 {
     return _possibleRightGestures;

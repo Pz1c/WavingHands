@@ -67,6 +67,8 @@
 #define SPELL_COUNTER_SPELL2 42
 #define SPELL_SURRENDER 43
 #define SPELL_STAB 44
+#define SPELL_DISEASE_FDF 45
+#define SPELL_PARALYSIS_FDF 46
 
 #define WARLOCK_HAND_NONE 0
 #define WARLOCK_HAND_LEFT 1
@@ -111,11 +113,15 @@ public:
     bool possibleCast() const;
     QString nextGesture() const;
 
+    bool active() const;
+    void setActive(bool active);
+
 protected:
 
     int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast);
 
 private:
+    bool _active;
     int _spellID;
     QString _gesture;
     QString _name;

@@ -51,6 +51,7 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(int timerState READ timerState NOTIFY timerStateChanged)
     Q_PROPERTY(int isDelay READ isDelay NOTIFY isDelayChanged)
     Q_PROPERTY(int isPermanent READ isPermanent NOTIFY isPermanentChanged)
+    Q_PROPERTY(int isParaFDF READ isParaFDF NOTIFY isParaFDFChanged)
     Q_PROPERTY(QString fire READ fire NOTIFY fireChanged)
     Q_PROPERTY(QString challengeList READ challengeList NOTIFY challengeListChanged)
     Q_PROPERTY(QString spellListHtml READ spellListHtml NOTIFY spellListHtmlChanged)
@@ -93,6 +94,7 @@ public:
     int timerState();
     int isDelay();
     int isPermanent();
+    int isParaFDF();
     QString fire();
     int challengeSubmited();
     QString challengeList();
@@ -135,6 +137,7 @@ signals:
     void isDelayChanged();
     void fireChanged();
     void isPermanentChanged();
+    void isParaFDFChanged();
     void challengeSubmitedChanged();
     void challengeListChanged();
     void spellListHtmlChanged();
@@ -235,6 +238,7 @@ private:
     QString _paralyzeList;
     bool _isDelay;
     bool _isPermanent;
+    bool _isParaFDF;
     QString _fire;
     QString _challengeList;
     QString _spellListHtml;

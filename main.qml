@@ -68,7 +68,7 @@ Window {
         property int timerCounter: 0
         Timer {
             id: tScanTimer
-            interval: core.isAI ? 8000 : 60000
+            interval: core.isAI ? 20000 : 60000
             running: false
             repeat: true
 
@@ -414,7 +414,7 @@ Window {
                         anchors.centerIn: parent
                         text: ""
                         ////font.pointSize: 12 * height_koeff
-                        inputMethodHints: Qt.ImhNoPredictiveText
+                        inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
                         //echoMode: TextInput.Password
                     }
                 }
@@ -960,7 +960,7 @@ Window {
         cbDelay.model = tmp_l_arr
         tPermanentLabel.text = warlockDictionary.getStringByCode("MakeSpellPermanent")
         cbPermanent.model = tmp_l_arr
-        tCharMessage.text = warlockDictionary.getStringByCode("ChatMessage")
+        tChatMessage.text = warlockDictionary.getStringByCode("ChatMessage")
         labelDoit.text = warlockDictionary.getStringByCode("Submit")
         MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage")
         MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " "

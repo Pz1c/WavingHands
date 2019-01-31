@@ -13,11 +13,11 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(7,"DFWFd","Blindness", SPELL_TYPE_CONFUSION,13,0,15));
     Spells.append(new QSpell(8,"DPP","Amnesia", SPELL_TYPE_CONFUSION,16,1,12));
     Spells.append(new QSpell(9,"DSF","Confusion/Maladroitness", SPELL_TYPE_CONFUSION,16,5,12));
-    Spells.append(new QSpell(10,"DSFFFc","Disease", SPELL_TYPE_POISON,14,1,17));
+    Spells.append(new QSpell(SPELL_DISEASE,"DSFFFc","Disease", SPELL_TYPE_POISON,14,1,17));
     Spells.append(new QSpell(11,"DWFFd","Blindness", SPELL_TYPE_CONFUSION,13,0,15));
     Spells.append(new QSpell(12,"DWSSSP","Delay Effect", SPELL_TYPE_SPEC,10,0,10));
     Spells.append(new QSpell(13,"DWWFWD","Poison", SPELL_TYPE_POISON,13,1,18));
-    Spells.append(new QSpell(14,"FFF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12));
+    Spells.append(new QSpell(SPELL_PARALYSIS,"FFF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12));
     Spells.append(new QSpell(15,"WFPSFW","Summon Giant", SPELL_TYPE_SUMMON_MONSTER,11,4,14));
     Spells.append(new QSpell(16,"FPSFW","Summon Troll", SPELL_TYPE_SUMMON_MONSTER,12,3,13));
     Spells.append(new QSpell(17,"PSFW","Summon Ogre", SPELL_TYPE_SUMMON_MONSTER,13,2,12));
@@ -48,6 +48,8 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(42,"WWS","Counter Spell", SPELL_TYPE_MAGIC_SHIELD,10,1,10));
     Spells.append(new QSpell(43,"p","Surrender", SPELL_TYPE_SPEC,-10,0,0));
     Spells.append(new QSpell(44,">","Stab", SPELL_TYPE_STAB,-1,0,0));
+    Spells.append(new QSpell(SPELL_DISEASE_FDF,"DSFDFc","Disease", SPELL_TYPE_POISON,14,1,17));
+    Spells.append(new QSpell(SPELL_PARALYSIS_FDF,"FDF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12));
 }
 
 bool QWarlockSpellChecker::checkSpellChar(QChar left, QChar right, QChar spell) {
@@ -150,11 +152,19 @@ void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spe
     }
 }
 
-QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left, QString possible_right) {
+QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left, QString possible_right, bool IsFDF) {
     qDebug() << "QWarlockSpellChecker::getPosibleSpellsList" << left << right << Enemy;
     QList<QSpell *> res;
 
+    Spells.at(SPELL_DISEASE)->setActive(!IsFDF);
+    Spells.at(SPELL_DISEASE_FDF)->setActive(IsFDF);
+    Spells.at(SPELL_PARALYSIS)->setActive(!IsFDF);
+    Spells.at(SPELL_PARALYSIS_FDF)->setActive(IsFDF);
+
     foreach(QSpell *vn, Spells) {
+        if (!vn->active()) {
+            continue;
+        }
         checkHandOnSpell(res, vn, left, right, WARLOCK_HAND_LEFT, Enemy, possible_left, possible_right);
         checkHandOnSpell(res, vn, right, left, WARLOCK_HAND_RIGHT, Enemy, possible_right, possible_left);
     }
@@ -192,7 +202,7 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
     QString right = warlock->rightGestures().replace(" ", "");
     QString possible_left = warlock->possibleLeftGestures();
     QString possible_right = warlock->possibleRightGestures();
-    QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right);
+    QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF());
     qDebug() << "before sort" << sl;
     qSort(sl.begin(), sl.end(), QSpell::sortDesc);
     qDebug() << "after sort" << sl;

@@ -12,6 +12,7 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
     _turnToCast = -1;
     _alreadyCasted = -1;
     _hand = WARLOCK_HAND_NONE;
+    _active = true;
 }
 
 int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast) {
@@ -26,6 +27,16 @@ int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, i
     }
 
     return res;
+}
+
+bool QSpell::active() const
+{
+    return _active;
+}
+
+void QSpell::setActive(bool active)
+{
+    _active = active;
 }
 
 int QSpell::level() const
