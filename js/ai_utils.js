@@ -66,8 +66,9 @@ var SPELL_SURRENDER = 43;
 var SPELL_STAB = 44;
 var SPELL_DISEASE_FDF = 45;
 var SPELL_PARALYSIS_FDF = 46;
+var SPELL_PARALYSIS_FDFD = 47;
 
-var arr_no_fdf_inactive = [SPELL_DISEASE_FDF, SPELL_PARALYSIS_FDF];
+var arr_no_fdf_inactive = [SPELL_DISEASE_FDF, SPELL_PARALYSIS_FDF, SPELL_PARALYSIS_FDFD];
 var arr_fdf_inactive = [SPELL_DISEASE, SPELL_PARALYSIS];
 
 
@@ -118,7 +119,8 @@ var arr_spells = [
 /* 43*/ {active:true,gesture:"p",name:"Surrender",type:SPELL_TYPE_SPEC,priority:-100,level:0,danger:0},
 /* 44*/ {active:true,gesture:">",name:"Stab",type:SPELL_TYPE_STAB,priority:-1,level:0,danger:0},
 /* 45*/ {active:true,gesture:"DSFDFc",name:"Disease",type:SPELL_TYPE_POISON,priority:4,level:1,danger:17},
-/* 46*/ {active:true,gesture:"FDF",name:"Paralysis",type:SPELL_TYPE_CONFUSION,priority:5,level:0,danger:12}
+/* 46*/ {active:true,gesture:"FDF",name:"Paralysis",type:SPELL_TYPE_CONFUSION,priority:5,level:0,danger:12},
+/* 47*/ {active:true,gesture:"FDFD",name:"Paralysis",type:SPELL_TYPE_CONFUSION,priority:5,level:0,danger:12}
 ];
 
 function checkSpell(spell, all_ids, all_types, all_hands, not_ids_empty, search_types, search_ids, not_ids, turn_from, turn_to, hands) {
@@ -414,14 +416,16 @@ function setNextSpell(self) {
 }
 
 
-function processBattle() {
-    //console.log("processBattle", JSON.stringify(battle));
+function processBattle(isAI) {
+    console.log("processBattle", isAI/*JSON.stringify(battle)*/);
 
     var i, Ln;
-    arr_spells[10].active = !battle.isFDF;
+    arr_spells = JSON.parse(Qt.core.getSpellBook());
+    /*arr_spells[10].active = !battle.isFDF;
     arr_spells[14].active = !battle.isFDF;
-    arr_spells[45].active = !battle.isFDF;
-    arr_spells[46].active = !battle.isFDF;
+    arr_spells[45].active = battle.isFDF;
+    arr_spells[46].active = battle.isFDF;
+    arr_spells[47].active = battle.isFDF;*/
     /*for(i = 0, Ln = arr_spells.length; i < Ln; ++i) {
         arr_spells[i].active = (battle.isFDF && (arr_fdf_inactive.indexOf(i) === -1)) || (!battle.isFDF && (arr_no_fdf_inactive.indexOf(i) === -1));
     }*/
@@ -475,7 +479,9 @@ function processBattle() {
     setGestureBySpell(battle.self, left_first ? battle.self.bsR : battle.self.bsL);
     console.log("processBattle", JSON.stringify(battle));
     //tSendOrderTimer.start();
-    sendOrderEx();
+    if (isAI) {
+        sendOrderEx();
+    }
 
     //spellDecision(battle);
     //checkSpellCast(battle);

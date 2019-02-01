@@ -1,5 +1,6 @@
 #include "qwarlockutils.h"
 #include "qwarlockdictionary.h"
+#include "qwarlock.h"
 
 QWarlockUtils::QWarlockUtils()
 {
@@ -50,13 +51,13 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
 QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd) {
     int idx1 = Data.indexOf(Search);
     if (idx1 == -1) {
-        return 0;
+        return "";
     }
     idx1 += Search.length();
 
     int idx2 = ValueBegin.isEmpty() ? idx1 : Data.indexOf(ValueBegin, idx1);
     if (idx2 == -1) {
-        return 0;
+        return "";
     }
 
     idx2 += ValueBegin.length();
@@ -73,7 +74,7 @@ QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString 
         }
     }
     if (idx3 == -1) {
-        return 0;
+        return "";
     }
     QString res = Data.mid(idx2, idx3 - idx2);
     qDebug() << "getStringFromData " << Search << " res: " << res;
@@ -82,10 +83,9 @@ QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString 
 
 int QWarlockUtils::getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd) {
     QString res = getStringFromData(Data, Search, ValueBegin, ValueEnd);
-    bool *ok = new bool();
-    int int_res = res.toInt(ok, 10);
-    int final_res = *ok ? int_res : 0;
-    delete ok;
+    bool ok;
+    int int_res = res.toInt(&ok, 10);
+    int final_res = ok ? int_res : 0;
     return final_res;
 }
 
@@ -298,12 +298,12 @@ QString QWarlockUtils::parseChallengeDescription(QString &Data) {
     QString res;
     //res.append(Data.toLower().indexOf("maladroit") == -1 ? "0#!#" : "1#!#");
     //res.append(Data.toLower().indexOf("parafc") == -1 ? "0#!#" : "1#!#");
-    int idx1 = 0;
-    idx1 = Data.indexOf(">");
+    int idx1 = Data.indexOf(">");
     if (idx1 == -1) {
         res.append(Data);
     } else {
-        res.append(Data.mid(++idx1, Data.length() - idx1));
+        ++idx1;
+        res.append(Data.mid(idx1, Data.length() - idx1));
     }
     res = res.replace("\r", "").replace("\n","<br>").replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive).trimmed();
     return res;
@@ -326,7 +326,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     QString search2 = "</TD>";
     QStringList tmp;
     QString logins, description, battle_id;
-    int need_more = 0, fast = 0, friendly = -1, parafc = 0, maladroit = 0, total_count;
+    int need_more = 0, fast = 0, friendly = -1, parafc = 0, maladroit = 0, total_count = 0;
     int idx1 = 0, idx2, idx = -1;
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();

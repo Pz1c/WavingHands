@@ -6,7 +6,7 @@
 #include <QStringList>
 #include <QPair>
 #include <QDebug>
-#include "qwarlock.h"
+//#include "qwarlock.h"
 #include "qmonster.h"
 
 #define QValueName QPair<QString, QString>
@@ -42,5 +42,4 @@ public:
     static QString parseChallengePart3(QString &Data);
 
 };
-
 #endif // QWARLOCKUTILS_H

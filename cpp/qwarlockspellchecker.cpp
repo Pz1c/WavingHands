@@ -50,6 +50,7 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(44,">","Stab", SPELL_TYPE_STAB,-1,0,0));
     Spells.append(new QSpell(SPELL_DISEASE_FDF,"DSFDFc","Disease", SPELL_TYPE_POISON,14,1,17));
     Spells.append(new QSpell(SPELL_PARALYSIS_FDF,"FDF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12));
+    Spells.append(new QSpell(SPELL_PARALYSIS_FDFD,"FDFD","Paralysis", SPELL_TYPE_CONFUSION,15,2,12));
 }
 
 bool QWarlockSpellChecker::checkSpellChar(QChar left, QChar right, QChar spell) {
@@ -157,9 +158,11 @@ QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString
     QList<QSpell *> res;
 
     Spells.at(SPELL_DISEASE)->setActive(!IsFDF);
-    Spells.at(SPELL_DISEASE_FDF)->setActive(IsFDF);
+
     Spells.at(SPELL_PARALYSIS)->setActive(!IsFDF);
+    Spells.at(SPELL_DISEASE_FDF)->setActive(IsFDF);
     Spells.at(SPELL_PARALYSIS_FDF)->setActive(IsFDF);
+    Spells.at(SPELL_PARALYSIS_FDFD)->setActive(IsFDF);
 
     foreach(QSpell *vn, Spells) {
         if (!vn->active()) {
@@ -225,5 +228,27 @@ QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool Enem
     res.prepend("[").append("]");
 
     //qDebug() << "spellCheckFinish result " << res;
+    return res;
+}
+
+QString QWarlockSpellChecker::getSpellBook(bool IsFDF) {
+    qDebug() << "QWarlockSpellChecker::getSpellBook" << IsFDF;
+    QString res;
+
+    Spells.at(SPELL_DISEASE)->setActive(!IsFDF);
+    Spells.at(SPELL_PARALYSIS)->setActive(!IsFDF);
+    Spells.at(SPELL_DISEASE_FDF)->setActive(IsFDF);
+    Spells.at(SPELL_PARALYSIS_FDF)->setActive(IsFDF);
+    Spells.at(SPELL_PARALYSIS_FDFD)->setActive(IsFDF);
+
+    foreach(QSpell *vn, Spells) {
+
+        if (!res.isEmpty()) {
+            res.append(",");
+        }
+        res.append(vn->json());
+    }
+    res.append("]").prepend("[");
+
     return res;
 }

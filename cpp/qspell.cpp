@@ -1,6 +1,6 @@
 #include "qspell.h"
 
-QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger)
+QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget)
 {
     _spellID = SpellID;
     _gesture = Gesture;
@@ -13,6 +13,7 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
     _alreadyCasted = -1;
     _hand = WARLOCK_HAND_NONE;
     _active = true;
+    _defTarget = DefTarget;
 }
 
 int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast) {
@@ -121,9 +122,9 @@ QString QSpell::nextGesture() const {
 
 QString QSpell::json() const {
     QString ng = nextGesture();
-    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11}").
+    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11,\"dt\":%12,\"active\":%13}").
             arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).
-            arg(ng.toUpper(), ng.compare(ng.toUpper()) == 0 ? "0" : "1");
+            arg(ng.toUpper(), ng.compare(ng.toUpper()) == 0 ? "0" : "1", intToStr(_defTarget), _active ? "1" : "0");
 }
 
 bool QSpell::sortAsc(QSpell *s1, QSpell *s2) {

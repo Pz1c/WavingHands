@@ -90,7 +90,9 @@ QWarlockDictionary::QWarlockDictionary(QObject *parent) :
     fillDictionary("FinishB", "Завершені поєдинки", "Законченые бои", "Finished battles");
     fillDictionary("WaitB", "Незавершені поєдинки", "Незаконченые бои", "Waiting in battles");
     fillDictionary("ReadyB", "Поєдинки, що чекають дій", "Бои которые ожидают действий", "Waiting action");
+    fillDictionary("ChallengeB", "Виклики", "Вызовы", "Challenges");
     fillDictionary("BattleList", "Поєдинки, до яких можна приєднатись", "Бои к которым можно присоединиться", "Battle list");
+    fillDictionary("Messages", "Повідомлення", "Сообщения", "Messages");
     fillDictionary("SpellList", "Список доступних заклять", "Список доступніх заклинаний", "Spell list");
     fillDictionary("Iam13", "Мені виповнилось 13", "Мне исполнилось 13", "I am at least 13");
     fillDictionary("ConfirmExit", "Закрити гру?", "Закрыть игру?", "Leave game?");

@@ -134,9 +134,9 @@ function loadChallengesList(need_return) {
     if (!Qt.core) {
         return;
     }
-
     var list_str = Qt.core.challengeList;
-    var arr = (!Qt.core.isAI && Qt.core.allowedAccept) ? JSON.parse(list_str) : [];
+    console.log("loadChallengesList", need_return, list_str);
+    var arr = (list_str && (list_str.length > 0) && !Qt.core.isAI && Qt.core.allowedAccept) ? JSON.parse(list_str) : [];
     mainWindow.battles = arr;
     console.log("loadChallengesList", need_return, Qt.core.isAI, list_str, Qt.core.readyInBattles, Qt.core.waitingInBattles);
     if (need_return) {
@@ -258,9 +258,7 @@ function showReadyBattle() {
     prepareButton(1);
     flatMenuItem();
     hideLoading();
-    if (Qt.core.isAI) {
-        startSkynet();
-    }
+    startSkynet(Qt.core.isAI);
 }
 
 function flatMenuItem() {
@@ -947,6 +945,6 @@ function linkActivated(link) {
     }
 }
 
-function startSkynet() {
-    processBattle(battle);
+function startSkynet(isAI) {
+    processBattle(isAI);
 }

@@ -61,7 +61,7 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(bool allowedAdd READ allowedAdd NOTIFY allowedAddChanged)
 
 public:
-    explicit QWarloksDuelCore(QObject *parent = 0);
+    explicit QWarloksDuelCore(QObject *parent = nullptr);
 
     bool isNeedLogin();
     QString login();
@@ -150,7 +150,9 @@ public slots:
 
     void scanState();
     void getChallengeList();
-    void acceptChallenge(int battle_id);
+    void acceptChallenge(int battle_id, bool from_card = false);
+    void rejectChallenge(int battle_id);
+    void deleteMsg(QString msg_from);
     void forceSurrender(int battle_id, int turn);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
@@ -164,6 +166,7 @@ public slots:
     void slotSslErrors(QList<QSslError> error_list);
 
     QString getSpellList(QString left, QString right, bool Enemy);
+    QString getSpellBook();
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
 protected slots:
@@ -189,6 +192,8 @@ protected:
 
     bool parseReadyBattle(QString &Data);
     void parsePlayerInfo(QString &Data);
+    void parseChallendge(QString &Data);
+    void parseMessages(QString &Data);
 
     void saveParameters();
     void loadParameters();
@@ -219,6 +224,8 @@ private:
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
     QString _finishedBattle;
+    QMap<int, QString> _challenge;
+    QStringList _msg;
 
     // current battle
     int _loadedBattleID;

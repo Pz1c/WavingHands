@@ -31,7 +31,7 @@ private:
     QString lang; //en, ua, ru
 
     static QWarlockDictionary *self;
-    explicit QWarlockDictionary(QObject *parent = 0);
+    explicit QWarlockDictionary(QObject *parent = nullptr);
 
 signals:
 

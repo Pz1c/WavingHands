@@ -17,13 +17,14 @@ class QWarlockSpellChecker : public QObject
 {
     Q_OBJECT
 public:
-    explicit QWarlockSpellChecker(QObject *parent = 0);
+    explicit QWarlockSpellChecker(QObject *parent = nullptr);
 
     QString checkSpells(QString Left, QString Right, bool Enemy);
     QList<QSpell *> getSpellsList(QWarlock *warlock);
     QList<QSpell *> getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left, QString possible_right, bool IsFDF);
     QList<QSpell *> getStriktSpellsList(QString left, QString right, bool Enemy);
     QList<QSpell *> Spells;
+    QString getSpellBook(bool IsFDF);
 signals:
 
 public slots:
