@@ -1,7 +1,7 @@
 // windows
 var wndUP, wndLoading, wndTmp, wndNew, wndErr;
 // monster command
-var cMonsterTarget,mtTaskList=[],mtMonsterObj,cpTaskList=[],pTaskList=[],cPersonCharmed,cParalyze,cpPersonObj,pParalyzeObj;
+var cMonsterTarget,mtTaskList=[],mtMonsterObj=[],cpTaskList=[],pTaskList=[],cPersonCharmed,cParalyze,cpPersonObj=[],pParalyzeObj=[];
 var cWarlockObject;
 // target list
 var arrTarget,arrTargetID,arrVisibleTarget,strVisibleTarget,arrRPG,arrLPG;
@@ -134,9 +134,9 @@ function loadChallengesList(need_return) {
     if (!Qt.core) {
         return;
     }
-
     var list_str = Qt.core.challengeList;
-    var arr = (!Qt.core.isAI && Qt.core.allowedAccept) ? JSON.parse(list_str) : [];
+    console.log("loadChallengesList", need_return, list_str);
+    var arr = (list_str && (list_str.length > 0) && !Qt.core.isAI && Qt.core.allowedAccept) ? JSON.parse(list_str) : [];
     mainWindow.battles = arr;
     console.log("loadChallengesList", need_return, Qt.core.isAI, list_str, Qt.core.readyInBattles, Qt.core.waitingInBattles);
     if (need_return) {
@@ -180,7 +180,26 @@ function getSpellList(right) {
     return JSON.parse(g_list);
 }
 
-function getPossibleSpell(right) {
+function setTargetForSpell(right, target_name) {
+    var model = right ? cbRHT.model : cbLHT.model;
+    console.log("setTargetForSpell", right, target_name, model);
+    for(var i = 0, Ln = model.length; i < Ln; ++i) {
+        if (model[i] === target_name) {
+            console.log("setTargetForSpell", "found", i);
+            if (right) {
+                cbRHT.currentIndex = i;
+                //cbRHT.currentText = target_name;
+            } else {
+                cbLHT.currentIndex = i;
+                //cbLHT.currentText = target_name;
+            }
+            return ;
+        }
+    }
+}
+
+function getPossibleSpell(right, desirable_spell) {
+    console.log("getPossibleSpell", right);
     var currLeftSpell = cbLHS.currentText, currRightSpell = cbRHS.currentText;
     var currLeftSpellIdx = 0, currRightSpellIdx = 0;
     var checkLeft = currLeftSpell !== '' && currLeftSpell !== ' ';
@@ -223,6 +242,23 @@ function getPossibleSpell(right) {
     if (arrR.length > 1) {
         cbRHS.currentIndex = currRightSpellIdx > 0 ? currRightSpellIdx : 1
     }
+
+    if (desirable_spell) {
+        var arr_check = right ? arrR : arrL, spell_idx = -1;
+        for(var j = 0, LnJ = arr_check.length; j < LnJ; ++j) {
+            if (arr[j] === desirable_spell) {
+                spell_idx = j;
+                break;
+            }
+        }
+        if (spell_idx !== -1) {
+            if (right) {
+                cbRHS.currentIndex = spell_idx;
+            } else {
+                cbLHS.currentIndex = spell_idx;
+            }
+        }
+    }
 }
 
 function loadSpellList() {
@@ -241,6 +277,9 @@ function loadSpellList() {
 function showReadyBattle() {
     showLoading();
     battle = {};
+    battle.isFDF = Qt.core.isParaFDF === 1;
+    battle.turn_num = Qt.core.getLoadedBattleTurn();
+    console.log("showReadyBattle", battle.isFDF, battle.turn_num);
     setPosibleGesture(Qt.core.leftGesture, Qt.core.rightGesture);
     getPossibleSpell(0);
     getPossibleSpell(1);
@@ -257,9 +296,7 @@ function showReadyBattle() {
     prepareButton(1);
     flatMenuItem();
     hideLoading();
-    if (Qt.core.isAI) {
-        startSkynet();
-    }
+    startSkynet(Qt.core.isAI);
 }
 
 function flatMenuItem() {
@@ -392,12 +429,12 @@ function finishLoadPersonCharmedEx(char_person_list) {
         }
         console.log("current person_id: ", arr[i]);
         var label = "Force gesture for " + arrTargetID[arr[i]] + " hand"
-        var sprite = cPersonCharmed.createObject(lvaoCharmPerson, {pc_label: label, pc_target_id: arr[i], pc_hand_value: "LH", pc_gesture_value: "-", x: 3, y: curr_y});
+        var sprite = cPersonCharmed.createObject(lvaoCharmPerson, {pc_label: label, pc_target_id: arr[i], pc_target_name: arrTargetID[arr[i]], pc_hand_value: "LH", pc_gesture_value: "-", x: 3, y: curr_y});
         if (sprite === null) {
             console.log("Error creating object");
             continue;
         }
-        cpPersonObj[cpPersonObj.length] = sprite;
+        cpPersonObj.push(sprite);
         console.log("looks like created: " + sprite.pc_label + " x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("lvaoCharmPerson.width: " + lvaoCharmPerson.width);
         if (currLeft != 0) {
@@ -476,12 +513,12 @@ function finishLoadParalyzeEx(char_person_list) {
         }
         console.log("current person_id: ", arr[i]);
         var label = "Paralyze " + arrTargetID[arr[i]] + " hand"
-        var sprite = cParalyze.createObject(lvaoParalyze, {p_label: label, p_target_id: arr[i], x: 3, y: curr_y});
+        var sprite = cParalyze.createObject(lvaoParalyze, {p_label: label, p_target_id: arr[i], p_target_name: arrTargetID[arr[i]], x: 3, y: curr_y});
         if (sprite === null) {
             console.log("Error creating object");
             continue;
         }
-        pParalyzeObj[pParalyzeObj.length] = sprite;
+        pParalyzeObj.push(sprite);
         console.log("looks like created: " + sprite.p_label + " x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("lvaoParalyze.width: " + lvaoParalyze.width);
         if (currLeft != 0) {
@@ -649,8 +686,17 @@ function prepareStepMessage() {
 }
 
 function prepareMonsterList() {
-    tMonsterList.text = Qt.core.monsters;
-    console.log("prepareMonsterList", tMonsterList.text, tMonsterList.contentHeight, tMonsterList.height);
+    battle.monsters = JSON.parse(Qt.core.monsters);
+    var str = "";
+    for(var i = 0, Ln = battle.monsters.length; i < Ln; ++i) {
+        str += "<font color=\""+battle.monsters[i].color+"\">"+battle.monsters[i].name+" "+battle.monsters[i].status+" ("+battle.monsters[i].owner+") &gt; "+battle.monsters[i].target+"</font>";
+        if (i !== Ln - 1) {
+            str += "<br />";
+        }
+    }
+
+    tMonsterList.text = str;
+    console.log("prepareMonsterList", str, tMonsterList.contentHeight, tMonsterList.height);
     tMonsterList.height = tMonsterList.contentHeight
     if (tMonsterList.text === '') {
         tMonsterList.height = 0;
@@ -759,26 +805,29 @@ function finishLoadMonsterTargetEx(str_monster_list) {
         return ;
     }
     mtMonsterObj = [];
-    var arr = str_monster_list.split(";");
+    var arr = JSON.parse(str_monster_list);
     //var arrL=[],currLIdx=0;
     //var currLeft = 0;
     var curr_y = 3;
     var total_heght = 0;
     for(var i = 0, Ln = arr.length; i < Ln; ++i) {
-        if (arr[i] === '') {
+        /*if (arr[i] === '') {
             continue;
-        }
-        var arr_m = arr[i].split(",");
-        var monster_id = arr_m[0];
-        var monster_name = arr_m[1];
-        var monster_target = arr_m[2];
+        }*/
+        //var arr_m = arr[i].split(",");
+        //var monster_id = arr[i].id;
+        //var monster_name = arr[i].name;
+        //var monster_target = arr[i].target;
+        //addMonsterToArr(arr[i]);
 
-        var sprite = cMonsterTarget.createObject(svMonsterOrders, {mt_id: monster_id, mt_label: monster_name, x: 3, y: curr_y, width: svMonsterOrders.width, mt_model: strVisibleTarget});
+        var sprite = cMonsterTarget.createObject(svMonsterOrders, {mt_id: arr[i].id, mt_label: arr[i].name, x: 3, y: curr_y, width: svMonsterOrders.width,
+                                                     mt_model: strVisibleTarget, mt_is_player_owner: arr[i].owner, mt_is_just_created: arr[i].just_created,
+                                                     mt_is_charm: arr[i].charm});
         if (sprite === null) {
             console.log("Error creating object");
             continue;
         }
-        mtMonsterObj[mtMonsterObj.length] = sprite;
+        mtMonsterObj.push(sprite);
         console.log("looks like created: " + sprite.mt_label + " x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("svMonsterOrders.w: " + svMonsterOrders.width);
         /*if (currLeft != 0) {
@@ -837,7 +886,7 @@ function prepareTargets(str_traget) {
     }
     cbLHT.model = arrVisibleTarget;
     cbRHT.model = arrVisibleTarget;
-    console.log("strVisibleTarget", strVisibleTarget)
+    console.log("strVisibleTarget", strVisibleTarget);
 }
 
 function showNewUserWnd() {
@@ -946,6 +995,6 @@ function linkActivated(link) {
     }
 }
 
-function startSkynet() {
-    processBattle(battle);
+function startSkynet(isAI) {
+    processBattle(isAI);
 }

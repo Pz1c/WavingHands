@@ -99,7 +99,7 @@ Item {
                 anchors.centerIn: parent
                 text: ""
                 //font.pointSize: 12 * height_koeff
-                inputMethodHints: Qt.ImhNoPredictiveText
+                inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
                 //echoMode: TextInput.Password
             }
         }
@@ -165,7 +165,7 @@ Item {
                 anchors.centerIn: parent
                 text: ""
                 //font.pointSize: 12 * height_koeff
-                inputMethodHints: Qt.ImhNoPredictiveText
+                inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
                 //echoMode: TextInput.Password
             }
         }
@@ -198,7 +198,7 @@ Item {
                 anchors.centerIn: parent
                 text: ""
                 //font.pointSize: 12 * height_koeff
-                inputMethodHints: Qt.ImhNoPredictiveText
+                inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
                 echoMode: TextInput.Password
             }
         }

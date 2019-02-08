@@ -164,7 +164,7 @@ Item {
                 anchors.bottomMargin: 0.01 * parent.width
                 text: ""
                 //font.pointSize: 12 * height_koeff
-                inputMethodHints: Qt.ImhNoPredictiveText
+                inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
                 //echoMode: TextInput.Password
             }
         }

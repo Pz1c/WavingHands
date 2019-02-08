@@ -16,6 +16,8 @@ import ua.sp.warlockdictionary 1.0
 import "qrc:/js/main_utils.js" as MUtils
 import "qrc:/js/ai_utils.js" as AI
 
+import "qrc:/qml"
+
 Window {
     id: mainWindow
     visible: true
@@ -66,7 +68,7 @@ Window {
         property int timerCounter: 0
         Timer {
             id: tScanTimer
-            interval: core.isAI ? 8000 : 60000
+            interval: core.isAI ? 20000 : 60000
             running: false
             repeat: true
 
@@ -412,7 +414,7 @@ Window {
                         anchors.centerIn: parent
                         text: ""
                         ////font.pointSize: 12 * height_koeff
-                        inputMethodHints: Qt.ImhNoPredictiveText
+                        inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
                         //echoMode: TextInput.Password
                     }
                 }
@@ -583,17 +585,17 @@ Window {
                         }
                     }
 
-                    header: Item {
+                    header: Rectangle {
                         id: lvdHeader
-                        height: 0.05 * mainWindow.height
+                        height: 0.1 * mainWindow.height
                         width: mainWindow.width
+                        color: "lightgrey"
 
-                        Text {
+                        LargeText {
                             id: lvdHeaderText
-                            anchors.centerIn: parent
-                            //////font.pointSize: 15 * height_koeff
-                            wrapMode: Text.WordWrap
+                            anchors.fill: parent
                             text: warlockDictionary.getStringByCode("BattleList")
+                            color: "white"
                         }
                     }
             }
@@ -671,12 +673,11 @@ Window {
                         height: 0.05 * mainWindow.height
                         width: mainWindow.width
 
-                        Text {
+                        LargeText {
                             id: lvsHeaderText
-                            anchors.centerIn: parent
-                            //////font.pointSize: 15 * height_koeff
-                            wrapMode: Text.WordWrap
+                            anchors.fill: parent
                             text: warlockDictionary.getStringByCode("SpellList")
+                            color: "white"
                         }
                     }
             }
@@ -959,7 +960,7 @@ Window {
         cbDelay.model = tmp_l_arr
         tPermanentLabel.text = warlockDictionary.getStringByCode("MakeSpellPermanent")
         cbPermanent.model = tmp_l_arr
-        tCharMessage.text = warlockDictionary.getStringByCode("ChatMessage")
+        tChatMessage.text = warlockDictionary.getStringByCode("ChatMessage")
         labelDoit.text = warlockDictionary.getStringByCode("Submit")
         MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage")
         MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " "

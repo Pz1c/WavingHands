@@ -1,5 +1,7 @@
 #include "qwarlockutils.h"
 #include "qwarlockdictionary.h"
+#include "qwarlock.h"
+#include "qmonster.h"
 
 QWarlockUtils::QWarlockUtils()
 {
@@ -35,10 +37,6 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
                 bool *ok = new bool();
                 int int_res = battle_id.toInt(ok, 10);
                 if (*ok) {
-                    // TODO remove after this battles was finished
-                    if ((int_res == 83698) || (int_res == 83676)) {
-                        continue;
-                    }
                     res_list.append(int_res);
                 }
 
@@ -54,13 +52,13 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
 QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd) {
     int idx1 = Data.indexOf(Search);
     if (idx1 == -1) {
-        return 0;
+        return "";
     }
     idx1 += Search.length();
 
     int idx2 = ValueBegin.isEmpty() ? idx1 : Data.indexOf(ValueBegin, idx1);
     if (idx2 == -1) {
-        return 0;
+        return "";
     }
 
     idx2 += ValueBegin.length();
@@ -77,19 +75,18 @@ QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString 
         }
     }
     if (idx3 == -1) {
-        return 0;
+        idx3 = Data.length();
     }
     QString res = Data.mid(idx2, idx3 - idx2);
-    qDebug() << "getStringFromData " << Search << " res: " << res;
+    qDebug() << "getStringFromData " << Search << " res: " << res << Data << idx2 << idx3 << Data.length();
     return res;
 }
 
 int QWarlockUtils::getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd) {
     QString res = getStringFromData(Data, Search, ValueBegin, ValueEnd);
-    bool *ok = new bool();
-    int int_res = res.toInt(ok, 10);
-    int final_res = *ok ? int_res : 0;
-    delete ok;
+    bool ok;
+    int int_res = res.toInt(&ok, 10);
+    int final_res = ok ? int_res : 0;
     return final_res;
 }
 
@@ -178,9 +175,16 @@ bool QWarlockUtils::parseGestures(QString &Data, QString &left, QString &right, 
     return true;
 }
 
+void QWarlockUtils::appendSeparatedList(QString &list, const QString &data, const QString &separator) {
+    if (!list.isEmpty()) {
+        list.append(separator);
+    }
+    list.append(data);
+}
+
 bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString owner, QStringList &monsters, bool IsCharm) {
     result.clear();
-    qDebug() << "parseMonsterCommad";
+    qDebug() << "parseMonsterCommad" << owner << IsCharm << monsters;
     QString search1 = "<TR><TD COLSPAN=3>Direct ";
     QString search2 = " to attack:";
     QString search3 = "<SELECT NAME=\"";
@@ -193,22 +197,26 @@ bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString o
         idx1 += search3.length();
         idx2 = Data.indexOf("\"", idx1);
         QString monster_id = Data.mid(idx1, idx2 - idx1);
-        qDebug() << "monster_name" << monster_name;
-        qDebug() << "monster_id" << monster_id;
-        if (IsCharm) {
-            result.append(QString("%1,%2;").arg(monster_id, monster_name));
-        } else if (((monster_name.indexOf("LH:") != -1) || (monster_name.indexOf("RH:") != -1)) && monster_name.toLower().indexOf(owner) != -1) {
-            result.append(QString("%1,%2;").arg(monster_id, monster_name));
-        } else if (monsters.count() > 0) {
+        bool just_created = (monster_name.indexOf("LH:") != -1) || (monster_name.indexOf("RH:") != -1);
+        if (just_created) {
+            monster_id = monster_id.left(3) + monster_name.right(monster_name.length() - monster_name.indexOf(":") - 1);
+        }
+        qDebug() << "monster_name" << monster_name << "monster_id" << monster_id << monsters.count();
+        if (!just_created && monsters.count() > 0) {
             foreach(QString m, monsters) {
                 if (m.compare(monster_name.toLower()) == 0) {
-                    result.append(QString("%1,%2;").arg(monster_id, monster_name));
+                    appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":1,\"just_created\":0,\"charm\":0,\"target\":\"\"}").arg(monster_id, monster_name));
                     break;
                 }
             }
+        } else if (just_created && (monster_name.toLower().indexOf(owner) != -1)) {
+            appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":1,\"just_created\":0,\"charm\":0,\"target\":\"\"}").arg(monster_id, monster_name));
+        } else if (IsCharm) {
+            appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":0,\"just_created\":%3,\"charm\":1,\"target\":\"\"}").arg(monster_id, monster_name, just_created ? "1" : "0"));
         }
         idx1 = idx2 + search2.length();
     }
+    result.append("]").prepend("[");
     return true;
 }
 
@@ -302,12 +310,12 @@ QString QWarlockUtils::parseChallengeDescription(QString &Data) {
     QString res;
     //res.append(Data.toLower().indexOf("maladroit") == -1 ? "0#!#" : "1#!#");
     //res.append(Data.toLower().indexOf("parafc") == -1 ? "0#!#" : "1#!#");
-    int idx1 = 0;
-    idx1 = Data.indexOf(">");
+    int idx1 = Data.indexOf(">");
     if (idx1 == -1) {
         res.append(Data);
     } else {
-        res.append(Data.mid(++idx1, Data.length() - idx1));
+        ++idx1;
+        res.append(Data.mid(idx1, Data.length() - idx1));
     }
     res = res.replace("\r", "").replace("\n","<br>").replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive).trimmed();
     return res;
@@ -330,7 +338,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     QString search2 = "</TD>";
     QStringList tmp;
     QString logins, description, battle_id;
-    int need_more = 0, fast = 0, friendly = -1, parafc = 0, maladroit = 0, total_count;
+    int need_more = 0, fast = 0, friendly = -1, parafc = 0, maladroit = 0, total_count = 0;
     int idx1 = 0, idx2, idx = -1;
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
@@ -415,4 +423,12 @@ QString QWarlockUtils::parseChallengesList(QString &Data) {
         }
     }
     return res.append("]");
+}
+
+int QWarlockUtils::strValueToInt(QString val) {
+    if (val.compare("permanent") == 0) {
+        return 999;
+    } else {
+        return val.toInt();
+    }
 }

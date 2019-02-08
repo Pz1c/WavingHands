@@ -12,6 +12,9 @@ Rectangle {
     property string mt_label: ""
     property string mt_model: ""
     property string mt_value: ""
+    property int mt_is_player_owner: 0
+    property int mt_is_just_created: 0
+    property int mt_is_charm: 0
 
     Text {
        id: tLabel
@@ -33,6 +36,7 @@ Rectangle {
     Component.onCompleted: finishCreation();
 
     function setTarget(mt_target) {
+        console.log("monster_traget.setTarget", mt_target, cbTarget.model);
         var idx = -1;
         if (mt_target !== '') {
             for(var i = 0, Ln = cbTarget.model.length; i < Ln; ++i) {
@@ -47,6 +51,7 @@ Rectangle {
 
         if (idx !== -1) {
             cbTarget.currentIndex = idx;
+            mt_value = cbTarget.model[idx];
         }
     }
 

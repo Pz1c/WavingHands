@@ -51,6 +51,7 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(int timerState READ timerState NOTIFY timerStateChanged)
     Q_PROPERTY(int isDelay READ isDelay NOTIFY isDelayChanged)
     Q_PROPERTY(int isPermanent READ isPermanent NOTIFY isPermanentChanged)
+    Q_PROPERTY(int isParaFDF READ isParaFDF NOTIFY isParaFDFChanged)
     Q_PROPERTY(QString fire READ fire NOTIFY fireChanged)
     Q_PROPERTY(QString challengeList READ challengeList NOTIFY challengeListChanged)
     Q_PROPERTY(QString spellListHtml READ spellListHtml NOTIFY spellListHtmlChanged)
@@ -60,7 +61,7 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(bool allowedAdd READ allowedAdd NOTIFY allowedAddChanged)
 
 public:
-    explicit QWarloksDuelCore(QObject *parent = 0);
+    explicit QWarloksDuelCore(QObject *parent = nullptr);
 
     bool isNeedLogin();
     QString login();
@@ -93,6 +94,7 @@ public:
     int timerState();
     int isDelay();
     int isPermanent();
+    int isParaFDF();
     QString fire();
     int challengeSubmited();
     QString challengeList();
@@ -135,6 +137,7 @@ signals:
     void isDelayChanged();
     void fireChanged();
     void isPermanentChanged();
+    void isParaFDFChanged();
     void challengeSubmitedChanged();
     void challengeListChanged();
     void spellListHtmlChanged();
@@ -147,7 +150,9 @@ public slots:
 
     void scanState();
     void getChallengeList();
-    void acceptChallenge(int battle_id);
+    void acceptChallenge(int battle_id, bool from_card = false);
+    void rejectChallenge(int battle_id);
+    void deleteMsg(QString msg_from);
     void forceSurrender(int battle_id, int turn);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
@@ -161,6 +166,8 @@ public slots:
     void slotSslErrors(QList<QSslError> error_list);
 
     QString getSpellList(QString left, QString right, bool Enemy);
+    QString getSpellBook();
+    int getLoadedBattleTurn();
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
 protected slots:
@@ -186,6 +193,8 @@ protected:
 
     bool parseReadyBattle(QString &Data);
     void parsePlayerInfo(QString &Data);
+    void parseChallendge(QString &Data);
+    void parseMessages(QString &Data);
 
     void saveParameters();
     void loadParameters();
@@ -216,6 +225,8 @@ private:
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
     QString _finishedBattle;
+    QMap<int, QString> _challenge;
+    QStringList _msg;
 
     // current battle
     int _loadedBattleID;
@@ -235,6 +246,7 @@ private:
     QString _paralyzeList;
     bool _isDelay;
     bool _isPermanent;
+    bool _isParaFDF;
     QString _fire;
     QString _challengeList;
     QString _spellListHtml;

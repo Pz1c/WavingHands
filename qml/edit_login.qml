@@ -90,7 +90,7 @@ Item {
                 anchors.centerIn: parent
                 text: ""
                 //font.pointSize: 16 * height_koeff
-                inputMethodHints: Qt.ImhNoPredictiveText
+                inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
                 focus: true
             }
         }
@@ -115,7 +115,7 @@ Item {
                 text: ""
                 //font.pointSize: 16 * height_koeff
                 //validator: IntValidator{bottom: 1; top: 10;}
-                inputMethodHints: Qt.ImhNoPredictiveText
+                inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
                 echoMode: TextInput.Password
             }
         }

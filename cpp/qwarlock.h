@@ -32,13 +32,15 @@ public:
     QString possibleRightGestures() const;
     void setPossibleGestures(QString left, QString right);
 
+    bool isParaFDF() const;
+    void setIsParaFDF(bool isParaFDF);
+
 protected:
     void breakEnemySpell(QSpell *spell);
     void setAntispell(QWarlock *enemy);
     void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void parseStatus();
     void checkPossibleGesture();
-    int strValueToInt(QString val);
 private:
     int _scared;
     int _confused;
@@ -64,6 +66,7 @@ private:
     QString _gestureL;
     QSpell *_bestSpellL;
     QSpell *_bestSpellR;
+    bool _isParaFDF;
 };
 
 #endif // QWARLOCK_H

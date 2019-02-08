@@ -6,8 +6,8 @@
 #include <QStringList>
 #include <QPair>
 #include <QDebug>
-#include "qwarlock.h"
-#include "qmonster.h"
+//#include "qwarlock.h"
+//#include "qmonster.h"
 
 #define QValueName QPair<QString, QString>
 #define QSpellDayCnt QPair<QString, int>
@@ -17,6 +17,7 @@
 #define APPLICATION_NAME "WarloksDuel"
 
 class QWarlock;
+class QMonster;
 
 class QWarlockUtils
 {
@@ -40,7 +41,8 @@ public:
     static QString parseChallengePart1(QString &Data);
     static QString parseChallengeDescription(QString &Data);
     static QString parseChallengePart3(QString &Data);
+    static int strValueToInt(QString val);
+    static void appendSeparatedList(QString &list, const QString &data, const QString &separator = ",");
 
 };
-
 #endif // QWARLOCKUTILS_H
