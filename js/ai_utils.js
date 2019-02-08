@@ -68,6 +68,12 @@ var SPELL_DISEASE_FDF = 45;
 var SPELL_PARALYSIS_FDF = 46;
 var SPELL_PARALYSIS_FDFD = 47;
 
+var SPELL_DEF_TARGER_NOBODY = 0;
+var SPELL_DEF_TARGER_SELF = 1;
+var SPELL_DEF_TARGER_ENEMY = 2;
+var SPELL_DEF_TARGER_ENEMY_MONSTER = 3;
+var SPELL_DEF_TARGER_SELF_MONSTER = 4;
+
 var arr_no_fdf_inactive = [SPELL_DISEASE_FDF, SPELL_PARALYSIS_FDF, SPELL_PARALYSIS_FDFD];
 var arr_fdf_inactive = [SPELL_DISEASE, SPELL_PARALYSIS];
 
@@ -256,6 +262,9 @@ function destroyEnemySpell(self, enemy_spell) {
         }
         anti_spell_param.hands = arr_hands;
         anti_spell = getAntispellByFilter(self, anti_spell_param);
+        if (0) {
+
+        }
     }
 
     console.log("destroyEnemySpell", enemy_spell, anti_spell);
@@ -415,23 +424,197 @@ function setNextSpell(self) {
     }
 }
 
+function setMonsterTargetByName(monster_name, target) {
+    console.log("setMonsterTargetByName", monster_name, target);
+    for(var i = 0, Ln = mtMonsterObj.length; i < Ln; ++i) {
+        console.log("setMonsterTargetByName", mtMonsterObj[i].mt_id, mtMonsterObj[i].mt_label);
+        if (mtMonsterObj[i].mt_id === monster_name) {
+            mtMonsterObj[i].setTarget(target);
+            return;
+        }
+    }
+}
 
-function processBattle(isAI) {
-    console.log("processBattle", isAI/*JSON.stringify(battle)*/);
+function getMonsterDangerBySpellID(spell_id) {
+    switch(spell_id) {
+    case SPELL_SUMMON_GIANT: return 4;
+    case SPELL_SUMMON_TROLL: return 3;
+    case SPELL_SUMMON_OGRE: return 2;
+    case SPELL_SUMMON_GOBLIN: return 1;
+    case SPELL_SUMMON_FIRE_ELEMENTAL: return battle.self.fireproof > 0 ? 0 : 3;
+    case SPELL_SUMMON_ICE_ELEMENTAL: return battle.self.coldproof > 0 ? 0 : 3;
+    default: return 0;
+    }
+}
 
-    var i, Ln;
-    arr_spells = JSON.parse(Qt.core.getSpellBook());
-    /*arr_spells[10].active = !battle.isFDF;
-    arr_spells[14].active = !battle.isFDF;
-    arr_spells[45].active = battle.isFDF;
-    arr_spells[46].active = battle.isFDF;
-    arr_spells[47].active = battle.isFDF;*/
-    /*for(i = 0, Ln = arr_spells.length; i < Ln; ++i) {
-        arr_spells[i].active = (battle.isFDF && (arr_fdf_inactive.indexOf(i) === -1)) || (!battle.isFDF && (arr_no_fdf_inactive.indexOf(i) === -1));
-    }*/
+function getMonsterHPBySpellID(spell_id) {
+    switch(spell_id) {
+    case SPELL_SUMMON_GIANT: return 4;
+    case SPELL_SUMMON_TROLL: return 3;
+    case SPELL_SUMMON_OGRE: return 2;
+    case SPELL_SUMMON_GOBLIN: return 1;
+    case SPELL_SUMMON_FIRE_ELEMENTAL:
+    case SPELL_SUMMON_ICE_ELEMENTAL: return 3;
+    default: return 0;
+    }
+}
 
-    var idx_enemy, idx_self;
-    for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+function getMonsterTypeBySpellID(spell_id) {
+    switch(spell_id) {
+    case SPELL_SUMMON_FIRE_ELEMENTAL:
+    case SPELL_SUMMON_ICE_ELEMENTAL: return "e";
+    default: return "m";
+    }
+}
+
+function compareMonster(a,b) {
+  if (a.danger < b.danger) return +1;
+  if (a.danger > b.danger) return -1;
+  return 0;
+}
+
+var targets = [];
+function prepareTargetsArray() {
+    console.log("prepareTargetsArray");
+    targets = [];
+    if (battle.enemy.summon_left > 0) {
+        targets.push({type:getMonsterTypeBySpellID(battle.enemy.summon_left),name:"LH:"+battle.enemy.name,danger:getMonsterDangerBySpellID(battle.enemy.summon_left),hp:getMonsterHPBySpellID(battle.enemy.summon_left),under_attack:0});
+    }
+    if (battle.enemy.summon_right > 0) {
+        targets.push({type:getMonsterTypeBySpellID(battle.enemy.summon_left),name:"RH:"+battle.enemy.name,danger:getMonsterDangerBySpellID(battle.enemy.summon_right),hp:getMonsterHPBySpellID(battle.enemy.summon_right),under_attack:0});
+    }
+    for(var i = 0, Ln = battle.monsters.length; i < Ln; ++i) {
+        var mob = battle.monsters[i];
+        if (!mob.under_control) {
+            targets.push({type:"m",name:mob.name,danger:mob.strength,hp:mob.hp,under_attack:0});
+        }
+    }
+    targets.push({type:"w",name:battle.enemy.name,danger:-1,under_attack:0,hp:battle.enemy.hp});
+    targets.push({type:"s",name:battle.self.name,danger:-2,under_attack:0,hp:battle.self.hp});
+    console.log("prepareTargets", JSON.stringify(targets));
+    targets.sort(compareMonster);
+    console.log("prepareTargets", JSON.stringify(targets));
+}
+
+function getBestTarget(attack, type, is_monster) {
+    if (!type) {
+        type = "all";
+    }
+    console.log("getBestTarget", attack, type, JSON.stringify(targets));
+
+    var target_idx = -1, i, Ln, trg;
+    for (i = 0, Ln = targets.length; i < Ln; ++i) {
+        trg = targets[i];
+        if ((type !== "all") && (trg.type !== type)) {
+            continue;
+        }
+        if (is_monster && (trg.type === "s")) {
+            continue;
+        }
+        if (trg.hp - trg.under_attack <= 0) {
+            continue;
+        }
+        console.log("check 1", trg.hp, trg.under_attack, attack, trg.hp - trg.under_attack - attack);
+        if (trg.hp - trg.under_attack - attack === 0) {
+            target_idx = i;
+            break;
+        }
+    }
+    if (target_idx === -1) {
+        for (i = 0, Ln = targets.length; i < Ln; ++i) {
+            trg = targets[i];
+            if ((type !== "all") && (trg.type !== type)) {
+                continue;
+            }
+            if (trg.hp - trg.under_attack <= 0) {
+                continue;
+            }
+            if (is_monster && (trg.type === "s")) {
+                continue;
+            }
+            console.log("check 2", trg.hp, trg.under_attack, attack, trg.hp - trg.under_attack - attack);
+            if (trg.hp - trg.under_attack - attack < 0) {
+                target_idx = i;
+                break;
+            }
+        }
+    }
+    if (target_idx === -1) {
+        for (i = 0, Ln = targets.length; i < Ln; ++i) {
+            trg = targets[i];
+            if ((type !== "all") && (trg.type !== type)) {
+                continue;
+            }
+            if (trg.hp - trg.under_attack <= 0) {
+                continue;
+            }
+            if (trg.hp - trg.under_attack > 0) {
+                target_idx = i;
+                break;
+            }
+            if (is_monster && (trg.type === "s")) {
+                continue;
+            }
+        }
+    }
+    if ((target_idx === -1) && (type !== "all")) {
+        target_idx = 0;
+    }
+
+    return target_idx;
+}
+
+function setTargetsForMonsters(do_charm_monster) {
+    console.log("setTargetsForMonsters", do_charm_monster);
+    var i, Ln, mob;
+
+    if (battle.self.summon_left > 0) {
+        battle.monsters.push({under_control:1,name:"LH:"+battle.self.name,danger:getMonsterDangerBySpellID(battle.self.summon_left)});
+    }
+    if (battle.self.summon_right > 0) {
+        battle.monsters.push({under_control:1,name:"RH:"+battle.self.name,danger:getMonsterDangerBySpellID(battle.self.summon_right)});
+    }
+
+    for(i = 0, Ln = battle.monsters.length; i < Ln; ++i) {
+        mob = battle.monsters[i];
+        console.log("setTargetsForMonsters", JSON.stringify(mob));
+        if (do_charm_monster || mob.under_control) {
+            var target_idx = getBestTarget(mob.strength, "all", true);
+            targets[target_idx].under_attack += mob.strength;
+            setMonsterTargetByName(mob.name, targets[target_idx].name);
+        } else if (!mob.under_control) {
+            setMonsterTargetByName(mob.name, battle.enemy.name);
+        }
+    }
+}
+
+function setTargetForCharmed() {
+    console.log("setTargetForCharmed", cpPersonObj.length);
+    for (var i = 0, Ln = cpPersonObj.length; i < Ln; ++i) {
+        console.log("setTargetForCharmed", cpPersonObj[i].pc_target_name, battle.self.name, battle.enemy.bsL.p, battle.enemy.bsR.p);
+        if (cpPersonObj[i].pc_target_name === battle.self.name) {
+            cpPersonObj[i].setHandGesture("LH", battle.self.gL);
+        } else {
+            cpPersonObj[i].setHandGesture(battle.enemy.bsL.p > battle.enemy.bsR.p ? "LH" : "RH", "-");
+        }
+    }
+}
+
+function setTargetForParalyzed() {
+    console.log("setTargetForParalyzed", pParalyzeObj.length);
+    for (var i = 0, Ln = pParalyzeObj.length; i < Ln; ++i) {
+        console.log("setTargetForParalyzed", pParalyzeObj[i].pc_target_name, battle.self.name, battle.enemy.bsL.p, battle.enemy.bsR.p);
+        if (pParalyzeObj[i].pc_target_name === battle.self.name) {
+            pParalyzeObj[i].setHand(battle.self.bsL.p > battle.self.bsR.p ? "RH" : "LH");
+        } else {
+            pParalyzeObj[i].setHand(battle.enemy.bsL.p > battle.enemy.bsR.p ? "LH" : "RH");
+        }
+    }
+}
+
+function prepareBattleWarlock() {
+    console.log("prepareBattleWarlock");
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].player) {
             battle.self = battle.warlocks[i];
             battle.self.gL = '';
@@ -443,14 +626,17 @@ function processBattle(isAI) {
         }
     }
     delete battle.warlocks;
-    //console.log("processBattle", JSON.stringify(battle.self), JSON.stringify(battle.enemy));
+    console.log("processBattle", "enemy", JSON.stringify(battle.enemy));
+    console.log("processBattle", "self", JSON.stringify(battle.self));
     if (!battle.self.bsL.g) {
-        battle.self.bsL = {id:-1,n:"",g:"XXX",t:1000,st:100,p:-100,h:1,l:100,a:3,ng:"X",th:0};
+        battle.self.bsL = {id:-1,name:"",g:"XXX",t:1000,st:100,p:-100,h:1,l:100,a:3,ng:"X",th:0};
     }
     if (!battle.self.bsR.g) {
-        battle.self.bsL = {id:-1,n:"",g:"XXX",t:1000,st:100,p:-100,h:2,l:100,a:3,ng:"X",th:0};
+        battle.self.bsL = {id:-1,name:"",g:"XXX",t:1000,st:100,p:-100,h:2,l:100,a:3,ng:"X",th:0};
     }
+}
 
+function selectGesture() {
     var left_processed = battle.enemy.bsL.p > battle.enemy.bsR.p;
     if (left_processed) {
         destroyEnemySpell(battle.self, battle.enemy.bsL);
@@ -477,10 +663,106 @@ function processBattle(isAI) {
     console.log("setGestureBySpell", left_first, battle.self.bsL, battle.self.bsR);
     setGestureBySpell(battle.self, left_first ? battle.self.bsL : battle.self.bsR);
     setGestureBySpell(battle.self, left_first ? battle.self.bsR : battle.self.bsL);
-    console.log("processBattle", JSON.stringify(battle));
+}
+
+function getSpellByName(spell_name) {
+    for(var i = 0, Ln = arr_spells.length; i < Ln; ++i) {
+        if (arr_spells[i].n === spell_name) {
+            return arr_spells[i];
+        }
+    }
+}
+
+function setTargetForChoosenSpell(is_right) {
+    var current_spell_name = is_right ? cbRHS.currentText : cbLHS.currentText;
+    console.log("setTargetForChoosenSpell", is_right, current_spell_name);
+    if (!current_spell_name) {
+        return ;
+    }
+
+    var current_spell = getSpellByName(current_spell_name);
+    console.log("setTargetForChoosenSpell", JSON.stringify(current_spell));
+    if (!current_spell) {
+        return ;
+    }
+
+    var target_idx = -1, attack = 0;
+    do {
+        if (current_spell.st === SPELL_TYPE_DAMAGE) {
+            target_idx = getBestTarget(current_spell.dmg);
+            attack = current_spell.dmg;
+            break;
+        }
+        if (current_spell.st === SPELL_TYPE_CHARM_MONSTER) {
+            target_idx = getBestTarget(4, "m");
+            attack = 4;
+            if (target_idx === -1) {
+                target_idx = getBestTarget(0, "s");
+                attack = 0;
+            }
+            break;
+        }
+        //if (current_spell)
+
+    }while(0);
+
+    if (target_idx !== -1) {
+        targets[target_idx].under_attack += attack;
+        setTargetForSpell(is_right, targets[target_idx].name);
+    }
+}
+
+function setTargetsForSpells() {
+    console.log("setTargetsForSpells")
+    getPossibleSpell(false, battle.self.bsL.t === 1 ? battle.self.bsL.n : "");
+    getPossibleSpell(true, battle.self.bsR.t === 1 ? battle.self.bsR.n : "");
+    setTargetForChoosenSpell(false);
+    setTargetForChoosenSpell(true);
+}
+
+function getBotMsgByTurn(turn_num) {
+    switch(turn_num) {
+    case 1: return "Hi, warlock, I am a golem created for your training, try to beat me";
+    case 2: return "Try to break enemy plane, using Amnesia, Paralysis, Confusion, Charm Person, Fear";
+    case 3: return "Summon monsters to get your opponent busy ...SFW";
+    case 4: return "Use Invisibility and Blindness to keep your gesture in secret, also you cannot be targeted";
+    case 5: return "Dispel Magic remove all magic effects even mosters";
+    case 6: return "Shield keep your in safe under monster attack, even Elementals";
+    case 7: return "Cast Invisibility or Blindness on monster to eraise them";
+    case 8: return "Cast Counter Spell on the enemy when enemy try to cast Summon spell and even Giant will be absorbed, but not elemental";
+    default: return "";
+    }
+}
+
+function processBattle(isAI) {
+    console.log("processBattle", isAI/*JSON.stringify(battle)*/);
+
+    var i, Ln;
+    arr_spells = JSON.parse(Qt.core.getSpellBook());
+    /*arr_spells[10].active = !battle.isFDF;
+    arr_spells[14].active = !battle.isFDF;
+    arr_spells[45].active = battle.isFDF;
+    arr_spells[46].active = battle.isFDF;
+    arr_spells[47].active = battle.isFDF;*/
+    /*for(i = 0, Ln = arr_spells.length; i < Ln; ++i) {
+        arr_spells[i].active = (battle.isFDF && (arr_fdf_inactive.indexOf(i) === -1)) || (!battle.isFDF && (arr_no_fdf_inactive.indexOf(i) === -1));
+    }*/
+
+    prepareBattleWarlock();
+    selectGesture();
+    var do_charm_monster = (battle.self.bsL.id === SPELL_CHARM_MONSTER) || (battle.self.bsR.id === SPELL_CHARM_MONSTER);
+    prepareTargetsArray();
+    setTargetsForSpells();
+    setTargetsForMonsters(do_charm_monster);
+    setTargetForCharmed();
+    setTargetForParalyzed();
+    console.log("processBattle", "complete", JSON.stringify(battle.enemy));
     //tSendOrderTimer.start();
     if (isAI) {
+        teChatMsg.text = getBotMsgByTurn(battle.turn_num);
         sendOrderEx();
+    } else {
+        console.log("processBattle", "not AI");
     }
 
     //spellDecision(battle);

@@ -9,11 +9,12 @@ Rectangle {
 
     property string pc_label: ""
     property string pc_target_id: ""
+    property string pc_target_name: ""
     property string pc_hand_value: "LH"
     property string pc_gesture_value: "-"
     property var dict: Qt.mainWindow.warlockDictionary
 
-    LargeText {
+    Text {
        id: tLabel
        text: pc_label
        anchors.left: parent.left
@@ -40,6 +41,16 @@ Rectangle {
         width: 0.18 * parent.width
         height: parent.height
         onCurrentTextChanged: pc_gesture_value = pc_gesture.currentText
+    }
+
+    function setHandGesture(hand, gesture) {
+        pc_hand.currentIndex = hand === "LH" ? 0 : 1;
+        for(var i = 0, Ln = pc_gesture.model.length; i < Ln; ++i) {
+            if (gesture === pc_gesture.model[i]) {
+                pc_gesture.currentIndex = i;
+                break;
+            }
+        }
     }
 
     Component.onCompleted: finishCreation();

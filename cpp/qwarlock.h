@@ -41,7 +41,6 @@ protected:
     void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void parseStatus();
     void checkPossibleGesture();
-    int strValueToInt(QString val);
 private:
     int _scared;
     int _confused;

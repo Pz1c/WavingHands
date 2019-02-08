@@ -8,6 +8,7 @@ Rectangle {
 
     property string p_label: ""
     property string p_target_id: ""
+    property string pc_target_name: ""
     property string p_hand_value: "LH"
     property var dict: Qt.mainWindow.warlockDictionary
 
@@ -29,6 +30,11 @@ Rectangle {
     }
 
     Component.onCompleted: finishCreation();
+
+    function setHand(hand) {
+        p_hand.currentIndex = hand === "LH" ? 0 : 1;
+        p_hand_value = hand;
+    }
 
     function finishCreation() {
         //rParalyze.width = tLabel.width + 3 + p_hand.width

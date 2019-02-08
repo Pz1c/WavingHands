@@ -167,6 +167,7 @@ public slots:
 
     QString getSpellList(QString left, QString right, bool Enemy);
     QString getSpellBook();
+    int getLoadedBattleTurn();
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
 protected slots:

@@ -71,6 +71,8 @@
 #define SPELL_PARALYSIS_FDF 46
 #define SPELL_PARALYSIS_FDFD 47
 
+#define SPELL_ID_MAX 999
+
 #define WARLOCK_HAND_NONE 0
 #define WARLOCK_HAND_LEFT 1
 #define WARLOCK_HAND_RIGHT 2
@@ -85,13 +87,14 @@
 #define SPELL_DEF_TARGER_SELF 1
 #define SPELL_DEF_TARGER_ENEMY 2
 #define SPELL_DEF_TARGER_ENEMY_MONSTER 3
+#define SPELL_DEF_TARGER_SELF_MONSTER 4
 
 
 
 class QSpell
 {
 public:
-    QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget = SPELL_DEF_TARGER_NOBODY);
+    QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget = SPELL_DEF_TARGER_NOBODY, int Damage = 0);
     QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy = false);
 
     int spellID() const;
@@ -140,6 +143,7 @@ private:
     int _level;
     int _alreadyCasted;
     int _defTarget;
+    int _damage;
 };
 
 #endif // QSPELL_H

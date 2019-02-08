@@ -516,9 +516,12 @@ bool QWarloksDuelCore::parseTargetList(QString &Data) {
 bool QWarloksDuelCore::prepareMonsterHtml() {
     _MonstersHtml.clear();
     foreach(QMonster *m, _Monsters) {
-        _MonstersHtml.append(m->html(_login)).append("<br>");
+        if (!_MonstersHtml.isEmpty()) {
+            _MonstersHtml.append(",");
+        }
+        _MonstersHtml.append(m->json(_login));
     }
-
+    _MonstersHtml.append("]").prepend("[");
     return true;
 }
 
@@ -626,7 +629,7 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _isDelay = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=DELAY") != -1;
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
-    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF;
+    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn;
     return _loadedBattleTurn != 0;
 }
 
@@ -670,6 +673,11 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
 void QWarloksDuelCore::setTimeState(bool State) {
     _isTimerActive = State;
     emit timerStateChanged();
+}
+
+int QWarloksDuelCore::getLoadedBattleTurn()
+{
+    return _loadedBattleTurn;
 }
 
 void QWarloksDuelCore::parseMessages(QString &Data) {

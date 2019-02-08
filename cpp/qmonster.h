@@ -1,25 +1,31 @@
 #ifndef QMONSTER_H
 #define QMONSTER_H
 
-#include <QString>
+#include "qspell.h"
+#include "qwarlockutils.h"
 
 class QMonster
 {
 public:
-    QMonster(QString Name, QString Status, QString Owner, QString Target);
+    QMonster(const QString &Name, const QString &Status, const QString &Owner, const QString &Target);
 
     QString name();
     QString status();
     QString owner();
     QString target();
-    QString html(QString &user_login);
-    QString json(QString &user_login);
+    QString html(const QString &user_login);
+    QString json(const QString &user_login);
+
+protected:
+    QString getColor(const QString &user_login);
 
 private:
     QString _name;
     QString _status;
     QString _owner;
     QString _target;
+    int _strength;
+    int _hp;
 };
 
 #endif // QMONSTER_H

@@ -1,6 +1,7 @@
 #include "qwarlockutils.h"
 #include "qwarlockdictionary.h"
 #include "qwarlock.h"
+#include "qmonster.h"
 
 QWarlockUtils::QWarlockUtils()
 {
@@ -74,10 +75,10 @@ QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString 
         }
     }
     if (idx3 == -1) {
-        return "";
+        idx3 = Data.length();
     }
     QString res = Data.mid(idx2, idx3 - idx2);
-    qDebug() << "getStringFromData " << Search << " res: " << res;
+    qDebug() << "getStringFromData " << Search << " res: " << res << Data << idx2 << idx3 << Data.length();
     return res;
 }
 
@@ -174,9 +175,16 @@ bool QWarlockUtils::parseGestures(QString &Data, QString &left, QString &right, 
     return true;
 }
 
+void QWarlockUtils::appendSeparatedList(QString &list, const QString &data, const QString &separator) {
+    if (!list.isEmpty()) {
+        list.append(separator);
+    }
+    list.append(data);
+}
+
 bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString owner, QStringList &monsters, bool IsCharm) {
     result.clear();
-    qDebug() << "parseMonsterCommad";
+    qDebug() << "parseMonsterCommad" << owner << IsCharm << monsters;
     QString search1 = "<TR><TD COLSPAN=3>Direct ";
     QString search2 = " to attack:";
     QString search3 = "<SELECT NAME=\"";
@@ -189,22 +197,26 @@ bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString o
         idx1 += search3.length();
         idx2 = Data.indexOf("\"", idx1);
         QString monster_id = Data.mid(idx1, idx2 - idx1);
-        qDebug() << "monster_name" << monster_name;
-        qDebug() << "monster_id" << monster_id;
-        if (IsCharm) {
-            result.append(QString("%1,%2;").arg(monster_id, monster_name));
-        } else if (((monster_name.indexOf("LH:") != -1) || (monster_name.indexOf("RH:") != -1)) && monster_name.toLower().indexOf(owner) != -1) {
-            result.append(QString("%1,%2;").arg(monster_id, monster_name));
-        } else if (monsters.count() > 0) {
+        bool just_created = (monster_name.indexOf("LH:") != -1) || (monster_name.indexOf("RH:") != -1);
+        if (just_created) {
+            monster_id = monster_id.left(3) + monster_name.right(monster_name.length() - monster_name.indexOf(":") - 1);
+        }
+        qDebug() << "monster_name" << monster_name << "monster_id" << monster_id << monsters.count();
+        if (!just_created && monsters.count() > 0) {
             foreach(QString m, monsters) {
                 if (m.compare(monster_name.toLower()) == 0) {
-                    result.append(QString("%1,%2;").arg(monster_id, monster_name));
+                    appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":1,\"just_created\":0,\"charm\":0,\"target\":\"\"}").arg(monster_id, monster_name));
                     break;
                 }
             }
+        } else if (just_created && (monster_name.toLower().indexOf(owner) != -1)) {
+            appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":1,\"just_created\":0,\"charm\":0,\"target\":\"\"}").arg(monster_id, monster_name));
+        } else if (IsCharm) {
+            appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":0,\"just_created\":%3,\"charm\":1,\"target\":\"\"}").arg(monster_id, monster_name, just_created ? "1" : "0"));
         }
         idx1 = idx2 + search2.length();
     }
+    result.append("]").prepend("[");
     return true;
 }
 
@@ -411,4 +423,12 @@ QString QWarlockUtils::parseChallengesList(QString &Data) {
         }
     }
     return res.append("]");
+}
+
+int QWarlockUtils::strValueToInt(QString val) {
+    if (val.compare("permanent") == 0) {
+        return 999;
+    } else {
+        return val.toInt();
+    }
 }
