@@ -428,7 +428,7 @@ function setMonsterTargetByName(monster_name, target) {
     console.log("setMonsterTargetByName", monster_name, target);
     for(var i = 0, Ln = mtMonsterObj.length; i < Ln; ++i) {
         console.log("setMonsterTargetByName", mtMonsterObj[i].mt_id, mtMonsterObj[i].mt_label);
-        if (mtMonsterObj[i].mt_id === monster_name) {
+        if (mtMonsterObj[i].mt_label === monster_name) {
             mtMonsterObj[i].setTarget(target);
             return;
         }

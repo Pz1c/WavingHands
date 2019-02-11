@@ -61,7 +61,7 @@ QString QWarlock::possibleLeftGestures() const
 
 void QWarlock::setPossibleGestures(QString left, QString right) {
     qDebug() << "QWarlock::setPossibleGestures" << left << right;
-    /*_possibleLeftGestures = left;
+    _possibleLeftGestures = left;
     _possibleRightGestures = right;
     if (_possibleLeftGestures.indexOf("As Right") != -1) {
         _possibleLeftGestures = _possibleRightGestures;
