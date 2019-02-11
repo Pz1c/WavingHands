@@ -764,7 +764,6 @@ function processBattle(isAI) {
     } else {
         console.log("processBattle", "not AI");
     }
-
     //spellDecision(battle);
     //checkSpellCast(battle);
     //printBattle(battle, false);

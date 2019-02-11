@@ -617,7 +617,6 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
 bool QWarloksDuelCore::butifyTurnMessage() {
     _finishedBattle = _finishedBattle.replace("<H2>", "").replace("</H2>", "").replace("<p>", "").replace("</p>", "")
             .replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
-
     return true;
 }
 

@@ -199,6 +199,7 @@ bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString o
         QString monster_id = Data.mid(idx1, idx2 - idx1);
         bool just_created = (monster_name.indexOf("LH:") != -1) || (monster_name.indexOf("RH:") != -1);
         if (just_created) {
+            // fix
             monster_name = monster_id.left(3) + monster_name.right(monster_name.length() - monster_name.indexOf(":") - 1);
         }
         qDebug() << "monster_name" << monster_name << "monster_id" << monster_id << monsters.count();
