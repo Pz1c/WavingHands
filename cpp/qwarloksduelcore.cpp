@@ -617,7 +617,6 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
 bool QWarloksDuelCore::butifyTurnMessage() {
     _finishedBattle = _finishedBattle.replace("<H2>", "").replace("</H2>", "").replace("<p>", "").replace("</p>", "")
             .replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
-
     return true;
 }
 
@@ -724,6 +723,7 @@ void QWarloksDuelCore::parseChallendge(QString &Data) {
 }
 
 void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
+    qDebug() << "QWarloksDuelCore::parsePlayerInfo";
     _challenge.clear();
     _played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>");
     _won = QWarlockUtils::getIntFromPlayerData(Data, "Won:", "<TD>", "</TD>");
@@ -754,11 +754,14 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
                 break;
             }
         }
+        _finished_battles = nfb;
+    } else {
+        _finished_battles = fbl;
     }
-    _finished_battles = nfb;
+
     qDebug() << "ready: " << _ready_in_battles;
     qDebug() << "waiting: " << _waiting_in_battles;
-    qDebug() << "finished: " << _finished_battles;
+    qDebug() << "finished: " << _finished_battles << fbl;
     if (new_fb_id > 0) {
         setTimeState(false);
         getBattle(new_fb_id, 2);

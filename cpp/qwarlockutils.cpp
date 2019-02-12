@@ -184,7 +184,7 @@ void QWarlockUtils::appendSeparatedList(QString &list, const QString &data, cons
 
 bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString owner, QStringList &monsters, bool IsCharm) {
     result.clear();
-    qDebug() << "parseMonsterCommad" << owner << IsCharm << monsters;
+    qDebug() << "QWarlockUtils::parseMonsterCommad" << owner << IsCharm << monsters;
     QString search1 = "<TR><TD COLSPAN=3>Direct ";
     QString search2 = " to attack:";
     QString search3 = "<SELECT NAME=\"";
@@ -199,7 +199,8 @@ bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString o
         QString monster_id = Data.mid(idx1, idx2 - idx1);
         bool just_created = (monster_name.indexOf("LH:") != -1) || (monster_name.indexOf("RH:") != -1);
         if (just_created) {
-            monster_id = monster_id.left(3) + monster_name.right(monster_name.length() - monster_name.indexOf(":") - 1);
+            // fix
+            monster_name = monster_id.left(3) + monster_name.right(monster_name.length() - monster_name.indexOf(":") - 1);
         }
         qDebug() << "monster_name" << monster_name << "monster_id" << monster_id << monsters.count();
         if (!just_created && monsters.count() > 0) {
