@@ -267,7 +267,7 @@ function destroyEnemySpell(self, enemy_spell) {
         }
     }
 
-    console.log("destroyEnemySpell", enemy_spell, anti_spell);
+    console.log("destroyEnemySpell", JSON.stringify(enemy_spell), JSON.stringify(anti_spell));
 
     if (anti_spell) {
         anti_spell.anti_spell = true;

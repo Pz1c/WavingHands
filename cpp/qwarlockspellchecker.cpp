@@ -23,7 +23,7 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(17,"PSFW","Summon Ogre", SPELL_TYPE_SUMMON_MONSTER,13,2,12, SPELL_DEF_TARGER_SELF, 2));
     Spells.append(new QSpell(18,"SFW","Summon Goblin", SPELL_TYPE_SUMMON_MONSTER,14,1,11, SPELL_DEF_TARGER_SELF, 1));
     Spells.append(new QSpell(19,"FSSDD","Fireball", SPELL_TYPE_DAMAGE,13,1,15, SPELL_DEF_TARGER_ENEMY, 5));
-    Spells.append(new QSpell(20,"P","Shield", SPELL_TYPE_SHIELD,10,0,10, SPELL_DEF_TARGER_SELF, 0));
+    Spells.append(new QSpell(20,"P","Shield", SPELL_TYPE_SHIELD,1,0,10, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(21,"PDWP","Remove Enchantment", SPELL_TYPE_REMOVE_ENCHANTMENT,10,0,13, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(22,"PPws","Invisibility", SPELL_TYPE_CONFUSION,13,0,13, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(23,"PSDD","Charm Monster", SPELL_TYPE_CHARM_MONSTER,10,0,12, SPELL_DEF_TARGER_ENEMY_MONSTER, 0));
@@ -46,7 +46,7 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(40,"WWFP","Resist Heat", SPELL_TYPE_RESIST,10,4,10, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(41,"WWP","Protection", SPELL_TYPE_SHIELD,10,1,10, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(42,"WWS","Counter Spell", SPELL_TYPE_MAGIC_SHIELD,10,1,10, SPELL_DEF_TARGER_SELF, 0));
-    Spells.append(new QSpell(43,"p","Surrender", SPELL_TYPE_SPEC,-10,0,0, SPELL_DEF_TARGER_SELF, 0));
+    Spells.append(new QSpell(43,"p","Surrender", SPELL_TYPE_SPEC,-100,0,0, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(44,">","Stab", SPELL_TYPE_STAB,-1,0,0, SPELL_DEF_TARGER_ENEMY, 0));
     Spells.append(new QSpell(SPELL_DISEASE_FDF,"DSFDFc","Disease", SPELL_TYPE_POISON,14,1,17, SPELL_DEF_TARGER_ENEMY, 0));
     Spells.append(new QSpell(SPELL_PARALYSIS_FDF,"FDF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12, SPELL_DEF_TARGER_ENEMY, 0));
@@ -158,7 +158,6 @@ QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString
     QList<QSpell *> res;
 
     Spells.at(SPELL_DISEASE)->setActive(!IsFDF);
-
     Spells.at(SPELL_PARALYSIS)->setActive(!IsFDF);
     Spells.at(SPELL_DISEASE_FDF)->setActive(IsFDF);
     Spells.at(SPELL_PARALYSIS_FDF)->setActive(IsFDF);

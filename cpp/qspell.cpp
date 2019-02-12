@@ -18,17 +18,21 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
 }
 
 int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast) {
-    int res;
-    if (Enemy) {
-      res = Danger - TurnToCast;
+    double res = Enemy ? Danger : Priority;
+    /*if (Enemy) {
+      res = Danger * (FullTurnToCast - TurnToCast)/FullTurnToCast;
     } else {
       res = Priority - TurnToCast + (FullTurnToCast - TurnToCast);
-    }
+    }*/
+    res *= (FullTurnToCast - TurnToCast)/FullTurnToCast;
     if (FullTurnToCast == TurnToCast) {
         res -= 4;
     }
+    if (FullTurnToCast > TurnToCast) {
+        res -= 6;
+    }
 
-    return res;
+    return (int)res;
 }
 
 bool QSpell::active() const

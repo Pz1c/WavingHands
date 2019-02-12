@@ -15,6 +15,10 @@ public:
     QString target();
     QString html(const QString &user_login);
     QString json(const QString &user_login);
+    bool is_under_attack(const QString &user_login);
+    bool is_owner(const QString &user_login);
+    int getStrength() const;
+    int getHp() const;
 
 protected:
     QString getColor(const QString &user_login);

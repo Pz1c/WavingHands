@@ -38,16 +38,34 @@ QString QMonster::target() {
     return _target;
 }
 
+bool QMonster::is_under_attack(const QString &user_login) {
+    return _target.toLower().compare(user_login.toLower()) == 0;
+}
+
+bool QMonster::is_owner(const QString &user_login) {
+    return _owner.toLower().compare(user_login.toLower()) == 0;
+}
+
 QString QMonster::getColor(const QString &user_login) {
     QString color;
-    if (_owner.toLower().compare(user_login.toLower()) == 0) {
+    if (is_owner(user_login)) {
         color = "#7FD49F";
-    } else if (_target.toLower().compare(user_login.toLower()) == 0) {
+    } else if (is_under_attack(user_login)) {
         color = "#D190A4";
     } else {
         color = "#D2D2D2";
     }
     return color;
+}
+
+int QMonster::getHp() const
+{
+    return _hp;
+}
+
+int QMonster::getStrength() const
+{
+    return _strength;
 }
 
 QString QMonster::html(const QString &user_login) {

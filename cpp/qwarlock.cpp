@@ -60,11 +60,11 @@ QString QWarlock::possibleLeftGestures() const
 }
 
 void QWarlock::setPossibleGestures(QString left, QString right) {
-    _possibleLeftGestures = left;
+    /*_possibleLeftGestures = left;
     _possibleRightGestures = right;
     if (_possibleLeftGestures.indexOf("As Right") != -1) {
         _possibleLeftGestures = _possibleRightGestures;
-    }
+    }*/
     qDebug() << "QWarlock::setPossibleGestures" << left << right << _possibleLeftGestures << _possibleRightGestures;
     //*/
 }
@@ -89,8 +89,8 @@ void QWarlock::checkPossibleGesture() {
         _possibleLeftGestures = _leftGestures.right(1);
         _possibleRightGestures = _rightGestures.right(1);
     } else if (_scared > 0) {
-        _possibleLeftGestures = "W,S";
-        _possibleRightGestures = "W,S";
+        _possibleLeftGestures = "W,P";
+        _possibleRightGestures = "W,P";
     } else if (_maladroit > 0) {
         _possibleLeftGestures = "W,S,D,C,F";
         _possibleRightGestures = "W,S,D,C,F";
@@ -172,7 +172,14 @@ void QWarlock::setAntispell(QWarlock *enemy) {
 
 void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters) {
     int _coldproof_in = 999, _fireproof_in = 999;
+    int under_attack = 0;
+    foreach(QMonster *m,  monsters) {
+        if (m->is_under_attack(_name)) {
+            under_attack += m->getStrength();
+        }
+    }
     foreach(QSpell *spell, _possibleSpells) {
+        spell->setPriority(0);
         switch(spell->spellID()) {
             case SPELL_RESIST_COLD:
                 _coldproof_in = spell->turnToCast();
@@ -180,12 +187,7 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
             case SPELL_RESIST_HEAT:
                 _fireproof_in = spell->turnToCast();
                 break;
-
         }
-    }
-
-    foreach(QMonster *m,  monsters) {
-        // TODO add monster processing
     }
 
     foreach(QSpell *spell, _possibleSpells) {
@@ -205,6 +207,11 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
                 spell->changePriority(5);
             }
             break;
+        case SPELL_TYPE_SHIELD:
+            spell->changePriority(under_attack);
+            break;
+        }
+        switch(spell->spellID()) {
         case SPELL_REMOVE_ENCHANTMENT:
         case SPELL_DISPEL_MAGIC:
             if ((_desease > _poison ? _desease : _poison) >= spell->turnToCast()) {
