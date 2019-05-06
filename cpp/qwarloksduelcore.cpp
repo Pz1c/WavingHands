@@ -96,6 +96,7 @@ void QWarloksDuelCore::loginToSite() {
         emit needLogin();
         return;
     }
+
     _isLoading = true;
     emit isLoadingChanged();
 
@@ -758,7 +759,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     } else {
         _finished_battles = fbl;
     }
-
+    saveParameters();
     qDebug() << "ready: " << _ready_in_battles;
     qDebug() << "waiting: " << _waiting_in_battles;
     qDebug() << "finished: " << _finished_battles << fbl;
@@ -914,6 +915,7 @@ QString QWarloksDuelCore::getSpellBook() {
 void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     _login = Login;
     _password = Password;
+    _finished_battles.clear();
     saveParameters();
     loginToSite();
 }
