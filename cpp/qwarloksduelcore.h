@@ -62,6 +62,7 @@ class QWarloksDuelCore : public QObject
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr);
+    ~QWarloksDuelCore();
 
     bool isNeedLogin();
     QString login();
@@ -224,6 +225,7 @@ private:
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
+    QStringList _shown_battles;
     QString _finishedBattle;
     QMap<int, QString> _challenge;
     QStringList _msg;

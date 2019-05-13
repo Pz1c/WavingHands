@@ -315,7 +315,7 @@ function showDuel() {
 
 function showSpellBook() {
     var str = Qt.core.spellListHtml;
-    console.log("showSpellBook", str, default_spell_list);
+    console.log("showSpellBook", str, JSON.stringify(default_spell_list));
     if (str.length > 0) {
         mainWindow.spells = JSON.parse(str);
     }else {

@@ -29,6 +29,10 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     prepareSpellHtmlList();
 }
 
+QWarloksDuelCore::~QWarloksDuelCore() {
+    saveParameters();
+}
+
 void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description) {
     _isLoading = true;
     emit isLoadingChanged();
@@ -734,44 +738,44 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     _elo = QWarlockUtils::getIntFromPlayerData(Data, "Elo:", "<TD>", "</TD>");
     _ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
     _waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
+    _finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
     QString challendge = QWarlockUtils::getStringFromData(Data, "Challenged to battles:</TD>", "<TD>", "</TD>");
     if (!challendge.isEmpty()) {
         parseChallendge(challendge);
     }
     parseMessages(Data);
-    QList<int> fbl = QWarlockUtils::getBattleList(Data, "Finished battles:");
-    if (!_allowedAccept && (fbl.count() > 0)) {
+
+    if (!_allowedAccept && (_finished_battles.count() > 0)) {
         _allowedAccept = true;
         _allowedAdd = true;
         emit allowedAcceptChanged();
     }
-    QList<int> nfb;
     int new_fb_id = 0;
-    if (_finished_battles.count() > 0) {
-        foreach(int fbid, fbl) {
-            nfb.append(fbid);
-            if (_finished_battles.indexOf(fbid) == -1) {
+    if ((_ready_in_battles.count() == 0) && (_finished_battles.count() > 0)) {
+        QString sbid;
+        foreach(int fbid, _finished_battles) {
+            sbid = QString::number(fbid);
+            if (_shown_battles.indexOf(sbid) == -1) {
+                _shown_battles.append(sbid);
                 new_fb_id = fbid;
                 break;
             }
         }
-        _finished_battles = nfb;
-    } else {
-        _finished_battles = fbl;
     }
-    saveParameters();
     qDebug() << "ready: " << _ready_in_battles;
     qDebug() << "waiting: " << _waiting_in_battles;
-    qDebug() << "finished: " << _finished_battles << fbl;
-    if (new_fb_id > 0) {
-        setTimeState(false);
-        getBattle(new_fb_id, 2);
-    } else if (_ready_in_battles.count() > 0) {
+    qDebug() << "finished: " << _finished_battles;
+    qDebug() << "shown: " << _shown_battles;
+    if (_ready_in_battles.count() > 0) {
         setTimeState(false);
         getBattle(_ready_in_battles.at(0), 0);
+    } else if (new_fb_id > 0) {
+        setTimeState(false);
+        getBattle(new_fb_id, 2);
     } else {
         setTimeState(true);
     }
+    saveParameters();
 }
 
 bool QWarloksDuelCore::finishScan(QString &Data, int StatusCode) {
@@ -1045,6 +1049,7 @@ void QWarloksDuelCore::saveParameters() {
 
     settings.beginGroup("Game");
     settings.setValue("finished_battles", finishedBattles());
+    settings.setValue("shown_battles", _shown_battles);
     settings.endGroup();
 }
 
@@ -1072,6 +1077,10 @@ void QWarloksDuelCore::loadParameters() {
             continue;
         }
         _finished_battles.append(fbid);
+    }
+    _shown_battles = settings.value("shown_battles", "").toStringList();
+    if ((_shown_battles.isEmpty() || ((_shown_battles.size() == 1) && (_shown_battles.at(0).isEmpty()))) && !fbl.isEmpty()) {
+        _shown_battles.append(fbl);
     }
     settings.endGroup();
 }

@@ -389,7 +389,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     }
     bool for_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("NO BOT") == -1);
     qDebug() << "for_bot" << level << total_count << description << for_bot;
-    res = QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8}")
+    res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8}")
             .arg(logins,
                  QString::number(fast),
                  level,

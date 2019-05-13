@@ -18,17 +18,58 @@ import "qrc:/js/ai_utils.js" as AI
 
 import "qrc:/qml"
 
-Window {
+ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 800
-    height: 1420
+    width: 507
+    height: 900
 
     property real height_koeff: rMain.height / 800
     property bool exit_on_back_button: true
     property var  battles: MUtils.loadChallengesList(true)
     property var  spells: MUtils.default_spell_list
     property bool action_send_order: true
+
+    menuBar: MenuBar {
+            Menu {
+                id: mMain
+                title: warlockDictionary.getStringByCode("Settings")
+
+                MenuItem {
+                    id: miAcc
+                    text: warlockDictionary.getStringByCode("LoginSett")
+                    onTriggered: {
+                        getLoginFromUser();
+                    }
+                }
+
+                MenuItem {
+                    id: miProxy
+                    text: warlockDictionary.getStringByCode("NetworkSett")
+                    onTriggered: {
+                        showProxySettings();
+                    }
+                }
+
+                MenuItem {
+                    id: miLang
+                    text: warlockDictionary.getStringByCode("LangSett")
+                    onTriggered: {
+                        showLangSettings();
+                    }
+                }
+
+                MenuSeparator {
+                }
+
+
+                MenuItem {
+                    id: miExit
+                    text: warlockDictionary.getStringByCode("Exit")
+                    onTriggered: Qt.quit()
+                }
+            }
+    }
 
     MessageDialog {
         id: mdNoGesture
@@ -467,7 +508,11 @@ Window {
             ListView {
                     id: tvChallengeList
                     parent: rChallengeList
-                    anchors.fill: parent
+                    //anchors.fill: parent
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: btnAddDuel.top
                     model: battles
 
                     delegate: Rectangle {
@@ -506,6 +551,7 @@ Window {
                             anchors.right: parent.right
                             anchors.top: rlvdItemTitle.bottom
                             anchors.topMargin: 0.01 * mainWindow.height
+                            //visible: !battles[index].is_new_btn
 
                             Text {
                                 id: lvdItemLevel
@@ -546,6 +592,7 @@ Window {
                             text: /*battles[index].level + " " +
                              (battles[index].fast === 1 ? "Fast " : "") + (battles[index].parafc === 1? "ParaFC " : "") +
                              (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + */battles[index].desc //*/
+                            //visible: !battles[index].is_new_btn
                         }
 
                         Rectangle {
@@ -563,7 +610,7 @@ Window {
 
                             Text {
                                 id: label_order_up
-                                text: warlockDictionary.getStringByCode("Accept")
+                                text: warlockDictionary.getStringByCode(battles[index].is_new_btn ? "AddChallenge" : "Accept")
                                 anchors.centerIn: parent
                                 //////font.pointSize: 13 * height_koeff
                             }
@@ -577,9 +624,13 @@ Window {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    var battle_id = battles[index].battle_id;
-                                    console.log("accept battle", battle_id);
-                                    MUtils.acceptChallenge('/accept/' + battle_id);
+                                    if (battles[index].is_new_btn) {
+                                        addDuel();
+                                    } else {
+                                        var battle_id = battles[index].battle_id;
+                                        console.log("accept battle", battle_id);
+                                        MUtils.acceptChallenge('/accept/' + battle_id);
+                                    }
                                 }
                             }
                         }
@@ -599,6 +650,39 @@ Window {
                         }
                     }
             }
+
+            Rectangle {
+                id: btnAddDuel
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: 0.06 * parent.height
+
+                color: core.allowedAdd ? "lightblue" : "lightgrey"
+                radius: 7
+                border.width: 1
+                border.color: core.allowedAdd ? "blue" : "grey"
+
+                Text {
+                    id: lbAddDuel
+                    text: warlockDictionary.getStringByCode("AddChallenge")
+                    anchors.centerIn: parent
+                    //////font.pointSize: 13 * height_koeff
+                }
+
+                MouseArea {
+                    id: maAddDuel
+                    anchors.rightMargin: 0
+                    anchors.bottomMargin: 0
+                    anchors.leftMargin: 0
+                    anchors.topMargin: 0
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        addDuel();
+                    }
+                }
+            }
         }
 
         Rectangle {
@@ -615,47 +699,62 @@ Window {
                     anchors.fill: parent
                     model: spells
 
-                    delegate: Item {
+                    delegate: Rectangle {
                         id: lvsItem
-                        height: lvsItemGestures.height
+                        height: 0.04 * mainWindow.height
                         width: mainWindow.width
 
-                        Text {
+                        LargeText {
                             id: lvsItemGestures
                             anchors.left: parent.left
-                            anchors.leftMargin: 0.01 * mainWindow.width
                             anchors.top: parent.top
-                            anchors.topMargin: 0.01 * mainWindow.height
-                            //////font.pointSize: 13 * height_koeff
-                            wrapMode: Text.WordWrap
+                            //anchors.topMargin: 0.01 * mainWindow.height
+                            //anchors.bottom: parent.bottom
+
+                            font.pixelSize: 20 * height_koeff
+                            //wrapMode: Text.WordWrap
+                            height: 0.035 * mainWindow.height
                             textFormat: Text.RichText
                             text: spells[index].g
                             width: 0.2 * mainWindow.width
+
+                            horizontalAlignment: Text.AlignLeft
                         }
 
-                        Text {
+                        LargeText {
                             id: lvsItemHint
                             anchors.left: lvsItemGestures.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            /*anchors.left: lvsItemGestures.right
                             anchors.leftMargin: 0.01 * mainWindow.width
                             anchors.top: parent.top
-                            anchors.topMargin: 0.01 * mainWindow.height
+                            anchors.topMargin: 0.01 * mainWindow.height*/
                             //////font.pointSize: 13 * height_koeff
-                            wrapMode: Text.WordWrap
+                            //wrapMode: Text.WordWrap
                             text: spells[index].h
                             width: 0.2 * mainWindow.width
+
+                            horizontalAlignment: Text.AlignLeft
                         }
 
-                        Text {
+                        LargeText {
                             id: lvsItemName
-                            anchors.left: lvsItemHint.right
-                            anchors.leftMargin: 0.01 * mainWindow.width
+                            anchors.right: parent.right
+                            anchors.rightMargin: 0.005 * mainWindow.width
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            /*anchors.left: lvsItemHint.right
+
                             anchors.right: parent.left
                             anchors.top: parent.top
-                            anchors.topMargin: 0.01 * mainWindow.height
+                            anchors.topMargin: 0.01 * mainWindow.height*/
                             //////font.pointSize: 13 * height_koeff
                             wrapMode: Text.WordWrap
                             text: spells[index].n
                             width: 0.6 * mainWindow.width
+
+                            horizontalAlignment: Text.AlignRight
                         }
 
                         MouseArea {
@@ -717,11 +816,11 @@ Window {
                     onClicked: showUserProfile()
                 }
 
-                ToolButton {
+                /*ToolButton {
                     id: tbAdd
                     icon.source: "res/add.png"
                     onClicked: addDuel()
-                }
+                }*/
 
                 ToolButton {
                     id: tbRefresh
@@ -729,12 +828,12 @@ Window {
                     onClicked: refreshData()
                 }
 
-                ToolButton {
+                /*ToolButton {
                     id: tbSettings
                     icon.source: "res/settings.png"
                     onClicked: showMainMenu()
                     Layout.alignment: Qt.AlignRight
-                }
+                }*/
             }
         }
     }
