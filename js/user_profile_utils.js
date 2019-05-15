@@ -28,3 +28,32 @@ function linkActivated(url) {
     }
     Qt.mainWindow.closeChild();
 }
+
+
+function getTopPlayerDesc(item) {
+    var res = "";
+    if (item.ladder > 0) {
+        if (res.length > 0) {
+            res += ', ';
+        }
+        res += "Ladder " + item.ladder;
+    }
+    if (item.melee > 0) {
+        if (res.length > 0) {
+            res += ', ';
+        }
+        res += "Melee " + item.melee;
+    }
+    if (item.played > 0) {
+        if (res.length > 0) {
+            res += ', ';
+        }
+        res += "Played " + item.played + " (won " + item.won + ", dead " + item.dead + ")";
+    }
+    if (res.length > 0) {
+        res += ', ';
+    }
+    res += "Elo " + item.elo;
+
+    return item.login + " - " + res;
+}

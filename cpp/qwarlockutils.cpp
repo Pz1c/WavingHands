@@ -402,16 +402,16 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
 }
 
 QString QWarlockUtils::parseChallengesList(QString &Data) {
-    //qDebug() << "parseChallengesList";
+    qDebug() << "parseChallengesList";
 
     QString res = "[";
-    QString search1 = "<TR><TD><A HREF=\"/player/";
+    QString search1 = "<TR><TD><A HREF=\"/player";
     QString search2 = "</TR> <TR><TD COLSPAN=4><HR></TD></TR>";
     int idx1 = 0, idx2;
     int count = 0;
 
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
-        idx1 += 4;
+        idx1 += 4; // !! remove <TR> only
         idx2 = Data.indexOf(search2, idx1);
         QString challenge = Data.mid(idx1, idx2 - idx1);
 
@@ -424,6 +424,77 @@ QString QWarlockUtils::parseChallengesList(QString &Data) {
         }
     }
     return res.append("]");
+}
+
+QString QWarlockUtils::parseTopList(QString &Data) {
+    qDebug() << "parseTopList";
+
+    QString res = "[";
+    QString search1 = "<TD><A HREF=\"/player/";
+    QString search2 = "<TD STYLE=\"background-color:";
+    int idx1 = 0, idx2;
+    int count = 0;
+
+    while((idx1 = Data.indexOf(search1, idx1)) != -1) {
+        idx1 += search1.length();
+        idx2 = Data.indexOf(search2, idx1);
+        QString player = Data.mid(idx1, idx2 - idx1);
+
+        QString parsed = parsePlayerTop(player);
+        if (!parsed.isEmpty()) {
+            if (++count > 1) {
+                res.append(",");
+            }
+            res.append(parsed);
+        }
+    }
+    return res.append("]");
+}
+
+QString QWarlockUtils::parsePlayerTop(QString &Data) {
+    //qDebug() << "parseChallenge";
+    QString res;
+    QString search1 = "<TD ALIGN=CENTER>";
+    QString search2 = "</TD>";
+    QString login, ladder, melee, elo, played, won, died;
+    int idx1 = 0, idx2, idx = 0;
+    idx2 = Data.indexOf(".");
+    login = Data.mid(0, idx2);
+    while((idx1 = Data.indexOf(search1, idx1)) != -1) {
+        idx1 += search1.length();
+        idx2 = Data.indexOf(search2, idx1);
+        QString part = Data.mid(idx1, idx2 - idx1);
+        switch(++idx) {
+            case 0:
+                login = part;
+                break;
+            case 1:
+                ladder = part;
+                break;
+            case 2:
+                melee = part;
+                break;
+            case 3:
+                played = part;
+                break;
+            case 4:
+                won = part;
+                break;
+            case 5:
+                died = part;
+                break;
+            case 6:
+                elo = part;
+                break;
+        }
+        //res.append(challenge_part);
+    }
+    //res.append("#&#");
+
+    res = QString("{\"login\":\"%1\",\"ladder\":%2,\"melee\":\"%3\",\"played\":%4,\"won\":%5,\"dead\":%6,\"elo\":%7}")
+            .arg(login, ladder, melee, played, won, died, elo);
+    //qDebug() << res;
+    return res;
 }
 
 int QWarlockUtils::strValueToInt(QString val) {

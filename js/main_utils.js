@@ -132,7 +132,7 @@ function acceptChallenge(link) {
 
 function loadChallengesList(need_return) {
     if (!Qt.core) {
-        return;
+        return [];
     }
     var list_str = Qt.core.challengeList;
     console.log("loadChallengesList", need_return, list_str);
@@ -143,6 +143,23 @@ function loadChallengesList(need_return) {
         return arr;
     } else {
         tvChallengeList.model = arr;
+    }
+}
+
+function loadTopList(need_return) {
+    if (!Qt.core) {
+        return [];
+    }
+    var list_str = Qt.core.topList;
+    console.log("loadTopList", need_return, list_str);
+    var arr = (list_str && (list_str.length > 0)) ? JSON.parse(list_str) : [];
+    mainWindow.battles = arr;
+    console.log("loadTopList", need_return, Qt.core.isAI, list_str, Qt.core.readyInBattles, Qt.core.waitingInBattles);
+    if (need_return) {
+        return arr;
+    } else {
+        mainWindow.top_player = arr;
+        //tvTopList.model = arr;
     }
 }
 
@@ -299,18 +316,16 @@ function showReadyBattle() {
     startSkynet(Qt.core.isAI);
 }
 
-function flatMenuItem() {
-    /*tbList.y = rChallengeList.visible ? 6 : 3
-    tbBook.y = rSpellList.visible ? 6 : 3
-    tbFight.y = rReadyBattle.visible ? 6 : 3*/
+
+function openTab(code) {
+    rReadyBattle.visible = code === "battle";
+    rChallengeList.visible = code === "challenge";
+    rSpellList.visible = code === "spells";
+    rTopList.visible = code === "top";
 }
 
 function showDuel() {
-    rReadyBattle.visible = true
-    rChallengeList.visible = false
-    rSpellList.visible = false
-
-    flatMenuItem()
+    openTab("battle");
 }
 
 function showSpellBook() {
@@ -322,27 +337,23 @@ function showSpellBook() {
         mainWindow.spells = default_spell_list;
     }
     tvSpellList.model = mainWindow.spells;
-    rReadyBattle.visible = false
-    rChallengeList.visible = false
-    rSpellList.visible = true
 
-    flatMenuItem()
+    openTab("spells");
 }
 
 function showList() {
     console.log("showList");
-    rReadyBattle.visible = false
-    rChallengeList.visible = true
-    rSpellList.visible = false
+    openTab("challenge");
+}
 
-    flatMenuItem()
+function showTop() {
+    console.log("showTop");
+    openTab("top");
 }
 
 function prepareButton(state) {
     maDoit.enabled = state === 1
-    rReadyBattle.visible = state === 1
-    rChallengeList.visible = !rReadyBattle.visible
-    rSpellList.visible = false
+    openTab(state === 1 ? "battle" : "challenge");
 }
 
 function cleanOrders() {

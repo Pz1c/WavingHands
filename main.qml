@@ -15,6 +15,7 @@ import ua.sp.warlockdictionary 1.0
 
 import "qrc:/js/main_utils.js" as MUtils
 import "qrc:/js/ai_utils.js" as AI
+import "qrc:/js/user_profile_utils.js" as UU
 
 import "qrc:/qml"
 
@@ -27,6 +28,7 @@ ApplicationWindow {
     property real height_koeff: rMain.height / 800
     property bool exit_on_back_button: true
     property var  battles: MUtils.loadChallengesList(true)
+    property var  top_player: MUtils.loadTopList(true)
     property var  spells: MUtils.default_spell_list
     property bool action_send_order: true
 
@@ -589,9 +591,10 @@ ApplicationWindow {
                             //////font.pointSize: 13 * height_koeff
                             wrapMode: Text.WordWrap
                             // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
-                            text: /*battles[index].level + " " +
+                            text: battles[index].desc
+                                /*battles[index].level + " " +
                              (battles[index].fast === 1 ? "Fast " : "") + (battles[index].parafc === 1? "ParaFC " : "") +
-                             (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + */battles[index].desc //*/
+                             (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + battles[index].desc //*/
                             //visible: !battles[index].is_new_btn
                         }
 
@@ -610,7 +613,7 @@ ApplicationWindow {
 
                             Text {
                                 id: label_order_up
-                                text: warlockDictionary.getStringByCode(battles[index].is_new_btn ? "AddChallenge" : "Accept")
+                                text: warlockDictionary.getStringByCode("Accept")
                                 anchors.centerIn: parent
                                 //////font.pointSize: 13 * height_koeff
                             }
@@ -624,13 +627,9 @@ ApplicationWindow {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    if (battles[index].is_new_btn) {
-                                        addDuel();
-                                    } else {
-                                        var battle_id = battles[index].battle_id;
-                                        console.log("accept battle", battle_id);
-                                        MUtils.acceptChallenge('/accept/' + battle_id);
-                                    }
+                                    var battle_id = battles[index].battle_id;
+                                    console.log("accept battle", battle_id);
+                                    MUtils.acceptChallenge('/accept/' + battle_id);
                                 }
                             }
                         }
@@ -782,6 +781,90 @@ ApplicationWindow {
             }
         }
 
+        Rectangle {
+            id: rTopList
+            visible: false
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: tbMain.top
+
+            ListView {
+                    id: tvTopList
+                    parent: rTopList
+                    anchors.fill: parent
+                    model: top_player
+
+                    delegate: Rectangle {
+                        id: lvtItem
+                        height: 0.02 * mainWindow.height
+                        width: mainWindow.width
+
+                        LargeText {
+                            id: lvtItemText
+                            anchors.fill: parent
+                            //textFormat: Text.RichText
+                            text: UU.getTopPlayerDesc(top_player[index])
+                            fontSizeMode: Text.VerticalFit
+                            horizontalAlignment: Text.AlignLeft
+                        }
+
+                        /*LargeText {
+                            id: lvtItemName
+                            anchors.left: parent.left
+                            anchors.top: parent.top
+                            //anchors.topMargin: 0.01 * mainWindow.height
+                            //anchors.bottom: parent.bottom
+
+                            //font.pixelSize: 20 * height_koeff
+                            //wrapMode: Text.WordWrap
+                            //height: 0.035 * mainWindow.height
+                            //textFormat: Text.RichText
+                            text: top_player[index].login
+                            width: 0.2 * mainWindow.width
+
+                            horizontalAlignment: Text.AlignLeft
+                        }
+
+                        LargeText {
+                            id: lvtItemValue
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            text: UU.getTopPlayerDesc(top_player[index])
+                            width: 0.8 * mainWindow.width
+
+                            horizontalAlignment: Text.AlignLeft
+                        }*/
+
+
+
+                        MouseArea {
+                            id: maTopListItem
+                            anchors.fill: parent
+
+                            onClicked: {
+                                console.log("top click", top_player[index].login);
+                                //MUtils.linkActivated("/show_spell_desc/" + spells[index].code);
+                            }
+                        }
+                    }
+
+                    header: Item {
+                        id: lvsHeader
+                        height: 0.05 * mainWindow.height
+                        width: mainWindow.width
+
+                        LargeText {
+                            id: lvsHeaderText
+                            anchors.fill: parent
+                            text: warlockDictionary.getStringByCode("SpellList")
+                            color: "white"
+                        }
+                    }
+            }
+        }
+
         ToolBar {
             id: tbMain
             anchors.left: parent.left
@@ -816,16 +899,17 @@ ApplicationWindow {
                     onClicked: showUserProfile()
                 }
 
-                /*ToolButton {
+                ToolButton {
                     id: tbAdd
-                    icon.source: "res/add.png"
-                    onClicked: addDuel()
-                }*/
+                    icon.source: "res/first-place.png"
+                    onClicked: openRecords()
+                }
 
                 ToolButton {
                     id: tbRefresh
                     icon.source: "res/refresh.png"
                     onClicked: refreshData()
+                    Layout.alignment: Qt.AlignRight
                 }
 
                 /*ToolButton {
@@ -849,6 +933,12 @@ ApplicationWindow {
             tipTxt = warlockDictionary.getStringByCode("WaitTrainingBattle");
             showTipMessage(true);
         }
+    }
+
+    function openRecords() {
+        console.log("openRecords");
+        core.getTopList();
+        MUtils.showTop();
     }
 
     function refreshData() {
@@ -1028,6 +1118,7 @@ ApplicationWindow {
         onTimerStateChanged: changeTimerState()
         onChallengeListChanged: MUtils.loadChallengesList(false)
         onSpellListHtmlChanged: MUtils.loadSpellList()
+        onTopListChanged: MUtils.loadTopList(false)
         onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
         onAllowedAcceptChanged: {
             console.log("onAllowedAcceptChanged");

@@ -36,7 +36,9 @@ public:
     static QString getCharmedPersonList(QString &Data);
     static QString getParalyseList(QString &Data);
     static QString parseChallengesList(QString &Data);
+    static QString parseTopList(QString &Data);
     static QString parseChallenge(QString &Data);
+    static QString parsePlayerTop(QString &Data);
     static QString parseChallengePart0(QString &Data);
     static QString parseChallengePart1(QString &Data);
     static QString parseChallengeDescription(QString &Data);

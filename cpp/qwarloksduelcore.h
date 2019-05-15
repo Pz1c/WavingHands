@@ -56,6 +56,7 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(QString challengeList READ challengeList NOTIFY challengeListChanged)
     Q_PROPERTY(QString spellListHtml READ spellListHtml NOTIFY spellListHtmlChanged)
     Q_PROPERTY(QString defaultSpellListHtml READ defaultSpellListHtml NOTIFY defaultSpellListHtmlChanged)
+    Q_PROPERTY(QString topList READ topList NOTIFY topListChanged)
     Q_PROPERTY(bool isAI READ isAI NOTIFY isAIChanged)
     Q_PROPERTY(bool allowedAccept READ allowedAccept NOTIFY allowedAcceptChanged)
     Q_PROPERTY(bool allowedAdd READ allowedAdd NOTIFY allowedAddChanged)
@@ -101,6 +102,7 @@ public:
     QString challengeList();
     QString spellListHtml();
     QString defaultSpellListHtml();
+    QString topList();
     bool isAI();
     bool allowedAdd();
     bool allowedAccept();
@@ -146,11 +148,13 @@ signals:
     void isAIChanged();
     void allowedAddChanged();
     void allowedAcceptChanged();
+    void topListChanged();
 
 public slots:
 
     void scanState();
     void getChallengeList();
+    void getTopList();
     void acceptChallenge(int battle_id, bool from_card = false);
     void rejectChallenge(int battle_id);
     void deleteMsg(QString msg_from);
@@ -184,6 +188,7 @@ protected:
     bool finishScan(QString &Data, int StatusCode);
     bool finishGetFinishedBattle(QString &Data);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
+    void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
     bool butifyTurnMessage();
     bool parseTargetList(QString &Data);
     bool parseUnits(QString &Data);
@@ -253,6 +258,7 @@ private:
     QString _challengeList;
     QString _spellListHtml;
     QString _prevGestures;
+    QString _topList;
 
     // management
     bool _isTimerActive;

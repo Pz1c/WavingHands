@@ -33,5 +33,6 @@
         <file>qml/warlock.qml</file>
         <file>qml/tip_message.qml</file>
         <file>qml/LargeText.qml</file>
+        <file>res/first-place.png</file>
     </qresource>
 </RCC>

@@ -722,7 +722,7 @@ function setTargetsForSpells() {
 
 function getBotMsgByTurn(turn_num) {
     switch(turn_num) {
-    case 1: return "Hi, warlock, I am a golem created for your training, try to beat me";
+    case 1: return "Hi, warlock, I am a golem created for your training, try to beat me. Also join to community https://fb.com/WarlocksDuel/";
     case 2: return "Try to break enemy plane, using Amnesia, Paralysis, Confusion, Charm Person, Fear";
     case 3: return "Summon monsters to get your opponent busy ...SFW";
     case 4: return "Use Invisibility and Blindness to keep your gesture in secret, also you cannot be targeted";
@@ -730,6 +730,7 @@ function getBotMsgByTurn(turn_num) {
     case 6: return "Shield keep your in safe under monster attack, even Elementals";
     case 7: return "Cast Invisibility or Blindness on monster to eraise them";
     case 8: return "Cast Counter Spell on the enemy when enemy try to cast Summon spell and even Giant will be absorbed, but not elemental";
+    case 9: return "Finger of Death can be reflected by Magic Mirror cw";
     default: return "";
     }
 }

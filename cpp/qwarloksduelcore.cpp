@@ -170,6 +170,16 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
     }
 }
 
+void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl) {
+    qDebug() << "finishTopList" << StatusCode << NewUrl;
+    QString list = QWarlockUtils::parseTopList(Data);
+    if (_topList.compare(list) != 0) {
+        _topList = list;
+        qDebug() << list;
+        emit topListChanged();
+    }
+}
+
 bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl) {
     qDebug() << "finishCreateChallenge " << StatusCode << NewUrl;
     if (NewUrl.isEmpty()) {
@@ -330,6 +340,19 @@ void QWarloksDuelCore::getChallengeList() {
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString("https://games.ravenblack.net/challenges")));
+
+    _reply = _nam.get(request);
+    connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
+    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+}
+
+void QWarloksDuelCore::getTopList() {
+    _isLoading = true;
+    emit isLoadingChanged();
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(QString("https://games.ravenblack.net/players")));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -806,7 +829,7 @@ bool QWarloksDuelCore::finishScan(QString &Data, int StatusCode) {
 
 void QWarloksDuelCore::saveRequest(QString &data) {
 #ifdef QT_DEBUG
-    QString file_name = QString("marlocksduel_%1.html").arg(QString::number(++_requestIdx));
+    QString file_name = QString("warlocksduel_%1.html").arg(QString::number(++_requestIdx));
     QFile file(file_name);
     file.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&file);
@@ -824,6 +847,11 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
 
     if (url.indexOf("/login") != -1) {
         return finishLogin(data, statusCode, new_url);
+    }
+
+    if (url.indexOf("/players") != -1) {
+        finishTopList(data, statusCode, new_url);
+        return false;
     }
 
     if (url.indexOf("/player") != -1) {
@@ -1352,6 +1380,10 @@ int QWarloksDuelCore::challengeSubmited() {
 
 QString QWarloksDuelCore::challengeList() {
     return _challengeList;
+}
+
+QString QWarloksDuelCore::topList() {
+    return _topList;
 }
 
 QString QWarloksDuelCore::spellListHtml() {
