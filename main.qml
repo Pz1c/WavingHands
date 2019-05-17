@@ -33,6 +33,7 @@ ApplicationWindow {
     property bool action_send_order: true
 
     menuBar: MenuBar {
+        //visible: false
             Menu {
                 id: mMain
                 title: warlockDictionary.getStringByCode("Settings")
