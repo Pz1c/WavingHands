@@ -46,7 +46,7 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(40,"WWFP","Resist Heat", SPELL_TYPE_RESIST,10,4,10, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(41,"WWP","Protection", SPELL_TYPE_SHIELD,10,1,10, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(42,"WWS","Counter Spell", SPELL_TYPE_MAGIC_SHIELD,10,1,10, SPELL_DEF_TARGER_SELF, 0));
-    Spells.append(new QSpell(43,"p","Surrender", SPELL_TYPE_SPEC,-100,0,0, SPELL_DEF_TARGER_SELF, 0));
+    Spells.append(new QSpell(43,"p","Surrender", SPELL_TYPE_SPEC,-100,0,0, SPELL_DEF_TARGER_SELF, 0, false));
     Spells.append(new QSpell(44,">","Stab", SPELL_TYPE_STAB,-1,0,0, SPELL_DEF_TARGER_ENEMY, 0));
     Spells.append(new QSpell(SPELL_DISEASE_FDF,"DSFDFc","Disease", SPELL_TYPE_POISON,14,1,17, SPELL_DEF_TARGER_ENEMY, 0));
     Spells.append(new QSpell(SPELL_PARALYSIS_FDF,"FDF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12, SPELL_DEF_TARGER_ENEMY, 0));
@@ -205,9 +205,9 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
     QString possible_left = warlock->possibleLeftGestures();
     QString possible_right = warlock->possibleRightGestures();
     QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF());
-    qDebug() << "before sort" << sl;
+    logSpellList(sl, "QWarlockSpellChecker::getSpellsList before");
     qSort(sl.begin(), sl.end(), QSpell::sortDesc);
-    qDebug() << "after sort" << sl;
+    logSpellList(sl, "QWarlockSpellChecker::getSpellsList after");
     return sl;
 }
 
@@ -239,6 +239,7 @@ QString QWarlockSpellChecker::getSpellBook(bool IsFDF) {
     Spells.at(SPELL_DISEASE_FDF)->setActive(IsFDF);
     Spells.at(SPELL_PARALYSIS_FDF)->setActive(IsFDF);
     Spells.at(SPELL_PARALYSIS_FDFD)->setActive(IsFDF);
+    Spells.at(SPELL_SURRENDER)->setActive(false);
 
     foreach(QSpell *vn, Spells) {
         if (!res.isEmpty()) {

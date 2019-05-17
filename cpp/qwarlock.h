@@ -54,6 +54,8 @@ private:
     int _desease;
     int _amnesia;
     int _maladroit;
+    bool _surrender;
+    bool _active;
     QString _name;
     QString _status;
     QString _leftGestures;

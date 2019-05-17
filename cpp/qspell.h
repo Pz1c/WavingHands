@@ -89,12 +89,12 @@
 #define SPELL_DEF_TARGER_ENEMY_MONSTER 3
 #define SPELL_DEF_TARGER_SELF_MONSTER 4
 
-
+#define logSpellList(sl, point_name) foreach(QSpell *s, sl) { qDebug() << point_name << s->json(); }
 
 class QSpell
 {
 public:
-    QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget = SPELL_DEF_TARGER_NOBODY, int Damage = 0);
+    QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget = SPELL_DEF_TARGER_NOBODY, int Damage = 0, bool Active = true);
     QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy = false);
 
     int spellID() const;
@@ -115,6 +115,8 @@ public:
     int spellType() const;
 
     QString json() const;
+
+    QString toString() const;
 
     static bool sortAsc(QSpell *s1, QSpell *s2);
     static bool sortDesc(QSpell *s1, QSpell *s2);

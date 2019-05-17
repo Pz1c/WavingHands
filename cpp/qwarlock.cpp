@@ -70,7 +70,9 @@ void QWarlock::setPossibleGestures(QString left, QString right) {
 }
 
 void QWarlock::parseStatus() {
+    _surrender = _status.indexOf("Surrender") != -1;
     _hp = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Health", ":", " #;#)"));
+    _active = _hp > 0 && !_surrender;
     _scared = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Fear", "(", ")"));
     _confused = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Confused", "(", ")"));
     _charmed = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Charmed", "(", ")"));
@@ -140,10 +142,10 @@ QString QWarlock::separatedString() {
 
     return QString("{\"name\":\"%1\",\"status\":\"%2\",\"L\":\"%3\",\"R\":\"%4\",\"spells\":%5,\"player\":%6,\"bsL\":%7,\"bsR\":%8,\"hp\":%9,\"scared\":%10,"
                    "\"confused\":%11,\"charmed\":%12,\"paralized\":%13,\"shield\":%14,\"coldproof\":%15,\"fireproof\":%16,\"poison\":%17,\"desease\":%18,"
-                   "\"amnesia\":%19,\"maladroit\":%20,\"summon_left\":%21,\"summon_right\":%22}").
+                   "\"amnesia\":%19,\"maladroit\":%20,\"summon_left\":%21,\"summon_right\":%22,\"active\":%23}").
             arg(_name, _status, l, r, res, _player ? "true" : "false", sbsL, sbsR, intToStr(_hp)).
             arg(intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield), intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_desease)).
-            arg(intToStr(_amnesia), intToStr(_maladroit), intToStr(summon_left), intToStr(summon_right));
+            arg(intToStr(_amnesia), intToStr(_maladroit), intToStr(summon_left), intToStr(summon_right), _active ? "1" : "0");
 }
 
 bool QWarlock::player() const
@@ -172,20 +174,29 @@ void QWarlock::setAntispell(QWarlock *enemy) {
 
 void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters) {
     int _coldproof_in = 999, _fireproof_in = 999;
-    int under_attack = 0;
+    int under_attack = 0, paralysis_left = 3, paralysis_right = 3;
     foreach(QMonster *m,  monsters) {
         if (m->is_under_attack(_name)) {
             under_attack += m->getStrength();
         }
     }
     foreach(QSpell *spell, _possibleSpells) {
-        spell->setPriority(0);
+        //spell->setPriority(0);
         switch(spell->spellID()) {
             case SPELL_RESIST_COLD:
-                _coldproof_in = spell->turnToCast();
+                _coldproof_in = qMin(_coldproof_in, spell->turnToCast());
                 break;
             case SPELL_RESIST_HEAT:
-                _fireproof_in = spell->turnToCast();
+                _fireproof_in = qMin(_fireproof_in, spell->turnToCast());
+                break;
+            case SPELL_PARALYSIS:
+            case SPELL_PARALYSIS_FDF:
+            case SPELL_PARALYSIS_FDFD:
+                if (spell->hand() == WARLOCK_HAND_LEFT) {
+                    paralysis_left = qMin(paralysis_left, spell->turnToCast());
+                } else {
+                    paralysis_right = qMin(paralysis_right, spell->turnToCast());
+                }
                 break;
         }
     }
@@ -194,8 +205,8 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
         switch(spell->spellType()) {
         case SPELL_TYPE_MASSIVE:
         case SPELL_TYPE_ELEMENTAL:
-            if (((spell->level() == 0) && (_coldproof == 0) && (_coldproof_in - 1 > spell->turnToCast())) ||
-                ((spell->level() == 1) && (_fireproof == 0) && (_fireproof_in - 1 > spell->turnToCast()))) {
+            if (((spell->level() == 0) && (_coldproof == 0) && (_coldproof_in - (spell->spellType() == SPELL_TYPE_ELEMENTAL ? 0 : 1) > spell->turnToCast())) ||
+                ((spell->level() == 1) && (_fireproof == 0) && (_fireproof_in - (spell->spellType() == SPELL_TYPE_ELEMENTAL ? 0 : 1) > spell->turnToCast()))) {
                 spell->changePriority(-4);
             }
             if (enemy && (((spell->level() == 0) && (enemy->_coldproof > 0)) || ((spell->level() == 1) && (enemy->_fireproof > 0)))) {
@@ -212,10 +223,22 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
             break;
         }
         switch(spell->spellID()) {
+        case SPELL_CURE_HEAVY_WOUNDS:
+            if ((_desease > 0) && (_desease >= spell->turnToCast())) {
+                spell->changePriority(5);
+            }
+            break;
         case SPELL_REMOVE_ENCHANTMENT:
         case SPELL_DISPEL_MAGIC:
-            if ((_desease > _poison ? _desease : _poison) >= spell->turnToCast()) {
+            if ((qMin(_desease, _poison) > 0) && (qMin(_desease, _poison) >= spell->turnToCast())) {
                 spell->changePriority(5);
+            }
+            break;
+        case SPELL_PARALYSIS:
+        case SPELL_PARALYSIS_FDF:
+        case SPELL_PARALYSIS_FDFD:
+            if (((spell->hand() == WARLOCK_HAND_LEFT) && (paralysis_right < spell->turnToCast())) || ((spell->hand() == WARLOCK_HAND_RIGHT) && (paralysis_left < spell->turnToCast()))) {
+                spell->changePriority(-5);
             }
             break;
         }
@@ -226,11 +249,13 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
 
 void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QWarlock *enemy, const QList<QMonster *> &monsters)
 {
-    qDebug() << "QWarlock::setPossibleSpells" << possibleSpells;
+    qDebug() << "QWarlock::setPossibleSpells";
     _possibleSpells = possibleSpells;
     _bestSpellL = nullptr;
     _bestSpellR = nullptr;
+    //logSpellList(possibleSpells, "QWarlock::setPossibleSpells before");
     setSpellPriority(enemy, monsters);
+    logSpellList(possibleSpells, "QWarlock::setPossibleSpells after");
     /*if (enemy) {
         setAntispell(enemy);
     }*/
@@ -238,7 +263,9 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QW
 }
 
 void QWarlock::checkSpells() {
-    qDebug() << "QWarlock::checkSpells" << _name << _possibleSpells;
+    qDebug() << "QWarlock::checkSpells" << _name;
+    logSpellList(_possibleSpells, "QWarlock::checkSpells");
+
     if (_maladroit > 0) {
         QStringList pg;
         pg << "W" << "S" << "D" << "C" << "F";
