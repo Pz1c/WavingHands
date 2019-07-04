@@ -735,7 +735,7 @@ function setTargetsForSpells() {
 function getBotMsgByTurn(turn_num) {
     switch(turn_num) {
     case 1: return "Hi, warlock, I am a golem created for your training, try to beat me. Also join to community https://fb.com/WarlocksDuel/";
-    case 2: return "Try to break enemy plane, using Amnesia, Paralysis, Confusion, Charm Person, Fear";
+    case 2: return "Try to break enemy chain, using Amnesia, Paralysis, Confusion, Charm Person, Fear";
     case 3: return "Summon monsters to get your opponent busy ...SFW";
     case 4: return "Use Invisibility and Blindness to keep your gesture in secret, also you cannot be targeted";
     case 5: return "Dispel Magic remove all magic effects even mosters";

@@ -66,6 +66,24 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
+void QWarloksDuelCore::sendMessage(const QString &Msg) {
+    _isLoading = true;
+    emit isLoadingChanged();
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(QString("https://games.ravenblack.net/sendmess")));
+    QByteArray postData;
+    postData.append(QString("rcpt=%1&message=").arg(_warlockId));
+    postData.append(QUrl::toPercentEncoding(Msg));
+
+    qDebug() << QString(postData);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
+    _reply = _nam.post(request, postData);
+    connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
+    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+}
+
 void QWarloksDuelCore::regNewUser(QString Login, QString Password, QString Email) {
     _login = Login;
     _password = Password;
@@ -489,6 +507,20 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
+void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
+    qDebug() << "getWarlockInfo" << Login;
+    _isLoading = true;
+    emit isLoadingChanged();
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(QString("https://games.ravenblack.net/player/%1.html").arg(Login)));
+
+    _reply = _nam.get(request);
+    connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
+    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+}
+
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
     _isParaFDF = Data.indexOf("(ParaFDF)") != -1;
@@ -768,7 +800,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     }
     parseMessages(Data);
 
-    if (!_allowedAccept && (_finished_battles.count() > 0)) {
+    if (!_allowedAccept && ((_finished_battles.count() > 0) || (_played > 0))) {
         _allowedAccept = true;
         _allowedAdd = true;
         emit allowedAcceptChanged();
@@ -801,15 +833,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     saveParameters();
 }
 
-bool QWarloksDuelCore::finishScan(QString &Data, int StatusCode) {
-    if (StatusCode != 200) {
-        // something wrong try relogin
-        _isLogined = false;
-        loginToSite();
-        _errorMsg = "Can't receive player info, try reconnect";
-        emit errorOccurred();
-        return false;
-    }
+bool QWarloksDuelCore::finishScan(QString &Data) {
     parsePlayerInfo(Data);
     if (_isAI) {
         _challengeList = "[]";
@@ -823,6 +847,82 @@ bool QWarloksDuelCore::finishScan(QString &Data, int StatusCode) {
     } else {
         getChallengeList();
     }
+    return true;
+}
+
+bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
+    qDebug() << "QWarloksDuelCore::finishScanWarlock" << Data;
+    QString login = QWarlockUtils::getStringFromData(Data, "Info for", " ", " ");
+    _warlockId = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=rcpt VALUE", "=", ">");
+    int played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>");
+    int won = QWarlockUtils::getIntFromPlayerData(Data, "Won:", "<TD>", "</TD>");
+    int died = QWarlockUtils::getIntFromPlayerData(Data, "Died:", "<TD>", "</TD>");
+    int ladder = QWarlockUtils::getIntFromPlayerData(Data, "Ladder Score:", "<TD>", "</TD>");
+    int melee = QWarlockUtils::getIntFromPlayerData(Data, "Melee Score:", "<TD>", "</TD>");
+    int elo = QWarlockUtils::getIntFromPlayerData(Data, "Elo:", "<TD>", "</TD>");
+    QList<int> ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
+    QList<int> waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
+    QList<int> finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
+
+    _warlockInfo.clear();
+    int idx;
+    if (ready_in_battles.count() > 0) {
+        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("ReadyB")));
+        idx = -1;
+        foreach(int i, _ready_in_battles) {
+            if (++idx > 0) {
+                _warlockInfo.append(", ");
+            }
+            _warlockInfo.append(QString("<a href=\"/battle/%1/0\">%1</a>").arg(QString::number(i)));
+        }
+        _warlockInfo.append("</p>");
+    }
+    if (waiting_in_battles.count() > 0) {
+        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("WaitB")));
+        idx = -1;
+        foreach(int i, _waiting_in_battles) {
+            if (++idx > 0) {
+                _warlockInfo.append(", ");
+            }
+            _warlockInfo.append(QString("<a href=\"/battle/%1/1\">%1</a>").arg(QString::number(i)));
+        }
+        _warlockInfo.append("</p>");
+    }
+    if (finished_battles.count() > 0) {
+        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("FinishB")));
+        idx = -1;
+        foreach(int i, _finished_battles) {
+            if (++idx > 0) {
+                _warlockInfo.append(", ");
+            }
+            _warlockInfo.append(QString("<a href=\"/battle/%1/2\">%1</a>").arg(QString::number(i)));
+        }
+        _warlockInfo.append("</p>");
+    }
+
+    _warlockInfo.prepend(QString("<html><h3>%1</h3><table><tr><td>%2:</td><td>%3</td></tr>\n"
+                        "<tr><td>%4:</td> <td>%5</td></tr>\n"
+                        "<tr><td>%6:</td> <td>%7</td></tr>\n"
+                        "<tr><td>%8:</td> <td>%9</td></tr>\n"
+                        "<tr><td>%10:</td> <td>%11</td></tr>\n"
+                        "<tr><td>%12:</td> <td>%13</td></tr>"
+                        "</table>")
+            .arg(login)
+            .arg(WarlockDictionary->getStringByCode("Played"))
+            .arg(QString::number(played))
+            .arg(WarlockDictionary->getStringByCode("Won"))
+            .arg(QString::number(won))
+            .arg(WarlockDictionary->getStringByCode("Died"))
+            .arg(QString::number(died))
+            .arg(WarlockDictionary->getStringByCode("LadderScore"))
+            .arg(QString::number(ladder))
+            .arg(WarlockDictionary->getStringByCode("MeleeScore"))
+            .arg(QString::number(melee))
+            .arg(WarlockDictionary->getStringByCode("Elo"))
+            .arg(QString::number(elo))
+            ).append("</html>");
+
+    emit warlockInfoChanged();
     return true;
 }
 
@@ -855,7 +955,18 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
     }
 
     if (url.indexOf("/player") != -1) {
-        finishScan(data, statusCode);
+        if (statusCode != 200) {
+            _isLogined = false;
+            loginToSite();
+            _errorMsg = "Can't receive player info, try reconnect";
+            emit errorOccurred();
+            return false;
+        }
+        if (url.indexOf(".html") != -1) {
+            finishScanWarlock(data);
+        } else {
+            finishScan(data);
+        }
         return true;
     }
 
@@ -1117,6 +1228,12 @@ bool QWarloksDuelCore::allowedAccept()
 {
     return _allowedAccept;
 }
+
+QString QWarloksDuelCore::warlockInfo()
+{
+    return _warlockInfo;
+}
+
 
 bool QWarloksDuelCore::allowedAdd()
 {
