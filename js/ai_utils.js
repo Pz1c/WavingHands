@@ -173,8 +173,8 @@ function getGestureBySpell(spell, idx) {
     if (!idx || !spell) {
         idx = 0;
     }
-    if (!spell.g) {
-        return false;
+    if (!spell.g || (spell.g.length < spell.a + idx)) {
+        return ' ';
     }
 
     return spell.g.substr(spell.a + idx, 1);
@@ -262,9 +262,7 @@ function destroyEnemySpell(self, enemy_spell) {
         }
         anti_spell_param.hands = arr_hands;
         anti_spell = getAntispellByFilter(self, anti_spell_param);
-        if (0) {
 
-        }
     }
 
     console.log("destroyEnemySpell", JSON.stringify(enemy_spell), JSON.stringify(anti_spell));
@@ -304,7 +302,7 @@ function isSpellsNormal(self) {
 
     if (!need_change) {
         if ((self.bsL.ng === 'X') || (self.bsR.ng === 'X')) {
-            console.log("isSpellsNormal", "spell not set for hand L");
+            console.log("isSpellsNormal", "spell not set for hand");
             need_change = true;
         }
     }
@@ -317,7 +315,7 @@ function isSpellsNormal(self) {
     }
 
     if (!need_change) {
-        if (((self.bsL.ng === 'C') || (self.bsR.ng === 'C')) && (self.bsL.t === self.bsR.t)) {
+        if (((self.bsL.ng === 'C') || (self.bsR.ng === 'C')) && (self.bsL.t !== self.bsR.t)) {
             console.log("isSpellsNormal", "half clap");
             need_change = true;
         }
@@ -338,9 +336,15 @@ function isSpellsNormal(self) {
     }
 
     if (!need_change) {
-        for (var i = 0; i < 3; ++i) {
-            if ((getGestureBySpell(self.bsL, i) === 'P') && (getGestureBySpell(self.bsR, i) === 'P')) {
+        for (var i = 0, Ln = Math.min(self.bsL.g.length, self.bsR.g.length); i < Ln; ++i) {
+            var gli = getGestureBySpell(self.bsL, i), gri = getGestureBySpell(self.bsR, i);
+            if ((gli === 'P') && (gri === 'P')) {
                 console.log("isSpellsNormal", "try surrender");
+                need_change = true;
+                break;
+            }
+            if (((gli.toUpperCase() !== gli) || (gri.toUpperCase() !== gri)) && (gli.toUpperCase() !== gri.toUpperCase()))  {
+                console.log("isSpellsNormal", "two handed spell");
                 need_change = true;
                 break;
             }
@@ -614,6 +618,7 @@ function setTargetForParalyzed() {
 
 function prepareBattleWarlock() {
     console.log("prepareBattleWarlock");
+    var enemy;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].player) {
             battle.self = battle.warlocks[i];
@@ -622,9 +627,18 @@ function prepareBattleWarlock() {
             battle.self.LnotIds = [];
             battle.self.RnotIds = [];
         } else {
-            battle.enemy = battle.warlocks[i];
+            if (!enemy) {
+                enemy = battle.warlocks[i];
+            }
+            if (battle.warlocks[i].active) {
+                battle.enemy = battle.warlocks[i];
+            }
         }
     }
+    if (!battle.enemy) {
+        battle.enemy = enemy;
+    }
+
     delete battle.warlocks;
     console.log("processBattle", "enemy", JSON.stringify(battle.enemy));
     console.log("processBattle", "self", JSON.stringify(battle.self));
@@ -674,14 +688,14 @@ function getSpellByName(spell_name) {
 }
 
 function setTargetForChoosenSpell(is_right) {
-    var current_spell_name = is_right ? cbRHS.currentText : cbLHS.currentText;
+    var current_spell_name = is_right ? cbRHS.model[cbRHS.currentIndex] : cbLHS.model[cbLHS.currentIndex];
     console.log("setTargetForChoosenSpell", is_right, current_spell_name);
     if (!current_spell_name) {
         return ;
     }
 
     var current_spell = getSpellByName(current_spell_name);
-    console.log("setTargetForChoosenSpell", JSON.stringify(current_spell));
+    console.log("setTargetForChoosenSpell", current_spell_name, JSON.stringify(current_spell));
     if (!current_spell) {
         return ;
     }
@@ -702,8 +716,6 @@ function setTargetForChoosenSpell(is_right) {
             }
             break;
         }
-        //if (current_spell)
-
     }while(0);
 
     if (target_idx !== -1) {
@@ -736,18 +748,8 @@ function getBotMsgByTurn(turn_num) {
 }
 
 function processBattle(isAI) {
-    console.log("processBattle", isAI/*JSON.stringify(battle)*/);
-
-    var i, Ln;
     arr_spells = JSON.parse(Qt.core.getSpellBook());
-    /*arr_spells[10].active = !battle.isFDF;
-    arr_spells[14].active = !battle.isFDF;
-    arr_spells[45].active = battle.isFDF;
-    arr_spells[46].active = battle.isFDF;
-    arr_spells[47].active = battle.isFDF;*/
-    /*for(i = 0, Ln = arr_spells.length; i < Ln; ++i) {
-        arr_spells[i].active = (battle.isFDF && (arr_fdf_inactive.indexOf(i) === -1)) || (!battle.isFDF && (arr_no_fdf_inactive.indexOf(i) === -1));
-    }*/
+    console.log("processBattle", isAI, JSON.stringify(arr_spells));
 
     prepareBattleWarlock();
     selectGesture();

@@ -216,12 +216,12 @@ function setTargetForSpell(right, target_name) {
 }
 
 function getPossibleSpell(right, desirable_spell) {
-    console.log("getPossibleSpell", right);
     var currLeftSpell = cbLHS.currentText, currRightSpell = cbRHS.currentText;
     var currLeftSpellIdx = 0, currRightSpellIdx = 0;
     var checkLeft = currLeftSpell !== '' && currLeftSpell !== ' ';
     var checkRight = currRightSpell !== '' && currRightSpell !== ' ';
     var arr = getSpellList(right);
+    console.log("getPossibleSpell", right, desirable_spell, currLeftSpell, currRightSpell, JSON.stringify(arr));
     var arrL = [' '];
     var arrR = [' '];
     //var arr = g_list.split("#");
@@ -276,6 +276,9 @@ function getPossibleSpell(right, desirable_spell) {
             }
         }
     }
+
+    //cbLHS.currentText = cbLHS.model[cbLHS.currentIndex];
+    //cbRHS.currentText = cbRHS.model[cbRHS.currentIndex];
 }
 
 function loadSpellList() {
@@ -311,7 +314,7 @@ function showReadyBattle() {
     preparePermanent(Qt.core.isPermanent === 1);
     prepareFire(Qt.core.fire);
     prepareButton(1);
-    flatMenuItem();
+    //flatMenuItem();
     hideLoading();
     startSkynet(Qt.core.isAI);
 }
@@ -746,7 +749,7 @@ function finishPrepareWarlockList() {
     var curr_y = 0;
     var total_height = 0;
     for(var i = 0, Ln = arr.length; i < Ln; ++i) {
-        if (!arr[i]) {
+        if (!arr[i] || !arr[i].active) {
             continue;
         }
         var arr_m = arr[i];
