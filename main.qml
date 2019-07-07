@@ -518,122 +518,144 @@ ApplicationWindow {
                     anchors.bottom: btnAddDuel.top
                     model: battles
 
-                    delegate: Rectangle {
-                        id: lvdItem
-                        height: rvChallengeState.height + rlvdItemTitle.height * 2 + lvdItemText.height + 0.01 * mainWindow.height * 3
-                        width: mainWindow.width
+                    delegate:
+                        Item {
+                            id: lvdItemTop
+                            height: rvChallengeState.height + rlvdItemTitle.height * 2 + lvdItemText.height + 0.01 * mainWindow.height * 3 + 0.02 * mainWindow.height
+                            width: mainWindow.width
 
-
-                        Rectangle {
-                            id: rlvdItemTitle
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.topMargin: 0.01 * mainWindow.height
-                            height: lvdItemTitle.height + 0.01 * mainWindow.height
-                            color: "#c6e5bc"
-
-                            Text {
-                                id: lvdItemTitle
+                            Rectangle {
+                                id: lvdItem
+                                //anchors.fill: parent
+                                anchors.top: parent.top
+                                anchors.topMargin: 0.01 * mainWindow.height
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 0.01 * mainWindow.height
                                 anchors.left: parent.left
-                                anchors.leftMargin: 0.05 * parent.width
-                                anchors.verticalCenter: parent.verticalCenter
                                 anchors.right: parent.right
-                                //anchors.top: parent.top
-                                //anchors.topMargin: 0.01 * mainWindow.height
-                                //////font.pointSize: 13 * height_koeff
-                                wrapMode: Text.WordWrap
-                                font.bold: true
-                                text: battles[index].logins
-                            }
-                        }
 
-                        RowLayout {
-                            id: rvChallengeState
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: rlvdItemTitle.bottom
-                            anchors.topMargin: 0.01 * mainWindow.height
-                            //visible: !battles[index].is_new_btn
+                                border.width: 3
+                                border.color: battles[index].level_color
+                                radius: 7
 
-                            Text {
-                                id: lvdItemLevel
-                                text: battles[index].level
-                            }
 
-                            CheckBox {
-                                id: cbItemFast
-                                enabled: false
-                                checked: battles[index].fast === 1
-                                text: warlockDictionary.getStringByCode("Fast")
-                            }
+                                Rectangle {
+                                    id: rlvdItemTitle
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.top: parent.top
+                                    height: lvdItemTitle.height + 0.01 * mainWindow.height
+                                    color: battles[index].level_color
 
-                            CheckBox {
-                                id: cbItemParaFC
-                                enabled: false
-                                checked: battles[index].parafc === 1
-                                text: warlockDictionary.getStringByCode("ParaFC")
-                            }
-
-                            CheckBox {
-                                id: cbItemMaladroit
-                                enabled: false
-                                checked: battles[index].maladroit === 1
-                                text: warlockDictionary.getStringByCode("Maladroit")
-                            }
-                        }
-
-                        Text {
-                            id: lvdItemText
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: rvChallengeState.bottom
-                            anchors.topMargin: 0.01 * mainWindow.height
-                            //////font.pointSize: 13 * height_koeff
-                            wrapMode: Text.WordWrap
-                            // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
-                            text: battles[index].desc
-                                /*battles[index].level + " " +
-                             (battles[index].fast === 1 ? "Fast " : "") + (battles[index].parafc === 1? "ParaFC " : "") +
-                             (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + battles[index].desc //*/
-                            //visible: !battles[index].is_new_btn
-                        }
-
-                        Rectangle {
-                            id: lvdItemAccept
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: lvdItemText.bottom
-                            //anchors.bottom: parent.bottom
-                            height: rlvdItemTitle.height
-
-                            color: ma_accept.pressed ? "blue" : "lightblue"
-                            radius: 7
-                            border.width: 1
-                            border.color: "lightblue"
-
-                            Text {
-                                id: label_order_up
-                                text: warlockDictionary.getStringByCode("Accept")
-                                anchors.centerIn: parent
-                                //////font.pointSize: 13 * height_koeff
-                            }
-
-                            MouseArea {
-                                id: ma_accept
-                                anchors.rightMargin: 0
-                                anchors.bottomMargin: 0
-                                anchors.leftMargin: 0
-                                anchors.topMargin: 0
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    var battle_id = battles[index].battle_id;
-                                    console.log("accept battle", battle_id);
-                                    MUtils.acceptChallenge('/accept/' + battle_id);
+                                    Text {
+                                        id: lvdItemTitle
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 0.05 * parent.width
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        anchors.right: parent.right
+                                        //anchors.top: parent.top
+                                        //anchors.topMargin: 0.01 * mainWindow.height
+                                        //////font.pointSize: 13 * height_koeff
+                                        wrapMode: Text.WordWrap
+                                        font.bold: true
+                                        text: battles[index].logins
+                                    }
                                 }
-                            }
-                        }
+
+                                RowLayout {
+                                    id: rvChallengeState
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 0.01 * parent.width
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 0.01 * parent.width
+                                    anchors.top: rlvdItemTitle.bottom
+                                    anchors.topMargin: 0.01 * mainWindow.height
+                                    //visible: !battles[index].is_new_btn
+
+                                    Text {
+                                        id: lvdItemLevel
+                                        text: battles[index].level
+                                    }
+
+                                    CheckBox {
+                                        id: cbItemFast
+                                        enabled: false
+                                        checked: battles[index].fast === 1
+                                        text: warlockDictionary.getStringByCode("Fast")
+                                    }
+
+                                    CheckBox {
+                                        id: cbItemParaFC
+                                        enabled: false
+                                        checked: battles[index].parafc === 1
+                                        text: warlockDictionary.getStringByCode("ParaFC")
+                                    }
+
+                                    CheckBox {
+                                        id: cbItemMaladroit
+                                        enabled: false
+                                        checked: battles[index].maladroit === 1
+                                        text: warlockDictionary.getStringByCode("Maladroit")
+                                    }
+                                }
+
+                                Text {
+                                    id: lvdItemText
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 0.01 * parent.width
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 0.01 * parent.width
+                                    anchors.top: rvChallengeState.bottom
+                                    anchors.topMargin: 0.01 * mainWindow.height
+                                    //////font.pointSize: 13 * height_koeff
+                                    wrapMode: Text.WordWrap
+                                    // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
+                                    text: battles[index].desc
+                                        /*battles[index].level + " " +
+                                     (battles[index].fast === 1 ? "Fast " : "") + (battles[index].parafc === 1? "ParaFC " : "") +
+                                     (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + battles[index].desc //*/
+                                    //visible: !battles[index].is_new_btn
+                                }
+
+                                Rectangle {
+                                    id: lvdItemAccept
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: lvdItem.border.width
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: lvdItem.border.width
+                                    //anchors.top: lvdItemText.bottom
+                                    anchors.bottom: parent.bottom
+                                    anchors.bottomMargin: lvdItem.border.width
+                                    height: rlvdItemTitle.height
+
+                                    color: ma_accept.pressed ? "blue" : "lightblue"
+                                    radius: 3
+                                    border.width: 1
+                                    border.color: "lightblue"
+
+                                    Text {
+                                        id: label_order_up
+                                        text: warlockDictionary.getStringByCode("Accept")
+                                        anchors.centerIn: parent
+                                        //////font.pointSize: 13 * height_koeff
+                                    }
+
+                                    MouseArea {
+                                        id: ma_accept
+                                        anchors.rightMargin: 0
+                                        anchors.bottomMargin: 0
+                                        anchors.leftMargin: 0
+                                        anchors.topMargin: 0
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            var battle_id = battles[index].battle_id;
+                                            console.log("accept battle", battle_id);
+                                            MUtils.acceptChallenge('/accept/' + battle_id);
+                                        }
+                                    }
+                                }
+                         }
                     }
 
                     header: Rectangle {
@@ -846,6 +868,7 @@ ApplicationWindow {
 
                             onClicked: {
                                 console.log("top click", top_player[index].login);
+                                core.getWarlockInfo(top_player[index].login);
                                 //MUtils.linkActivated("/show_spell_desc/" + spells[index].code);
                             }
                         }
@@ -951,8 +974,9 @@ ApplicationWindow {
         MUtils.showWindow("menu_main.qml");
     }
 
-    function showUserProfile() {
-        console.log("showUserProfile");
+    function showUserProfile(other) {
+        console.log("showUserProfile", other);
+        Qt.show_info_self = other === true ? false : true;
         //MUtils.showWindow("user_profile.qml");
         MUtils.wndUP = Qt.createComponent("qrc:///qml/user_profile.qml");
         if (MUtils.wndUP.status === Component.Ready) {
@@ -1125,6 +1149,10 @@ ApplicationWindow {
             console.log("onAllowedAcceptChanged");
             closeChild();
             MUtils.loadChallengesList(false);
+        }
+        onWarlockInfoChanged: {
+            console.log("onWarlockInfoChanged");
+            showUserProfile(true);
         }
     }
 

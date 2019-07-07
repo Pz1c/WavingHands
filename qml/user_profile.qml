@@ -58,6 +58,11 @@ Item {
         }
 
         ScrollView {
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: rSendMsg.top
+
             width: dialogWindow.width
             height: dialogWindow.height - btnDoit.height
 
@@ -78,9 +83,80 @@ Item {
         }
 
         Rectangle {
+            id: rSendMsg
+            height: 0.2 * parent.height
+            width: parent.width
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: btnDoit.top
+            border.width: 1
+            border.color: "grey"
+            radius: 3
+
+            Rectangle {
+                id: rTxtMsg
+                anchors.left: parent.left
+                anchors.right: btnSendTxt.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                radius: 7
+                border.width: 1
+                border.color: "black"
+
+                TextInput {
+                    id: teTxtMsg
+                    width: parent.width - 6
+                    height: parent.height - 2
+                    anchors.centerIn: parent
+                    text: ""
+                    ////font.pointSize: 12 * height_koeff
+                    inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
+                    //echoMode: TextInput.Password
+                }
+            }
+
+            Rectangle {
+                id: btnSendTxt
+                anchors.right: parent.right
+                anchors.top: parent.top
+                width: 0.25 * parent.width
+                height: parent.height
+                color: maSendMsg.pressed ? "green" : "lightgreen"
+                radius: 7
+                anchors.horizontalCenterOffset: 0
+                border.width: 3
+                border.color: "green"
+
+                Text {
+                    id: labelSendMsg
+                    anchors.centerIn: parent
+                    text: warlockDictionary.getStringByCode("Submit")
+                    ////font.pointSize: 16 * height_koeff
+                }
+
+                MouseArea {
+                    id: maSendMsg
+                    anchors.rightMargin: 0
+                    anchors.bottomMargin: 0
+                    anchors.leftMargin: 0
+                    anchors.topMargin: 0
+                    anchors.fill: parent
+                    onClicked: {
+                        console.log("try core.sendMessage", teTxtMsg.text, teTxtMsg.text.length);
+                        if (teTxtMsg.text.length > 0) {
+                            Qt.core.sendMessage(teTxtMsg.text);
+                        }
+                        //MUtils.sendOrder()
+                    }
+                }
+            }
+        }
+
+        Rectangle {
                 id: btnDoit
-                x: parent.width / 2 - btnDoit.width / 2
-                y: parent.height - btnDoit.height
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
                 width: parent.width / 2
                 height: parent.height / 5 > 50 ? 50 : parent.height / 5
                 color: maDoit.pressed ? "green" : "lightgreen"
@@ -90,11 +166,8 @@ Item {
 
                 Text {
                     id: labelDoit
-                    x: 38
-                    y: 18
                     text: dict.getStringByCode("Close")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.centerIn: parent
                     //font.pointSize: 16 * height_koeff
                 }
 
@@ -107,7 +180,7 @@ Item {
                     anchors.fill: parent
                     onClicked: clickCancel()
                 }
-        }
+        }//*/
     }
 
     function clickCancel() {
@@ -115,8 +188,9 @@ Item {
     }
 
     function initFields() {
-        console.log("initFields")
-        tPlayerInfo.text = Qt.core.playerInfo;
+        console.log("user_profile.initFields", Qt.show_info_self);
+        tPlayerInfo.text = Qt.show_info_self ? Qt.core.playerInfo : Qt.core.warlockInfo;
+        rSendOrder.visible = !Qt.show_info_self;
         Qt.mainWindow.storeWnd(dMainItem)
     }
 

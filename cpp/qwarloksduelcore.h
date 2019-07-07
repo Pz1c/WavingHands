@@ -60,6 +60,7 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(bool isAI READ isAI NOTIFY isAIChanged)
     Q_PROPERTY(bool allowedAccept READ allowedAccept NOTIFY allowedAcceptChanged)
     Q_PROPERTY(bool allowedAdd READ allowedAdd NOTIFY allowedAddChanged)
+    Q_PROPERTY(QString warlockInfo READ warlockInfo NOTIFY warlockInfoChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr);
@@ -106,6 +107,7 @@ public:
     bool isAI();
     bool allowedAdd();
     bool allowedAccept();
+    QString warlockInfo();
 
 signals:
     void needLogin();
@@ -149,6 +151,7 @@ signals:
     void allowedAddChanged();
     void allowedAcceptChanged();
     void topListChanged();
+    void warlockInfoChanged();
 
 public slots:
 
@@ -165,6 +168,8 @@ public slots:
     void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description);
     void regNewUser(QString Login, QString Password, QString Email);
     void getBattle(int battle_id, int battle_type);
+    void getWarlockInfo(const QString &Login);
+    void sendMessage(const QString &Msg);
 
     void slotReadyRead();
     void slotError(QNetworkReply::NetworkError error);
@@ -185,7 +190,8 @@ protected:
     bool finishOrderSubmit(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishAccept(QString &Data, int StatusCode, QUrl NewUrl);
-    bool finishScan(QString &Data, int StatusCode);
+    bool finishScan(QString &Data);
+    bool finishScanWarlock(QString &Data);
     bool finishGetFinishedBattle(QString &Data);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
@@ -259,6 +265,8 @@ private:
     QString _spellListHtml;
     QString _prevGestures;
     QString _topList;
+    QString _warlockInfo;
+    QString _warlockId;
 
     // management
     bool _isTimerActive;

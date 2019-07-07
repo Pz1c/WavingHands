@@ -375,28 +375,32 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
         //res.append(challenge_part);
     }
     //res.append("#&#");
-    QString level;
+    QString level, level_color;
     switch (friendly) {
     case 0:
         level = need_more > 1 ? QWarlockDictionary::getInstance()->getStringByCode("Melee"): QWarlockDictionary::getInstance()->getStringByCode("Ladder");
+        level_color = "#ffcccb";
         break;
     case 1:
         level = QWarlockDictionary::getInstance()->getStringByCode("Friendly");
+        level_color = "#ffffe0";
         break;
     case 2:
         level = QWarlockDictionary::getInstance()->getStringByCode("VFriendly");
+        level_color = "#c6e5bc";
         break;
     }
     bool for_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("NO BOT") == -1);
     qDebug() << "for_bot" << level << total_count << description << for_bot;
-    res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8}")
+    res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8,\"level_color\":\"%9\"}")
             .arg(logins,
                  QString::number(fast),
                  level,
                  QString::number(parafc),
                  QString::number(maladroit),
                  description, battle_id,
-                 for_bot ? "true" : "false");
+                 for_bot ? "true" : "false",
+                 level_color);
     //qDebug() << res;
     return res;
 }
@@ -429,16 +433,17 @@ QString QWarlockUtils::parseChallengesList(QString &Data) {
 QString QWarlockUtils::parseTopList(QString &Data) {
     qDebug() << "parseTopList";
 
+    QString data = Data.replace("<IMG WIDTH=12 HEIGHT=12 SRC=\"/img/reg.png\" ALT=\"Registered!\" />&nbsp;", "");
     QString res = "[";
     QString search1 = "<TD><A HREF=\"/player/";
     QString search2 = "<TD STYLE=\"background-color:";
     int idx1 = 0, idx2;
     int count = 0;
 
-    while((idx1 = Data.indexOf(search1, idx1)) != -1) {
+    while((idx1 = data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
-        idx2 = Data.indexOf(search2, idx1);
-        QString player = Data.mid(idx1, idx2 - idx1);
+        idx2 = data.indexOf(search2, idx1);
+        QString player = data.mid(idx1, idx2 - idx1);
 
         QString parsed = parsePlayerTop(player);
         if (!parsed.isEmpty()) {
