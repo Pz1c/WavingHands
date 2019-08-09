@@ -73,7 +73,7 @@ void QWarlock::parseStatus() {
     _surrender = _status.indexOf("Surrender") != -1;
     _hp = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Health", ":", " #;#)"));
     _active = _hp > 0 && !_surrender;
-    _scared = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Fear", "(", ")"));
+    _scared = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Afraid", "(", ")"));
     _confused = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Confused", "(", ")"));
     _charmed = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Charmed", "(", ")"));
     _paralized = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Paralize", "(", ")"));
@@ -221,7 +221,13 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
         case SPELL_TYPE_SHIELD:
             spell->changePriority(under_attack);
             break;
+        case SPELL_TYPE_CONFUSION:
+            if (((paralysis_left == 1) || (paralysis_right == 1)) && (spell->spellID() != SPELL_PARALYSIS) && (spell->spellID() != SPELL_PARALYSIS_FDF) && (spell->spellID() != SPELL_PARALYSIS_FDFD)) {
+                spell->changePriority(-2);
+            }
+            break;
         }
+
         switch(spell->spellID()) {
         case SPELL_CURE_HEAVY_WOUNDS:
             if ((_desease > 0) && (_desease >= spell->turnToCast())) {

@@ -221,6 +221,9 @@ function getPossibleSpell(right, desirable_spell) {
     var checkLeft = currLeftSpell !== '' && currLeftSpell !== ' ';
     var checkRight = currRightSpell !== '' && currRightSpell !== ' ';
     var arr = getSpellList(right);
+    if (!desirable_spell && Qt.ai && ((right && Qt.ai.spellR) || (!right && Qt.ai.spellL))) {
+        desirable_spell = right ? Qt.ai.spellR.n : Qt.ai.spellL.n;
+    }
     console.log("getPossibleSpell", right, desirable_spell, currLeftSpell, currRightSpell, JSON.stringify(arr));
     var arrL = [' '];
     var arrR = [' '];

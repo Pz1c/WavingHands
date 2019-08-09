@@ -184,6 +184,13 @@ function setGestureBySpell(warlock, spell) {
     /*if (!spell.g) {
         return;
     }*/
+    if (spell.h === WARLOCK_HAND_LEFT) {
+        Qt.ai.spellL = spell;
+        console.log("set Qt.ai.spellL", JSON.stringify(spell));
+    } else {
+        Qt.ai.spellR = spell;
+        console.log("set Qt.ai.spellR", JSON.stringify(spell));
+    }
 
     var gesture = getGestureBySpell(spell);
     if (!gesture) {
@@ -262,7 +269,6 @@ function destroyEnemySpell(self, enemy_spell) {
         }
         anti_spell_param.hands = arr_hands;
         anti_spell = getAntispellByFilter(self, anti_spell_param);
-
     }
 
     console.log("destroyEnemySpell", JSON.stringify(enemy_spell), JSON.stringify(anti_spell));
@@ -284,6 +290,10 @@ function compareSpells(spell_left, spell_right) {
 
     if (spell_right.ng === 'X') {
         return WARLOCK_HAND_LEFT;
+    }
+
+    if (spell_right.st === spell_left.st) {
+        return spell_left.p > spell_right.p ? WARLOCK_HAND_LEFT : WARLOCK_HAND_RIGHT;
     }
 
     if (spell_left.anti_spell && !spell_right.anti_spell) {
@@ -747,11 +757,18 @@ function getBotMsgByTurn(turn_num) {
     }
 }
 
+function selectSpell() {
+    Qt.ai.spellL = 0;
+    Qt.ai.spellR = 0;
+}
+
 function processBattle(isAI) {
+    Qt.ai = {};
     arr_spells = JSON.parse(Qt.core.getSpellBook());
     console.log("processBattle", isAI, JSON.stringify(arr_spells));
 
     prepareBattleWarlock();
+    selectSpell();
     selectGesture();
     var do_charm_monster = (battle.self.bsL.id === SPELL_CHARM_MONSTER) || (battle.self.bsR.id === SPELL_CHARM_MONSTER);
     prepareTargetsArray();
@@ -759,7 +776,7 @@ function processBattle(isAI) {
     setTargetsForMonsters(do_charm_monster);
     setTargetForCharmed();
     setTargetForParalyzed();
-    console.log("processBattle", "complete", JSON.stringify(battle.enemy));
+    console.log("processBattle", "complete", JSON.stringify(battle));
     //tSendOrderTimer.start();
     if (isAI) {
         teChatMsg.text = getBotMsgByTurn(battle.turn_num);
