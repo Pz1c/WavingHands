@@ -61,6 +61,7 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(bool allowedAccept READ allowedAccept NOTIFY allowedAcceptChanged)
     Q_PROPERTY(bool allowedAdd READ allowedAdd NOTIFY allowedAddChanged)
     Q_PROPERTY(QString warlockInfo READ warlockInfo NOTIFY warlockInfoChanged)
+    Q_PROPERTY(QString accountMenu READ accountMenu NOTIFY accountMenuChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr);
@@ -108,6 +109,7 @@ public:
     bool allowedAdd();
     bool allowedAccept();
     QString warlockInfo();
+    QString accountMenu();
 
 signals:
     void needLogin();
@@ -152,6 +154,7 @@ signals:
     void allowedAcceptChanged();
     void topListChanged();
     void warlockInfoChanged();
+    void accountMenuChanged();
 
 public slots:
 
@@ -170,6 +173,7 @@ public slots:
     void getBattle(int battle_id, int battle_type);
     void getWarlockInfo(const QString &Login);
     void sendMessage(const QString &Msg);
+    void autoLogin(int Idx);
 
     void slotReadyRead();
     void slotError(QNetworkReply::NetworkError error);
@@ -213,6 +217,10 @@ protected:
 
     void setTimeState(bool State);
 
+    void processNewLogin();
+    QString accountToString();
+    void accountsFromString(QString acc);
+
 private:
     // user login
     bool _isLogined;
@@ -240,6 +248,7 @@ private:
     QString _finishedBattle;
     QMap<int, QString> _challenge;
     QStringList _msg;
+    QList<QValueName> _accounts;
 
     // current battle
     int _loadedBattleID;

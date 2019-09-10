@@ -221,6 +221,9 @@ function getPossibleSpell(right, desirable_spell) {
     var checkLeft = currLeftSpell !== '' && currLeftSpell !== ' ';
     var checkRight = currRightSpell !== '' && currRightSpell !== ' ';
     var arr = getSpellList(right);
+    if (!desirable_spell && Qt.ai && ((right && Qt.ai.spellR) || (!right && Qt.ai.spellL))) {
+        desirable_spell = right ? Qt.ai.spellR.n : Qt.ai.spellL.n;
+    }
     console.log("getPossibleSpell", right, desirable_spell, currLeftSpell, currRightSpell, JSON.stringify(arr));
     var arrL = [' '];
     var arrR = [' '];
@@ -1011,4 +1014,36 @@ function linkActivated(link) {
 
 function startSkynet(isAI) {
     processBattle(isAI);
+}
+
+
+function autoLogin(idx) {
+    Qt.core.autoLogin(idx);
+}
+
+function showLoginMenu(menu_str) {
+    console.log("showLoginMenu", menu_str);
+    var arr = JSON.parse(menu_str);
+    var idx = 100;
+
+    /*while((mLoginsMenu.count > 0) && (--idx > 0)) {
+        mLoginsMenu.removeItem(mLoginsMenu.itemAt(0))
+    }*/
+    var i, Ln;
+    for (i = 0, Ln = 10; i < Ln; ++i) {
+        mLoginsMenu.itemAt(i).visible = false;
+    }
+
+    for (i = 0, Ln = Math.min(10, arr.lst.length - 1); i < Ln; ++i) {
+        var login = arr.lst[i].trim();
+        if (login.length === 0) {
+            break;
+        }
+        console.log("try to add", login);
+        mLoginsMenu.itemAt(i).visible = true;
+        mLoginsMenu.itemAt(i).text = login;
+        //var item = ;
+        //mLoginsMenu.addItem(MenuItem {id: "test_" + i, text: login, "onTriggered": function () { console.log("onTriggered", login) }});
+        //mLoginsMenu.addSeparator();
+    }
 }

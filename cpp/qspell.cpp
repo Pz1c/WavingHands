@@ -26,7 +26,9 @@ int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, i
     } else {
       res = Priority - TurnToCast + (FullTurnToCast - TurnToCast);
     }*/
-    if ((TurnToCast < 5) && (TurnToCast != FullTurnToCast)) {
+    if (TurnToCast == FullTurnToCast) {
+        res -= 5;
+    } else if (TurnToCast < 5) {
         res += 5 - TurnToCast;
     }
     //res *= (FullTurnToCast - TurnToCast) / FullTurnToCast + 1;
@@ -145,6 +147,9 @@ QString QSpell::toString() const {
 }
 
 bool QSpell::sortAsc(QSpell *s1, QSpell *s2) {
+    if ((s1->_spellType == s2->_spellType) && (s1->_turnToCast == s2->_turnToCast)) {
+        return s1->_level < s2->_level;
+    }
     if (s1->_priority != s2->_priority) {
         return s1->_priority < s2->_priority;
     }

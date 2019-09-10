@@ -30,30 +30,70 @@ function linkActivated(url) {
 }
 
 
+function getTopPlayerColor(item, idx) {
+    if (idx < 3) {
+        return "lightgreen";
+    } else {
+        return "lightgrey";
+    }
+}
+
+function getTopPlayerBorderColor(item, idx) {
+    if ((item.ladder === 0) && (item.melee === 0)) {
+        return "grey";
+    } if (item.ladder > item.melee) {
+        return "red";
+    } else {
+        return "purple";
+    }
+}
+
+function getTopPlayerBorderWidth(item, idx) {
+    if (idx < 3) {
+        return 3;
+    } else {
+        return 1;
+    }
+}
+
+
 function getTopPlayerDesc(item) {
     var res = "";
     if (item.ladder > 0) {
         if (res.length > 0) {
             res += ', ';
         }
-        res += "Ladder " + item.ladder;
+        res += "L:" + item.ladder;
     }
     if (item.melee > 0) {
         if (res.length > 0) {
             res += ', ';
         }
-        res += "Melee " + item.melee;
+        res += "M: " + item.melee;
     }
     if (item.played > 0) {
         if (res.length > 0) {
             res += ', ';
         }
-        res += "Played " + item.played + " (won " + item.won + ", dead " + item.dead + ")";
+        res += "P:" + item.played + " (w:" + item.won + ", d:" + item.dead + ")";
     }
     if (res.length > 0) {
         res += ', ';
     }
-    res += "Elo " + item.elo;
+    res += "E:" + item.elo;
 
     return item.login + " - " + res;
 }
+
+/*function getTopPlayerTooltip(item) {
+    var res = "Ladder:" + item.ladder;
+    res += ', ';
+    res += "Melee: " + item.melee;
+    res += ', ';
+    res += "Ppayed:" + item.played + " (win:" + item.won + ", death:" + item.dead + ")";
+    res += ', ';
+    res += "Elo:" + item.elo;
+
+    return res;
+}*/
+

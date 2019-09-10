@@ -18,10 +18,10 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(12,"DWSSSP","Delay Effect", SPELL_TYPE_SPEC,10,0,10, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(13,"DWWFWD","Poison", SPELL_TYPE_POISON,13,1,18, SPELL_DEF_TARGER_ENEMY, 0));
     Spells.append(new QSpell(SPELL_PARALYSIS,"FFF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12, SPELL_DEF_TARGER_ENEMY, 0));
-    Spells.append(new QSpell(15,"WFPSFW","Summon Giant", SPELL_TYPE_SUMMON_MONSTER,11,4,14, SPELL_DEF_TARGER_SELF, 4));
-    Spells.append(new QSpell(16,"FPSFW","Summon Troll", SPELL_TYPE_SUMMON_MONSTER,12,3,13, SPELL_DEF_TARGER_SELF, 3));
-    Spells.append(new QSpell(17,"PSFW","Summon Ogre", SPELL_TYPE_SUMMON_MONSTER,13,2,12, SPELL_DEF_TARGER_SELF, 2));
-    Spells.append(new QSpell(18,"SFW","Summon Goblin", SPELL_TYPE_SUMMON_MONSTER,14,1,11, SPELL_DEF_TARGER_SELF, 1));
+    Spells.append(new QSpell(15,"WFPSFW","Summon Giant", SPELL_TYPE_SUMMON_MONSTER,13,4,15, SPELL_DEF_TARGER_SELF, 4));
+    Spells.append(new QSpell(16,"FPSFW","Summon Troll", SPELL_TYPE_SUMMON_MONSTER,13,3,14, SPELL_DEF_TARGER_SELF, 3));
+    Spells.append(new QSpell(17,"PSFW","Summon Ogre", SPELL_TYPE_SUMMON_MONSTER,13,2,13, SPELL_DEF_TARGER_SELF, 2));
+    Spells.append(new QSpell(18,"SFW","Summon Goblin", SPELL_TYPE_SUMMON_MONSTER,14,1,12, SPELL_DEF_TARGER_SELF, 1));
     Spells.append(new QSpell(19,"FSSDD","Fireball", SPELL_TYPE_DAMAGE,13,1,15, SPELL_DEF_TARGER_ENEMY, 5));
     Spells.append(new QSpell(20,"P","Shield", SPELL_TYPE_SHIELD,1,0,10, SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(21,"PDWP","Remove Enchantment", SPELL_TYPE_REMOVE_ENCHANTMENT,10,0,13, SPELL_DEF_TARGER_SELF, 0));

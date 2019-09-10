@@ -190,7 +190,7 @@ Item {
     function initFields() {
         console.log("user_profile.initFields", Qt.show_info_self);
         tPlayerInfo.text = Qt.show_info_self ? Qt.core.playerInfo : Qt.core.warlockInfo;
-        rSendOrder.visible = !Qt.show_info_self;
+        rSendMsg.visible = !Qt.show_info_self;
         Qt.mainWindow.storeWnd(dMainItem)
     }
 
