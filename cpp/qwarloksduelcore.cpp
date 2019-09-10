@@ -141,6 +141,61 @@ void QWarloksDuelCore::loginToSite() {
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
+void QWarloksDuelCore::processNewLogin() {
+    // check is exists
+    foreach(QValueName i, _accounts) {
+        if (i.first.compare(_login.toLower()) == 0) {
+            return;
+        }
+    }
+
+    _accounts.append(QValueName(_login.toLower(), _password));
+    emit accountMenuChanged();
+}
+
+QString QWarloksDuelCore::accountToString() {
+    QString result;
+    foreach(QValueName i, _accounts) {
+        result.append(QString("%1&%2&&").arg(i.first, i.second));
+    }
+    return result;
+}
+
+void QWarloksDuelCore::accountsFromString(QString acc) {
+    qDebug() << "QWarloksDuelCore::accountsFromString" << acc;
+    _accounts.clear();
+    QStringList sl1 = acc.split("&&"), sl2;
+    foreach(QString s, sl1) {
+        sl2 = s.split("&");
+        qDebug() << "QWarloksDuelCore::accountsFromString" << sl2;
+        if (sl2.size() == 2) {
+            _accounts.append(QValueName(sl2.at(0), sl2.at(1)));
+            qDebug() << "QWarloksDuelCore::accountsFromString" << sl2.at(0) << sl2.at(1);
+        }
+    }
+    if (_accounts.size() > 1) {
+        emit accountMenuChanged();
+    }
+}
+
+QString QWarloksDuelCore::accountMenu() {
+    QString result = "{\"lst\":[";
+    foreach(QValueName i, _accounts) {
+        result.append(QString("\"%1\",").arg(i.first));
+    }
+    result.append("\" \"]}");
+    return result;
+}
+
+void QWarloksDuelCore::autoLogin(int Idx) {
+    if ((Idx < 0) || (Idx >= _accounts.size())) {
+        return;
+    }
+
+    QValueName lp = _accounts.at(Idx);
+    setLogin(lp.first, lp.second);
+}
+
 bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
     if (StatusCode == 200) {
         // perhapse bad login
@@ -157,6 +212,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
     if (!NewUrl.isEmpty()) {
         _isLogined = true;
         emit loginChanged();
+        processNewLogin();
         _isAI = _lstAI.indexOf(_login.toUpper()) != -1;
         QString url = NewUrl.toString().toLower();
         qDebug() << "login sucessfull redirect to " << url;
@@ -1177,6 +1233,7 @@ void QWarloksDuelCore::saveParameters() {
     settings.setValue("password", _password);
     settings.setValue("allowed_add", _allowedAdd);
     settings.setValue("allowed_accept", _allowedAccept);
+    settings.setValue("accounts", accountToString());
     settings.endGroup();
 
     settings.beginGroup("Proxy");
@@ -1199,6 +1256,7 @@ void QWarloksDuelCore::loadParameters() {
     _password = settings.value("password", "").toString();
     _allowedAdd = settings.value("allowed_add", "true").toBool();
     _allowedAccept = settings.value("allowed_accept", "true").toBool();
+    accountsFromString(settings.value("accounts", _login.toLower() + "&" + _password).toString());
     settings.endGroup();
 
     settings.beginGroup("Proxy");

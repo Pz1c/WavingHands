@@ -2,13 +2,12 @@
 //import QtQuick.Window 2.1
 //import QtQuick.Controls 1.1
 
-import QtQuick 2.1
-import QtQuick.Window 2.1
+import QtQuick 2.12
+import QtQuick.Window 2.12
 import QtQuick.Dialogs 1.2
-import QtQuick.Controls 1.4 as Controls1
 //import QtQuick.Controls 2.0
-import QtQuick.Controls 2.3
-import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.12
 
 import ua.sp.warloksduel 1.8
 import ua.sp.warlockdictionary 1.0
@@ -70,6 +69,81 @@ ApplicationWindow {
                     id: miExit
                     text: warlockDictionary.getStringByCode("Exit")
                     onTriggered: Qt.quit()
+                }
+            }
+
+            Menu {
+                id: mLoginsMenu
+                title: warlockDictionary.getStringByCode("Accounts")
+
+                MenuItem {
+                    id: miLogin0
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(0);
+                }
+
+                MenuItem {
+                    id: miLogin1
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(1);
+                }
+
+                MenuItem {
+                    id: miLogin2
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(2);
+                }
+
+                MenuItem {
+                    id: miLogin3
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(3);
+                }
+
+                MenuItem {
+                    id: miLogin4
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(4);
+                }
+
+                MenuItem {
+                    id: miLogin5
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(5);
+                }
+
+                MenuItem {
+                    id: miLogin6
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(6);
+                }
+
+                MenuItem {
+                    id: miLogin7
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(7);
+                }
+
+                MenuItem {
+                    id: miLogin8
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(8);
+                }
+
+                MenuItem {
+                    id: miLogin9
+                    visible: false
+                    text: ""
+                    onTriggered: MUtils.autoLogin(9);
                 }
             }
     }
@@ -822,6 +896,9 @@ ApplicationWindow {
                         id: lvtItem
                         height: 0.02 * mainWindow.height
                         width: mainWindow.width
+                        color: UU.getTopPlayerColor(top_player[index], index)
+                        border.width: UU.getTopPlayerBroderWidth(top_player[index], index)
+                        border.color: UU.getTopPlayerBroderColor(top_player[index], index)
 
                         LargeText {
                             id: lvtItemText
@@ -875,14 +952,14 @@ ApplicationWindow {
                     }
 
                     header: Item {
-                        id: lvsHeader
+                        id: ltrHeader
                         height: 0.05 * mainWindow.height
                         width: mainWindow.width
 
                         LargeText {
-                            id: lvsHeaderText
+                            id: ltrHeaderText
                             anchors.fill: parent
-                            text: warlockDictionary.getStringByCode("SpellList")
+                            text: warlockDictionary.getStringByCode("TopList")
                             color: "white"
                         }
                     }
@@ -1154,6 +1231,13 @@ ApplicationWindow {
             console.log("onWarlockInfoChanged");
             showUserProfile(true);
         }
+        onAccountMenuChanged: {
+            console.log("onAccountMenuChanged");
+            MUtils.showLoginMenu(core.getMenuItems());
+
+            //mLoginsMenu.removeItem(mLoginsMenu.itemAt(0))
+            //mLoginsMenu.addItem("test1");
+        }
     }
 
     property var warlockDictionary: WarlockDictionary
@@ -1200,6 +1284,7 @@ ApplicationWindow {
         }
         MUtils.cleanOrders();
         MUtils.showList();
+        MUtils.showLoginMenu(core.accountMenu);
 
         //tipTxt = warlockDictionary.getStringByCode("JustRegistered");
         //showTipMessage(true);
