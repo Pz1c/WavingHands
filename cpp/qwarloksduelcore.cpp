@@ -669,8 +669,13 @@ bool QWarloksDuelCore::parseMonsterCommand(QString &Data) {
             ml.append(m->name().toLower());
         }
     }
-    bool is_charm_l = _leftGestures.length() >= 3 && _leftGestures.replace(" ", "").mid(_leftGestures.length() - 3, 3).compare("PSD") == 0;
-    bool is_charm_r = _rightGestures.length() >= 3 && _rightGestures.replace(" ", "").mid(_rightGestures.length() - 3, 3).compare("PSD") == 0;
+    QString lg = _leftGestures.replace(" ", "");
+    QString rg = _rightGestures.replace(" ", "");
+    bool is_charm_l = (lg.length() >= 3) && (lg.right(3).compare("PSD") == 0);
+    bool is_charm_r = (rg.length() >= 3) && (rg.right(3).compare("PSD") == 0);
+//    qDebug() << "QWarloksDuelCore::parseMonsterCommand" << lg << rg << lg.right(3) << rg.right(3) <<
+//                lg.length() << rg.length() << lg.right(3).compare("PSD") << rg.right(3).compare("PSD")
+//             << is_charm_l << is_charm_r;
     return QWarlockUtils::parseMonsterCommad(Data, _monsterCommandList, _login.toLower(), ml, is_charm_l || is_charm_r);
 }
 
