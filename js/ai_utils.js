@@ -745,14 +745,14 @@ function setTargetsForSpells() {
 function getBotMsgByTurn(turn_num) {
     switch(turn_num) {
     case 1: return "Hi, warlock, I am a golem created for your training, try to beat me. Also join to community https://fb.com/WarlocksDuel/";
-    case 2: return "Try to break enemy chain, using Amnesia, Paralysis, Confusion, Charm Person, Fear";
+    case 2: return "Try to break enemy plan, using Amnesia, Paralysis, Confusion, Charm Person, Fear";
     case 3: return "Summon monsters to get your opponent busy ...SFW";
     case 4: return "Use Invisibility and Blindness to keep your gesture in secret, also you cannot be targeted";
-    case 5: return "Dispel Magic remove all magic effects even mosters";
+    case 5: return "Dispel Magic remove all magic effects; even monsters";
     case 6: return "Shield keep your in safe under monster attack, even Elementals";
-    case 7: return "Cast Invisibility or Blindness on monster to eraise them";
+    case 7: return "Cast Invisibility or Blindness on a monster to erase them instantly";
     case 8: return "Cast Counter Spell on the enemy when enemy try to cast Summon spell and even Giant will be absorbed, but not elemental";
-    case 9: return "Finger of Death can be reflected by Magic Mirror cw";
+    case 9: return "Counter Spell will not work for a Finger of Death attack, but a cW mirror will deflect damage spells back at their owner"
     default: return "";
     }
 }
