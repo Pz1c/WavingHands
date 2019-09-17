@@ -609,7 +609,7 @@ ApplicationWindow {
                                 anchors.right: parent.right
 
                                 border.width: 3
-                                border.color: battles[index].level_color
+                                border.color: battles[index] && battles[index].level_color ? battles[index].level_color : "white"
                                 radius: 7
 
 
@@ -619,7 +619,7 @@ ApplicationWindow {
                                     anchors.right: parent.right
                                     anchors.top: parent.top
                                     height: lvdItemTitle.height + 0.01 * mainWindow.height
-                                    color: battles[index].level_color
+                                    color: battles[index] && battles[index].level_color ? battles[index].level_color : "white"
 
                                     Text {
                                         id: lvdItemTitle
@@ -632,7 +632,7 @@ ApplicationWindow {
                                         //////font.pointSize: 13 * height_koeff
                                         wrapMode: Text.WordWrap
                                         font.bold: true
-                                        text: battles[index].logins
+                                        text: battles[index] && battles[index].logins ? battles[index].logins : ""
                                     }
                                 }
 
@@ -648,7 +648,7 @@ ApplicationWindow {
 
                                     Text {
                                         id: lvdItemLevel
-                                        text: battles[index].level
+                                        text: battles[index] && battles[index].level ? battles[index].level : ""
                                     }
 
                                     CheckBox {
@@ -684,7 +684,7 @@ ApplicationWindow {
                                     //////font.pointSize: 13 * height_koeff
                                     wrapMode: Text.WordWrap
                                     // QString("{\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7}")
-                                    text: battles[index].desc
+                                    text: battles[index] && battles[index].desc ? battles[index].desc : ""
                                         /*battles[index].level + " " +
                                      (battles[index].fast === 1 ? "Fast " : "") + (battles[index].parafc === 1? "ParaFC " : "") +
                                      (battles[index].maladroit === 1 ? "Maladroit " : "") + "\n" + battles[index].desc //*/
@@ -863,10 +863,11 @@ ApplicationWindow {
                         }
                     }
 
-                    header: Item {
+                    header: Rectangle {
                         id: lvsHeader
                         height: 0.05 * mainWindow.height
                         width: mainWindow.width
+                        color: "lightgrey"
 
                         LargeText {
                             id: lvsHeaderText
@@ -897,8 +898,8 @@ ApplicationWindow {
                         height: 0.02 * mainWindow.height
                         width: mainWindow.width
                         color: UU.getTopPlayerColor(top_player[index], index)
-                        border.width: UU.getTopPlayerBroderWidth(top_player[index], index)
-                        border.color: UU.getTopPlayerBroderColor(top_player[index], index)
+                        border.width: UU.getTopPlayerBorderWidth(top_player[index], index)
+                        border.color: UU.getTopPlayerBorderColor(top_player[index], index)
 
                         LargeText {
                             id: lvtItemText
@@ -951,10 +952,11 @@ ApplicationWindow {
                         }
                     }
 
-                    header: Item {
+                    header: Rectangle {
                         id: ltrHeader
                         height: 0.05 * mainWindow.height
                         width: mainWindow.width
+                        color: "lightgrey"
 
                         LargeText {
                             id: ltrHeaderText

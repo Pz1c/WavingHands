@@ -36,6 +36,12 @@ OTHER_FILES += \
 
 contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
     ANDROID_EXTRA_LIBS = \
-        C:/Users/Sergii/Dropbox/Work/Qt/WavingHands/../library/openssl/libcrypto.so \
-        $$PWD/../library/openssl/libssl.so
+        $$PWD/../library/openssl/arm/libcrypto.so \
+        $$PWD/../library/openssl/arm/libssl.so
+}
+
+contains(ANDROID_TARGET_ARCH,arm64-v8a) {
+    ANDROID_EXTRA_LIBS = \
+        $$PWD/../library/openssl/arm64/libcrypto.so \
+        $$PWD/../library/openssl/arm64/libssl.so
 }
