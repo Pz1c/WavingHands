@@ -752,7 +752,7 @@ function getBotMsgByTurn(turn_num) {
     case 6: return "Shield keep your in safe under monster attack, even Elementals";
     case 7: return "Cast Invisibility or Blindness on a monster to erase them instantly";
     case 8: return "Cast Counter Spell on the enemy when enemy try to cast Summon spell and even Giant will be absorbed, but not elemental";
-    case 9: return "Counter Spell will not work for a Finger of Death attack, but a cW mirror will deflect damage spells back at their owner"
+    case 9: return "Counter Spell will not work for a Finger of Death attack, but a cW mirror will deflect damage spells back at their owner";
     default: return "";
     }
 }
