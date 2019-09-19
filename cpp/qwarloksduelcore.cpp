@@ -867,7 +867,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
         emit allowedAcceptChanged();
     }
     int new_fb_id = 0;
-    if ((_ready_in_battles.count() == 0) && (_finished_battles.count() > 0)) {
+    if (!_isAI && (_ready_in_battles.count() == 0) && (_finished_battles.count() > 0)) {
         QString sbid;
         foreach(int fbid, _finished_battles) {
             sbid = QString::number(fbid);
