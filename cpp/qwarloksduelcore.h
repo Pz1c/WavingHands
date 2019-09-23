@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QAuthenticator>
 #include <QSettings>
 #include <QFile>
 #include <QTextStream>
@@ -178,7 +179,8 @@ public slots:
     void slotReadyRead();
     void slotError(QNetworkReply::NetworkError error);
     void slotSslErrors(QList<QSslError> error_list);
-
+    void onAuthenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator);
+    void onProxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
     QString getSpellList(QString left, QString right, bool Enemy);
     QString getSpellBook();
     int getLoadedBattleTurn();
@@ -216,6 +218,8 @@ protected:
     void loadParameters();
 
     void setTimeState(bool State);
+
+    void setCredentialToAuth(QAuthenticator *authenticator);
 
     void processNewLogin();
     QString accountToString();
@@ -299,7 +303,7 @@ private:
     QNetworkReply *_reply;
     QNetworkProxy _proxy;
 
-    void applyProxySettings();
+    void applyProxySettings(bool Connect = false);
     void saveRequest(QString &data);
 };
 

@@ -10,7 +10,8 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _botIdx = 0;
     _requestIdx = 0;
     loadParameters();
-    applyProxySettings();
+    applyProxySettings(true);
+
 
     _played = 0;
     _won = 0;
@@ -1059,6 +1060,25 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
     return true;
 }
 
+void QWarloksDuelCore::setCredentialToAuth(QAuthenticator *authenticator) {
+    if (!_proxyUser.isEmpty()) {
+        authenticator->setUser(_proxyUser);
+    }
+    if (!_proxyPass.isEmpty()) {
+        authenticator->setPassword(_proxyPass);
+    }
+}
+
+void QWarloksDuelCore::onAuthenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator) {
+    qDebug() << "QWarloksDuelCore::onAuthenticationRequired" << reply->url();
+    setCredentialToAuth(authenticator);
+}
+
+void QWarloksDuelCore::onProxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator) {
+    qDebug() << "QWarloksDuelCore::onProxyAuthenticationRequired" << proxy.hostName();
+    setCredentialToAuth(authenticator);
+}
+
 void QWarloksDuelCore::slotReadyRead() {
     QNetworkReply *reply = (QNetworkReply *)sender();
 
@@ -1303,13 +1323,13 @@ bool QWarloksDuelCore::allowedAdd()
     return _allowedAdd;
 }
 
-void QWarloksDuelCore::applyProxySettings() {
+void QWarloksDuelCore::applyProxySettings(bool Connect) {
     if (_proxyHost.isEmpty()) {
         _nam.setProxy(QNetworkProxy::NoProxy);
     } else {
         _proxy.setType(QNetworkProxy::HttpProxy);
         _proxy.setHostName(_proxyHost);
-        _proxy.setPort((quint16)_proxyPort);
+        _proxy.setPort(static_cast<quint16>(_proxyPort));
         if (!_proxyUser.isEmpty()) {
             _proxy.setUser(_proxyUser);
         }
@@ -1317,6 +1337,10 @@ void QWarloksDuelCore::applyProxySettings() {
             _proxy.setPassword(_proxyPass);
         }
         _nam.setProxy(_proxy);
+    }
+    if (Connect) {
+        connect(&_nam, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(onAuthenticationRequired(QNetworkReply*,QAuthenticator*)));
+        connect(&_nam, SIGNAL(proxyAuthenticationRequired(QNetworkProxy&,QAuthenticator*)), this, SLOT(onProxyAuthenticationRequired(QNetworkProxy&,QAuthenticator*)));
     }
 }
 
