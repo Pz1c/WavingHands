@@ -1,6 +1,9 @@
 TEMPLATE = app
 
 QT += qml quick network
+android {
+    QT += androidextras
+}
 
 HEADERS += \
     cpp/qmonster.h \
