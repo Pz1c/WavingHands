@@ -41,7 +41,7 @@
         <!-- android:process=":qt" is needed to force the service to run on a separate process than the Activity -->
 
             <!-- Application arguments -->
-            <!-- meta-data android:name="android.app.arguments" android:value="-service"/ -->
+            <meta-data android:name="android.app.arguments" android:value="-service"/>
             <!-- Application arguments -->
 
             <!-- If you are using the same application (.so file) for activity and also for service, then you
