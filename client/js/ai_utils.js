@@ -763,20 +763,24 @@ function selectSpell() {
 }
 
 function processBattle(isAI) {
-    Qt.ai = {};
-    arr_spells = JSON.parse(Qt.core.getSpellBook());
-    console.log("processBattle", isAI, JSON.stringify(arr_spells));
+    try {
+        Qt.ai = {};
+        arr_spells = JSON.parse(Qt.core.getSpellBook());
+        console.log("processBattle", isAI, JSON.stringify(arr_spells));
 
-    prepareBattleWarlock();
-    selectSpell();
-    selectGesture();
-    var do_charm_monster = (battle.self.bsL.id === SPELL_CHARM_MONSTER) || (battle.self.bsR.id === SPELL_CHARM_MONSTER);
-    prepareTargetsArray();
-    setTargetsForSpells();
-    setTargetsForMonsters(do_charm_monster);
-    setTargetForCharmed();
-    setTargetForParalyzed();
-    console.log("processBattle", "complete", JSON.stringify(battle));
+        prepareBattleWarlock();
+        selectSpell();
+        selectGesture();
+        var do_charm_monster = (battle.self.bsL.id === SPELL_CHARM_MONSTER) || (battle.self.bsR.id === SPELL_CHARM_MONSTER);
+        prepareTargetsArray();
+        setTargetsForSpells();
+        setTargetsForMonsters(do_charm_monster);
+        setTargetForCharmed();
+        setTargetForParalyzed();
+        console.log("processBattle", "complete", JSON.stringify(battle));
+    } catch(error) {
+        console.error(error);
+    }
     //tSendOrderTimer.start();
     if (isAI) {
         teChatMsg.text = getBotMsgByTurn(battle.turn_num);
