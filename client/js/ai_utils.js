@@ -744,15 +744,23 @@ function setTargetsForSpells() {
 
 function getBotMsgByTurn(turn_num) {
     switch(turn_num) {
-    case 1: return "Hi, warlock, I am a golem created for your training, try to beat me. Also join to community https://fb.com/WarlocksDuel/";
-    case 2: return "Try to break enemy plan, using Amnesia, Paralysis, Confusion, Charm Person, Fear";
-    case 3: return "Summon monsters to get your opponent busy ...SFW";
-    case 4: return "Use Invisibility and Blindness to keep your gesture in secret, also you cannot be targeted";
-    case 5: return "Dispel Magic remove all magic effects; even monsters";
-    case 6: return "Shield keep your in safe under monster attack, even Elementals";
-    case 7: return "Cast Invisibility or Blindness on a monster to erase them instantly";
-    case 8: return "Cast Counter Spell on the enemy when enemy try to cast Summon spell and even Giant will be absorbed, but not elemental";
-    case 9: return "Counter Spell will not work for a Finger of Death attack, but a cW mirror will deflect damage spells back at their owner";
+    case 1: return "Hi, warlock, I am a golem created for your training, try to beat me. Every letter represents a hand gesture. A set of gestures like DPP is a spell (Amnesia).";
+    case 2: return "Here are some more useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it. But P/P with both hands will make you surrender.";
+    case 3: return "Enchantments like DPP (Amnesia), DSF (Maladroit), SWD (Fear) disrupt your enemy. When two are cast at the same Warlock they cancel out.";
+    case 4: return "Check your spell book to learn more spells...";
+    case 5: return "Summon a goblin (SFW) to fight for you. Cast it on yourself, and don't forget to set it's target. Stab ('>') is a simple way to hit a goblin. Shield ('P') and Protection (WWP) to defend against it.";
+    case 6: return "Inflict direct damage with Cause light or heavy wounds (WFP, WPFD), and heal up (DFW, DFPW)";
+    case 7: return "There are two ways to counter a spell (WPP, WWS). Cast them at yourself to prevent spells and monsters from hitting you. Cast at an opponent to prevent him from summoning a monster.";
+    case 8: return "You're doing good! Keep up. When you get a bit more training you can start playing against other players and friends.";
+    case 9: return "Games with other players are played in turns. You can play up-to 3 games at the same time for free, and you're given up to 3 days to play each turn.";
+    case 10: return "When you start playing against real players, you'll be seeing a lot of these spells: Charm Person (PSDF) to force a gesture (or a no gesture '-'), and Charm Monster (PSDD) to take control of a monster, and change it's target";
+    case 11: return "You will also see players concealing their movements with Invisibility (PPws - notice the lower caps means you should w and s and both hands together)";
+    case 12: return "Players will summon stronger monsters in addition to Goblins (SFW) - like Ogre (PSFW), Troll (FPSFW) and Giant (WFPSFW) - noticed the pattern ?";
+    case 13: return "The most powerful spell around? That's Finger of Death (PWPFSSSD) to instantly kill an opponent. It can't be countered, but it can be mirrored (cw)";
+    case 14: return "Playing with friends can be a lot more fun. Send them an invite. You can set up a private game to play together.";
+    case 15: return "Every time you win, you can go up the ladder board. When you win against powerful warlocks your elo score will go up too to reflect your skill.";
+    case 16: return "In melee games many 3-6 players play at the same time, often using Fire and Ice Elementals (cWSSW, cSWWS), Storms (SWWc, WSSc) and Protections (WWFP, SSFP)";
+    case 17: return "Want to learn more? checkout the full rules (https://games.ravenblack.net/rules) and join our Facebook community (https://fb.com/WarlocksDuel/)";
     default: return "";
     }
 }
