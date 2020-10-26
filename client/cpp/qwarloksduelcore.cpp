@@ -508,7 +508,8 @@ void QWarloksDuelCore::sendOrders(QString orders) {
     QNetworkRequest request;
     request.setUrl(QUrl(QString("https://games.ravenblack.net/warlocksubmit")));
     QByteArray postData;
-    postData.append(QString("turn=%1&num=%2").arg(QString::number(_loadedBattleTurn), QString::number(_loadedBattleID)));
+    postData.append(_extraOrderInfo);
+    //postData.append(QString("turn=%1&num=%2").arg(QString::number(_loadedBattleTurn), QString::number(_loadedBattleID)));
     QStringList sl = orders.split("#"), sl1;
     QString key, value;
     foreach(QString s, sl) {
@@ -750,6 +751,22 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _isDelay = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=DELAY") != -1;
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
+    _extraOrderInfo.clear();
+    int idx1 = 0, idx2, idx3, idx4;
+    while((idx1 = Data.indexOf("<INPUT TYPE=HIDDEN NAME=", idx1)) != -1) {
+        idx1 += 24;
+        idx2 = Data.indexOf(" ", idx1);
+        QString par_name = Data.mid(idx1, idx2 - idx1).replace('"', "");
+        idx3 = Data.indexOf("VALUE=", idx2) + 6;
+        idx4 = Data.indexOf(">", idx3);
+        QString par_val = Data.mid(idx3, idx4 - idx3).replace('"', "");
+        qDebug() << "found hidden value" << par_name << par_val;
+        idx1 = idx4;
+        if (!_extraOrderInfo.isEmpty()) {
+            _extraOrderInfo.append("&");
+        }
+        _extraOrderInfo.append(QString("%1=%2").arg(par_name, par_val));
+    }
     qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn;
     return _loadedBattleTurn != 0;
 }

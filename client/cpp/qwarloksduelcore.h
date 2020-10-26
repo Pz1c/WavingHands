@@ -270,6 +270,7 @@ private:
     QString _monsterCommandList;
     QString _charmPersonList;
     QString _paralyzeList;
+    QString _extraOrderInfo;
     bool _isDelay;
     bool _isPermanent;
     bool _isParaFDF;
