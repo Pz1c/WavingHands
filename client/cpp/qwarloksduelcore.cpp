@@ -39,7 +39,7 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/newchallenge")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_CHALLENGE)));
     QByteArray postData;
     if (Fast) {
         postData.append("fast=1&");
@@ -72,7 +72,7 @@ void QWarloksDuelCore::sendMessage(const QString &Msg) {
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/sendmess")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_SENDMESS)));
     QByteArray postData;
     postData.append(QString("rcpt=%1&message=").arg(_warlockId));
     postData.append(QUrl::toPercentEncoding(Msg));
@@ -92,7 +92,7 @@ void QWarloksDuelCore::regNewUser(QString Login, QString Password, QString Email
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/newplayer?action=new")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_PLAYER)));
     QByteArray postData;
     postData.append("name=");
     postData.append(QUrl::toPercentEncoding(_login));
@@ -124,7 +124,7 @@ void QWarloksDuelCore::loginToSite() {
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/login")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_LOGIN)));
     //request.setRawHeader("Cookie", "gamename=; gamepassword=");
     QByteArray postData;
     postData.append("name=");
@@ -218,7 +218,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         QString url = NewUrl.toString().toLower();
         qDebug() << "login sucessfull redirect to " << url;
         if (url.indexOf("https://") == -1) {
-            url.prepend("https://games.ravenblack.net/").replace("//", "/").replace(":/", "://");
+            url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
         }
         qDebug() << "final url " << url;
         QNetworkRequest request;
@@ -282,7 +282,7 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
         QString url = NewUrl.toString().toLower();
         qDebug() << "accept sucessfull redirect to " << url;
         if (url.indexOf("http://") == -1) {
-            url.prepend("https://games.ravenblack.net/").replace("//", "/").replace(":/", "://");
+            url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
         }
         qDebug() << "final url " << url;
         QNetworkRequest request;
@@ -311,7 +311,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     QString url = NewUrl.toString().toLower();
     qDebug() << "login sucessfull redirect to " << url;
     if (url.indexOf("http://") == -1) {
-        url.prepend("https://games.ravenblack.net/").replace("//", "/").replace(":/", "://");
+        url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
     }
     qDebug() << "final url " << url;
     QNetworkRequest request;
@@ -366,7 +366,7 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         QString url = NewUrl.toString().toLower();
         qDebug() << "register sucessfull redirect to " << url;
         if ((url.indexOf("https://") == -1) && (url.indexOf("http://") == -1)) {
-            url.prepend("https://games.ravenblack.net/").replace("//", "/").replace(":/", "://");
+            url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
         }
         qDebug() << "final url " << url;
         QNetworkRequest request;
@@ -399,7 +399,7 @@ void QWarloksDuelCore::scanState() {
     }
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/player")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_PLAYER)));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -414,7 +414,7 @@ void QWarloksDuelCore::getChallengeList() {
     }*/
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/challenges")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_CHALLENGES)));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -427,7 +427,7 @@ void QWarloksDuelCore::getTopList() {
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/players")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_PLAYERS)));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -443,7 +443,7 @@ void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card) {
     _loadedBattleType = 0;
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/accept?back=%1&num=%2").arg((from_card ? "player" : "challenges"), QString::number(_loadedBattleID))));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_ACCEPT_CHALLENGE).arg((from_card ? "player" : "challenges"), QString::number(_loadedBattleID))));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -459,7 +459,7 @@ void QWarloksDuelCore::rejectChallenge(int battle_id) {
     _loadedBattleType = 0;
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/refuse?back=player&num=%1").arg(QString::number(_loadedBattleID))));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_REFUSE_CHALLENGE).arg(QString::number(_loadedBattleID))));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -472,7 +472,7 @@ void QWarloksDuelCore::deleteMsg(QString msg_from) {
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/delmess?from=%1").arg(msg_from)));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_DELLMESS).arg(msg_from)));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -482,7 +482,7 @@ void QWarloksDuelCore::deleteMsg(QString msg_from) {
 
 void QWarloksDuelCore::forceSurrender(int battle_id, int turn) {
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/warlocksubmit")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_SUBMIT)));
     QByteArray postData;
     postData.append(QString("force=1&turn=%1&num=%2").arg(QString::number(turn), QString::number(battle_id)));
     qDebug() << QString(postData);
@@ -506,7 +506,7 @@ void QWarloksDuelCore::sendOrders(QString orders) {
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/warlocksubmit")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_SUBMIT)));
     QByteArray postData;
     postData.append(_extraOrderInfo);
     //postData.append(QString("turn=%1&num=%2").arg(QString::number(_loadedBattleTurn), QString::number(_loadedBattleID)));
@@ -557,7 +557,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/warlocks?num=%1&full=%2").arg(QString::number(_loadedBattleID), _loadedBattleType == 2 ? "1" : "0")));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_GET_BATTLE).arg(QString::number(_loadedBattleID), _loadedBattleType == 2 ? "1" : "0")));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -571,7 +571,7 @@ void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
     emit isLoadingChanged();
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString("https://games.ravenblack.net/player/%1.html").arg(Login)));
+    request.setUrl(QUrl(QString(GAME_SERVER_URL_GET_PROFILE).arg(Login)));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -1610,4 +1610,9 @@ QString QWarloksDuelCore::topList() {
 QString QWarloksDuelCore::spellListHtml() {
     //prepareSpellHtmlList(false);
     return _spellListHtml;
+}
+
+QString QWarloksDuelCore::getOnlineUrl(int battle_id) {
+    int bit = battle_id == 0 ? _loadedBattleID : battle_id;
+    return QString(GAME_SERVER_URL_GET_BATTLE).arg(intToStr(bit), "1");
 }

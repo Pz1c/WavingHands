@@ -6,6 +6,7 @@ android {
 }
 
 HEADERS += \
+    cpp/qgameconstant.h \
     cpp/qmonster.h \
     cpp/qwarlock.h \
     cpp/qwarlockdictionary.h \
@@ -29,6 +30,14 @@ ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
+
+# Make these modules of QtFirebase
+# NOTE QTFIREBASE_SDK_PATH can be symlinked to match $$PWD/firebase_cpp_sdk
+QTFIREBASE_SDK_PATH = d:/Android/firebase_cpp_sdk
+#QTFIREBASE_CONFIG += analytics admob remote_config
+QTFIREBASE_CONFIG += analytics admob
+# include QtFirebase
+include(../../library/QtFirebase/qtfirebase.pri)
 
 # Default rules for deployment.
 include(deployment.pri)

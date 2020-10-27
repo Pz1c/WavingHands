@@ -18,6 +18,7 @@ var WARLOCK_HAND_LEFT = 1;
 var WARLOCK_HAND_RIGHT= 2;
 
 Qt.include("ai_utils.js");
+//Qt.include("wnd_utils.js");
 
 function sendOrder() {
     action_send_order = true;
@@ -454,7 +455,7 @@ function finishLoadPersonCharmedEx(char_person_list) {
         cpPersonObj.push(sprite);
         console.log("looks like created: " + sprite.pc_label + " x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("lvaoCharmPerson.width: " + lvaoCharmPerson.width);
-        if (currLeft != 0) {
+        if (currLeft !== 0) {
             console.log("currentleft.w: " + currLeft.width)
             if (currLeft.width + sprite.width + 6 < lvaoCharmPerson.width) {
                 sprite.y = currLeft.y
@@ -623,7 +624,7 @@ function changeGesture(Gesture, Left) {
         }
     }
 
-    if (idx1 != -1) {
+    if (idx1 !== -1) {
         if (Left) {
             cbLHG.currentIndex = idx1;
         } else {
@@ -631,7 +632,7 @@ function changeGesture(Gesture, Left) {
         }
     }
 
-    if ((Gesture !== G) && (idx2 != -1)) {
+    if ((Gesture !== G) && (idx2 !== -1)) {
         if (Left) {
             cbRHG.currentIndex = idx2;
         } else {

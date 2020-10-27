@@ -34,5 +34,18 @@
         <file>qml/tip_message.qml</file>
         <file>qml/LargeText.qml</file>
         <file>res/first-place.png</file>
+        <file>js/wnd_utils.js</file>
+        <file>qml/windows/wnd_new_user.qml</file>
+        <file>qml/windows/wnd_error.qml</file>
+        <file>qml/components/AdsItem.qml</file>
+        <file>qml/components/AnalyticItem.qml</file>
+        <file>qml/components/BaseWindow.qml</file>
+        <file>qml/components/BtnBig.qml</file>
+        <file>qml/components/BtnWithIcon.qml</file>
+        <file>qml/components/ColorItem.qml</file>
+        <file>qml/components/ColorPanel.qml</file>
+        <file>qml/components/GameParticlesSystem.qml</file>
+        <file>qml/components/GoldenStore.qml</file>
+        <file>qml/components/LargeText.qml</file>
     </qresource>
 </RCC>

@@ -16,6 +16,8 @@
 //#include "qwarlockutils.h"
 #include "qwarlockspellchecker.h"
 #include "qwarlockdictionary.h"
+#include "qgameconstant.h"
+
 
 class QWarloksDuelCore : public QObject
 {
@@ -111,6 +113,7 @@ public:
     bool allowedAccept();
     QString warlockInfo();
     QString accountMenu();
+    QString getOnlineUrl(int battle_id = 0);
 
 signals:
     void needLogin();

@@ -7,7 +7,7 @@ QWarlockDictionary::QWarlockDictionary(QObject *parent) :
     // get stored settings
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, ORGANIZATION_NAME, APPLICATION_NAME);
     settings.beginGroup("Locale");
-    lang = settings.value("language", "").toString();
+    lang = "en";//settings.value("language", "en").toString();
     settings.endGroup();
 
     if (lang.isEmpty()) {

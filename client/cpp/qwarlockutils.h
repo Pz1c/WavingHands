@@ -12,9 +12,7 @@
 #define QValueName QPair<QString, QString>
 #define QSpellDayCnt QPair<QString, int>
 
-#define SALT "(cfad$CKSvf*0#@*$Y&_(a)-FAASS23"
-#define ORGANIZATION_NAME "Steel Programming"
-#define APPLICATION_NAME "WarloksDuel"
+#include "qgameconstant.h"
 
 class QWarlock;
 class QMonster;

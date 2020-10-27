@@ -1,6 +1,7 @@
 var wnd_error = "wnd_error.qml";
 var wnd_battle_result = "wnd_battle_result.qml";
-var wnd_main_menu = "wnd_main_menu.qml";
+var wnd_new_user = "wnd_new_user.qml";
+//var wnd_main_menu = "wnd_main_menu.qml";
 var wnd_profile = "wnd_profile.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
 
@@ -215,4 +216,8 @@ function showErrorWnd(error) {
 
 function showMainMenu() {
     showWnd(wnd_main_menu, 0, 0, 1);
+}
+
+function showNewUserMenu() {
+    showWnd(wnd_new_user, 0, 0, 1);
 }
