@@ -23,16 +23,6 @@ ApplicationWindow {
     width: 507
     height: 900
 
-    property var warlockDictionary: WarlockDictionary
-    property real height_koeff: 1//rMain.height / 800
-    property bool exit_on_back_button: true
-    property var  battles: MUtils.loadChallengesList(true)
-    property var  top_player: MUtils.loadTopList(true)
-    property var  spells: MUtils.default_spell_list
-    property bool action_send_order: true
-    property string tipTxt;
-    property bool allowCloseTip: false;
-
     Keys.onPressed: {
         console.log("loader.KEY_PRESSED: " + event.key)
         if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {
@@ -40,12 +30,6 @@ ApplicationWindow {
             event.accepted = true;
             WNDU.processEscape();
         }
-    }
-
-    AnalyticItem {
-        id: analytics
-        userId: //take uuid
-            core.uuid
     }
 
     WarlocksDuelCore {
@@ -86,7 +70,28 @@ ApplicationWindow {
             //mLoginsMenu.removeItem(mLoginsMenu.itemAt(0))
             //mLoginsMenu.addItem("test1");
         }
+
+        Component.onCompleted: {
+            console.log("Core.completed");
+        }
     }
+
+    AnalyticItem {
+        id: analytics
+        userId: //take uuid
+            core.uuid
+    }
+
+    property var warlockDictionary: WarlockDictionary
+    property real height_koeff: 1//rMain.height / 800
+    property bool exit_on_back_button: true
+    property var  battles: MUtils.loadChallengesList(true)
+    property var  top_player: MUtils.loadTopList(true)
+    property var  spells: MUtils.default_spell_list
+    property bool action_send_order: true
+    property string tipTxt;
+    property bool allowCloseTip: false;
+    property bool is_game_in_progress: false
 
     header: ToolBar {
         RowLayout {
@@ -143,7 +148,8 @@ ApplicationWindow {
     }
 
     function showMainMenu() {
-        MUtils.showWindow("menu_main.qml");
+        //WNDU.showMainMenu();
+        dMenu.open();
     }
 
     function showUserProfile(other) {
@@ -158,16 +164,6 @@ ApplicationWindow {
             console.log("showUserProfile", MUtils.wndUP.status, "?", MUtils.wndUP.errorString());
             MUtils.wndUP.statusChanged.connect(finishOpenUPWnd);
         }//*/
-    }
-
-    function finishOpenUPWnd() {
-        console.log("finishOpenUPWnd", MUtils.wndUP.status, "READY");
-        if (MUtils.wndUP.status === Component.Ready) {
-            MUtils.wndUP.createObject(mainWindow, {})
-            console.log("finishOpenUPWnd", "createObject");
-        } else if (MUtils.wndUP.status === Component.Error) {
-            console.log("Error loading component:", MUtils.wndUP.errorString())
-        }
     }
 
     function getLoginFromUser(child_wnd, real_login) {
@@ -196,6 +192,7 @@ ApplicationWindow {
     }
 
     function closeUserProfile() {
+        WNDU.closeChild();
         if (MUtils.wndUP) {
             MUtils.wndUP.destroy();
             MUtils.wndUP = null;
@@ -230,22 +227,18 @@ ApplicationWindow {
         MUtils.showReadyBattle();
     }
 
-    function openBattleOnline(child_wnd) {
-        if (child_wnd) {
-            child_wnd.destroy();
-        }
-        //getOnlineUrl
-
+    function openBattleOnline() {
+        WNDU.closeChild();
         Qt.openUrlExternally(core.getOnlineUrl());
     }
 
     function showNewUserMenu(child_wnd) {
+        WNDU.showNewUserMenu();
         //MUtils.showWindow("new_user_menu.qml", child_wnd);
     }
 
     function showSpellDetails(spell_code) {
-        currSpell = spell_code;
-        WNDU.showErrorWnd({text:getSpellDescription(),type:1});
+        WNDU.showErrorWnd({text:getSpellDescription(spell_code),type:1});
         //MUtils.showWindow("spell_details.qml");
     }
 
@@ -266,9 +259,7 @@ ApplicationWindow {
         WNDU.closeChild();
     }
 
-    property string currSpell: ""
-
-    function getSpellDescription() {
+    function getSpellDescription(currSpell) {
         return "<h2>" + warlockDictionary.getStringByCode(currSpell) + "</h2><p>" + warlockDictionary.getStringByCode(currSpell + "_desc") + "</p>"
     }
 
@@ -319,10 +310,26 @@ ApplicationWindow {
         MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " "
     }*/
 
+    function logEvent(event_name, params) {
+        if (!params) {
+            params = {};
+        }
+
+        console.log("logEvent", event_name, JSON.stringify(params));
+        analytics.logEvent(event_name, params);
+    }
+
+    function loadingStop() {
+        MUtils.hideLoading();
+    }
+
     function creationFinished() {
+        console.log("main.creationFinished");
         Qt.core = core;
         Qt.mainWindow = mainWindow;
+        Qt.gameField = mainWindow;
         Qt.height_coeff = height_koeff;
+        Qt.dictionary = warlockDictionary;
         MUtils.dict = warlockDictionary;
         MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage");
         MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " ";

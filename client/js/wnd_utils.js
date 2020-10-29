@@ -69,7 +69,7 @@ function showWnd(wnd_name, close_current, close_all_stack, add_in_stack, only_cr
             console.log("arr_wnd_stack.push1", wnd_name);
             arr_wnd_stack.push({item:arr_wnd_instance[wnd_name],code:wnd_name});
         }
-        Qt.loader.forceActiveFocus();
+        //Qt.loader.forceActiveFocus();
     } else if (wnd_obj.wnd.status === Component.Ready) {
         finishedShowWnd(wnd_obj);
     } else {
@@ -97,7 +97,7 @@ function finishedShowWnd(wnd_obj) {
             console.log("arr_wnd_stack.push2", wnd_obj.code);
             arr_wnd_stack.push({item:wnd_obj.item,code:wnd_obj.code});
         }
-        Qt.loader.forceActiveFocus();
+        //Qt.loader.forceActiveFocus();
     } else if (wnd_obj.wnd.status === Component.Error) {
         console.log("Error loading component:", wnd_obj.wnd.errorString());
     } else {
@@ -122,16 +122,16 @@ function processEscape() {
         }
     } else {
         // TODO add confirmation
-        if (is_game_in_progress) {
-            Qt.core.cancelGame();
-        } else {
+        //if (is_game_in_progress) {
+            //Qt.core.cancelGame();
+        //} else {
             Qt.quit();
-        }
+        //}
     }
 }
 
 function closeChild() {
-    console.log("closeChild", arr_wnd_stack.length, Qt.loader.focus);
+    console.log("closeChild", arr_wnd_stack.length/*, Qt.loader.focus*/);
     for(var i = 0, Ln = arr_wnd_stack.length; i < Ln; ++i) {
         console.log("closeChild", i, arr_wnd_stack[i].code, arr_wnd_stack[i], arr_wnd_stack[i].item ? arr_wnd_stack[i].item.z : "undefine");
     }
@@ -151,7 +151,7 @@ function closeChild() {
             }
         }
     }
-    Qt.loader.forceActiveFocus();
+    //Qt.loader.forceActiveFocus();
 }
 
 function storeWnd(wnd) {
@@ -218,6 +218,10 @@ function showMainMenu() {
     showWnd(wnd_main_menu, 0, 0, 1);
 }
 
+function showUserProfile(own) {
+    showWnd(wnd_main_menu, 0, 0, 1);
+}
+
 function showNewUserMenu() {
-    showWnd(wnd_new_user, 0, 0, 1);
+    showWnd(wnd_new_user, 1, 0, 1);
 }

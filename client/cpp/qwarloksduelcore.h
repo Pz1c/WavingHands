@@ -12,6 +12,7 @@
 #include <QNetworkProxy>
 #include <QList>
 #include <QPair>
+#include <qcore.h>
 
 //#include "qwarlockutils.h"
 #include "qwarlockspellchecker.h"
@@ -19,16 +20,12 @@
 #include "qgameconstant.h"
 
 
-class QWarloksDuelCore : public QObject
+class QWarloksDuelCore : public QGameCore
 {
     Q_OBJECT
     Q_PROPERTY(bool isNeedLogin READ isNeedLogin NOTIFY needLogin)
     Q_PROPERTY(QString login READ login NOTIFY loginChanged)
     Q_PROPERTY(QString password READ password NOTIFY passwordChanged)
-    Q_PROPERTY(QString proxyHost READ proxyHost NOTIFY proxyHostChanged)
-    Q_PROPERTY(int proxyPort READ proxyPort NOTIFY proxyPortChanged)
-    Q_PROPERTY(QString proxyUser READ proxyUser NOTIFY proxyUserChanged)
-    Q_PROPERTY(QString proxyPass READ proxyPass NOTIFY proxyPassChanged)
     Q_PROPERTY(QString errorMsg READ errorMsg NOTIFY errorOccurred)
     Q_PROPERTY(QString playerInfo READ playerInfo NOTIFY playerInfoChanged)
     Q_PROPERTY(QString readyInBattles READ readyInBattles NOTIFY readyInBattlesChanged)
@@ -37,7 +34,6 @@ class QWarloksDuelCore : public QObject
     Q_PROPERTY(QString finishedBattle READ finishedBattle NOTIFY finishedBattleChanged)
     Q_PROPERTY(int readyBattle READ readyBattle NOTIFY readyBattleChanged)
     Q_PROPERTY(int loadedBattleID READ loadedBattleID NOTIFY loadedBattleIDChanged)
-    Q_PROPERTY(int isLoading READ isLoading NOTIFY isLoadingChanged)
     Q_PROPERTY(QString targets READ targets NOTIFY targetsChanged)
     Q_PROPERTY(QString warlocks READ warlocks NOTIFY warlocksChanged)
     Q_PROPERTY(QString monsters READ monsters NOTIFY monstersChanged)
@@ -73,10 +69,6 @@ public:
     bool isNeedLogin();
     QString login();
     QString password();
-    QString proxyHost();
-    int proxyPort();
-    QString proxyUser();
-    QString proxyPass();
     QString errorMsg();
     QString playerInfo();
     QString readyInBattles();
@@ -119,10 +111,6 @@ signals:
     void needLogin();
     void loginChanged();
     void passwordChanged();
-    void proxyHostChanged();
-    void proxyPortChanged();
-    void proxyUserChanged();
-    void proxyPassChanged();
     void errorOccurred();
     void playerInfoChanged();
     void readyInBattlesChanged();
@@ -171,9 +159,8 @@ public slots:
     void forceSurrender(int battle_id, int turn);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
-    void setProxySettings(QString IP, int Port, QString Username, QString Password);
     void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description);
-    void regNewUser(QString Login, QString Password, QString Email);
+    void regNewUser(QString Login, QString Email);
     void getBattle(int battle_id, int battle_type);
     void getWarlockInfo(const QString &Login);
     void sendMessage(const QString &Msg);
@@ -217,8 +204,9 @@ protected:
     void parseChallendge(QString &Data);
     void parseMessages(QString &Data);
 
-    void saveParameters();
-    void loadParameters();
+    void setOrganization() override;
+    void saveGameParameters() override;
+    void loadGameParameters() override;
 
     void setTimeState(bool State);
 
@@ -290,25 +278,6 @@ private:
 
     // Spell checker
     QWarlockSpellChecker SpellChecker;
-
-    // dictionary
-    QWarlockDictionary *WarlockDictionary;
-
-    // proxy
-    QString _proxyHost;
-    int _proxyPort;
-    QString _proxyUser;
-    QString _proxyPass;
-
-    // network
-    bool _isLoading;
-    int _requestIdx;
-    QNetworkAccessManager _nam;
-    QNetworkReply *_reply;
-    QNetworkProxy _proxy;
-
-    void applyProxySettings(bool Connect = false);
-    void saveRequest(QString &data);
 };
 
 #endif // QWARLOKSDUELCORE_H

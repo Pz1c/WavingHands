@@ -30,8 +30,8 @@ Item {
         anchors.fill: parent
         z: 2
 
-        //fontSizeMode: Text.Fit
-        fontSizeMode: Text.VerticalFit
+        fontSizeMode: Text.Fit
+        //fontSizeMode: Text.VerticalFit
         font.pixelSize: 72
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter

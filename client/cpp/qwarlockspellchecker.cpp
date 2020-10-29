@@ -206,7 +206,7 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
     QString possible_right = warlock->possibleRightGestures();
     QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF());
     logSpellList(sl, "QWarlockSpellChecker::getSpellsList before");
-    qSort(sl.begin(), sl.end(), QSpell::sortDesc);
+    std::sort(sl.begin(), sl.end(), QSpell::sortDesc);
     logSpellList(sl, "QWarlockSpellChecker::getSpellsList after");
     return sl;
 }
@@ -214,7 +214,7 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
 QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool Enemy) {
     qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right;
     QList<QSpell *> sl = getStriktSpellsList(Left.replace(" ", ""), Right.replace(" ", ""), Enemy);
-    qSort(sl.begin(), sl.end(), QSpell::sortDesc);
+    std::sort(sl.begin(), sl.end(), QSpell::sortDesc);
 
     QString res;
     foreach(QSpell *s, sl) {

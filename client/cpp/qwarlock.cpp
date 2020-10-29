@@ -154,7 +154,7 @@ bool QWarlock::player() const
 }
 
 void QWarlock::breakEnemySpell(QSpell *spell) {
-
+    qDebug() << spell->json();
 }
 
 void QWarlock::setAntispell(QWarlock *enemy) {
@@ -250,7 +250,7 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
         }
     }
 
-    qSort(_possibleSpells.begin(), _possibleSpells.end(), QSpell::sortDesc);
+    std::sort(_possibleSpells.begin(), _possibleSpells.end(), QSpell::sortDesc);
 }
 
 void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QWarlock *enemy, const QList<QMonster *> &monsters)

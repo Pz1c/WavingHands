@@ -5,6 +5,8 @@ android {
     QT += androidextras
 }
 
+INCLUDEPATH += ../../library/game/
+
 HEADERS += \
     cpp/qgameconstant.h \
     cpp/qmonster.h \
@@ -13,7 +15,12 @@ HEADERS += \
     cpp/qwarlockspellchecker.h \
     cpp/qwarlockutils.h \
     cpp/qwarloksduelcore.h \
-    cpp/qspell.h
+    cpp/qspell.h\
+    ../../library/game/qcore.h \
+    ../../library/game/qgamedictionary.h \
+    ../../library/game/qgameutils.h \
+    ../../library/game/qlevelitem.h \
+    ../../library/game/qlevelmanager.h \
 
 SOURCES += main.cpp \
     cpp/qmonster.cpp \
@@ -22,7 +29,12 @@ SOURCES += main.cpp \
     cpp/qwarlockspellchecker.cpp \
     cpp/qwarlockutils.cpp \
     cpp/qwarloksduelcore.cpp \
-    cpp/qspell.cpp
+    cpp/qspell.cpp\
+    ../../library/game/qcore.cpp \
+    ../../library/game/qgamedictionary.cpp \
+    ../../library/game/qgameutils.cpp \
+    ../../library/game/qlevelitem.cpp \
+    ../../library/game/qlevelmanager.cpp
 
 RESOURCES += qml.qrc
 

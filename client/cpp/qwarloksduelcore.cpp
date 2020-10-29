@@ -1,17 +1,16 @@
 #include "qwarloksduelcore.h"
 
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
-    QObject(parent)
+    QGameCore(parent)
 {
+    setOrganization();
+    init();
+    GameDictionary->setCurrentLang("en");
+
     _lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
     _isLogined = false;
-    _isLoading = false;
     _isAI = false;
     _botIdx = 0;
-    _requestIdx = 0;
-    loadParameters();
-    applyProxySettings(true);
-
 
     _played = 0;
     _won = 0;
@@ -25,13 +24,17 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _isParaFDF = false;
     _isTimerActive = false;
 
-    WarlockDictionary = QWarlockDictionary::getInstance();
-
     prepareSpellHtmlList();
 }
 
+void QWarloksDuelCore::setOrganization() {
+    qDebug() << "QWarloksDuelCore::setOrganization";
+    _organizationName = ORGANIZATION_NAME;
+    _applicationName = APPLICATION_NAME;
+}
+
 QWarloksDuelCore::~QWarloksDuelCore() {
-    saveParameters();
+    saveParameters(true, true, true, true, true);
 }
 
 void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description) {
@@ -40,14 +43,14 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_CHALLENGE)));
-    QByteArray postData;
+    QString p_data;
     if (Fast) {
-        postData.append("fast=1&");
+        p_data.append("fast=1&");
     }
     if (Private) {
-        postData.append("private=1&");
+        p_data.append("private=1&");
     }
-    postData.append(QString("players=%1&friendly=%2&game=1&blurb=").arg(QString::number(Count), QString::number(FriendlyLevel)));
+    p_data.append(QString("players=%1&friendly=%2&game=1&blurb=").arg(QString::number(Count), QString::number(FriendlyLevel)));
     QString desc = Description;
     if (ParaFC) {
         desc.prepend("ParaFC ");
@@ -57,11 +60,11 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
         desc.prepend("Maladroit ");
     }
 
-    postData.append(QUrl::toPercentEncoding(desc));
+    p_data.append(QUrl::toPercentEncoding(desc));
 
-    qDebug() << QString(postData);
+    qDebug() << p_data;
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    _reply = _nam.post(request, postData);
+    _reply = _nam.post(request, p_data.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
     connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
@@ -73,27 +76,27 @@ void QWarloksDuelCore::sendMessage(const QString &Msg) {
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_SENDMESS)));
-    QByteArray postData;
+    QString postData;
     postData.append(QString("rcpt=%1&message=").arg(_warlockId));
     postData.append(QUrl::toPercentEncoding(Msg));
 
     qDebug() << QString(postData);
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    _reply = _nam.post(request, postData);
+    _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
     connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
-void QWarloksDuelCore::regNewUser(QString Login, QString Password, QString Email) {
+void QWarloksDuelCore::regNewUser(QString Login, QString Email) {
     _login = Login;
-    _password = Password;
+    _password = QGameUtils::rand(10);
     _isLoading = true;
     emit isLoadingChanged();
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_PLAYER)));
-    QByteArray postData;
+    QString postData;
     postData.append("name=");
     postData.append(QUrl::toPercentEncoding(_login));
     postData.append("&password=");
@@ -106,11 +109,11 @@ void QWarloksDuelCore::regNewUser(QString Login, QString Password, QString Email
                     "apps%2Fdetails%3Fid%3Dnet.is.games.WarlockDuel+&preferfast=4&me13=1&update=1");
 
 
-    qDebug() << QString(postData);
+    qDebug() << postData;
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    _reply = _nam.post(request, postData);
+    _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -126,17 +129,17 @@ void QWarloksDuelCore::loginToSite() {
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_LOGIN)));
     //request.setRawHeader("Cookie", "gamename=; gamepassword=");
-    QByteArray postData;
+    QString postData;
     postData.append("name=");
     postData.append(QUrl::toPercentEncoding(_login));
     postData.append("&password=");
     postData.append(QUrl::toPercentEncoding(_password));
 
     //qDebug() << request.rawHeaderList();
-    qDebug() << "Login to site: " << QString(postData);
+    qDebug() << "Login to site: " << postData;
 
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    _reply = _nam.post(request, postData);
+    _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
     connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
@@ -483,12 +486,12 @@ void QWarloksDuelCore::deleteMsg(QString msg_from) {
 void QWarloksDuelCore::forceSurrender(int battle_id, int turn) {
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_SUBMIT)));
-    QByteArray postData;
+    QString postData;
     postData.append(QString("force=1&turn=%1&num=%2").arg(QString::number(turn), QString::number(battle_id)));
-    qDebug() << QString(postData);
+    qDebug() << postData;
     //return;
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    _reply = _nam.post(request, postData);
+    _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
     connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
@@ -507,7 +510,7 @@ void QWarloksDuelCore::sendOrders(QString orders) {
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_SUBMIT)));
-    QByteArray postData;
+    QString postData;
     postData.append(_extraOrderInfo);
     //postData.append(QString("turn=%1&num=%2").arg(QString::number(_loadedBattleTurn), QString::number(_loadedBattleID)));
     QStringList sl = orders.split("#"), sl1;
@@ -532,10 +535,10 @@ void QWarloksDuelCore::sendOrders(QString orders) {
         postData.append(QString(QUrl::toPercentEncoding(value.replace(" ", "+"))).replace("%2B", "+"));
     }
 
-    qDebug() << "QWarloksDuelCore::sendOrders" << QString(postData);
+    qDebug() << "QWarloksDuelCore::sendOrders" << postData;
     //return;
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    _reply = _nam.post(request, postData);
+    _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
     connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
@@ -946,7 +949,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     _warlockInfo.clear();
     int idx;
     if (ready_in_battles.count() > 0) {
-        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("ReadyB")));
+        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("ReadyB")));
         idx = -1;
         foreach(int i, _ready_in_battles) {
             if (++idx > 0) {
@@ -957,7 +960,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
         _warlockInfo.append("</p>");
     }
     if (waiting_in_battles.count() > 0) {
-        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("WaitB")));
+        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("WaitB")));
         idx = -1;
         foreach(int i, _waiting_in_battles) {
             if (++idx > 0) {
@@ -968,7 +971,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
         _warlockInfo.append("</p>");
     }
     if (finished_battles.count() > 0) {
-        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("FinishB")));
+        _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("FinishB")));
         idx = -1;
         foreach(int i, _finished_battles) {
             if (++idx > 0) {
@@ -987,35 +990,22 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
                         "<tr><td>%12:</td> <td>%13</td></tr>"
                         "</table>")
             .arg(login)
-            .arg(WarlockDictionary->getStringByCode("Played"))
+            .arg(GameDictionary->getStringByCode("Played"))
             .arg(QString::number(played))
-            .arg(WarlockDictionary->getStringByCode("Won"))
+            .arg(GameDictionary->getStringByCode("Won"))
             .arg(QString::number(won))
-            .arg(WarlockDictionary->getStringByCode("Died"))
+            .arg(GameDictionary->getStringByCode("Died"))
             .arg(QString::number(died))
-            .arg(WarlockDictionary->getStringByCode("LadderScore"))
+            .arg(GameDictionary->getStringByCode("LadderScore"))
             .arg(QString::number(ladder))
-            .arg(WarlockDictionary->getStringByCode("MeleeScore"))
+            .arg(GameDictionary->getStringByCode("MeleeScore"))
             .arg(QString::number(melee))
-            .arg(WarlockDictionary->getStringByCode("Elo"))
+            .arg(GameDictionary->getStringByCode("Elo"))
             .arg(QString::number(elo))
             ).append("</html>");
 
     emit warlockInfoChanged();
     return true;
-}
-
-
-void QWarloksDuelCore::saveRequest(QString &data) {
-#ifdef QT_DEBUG
-    QString file_name = QString("warlocksduel_%1.html").arg(QString::number(++_requestIdx));
-    QFile file(file_name);
-    file.open(QIODevice::WriteOnly | QIODevice::Text);
-    QTextStream out(&file);
-    out << data;
-    file.close();
-    qDebug() << "data stored into " << file_name;
-#endif
 }
 
 bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, QString new_url) {
@@ -1097,20 +1087,11 @@ void QWarloksDuelCore::onProxyAuthenticationRequired(const QNetworkProxy &proxy,
 }
 
 void QWarloksDuelCore::slotReadyRead() {
-    QNetworkReply *reply = (QNetworkReply *)sender();
+    QGameCore::slotReadyRead();
 
-    if (reply->error() != QNetworkReply::NoError) {
-        _isLoading = false;
-        emit isLoadingChanged();
-        return;
-    }
+    QNetworkReply *reply = (QNetworkReply *)sender();
     QString url = reply->url().toString();
     QString data = reply->readAll();
-    qDebug() << "from url: " << url << " slotReadyRead";
-    if (!data.isEmpty()) {
-        saveRequest(data);
-    }
-
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     QUrl new_url;
     switch(statusCode)  {
@@ -1222,7 +1203,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
                 if (_spellListHtml.length() > 1) {
                     _spellListHtml.append(",");
                 }
-                _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(g, hint, spell->gesture(), WarlockDictionary->getStringByCode(spell->gesture())));
+                _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(g, hint, spell->gesture(), GameDictionary->getStringByCode(spell->gesture())));
 
                 found = true;
                 break;
@@ -1232,7 +1213,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
             if (_spellListHtml.length() > 1) {
                 _spellListHtml.append(",");
             }
-            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(spell->gesture(), "", spell->gesture(), WarlockDictionary->getStringByCode(spell->gesture())));
+            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(spell->gesture(), "", spell->gesture(), GameDictionary->getStringByCode(spell->gesture())));
         }
     }
     _spellListHtml.append("]");
@@ -1252,64 +1233,30 @@ QString QWarloksDuelCore::defaultSpellListHtml() {
         } else {
             res.append(",");
         }
-        res.append(QString("{\"g\":\"%1\",\"code\":\"%2\",\"n\":\"%3\",\"h\":\"\"}").arg(spell->gesture(), spell->gesture(), WarlockDictionary->getStringByCode(spell->gesture())));
+        res.append(QString("{\"g\":\"%1\",\"code\":\"%2\",\"n\":\"%3\",\"h\":\"\"}").arg(spell->gesture(), spell->gesture(), GameDictionary->getStringByCode(spell->gesture())));
     }
     res.append("]");
     return res;
     //return "<table><tr><th>Gestures</th><th>Spell name</th></tr><tr><td>cDPW</td><td>Dispel Magic</td></tr><tr><td>cSWWS</td><td>Summon Ice Elemental</td></tr><tr><td>cWSSW</td><td>Summon Fire Elemental</td></tr><tr><td>cw</td><td>Magic Mirror</td></tr><tr><td>DFFDD</td><td>Lightning Bolt</td></tr><tr><td>DFPW</td><td>Cure Heavy Wounds</td></tr><tr><td>DFW</td><td>Cure Light Wounds</td></tr><tr><td>DFWFd</td><td>Blindness</td></tr><tr><td>DPP</td><td>Amnesia</td></tr><tr><td>DSF</td><td>Confusion/Maladroitness</td></tr><tr><td>DSFFFc</td><td>Disease</td></tr><tr><td>DWFFd</td><td>Blindness</td></tr><tr><td>DWSSSP</td><td>Delay Effect</td></tr><tr><td>DWWFWD</td><td>Poison</td></tr><tr><td>FFF</td><td>Paralysis</td></tr><tr><td>WFPSFW</td><td>Summon Giant</td></tr><tr><td>FPSFW</td><td>Summon Troll</td></tr><tr><td>PSFW</td><td>Summon Ogre</td></tr><tr><td>SFW</td><td>Summon Goblin</td></tr><tr><td>FSSDD</td><td>Fireball</td></tr><tr><td>P</td><td>Shield</td></tr><tr><td>p</td><td>Surrender</td></tr><tr><td>PDWP</td><td>Remove Enchantment</td></tr><tr><td>PPws</td><td>Invisibility</td></tr><tr><td>PSDD</td><td>Charm Monster</td></tr><tr><td>PSDF</td><td>Charm Person</td></tr><tr><td>PWPFSSSD</td><td>Finger of Death</td></tr><tr><td>PWPWWc</td><td>Haste</td></tr><tr><td>SD</td><td>Magic Missile</td></tr><tr><td>SPFP</td><td>Anti-spell</td></tr><tr><td>SPFPSDW</td><td>Permanency</td></tr><tr><td>SPPc</td><td>Time Stop</td></tr><tr><td>SPPFD</td><td>Time Stop</td></tr><tr><td>SSFP</td><td>Resist Cold</td></tr><tr><td>SWD</td><td>Fear (No CFDS)</td></tr><tr><td>SWWc</td><td>Fire Storm</td></tr><tr><td>WDDc</td><td>Clap of Lightning</td></tr><tr><td>WFP</td><td>Cause Light Wounds</td></tr><tr><td>WPFD</td><td>Cause Heavy Wounds</td></tr><tr><td>WPP</td><td>Counter Spell</td></tr><tr><td>WSSc</td><td>Ice Storm</td></tr><tr><td>WWFP</td><td>Resist Heat</td></tr><tr><td>WWP</td><td>Protection</td></tr><tr><td>WWS</td><td>Counter Spell</td></tr></table>";
 }
 
-void QWarloksDuelCore::setProxySettings(QString IP, int Port, QString Username, QString Password) {
-    _proxyHost = IP;
-    _proxyPort = Port;
-    _proxyUser = Username;
-    _proxyPass = Password;
-    saveParameters();
-    loginToSite();
+void QWarloksDuelCore::saveGameParameters() {
+    settings->setValue("login", _login);
+    settings->setValue("password", _password);
+    settings->setValue("allowed_add", _allowedAdd);
+    settings->setValue("allowed_accept", _allowedAccept);
+    settings->setValue("accounts", accountToString());
+    settings->setValue("finished_battles", finishedBattles());
+    settings->setValue("shown_battles", _shown_battles);
 }
 
-void QWarloksDuelCore::saveParameters() {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, ORGANIZATION_NAME, APPLICATION_NAME);
-    settings.beginGroup("User");
-    settings.setValue("login", _login);
-    settings.setValue("password", _password);
-    settings.setValue("allowed_add", _allowedAdd);
-    settings.setValue("allowed_accept", _allowedAccept);
-    settings.setValue("accounts", accountToString());
-    settings.endGroup();
-
-    settings.beginGroup("Proxy");
-    settings.setValue("host", _proxyHost);
-    settings.setValue("port", _proxyPort);
-    settings.setValue("user", _proxyUser);
-    settings.setValue("password", _proxyPass);
-    settings.endGroup();
-
-    settings.beginGroup("Game");
-    settings.setValue("finished_battles", finishedBattles());
-    settings.setValue("shown_battles", _shown_battles);
-    settings.endGroup();
-}
-
-void QWarloksDuelCore::loadParameters() {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, ORGANIZATION_NAME, APPLICATION_NAME);
-    settings.beginGroup("User");
-    _login = settings.value("login", "").toString();
-    _password = settings.value("password", "").toString();
-    _allowedAdd = settings.value("allowed_add", "true").toBool();
-    _allowedAccept = settings.value("allowed_accept", "true").toBool();
-    accountsFromString(settings.value("accounts", _login.toLower() + "&" + _password).toString());
-    settings.endGroup();
-
-    settings.beginGroup("Proxy");
-    _proxyHost = settings.value("host", "").toString();
-    _proxyPort = settings.value("port", "").toInt();
-    _proxyUser = settings.value("user", "").toString();
-    _proxyPass = settings.value("password", "").toString();
-    settings.endGroup();
-
-    settings.beginGroup("Game");
-    QStringList fbl = settings.value("finished_battles", "").toString().split(",");
+void QWarloksDuelCore::loadGameParameters() {
+    _login = settings->value("login", "").toString();
+    _password = settings->value("password", "").toString();
+    _allowedAdd = settings->value("allowed_add", "true").toBool();
+    _allowedAccept = settings->value("allowed_accept", "true").toBool();
+    accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());
+    QStringList fbl = settings->value("finished_battles", "").toString().split(",");
     foreach(QString fb, fbl) {
         int fbid = fb.toInt();
         if ((fbid == 0) || (_finished_battles.indexOf(fbid) != -1)) {
@@ -1317,11 +1264,10 @@ void QWarloksDuelCore::loadParameters() {
         }
         _finished_battles.append(fbid);
     }
-    _shown_battles = settings.value("shown_battles", "").toStringList();
+    _shown_battles = settings->value("shown_battles", "").toStringList();
     if ((_shown_battles.isEmpty() || ((_shown_battles.size() == 1) && (_shown_battles.at(0).isEmpty()))) && !fbl.isEmpty()) {
         _shown_battles.append(fbl);
     }
-    settings.endGroup();
 }
 
 bool QWarloksDuelCore::allowedAccept()
@@ -1338,27 +1284,6 @@ QString QWarloksDuelCore::warlockInfo()
 bool QWarloksDuelCore::allowedAdd()
 {
     return _allowedAdd;
-}
-
-void QWarloksDuelCore::applyProxySettings(bool Connect) {
-    if (_proxyHost.isEmpty()) {
-        _nam.setProxy(QNetworkProxy::NoProxy);
-    } else {
-        _proxy.setType(QNetworkProxy::HttpProxy);
-        _proxy.setHostName(_proxyHost);
-        _proxy.setPort(static_cast<quint16>(_proxyPort));
-        if (!_proxyUser.isEmpty()) {
-            _proxy.setUser(_proxyUser);
-        }
-        if (!_proxyPass.isEmpty()) {
-            _proxy.setPassword(_proxyPass);
-        }
-        _nam.setProxy(_proxy);
-    }
-    if (Connect) {
-        connect(&_nam, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(onAuthenticationRequired(QNetworkReply*,QAuthenticator*)));
-        connect(&_nam, SIGNAL(proxyAuthenticationRequired(QNetworkProxy&,QAuthenticator*)), this, SLOT(onProxyAuthenticationRequired(QNetworkProxy&,QAuthenticator*)));
-    }
 }
 
 bool QWarloksDuelCore::isNeedLogin() {
@@ -1385,13 +1310,13 @@ QString QWarloksDuelCore::playerInfo() {
     QString res;
     int idx;
     if (_msg.size() > 0) {
-        res.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("Messages")));
+        res.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("Messages")));
         foreach(QString s, _msg) {
             res.append(QString("<p>%1</p>").arg(s));
         }
     }
     if (_challenge.size() > 0) {
-        res.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("ChallengeB")));
+        res.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("ChallengeB")));
         QMapIterator<int, QString> i(_challenge);
         while (i.hasNext()) {
             i.next();
@@ -1399,7 +1324,7 @@ QString QWarloksDuelCore::playerInfo() {
         }
     }
     if (_ready_in_battles.count() > 0) {
-        res.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("ReadyB")));
+        res.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("ReadyB")));
         idx = -1;
         foreach(int i, _ready_in_battles) {
             if (++idx > 0) {
@@ -1410,7 +1335,7 @@ QString QWarloksDuelCore::playerInfo() {
         res.append("</p>");
     }
     if (_waiting_in_battles.count() > 0) {
-        res.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("WaitB")));
+        res.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("WaitB")));
         idx = -1;
         foreach(int i, _waiting_in_battles) {
             if (++idx > 0) {
@@ -1421,7 +1346,7 @@ QString QWarloksDuelCore::playerInfo() {
         res.append("</p>");
     }
     if (_finished_battles.count() > 0) {
-        res.append(QString("<h4>%1: </h4><p>").arg(WarlockDictionary->getStringByCode("FinishB")));
+        res.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("FinishB")));
         idx = -1;
         foreach(int i, _finished_battles) {
             if (++idx > 0) {
@@ -1440,17 +1365,17 @@ QString QWarloksDuelCore::playerInfo() {
                         "<tr><td>%12:</td> <td>%13</td></tr>"
                         "</table>")
             .arg(_login)
-            .arg(WarlockDictionary->getStringByCode("Played"))
+            .arg(GameDictionary->getStringByCode("Played"))
             .arg(QString::number(_played))
-            .arg(WarlockDictionary->getStringByCode("Won"))
+            .arg(GameDictionary->getStringByCode("Won"))
             .arg(QString::number(_won))
-            .arg(WarlockDictionary->getStringByCode("Died"))
+            .arg(GameDictionary->getStringByCode("Died"))
             .arg(QString::number(_died))
-            .arg(WarlockDictionary->getStringByCode("LadderScore"))
+            .arg(GameDictionary->getStringByCode("LadderScore"))
             .arg(QString::number(_ladder))
-            .arg(WarlockDictionary->getStringByCode("MeleeScore"))
+            .arg(GameDictionary->getStringByCode("MeleeScore"))
             .arg(QString::number(_melee))
-            .arg(WarlockDictionary->getStringByCode("Elo"))
+            .arg(GameDictionary->getStringByCode("Elo"))
             .arg(QString::number(_elo))
             ).append("</html>");
     return res;
@@ -1491,26 +1416,6 @@ QString QWarloksDuelCore::finishedBattles() {
 
 QString QWarloksDuelCore::finishedBattle() {
     return _finishedBattle;
-}
-
-QString QWarloksDuelCore::proxyHost() {
-    return _proxyHost;
-}
-
-int QWarloksDuelCore::proxyPort() {
-    return _proxyPort;
-}
-
-QString QWarloksDuelCore::proxyUser() {
-    return _proxyUser;
-}
-
-QString QWarloksDuelCore::proxyPass() {
-    return _proxyPass;
-}
-
-int QWarloksDuelCore::isLoading() {
-    return _isLoading ? 1 : 0;
 }
 
 int QWarloksDuelCore::loadedBattleID() {

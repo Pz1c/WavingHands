@@ -1,28 +1,7 @@
 #include "qwarlockdictionary.h"
 
-QWarlockDictionary::QWarlockDictionary(QObject *parent) :
-    QObject(parent)
-{
-    qDebug() << "QWarlockDictionary constructor";
-    // get stored settings
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, ORGANIZATION_NAME, APPLICATION_NAME);
-    settings.beginGroup("Locale");
-    lang = "en";//settings.value("language", "en").toString();
-    settings.endGroup();
-
-    if (lang.isEmpty()) {
-        QLocale *locale = new QLocale();
-        int c = locale->country();
-        delete locale;
-
-        if (c == 222) { // Ukraine
-            setCurrentLang("ua");
-        } else if (c == 178) { // RussianFederation
-            setCurrentLang("ru");
-        } else {
-            setCurrentLang("en");
-        }
-    }
+void QWarlockDictionary::fillGameDictionary() {
+    qDebug() << "QWarlockDictionary::fillGameDictionary";
 
     // fill dictionary
     fillDictionary("AreYouSure", "Ви впевненні?", "Вы уверенны?", "Are you sure?");
@@ -352,47 +331,28 @@ QWarlockDictionary::QWarlockDictionary(QObject *parent) :
                    "This is not a spell but an attack which can be directed at any individual monster or Warlock (no spell need be selected, but a target should be, unless you want to attack a random opposing Warlock). Unless protected in that turn by a Shield spell or another spell with the same effect, the stabbed being suffers 1 point of damage. The Warlock only has one knife so can only stab with one hand in any turn - if a Warlock's gestures are such that he stabs with both hands, only the right hand will do damage. The stab cannot be reflected by a Magic Mirror or stopped by Dispel Magic (although its Shield effect *could* stop the stab). Clumsy Warlocks are allowed to stab themselves. Knives cannot be thrown. ");
 }
 
-void QWarlockDictionary::fillDictionary(const QString& Code, const QString& ua, const QString& ru, const QString& en) {
-    dictionary_ua[Code] = ua;
-    dictionary_ru[Code] = ru;
-    dictionary_en[Code] = en;
-}
-
-QString QWarlockDictionary::getStringByCode(const QString &Code) {
-    qDebug() << "getStringByCode" << lang << Code;
-    if (lang.compare("ua") == 0) {
-        return dictionary_ua[Code];
-    } else if (lang.compare("ru") == 0) {
-        return dictionary_ru[Code];
-    } else {
-        return dictionary_en[Code];
-    }
-}
-
-QString QWarlockDictionary::getCurrentLang() {
-    return lang;
-}
-
-void QWarlockDictionary::setCurrentLang(QString Lang) {
-    if ((Lang.compare("ua") == 0 && Lang.compare("ru") == 0 && Lang.compare("en") == 0) || (Lang.compare(lang) == 0)) {
-        return;
-    }
-
-    lang = Lang;
-
+void QWarlockDictionary::storeLang() {
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, ORGANIZATION_NAME, APPLICATION_NAME);
     settings.beginGroup("Locale");
     settings.setValue("language", lang);
     settings.endGroup();
 }
 
-QWarlockDictionary * QWarlockDictionary::getInstance() {
+QString QWarlockDictionary::getLang() {
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, ORGANIZATION_NAME, APPLICATION_NAME);
+    settings.beginGroup("Locale");
+    lang = settings.value("language", "en").toString();
+    settings.endGroup();
+
+    return lang;
+}
+
+QGameDictionary * QWarlockDictionary::getInstance() {
     qDebug() << "QWarlockDictionary::getInstance";
     if (!self) {
         self = new QWarlockDictionary();
+        static_cast<QWarlockDictionary *>(self)->fillGameDictionary();
+        static_cast<QWarlockDictionary *>(self)->getLang();
     }
     return self;
 }
-
-
-QWarlockDictionary* QWarlockDictionary::self = 0;

@@ -53,7 +53,7 @@ Item {
         id: iTopBg
         anchors.fill: parent
         source: "qrc:/res/level/empty_paper.png"
-        z: 0
+        z: 1
     }*/
 
     Rectangle {
@@ -61,7 +61,7 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: 0.05 * parent.height
         height: 0.10 * parent.height
-        width: 0.60 * parent.width
+        width: bwBody.width
         anchors.horizontalCenter: parent.horizontalCenter
         //anchors.left: parent.left
         //anchors.right: parent.right
@@ -95,11 +95,11 @@ Item {
 
         LargeText {
             id: ltTitle
-            anchors.fill: parent
             horizontalAlignment: Text.AlignLeft
-            //anchors.top: parent.top
-            //anchors.bottom: parent.bottom
-            //anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: iCancel.left
             //width: parent.width - parent.height
             text: "Base Window"
             color: "white"
@@ -110,8 +110,8 @@ Item {
         id: bwBody
         anchors.top: rTitle.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        height: 0.80 * parent.height
-        width: 0.60 * parent.width
+        height: 0.60 * iRoot.height
+        width: 0.95 * iRoot.width
         color: "black"
         z: 10
     }
@@ -121,7 +121,7 @@ Item {
         anchors.top: bwBody.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         height: 0.10 * parent.height
-        width: 0.60 * parent.width
+        width: bwBody.width
         color: "black"
         z: 10
         visible: false
@@ -199,22 +199,22 @@ Item {
         Qt.gameField.loadingStop();
     }
 
-    onWith_controlsChanged: {
-        console.log(with_controls, bwBody.height, iRoot.height);
+    function fixHeight() {
         if (with_controls) {
-            bwBody.height = 0.70 * iRoot.height;
+            bwBody.height = 0.60 * iRoot.height;
         } else {
             bwBody.height = 0.80 * iRoot.height;
         }
     }
 
+    onWith_controlsChanged: {
+        console.log("onWith_controlsChanged", with_controls, bwBody.height, iRoot.height);
+        fixHeight();
+    }
+
     function initFields() {
-        console.log("BaseWindow.qml.initFields");
-        if (with_controls) {
-            //bwBody.height = 0.60 * iRoot.height;
-        } else {
-            //bwBody.height = 0.80 * iRoot.height;
-        }
+        console.log("BaseWindow.qml.initFields", bwBody.height, iRoot.height);
+        fixHeight();
     }
 
     Component.onCompleted: {

@@ -1,6 +1,6 @@
 // source https://qt-project.org/forums/viewthread/26455
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as C2
 
 import "qrc:/qml/components"
 
@@ -8,236 +8,95 @@ BaseWindow {
     id: dMainItem
 
     with_controls: true
-    with_apply: false
+    with_apply: true
+    title_text: dict.getStringByCode("EnterNewUser")
 
     // This rectangle is the actual popup
     Rectangle {
         id: dialogWindow
-        anchors.centerIn: content_item
-        height: 0.8 * parent.height
-        width: 0.95 * parent.width
-        //focus: true
+        anchors.fill: content_item
 
-        color: "black"
-        opacity: 0.8
-
-        Text {
-            id: dialogTitle
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: dict.getStringByCode("EnterNewUser")
-            anchors.topMargin: 8
-            //font.pointSize: 12 * height_koeff
-        }
-
-        Text {
+        LargeText {
             id: tLogin
-            anchors.left: parent.left
-            anchors.leftMargin: 0.01 * parent.width
-            anchors.verticalCenter: rLogin.verticalCenter
-            height: dialogTitle.height
-
+            anchors.top: parent.top
+            anchors.topMargin: 0.02 * parent.height
+            anchors.verticalCenter: parent.verticalCenter
+            height: 0.2 * dialogWindow.height
+            width: 0.6 * dialogWindow.width
             text: dict.getStringByCode("Login")
-            //font.pointSize: 12 * height_koeff
+            color: "white"
         }
 
-        Rectangle {
-            id: rLogin
-            height: dialogTitle.height
-            width: parent.width - (tLogin.x + Math.max(tLogin.width, tPass.width, tEmail.width)) - 10
-            anchors.right: parent.right
-            anchors.rightMargin: 0.01 * parent.width
-            anchors.top: dialogTitle.bottom
-            anchors.topMargin: 2
-
-            radius: 7
-            border.width: 1
-            border.color: "black"
-
-            TextInput {
-                id: tiLogin
-                width: parent.width - 6
-                height: parent.height - 2
-                anchors.centerIn: parent
-                text: ""
-                //font.pointSize: 12 * height_koeff
-                inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
-                //echoMode: TextInput.Password
+        C2.TextField {
+            id: tiLogin
+            height: tLogin.height
+            width: 0.6 * dialogWindow.width
+            anchors.top: tLogin.bottom
+            anchors.topMargin: 0.02 * parent.height
+            anchors.verticalCenter: parent.verticalCenter
+            text: "Login example"
+            inputMethodHints: Qt.ImhNoPredictiveText
+            //validator: RegExpValidator { regExp: /^[a-zA-Z0-9_-]{2,10}$/ }
+            validator: RegularExpressionValidator { regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
+            color: "white"
+            background: Rectangle {
+                radius: 7
+                implicitWidth: 100
+                implicitHeight: 24
+                border.width: 1
+                border.color: "white"
             }
         }
 
-        Text {
-            id: tPass
-            anchors.left: parent.left
-            anchors.leftMargin: 0.01 * parent.width
-            anchors.verticalCenter: rPass.verticalCenter
-            height: dialogTitle.height
-
-            text: dict.getStringByCode("Password")
-            //font.pointSize: 12 * height_koeff
-        }
-
-        Rectangle {
-            id: rPass
-            height: dialogTitle.height
-            width: rLogin.width
-            anchors.right: parent.right
-            anchors.rightMargin: 0.01 * parent.width
-            anchors.top: rLogin.bottom
-            anchors.topMargin: 2
-            radius: 7
-            border.width: 1
-            border.color: "black"
-
-            TextInput {
-                id: tiPass
-                width: parent.width - 6
-                height: parent.height - 2
-                anchors.centerIn: parent
-                text: ""
-                //font.pointSize: 12 * height_koeff
-                inputMethodHints: Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
-                echoMode: TextInput.Password
-            }
-        }
-
-        Text {
+        LargeText {
             id: tEmail
-            height: dialogTitle.height
-            anchors.left: parent.left
-            anchors.leftMargin: 0.01 * parent.width
-            anchors.verticalCenter: rEmail.verticalCenter
-
+            height: tLogin.height
+            width: 0.6 * dialogWindow.width
+            anchors.top: tiLogin.bottom
+            anchors.topMargin: 0.02 * parent.height
+            anchors.verticalCenter: parent.verticalCenter
             text: dict.getStringByCode("Email")
-            //font.pointSize: 12 * height_koeff
+            color: "white"
         }
 
-        Rectangle {
-            id: rEmail
-            height: dialogTitle.height
-            width: rLogin.width
-            anchors.right: parent.right
-            anchors.rightMargin: 0.01 * parent.width
-            anchors.top: rPass.bottom
-            anchors.topMargin: 2
-            radius: 7
-            border.width: 1
-            border.color: "black"
 
-            TextInput {
-                id: tiEmail
-                width: parent.width - 6
-                height: parent.height - 2
-                anchors.centerIn: parent
-                text: ""
-                //font.pointSize: 12 * height_koeff
-                inputMethodHints: Qt.ImhEmailCharactersOnly + Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
-                //echoMode: TextInput.Password
+        C2.TextField {
+            id: tiEmail
+            height: tLogin.height
+            width: 0.6 * dialogWindow.width
+            anchors.top: tEmail.bottom
+            anchors.topMargin: 0.02 * parent.height
+            anchors.verticalCenter: parent.verticalCenter
+            text: "email@example.com"
+            inputMethodHints: Qt.ImhEmailCharactersOnly + Qt.ImhNoPredictiveText + Qt.ImhNoAutoUppercase
+            //validator: RegExpValidator { regExp: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/ }
+            validator: RegularExpressionValidator { regularExpression: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/ }
+            color: "white"
+            background: Rectangle {
+                radius: 7
+                implicitWidth: 100
+                implicitHeight: 24
+                border.width: 1
+                border.color: "white"
             }
         }
 
-        CheckBox {
-            checked: true
-            enabled: false
+        LargeText {
             id: tConfirmation
-            anchors.top: rEmail.bottom
-            anchors.topMargin: 8
-            anchors.left: parent.left
-            anchors.leftMargin: 0.01 * parent.width
+            height: tLogin.height
+            width: 0.6 * dialogWindow.width
+            anchors.top: tiEmail.bottom
+            anchors.topMargin: 0.02 * parent.height
+            anchors.verticalCenter: parent.verticalCenter
             text: dict.getStringByCode("Iam13")
+            color: "white"
         }
-
-        Rectangle {
-                id: btnDoit
-                height: rEmail.height * 2
-                width: 0.5 * parent.width
-                anchors.bottom: parent.bottom
-                anchors.right: parent.right
-                //anchors.rightMargin: 0.01 * parent.width
-                color: maDoit.pressed ? "green" : "lightgreen"
-                radius: 7
-                border.width: 3
-                border.color: "green"
-
-                Text {
-                    id: labelDoit
-                    anchors.centerIn: parent
-                    text: dict.getStringByCode("Register")
-                    //font.pointSize: 16 * height_koeff
-                }
-
-                MouseArea {
-                    id: maDoit
-                    anchors.rightMargin: 0
-                    anchors.bottomMargin: 0
-                    anchors.leftMargin: 0
-                    anchors.topMargin: 0
-                    anchors.fill: parent
-                    onClicked: {
-                        if (tiLogin.text == '' || tiLogin.text == "Please, type login") {
-                            tiLogin.text = "Please, type login"
-                            return
-                        }
-
-                        if (tiPass.text == '') {
-                            return
-                        }
-
-                        if (tiEmail.text == '' || tiEmail.text == "please@type.email") {
-                            tiEmail.text = "please@type.email"
-                            return
-                        }
-
-                        Qt.mainWindow.storeWnd(dMainItem)
-                        Qt.core.regNewUser(tiLogin.text, tiPass.text, tiEmail.text)
-                    }
-                }
-        }
-
-
-        Rectangle {
-                id: btnSkip
-                height: btnDoit.height
-                width: 0.5 * parent.width
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                //anchors.leftMargin: 0.01 * parent.width
-                color: maCancel.pressed ? "grey" : "lightgrey"
-                radius: 7
-                border.width: 3
-                border.color: "grey"
-
-                Text {
-                    id: labelSkip
-                    x: 38
-                    y: 18
-                    text: dict.getStringByCode("Cancel")
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    //font.pointSize: 16 * height_koeff
-                }
-
-                MouseArea {
-                    id: maCancel
-                    anchors.rightMargin: 0
-                    anchors.bottomMargin: 0
-                    anchors.leftMargin: 0
-                    anchors.topMargin: 0
-                    anchors.fill: parent
-                    onClicked: clickCancel()
-                }
-        }
-
+    }
+    onCancel: {
+        Qt.gameField.processEscape();
     }
 
-    function clickCancel() {
-        console.log("cancel");
-        Qt.mainWindow.hideNewUserMenu()
+    onApply: {
+        Qt.core.regNewUser(tiLogin.text, tiEmail.text);
     }
-
-    function initFields() {
-        Qt.mainWindow.storeNewWnd(dMainItem)
-    }
-
-    Component.onCompleted: initFields()
 }
