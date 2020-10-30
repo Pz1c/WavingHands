@@ -29,6 +29,12 @@ Item {
     property alias action2_text_color: bbAction2.text_color
     property alias title_width: rTitle.width
     property alias body_width: bwBody.width
+    property alias body_height: bwBody.height
+    property int body_width_prc: 95
+    property int body_height_prc: 40
+    property int title_height_prc: 10
+    property int control_height_prc: 10
+
 
     signal cancel
     signal apply
@@ -60,7 +66,7 @@ Item {
         id: rTitle
         anchors.top: parent.top
         anchors.topMargin: 0.05 * parent.height
-        height: 0.10 * parent.height
+        height: title_height_prc / 100 * parent.height
         width: bwBody.width
         anchors.horizontalCenter: parent.horizontalCenter
         //anchors.left: parent.left
@@ -110,9 +116,9 @@ Item {
         id: bwBody
         anchors.top: rTitle.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        height: 0.60 * iRoot.height
-        width: 0.95 * iRoot.width
-        color: "black"
+        height: body_height_prc / 100 * iRoot.height
+        width: body_width_prc / 100 * iRoot.width
+        //color: "green"
         z: 10
     }
 
@@ -120,7 +126,7 @@ Item {
         id: bwControl
         anchors.top: bwBody.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        height: 0.10 * parent.height
+        height: control_height_prc / 100 * parent.height
         width: bwBody.width
         color: "black"
         z: 10
@@ -200,11 +206,12 @@ Item {
     }
 
     function fixHeight() {
-        if (with_controls) {
+        bwBody.height = body_height_prc / 100 * iRoot.height
+        /*if (with_controls) {
             bwBody.height = 0.60 * iRoot.height;
         } else {
             bwBody.height = 0.80 * iRoot.height;
-        }
+        }*/
     }
 
     onWith_controlsChanged: {

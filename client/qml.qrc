@@ -47,5 +47,6 @@
         <file>qml/components/GameParticlesSystem.qml</file>
         <file>qml/components/GoldenStore.qml</file>
         <file>qml/components/LargeText.qml</file>
+        <file>qml/components/LabeledTextInput.qml</file>
     </qresource>
 </RCC>
