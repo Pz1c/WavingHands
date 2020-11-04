@@ -31,7 +31,7 @@ Item {
     property alias body_width: bwBody.width
     property alias body_height: bwBody.height
     property int body_width_prc: 95
-    property int body_height_prc: 40
+    property int body_height_prc: 60
     property int title_height_prc: 10
     property int control_height_prc: 10
 
@@ -156,8 +156,8 @@ Item {
             anchors.left: bbCancel.right
             width: 0.25 * parent.width
             text: "Action1"
-            bg_color_active: "lightgray"
-            border_color_active: "gray"
+            //bg_color_active: "lightgray"
+            //border_color_active: "gray"
             onClicked: {
                 iRoot.action1();
             }
@@ -172,8 +172,8 @@ Item {
             anchors.left: bbAction1.right
             width: 0.25 * parent.width
             text: "Action2"
-            bg_color_active: "lightgray"
-            border_color_active: "gray"
+            //bg_color_active: "lightgray"
+            //border_color_active: "gray"
             onClicked: {
                 iRoot.action2();
             }

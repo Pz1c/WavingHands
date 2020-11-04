@@ -1,6 +1,5 @@
 // source https://qt-project.org/forums/viewthread/26455
 import QtQuick 2.15
-
 import "qrc:/qml/components"
 
 BaseWindow {
@@ -10,6 +9,8 @@ BaseWindow {
     with_apply: true
     title_text: dict.getStringByCode("EnterNewUser")
     body_height_prc: 40
+    with_action1: true
+    action1_text: dict.getStringByCode("Login")
 
     // This rectangle is the actual popup
     Rectangle {
@@ -81,6 +82,11 @@ BaseWindow {
         if (err_cnt === 0) {
             Qt.core.regNewUser(ltiLogin.text, ltiEmail.text);
         }
+    }
+
+    onAction1: {
+        console.log("wnd_new_user.onAction1");
+        Qt.gameField.getLoginFromUser(true);
     }
 
     Component.onCompleted: {

@@ -236,6 +236,8 @@ private:
     int _ladder;
     int _melee;
     int _elo;
+    bool _reg_in_app;
+    int _exp_lv;
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;

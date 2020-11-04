@@ -6,6 +6,7 @@ Item {
 
     //property bool active: true
     property bool transparent: true
+    property bool isPassword: false
     property alias text_color: tiMain.color
     property alias text: tiMain.text
     property alias fontSizeMode: ltiTitle.fontSizeMode
@@ -43,7 +44,7 @@ Item {
         inputMethodHints: Qt.ImhNoPredictiveText
         validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
         color: "white"
-        //fontSizeMode: Text.VerticalFit
+        echoMode: isPassword ? TextInput.Password : TextInput.Normal
         font.pixelSize: 0.8 * height
         background: Rectangle {
             radius: 5

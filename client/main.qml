@@ -38,15 +38,12 @@ ApplicationWindow {
         onErrorOccurred: showErrorMessage()
         onIsLoadingChanged: MUtils.isLoadingChanged()
         onFinishedBattleChanged: showFinishedBattle()
-        onReadyBattleChanged: {
-            console.log("onReadyBattleChanged");
-            showReadyBattle();
-        }
+        onReadyBattleChanged: showReadyBattle();
         onRegisterNewUserChanged: {
-                Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "First battle, TRANING BOT ONLY");
-                hideNewUserMenu();
+                closeChild();
                 tipTxt = warlockDictionary.getStringByCode("JustRegistered");
                 showTipMessage(true);
+                //Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "First battle, TRANING BOT ONLY");
             }
         onOrderSubmitedChanged: MUtils.cleanOrders()
         onTimerStateChanged: changeTimerState()
@@ -66,9 +63,6 @@ ApplicationWindow {
         onAccountMenuChanged: {
             console.log("onAccountMenuChanged");
             MUtils.showLoginMenu(core.getMenuItems());
-
-            //mLoginsMenu.removeItem(mLoginsMenu.itemAt(0))
-            //mLoginsMenu.addItem("test1");
         }
 
         Component.onCompleted: {
@@ -94,22 +88,43 @@ ApplicationWindow {
     property bool is_game_in_progress: false
 
     header: ToolBar {
+        id: tbTop
         RowLayout {
             anchors.fill: parent
             ToolButton {
-                text: qsTr("‹")
-                //onClicked: stack.pop()
+                id: tbProfile
+                //text: qsTr("‹")
+                height: tbTop.height
+                width: tbTop.height
+                onClicked: showUserProfile()
+                background: Image {
+                    anchors.fill: parent
+                    source: "res/user.png"
+                }
             }
-            Label {
-                text: "Title"
-                elide: Label.ElideRight
+
+            LargeText {
+                id: lPlayerTitle
+                text: "Hi, " + core.login
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
-                Layout.fillWidth: true
+                fontSizeMode: Text.VerticalFit
+
+                anchors.left: tbProfile.right
+                anchors.right: tbMenu.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
             }
+
             ToolButton {
-                text: qsTr("⋮")
+                id: tbMenu
+                height: tbTop.height
+                width: tbTop.height
                 onClicked: dMenu.open()
+                background: Image {
+                    anchors.fill: parent
+                    source: "res/list.png"
+                }
             }
         }
     }
@@ -155,22 +170,14 @@ ApplicationWindow {
     function showUserProfile(other) {
         console.log("showUserProfile", other);
         Qt.show_info_self = other === true ? false : true;
-        //MUtils.showWindow("user_profile.qml");
-        MUtils.wndUP = Qt.createComponent("qrc:///qml/user_profile.qml");
-        if (MUtils.wndUP.status === Component.Ready) {
-            console.log("showUserProfile", MUtils.wndUP.status, "READY");
-            finishOpenUPWnd();
-        } else {
-            console.log("showUserProfile", MUtils.wndUP.status, "?", MUtils.wndUP.errorString());
-            MUtils.wndUP.statusChanged.connect(finishOpenUPWnd);
-        }//*/
+        WNDU.showProfileWindow();
     }
 
-    function getLoginFromUser(child_wnd, real_login) {
+    function getLoginFromUser(real_login) {
         if (real_login) {
-            MUtils.showWindow("edit_login.qml", child_wnd);
+            WNDU.showLogin();
         } else {
-            showNewUserMenu(child_wnd);
+            showNewUserMenu();
         }
     }
 
@@ -203,7 +210,6 @@ ApplicationWindow {
         console.log("Tip: ", tipTxt, allowClose);
         allowCloseTip = allowClose ? true : false;
         WNDU.showErrorWnd({text:tipTxt,type:1});
-        //MUtils.showWindow("tip_message.qml");
     }
 
     function showErrorMessage() {
@@ -232,7 +238,7 @@ ApplicationWindow {
         Qt.openUrlExternally(core.getOnlineUrl());
     }
 
-    function showNewUserMenu(child_wnd) {
+    function showNewUserMenu() {
         WNDU.showNewUserMenu();
         //MUtils.showWindow("new_user_menu.qml", child_wnd);
     }
@@ -335,7 +341,6 @@ ApplicationWindow {
         MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " ";
         MUtils.default_spell_list = JSON.parse(core.defaultSpellListHtml);
         showNewUserMenu();
-        //dMenu.open();
         /*if (core.login === '') {
             showNewUserMenu();
         } else {

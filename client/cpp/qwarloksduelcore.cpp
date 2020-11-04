@@ -66,7 +66,7 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
     _reply = _nam.post(request, p_data.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -84,7 +84,7 @@ void QWarloksDuelCore::sendMessage(const QString &Msg) {
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
     _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -141,7 +141,7 @@ void QWarloksDuelCore::loginToSite() {
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
     _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -229,7 +229,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         _reply = _nam.get(request);
 
         connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-        connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+        connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
         connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
         return false;
     }
@@ -293,7 +293,7 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
         _reply = _nam.get(request);
 
         connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-        connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+        connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
         connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
     }
     return true;
@@ -322,7 +322,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     _reply = _nam.get(request);
 
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 
     _isLoading = true;
@@ -377,13 +377,14 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         _reply = _nam.get(request);
 
         connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-        connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+        connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
         connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 
         _allowedAccept = false;
         _allowedAdd = false;
+        _reg_in_app = true;
         emit registerNewUserChanged();
-        saveParameters();
+        saveParameters(false, false, true);
         return true;
     }
     return false;
@@ -406,7 +407,7 @@ void QWarloksDuelCore::scanState() {
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -421,7 +422,7 @@ void QWarloksDuelCore::getChallengeList() {
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -434,7 +435,7 @@ void QWarloksDuelCore::getTopList() {
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -450,7 +451,7 @@ void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card) {
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -466,7 +467,7 @@ void QWarloksDuelCore::rejectChallenge(int battle_id) {
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -479,7 +480,7 @@ void QWarloksDuelCore::deleteMsg(QString msg_from) {
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -493,7 +494,7 @@ void QWarloksDuelCore::forceSurrender(int battle_id, int turn) {
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
     _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -540,7 +541,7 @@ void QWarloksDuelCore::sendOrders(QString orders) {
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
     _reply = _nam.post(request, postData.toUtf8());
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 
     _leftGestures = "";
@@ -564,7 +565,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -578,7 +579,7 @@ void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
+    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
@@ -1243,6 +1244,8 @@ QString QWarloksDuelCore::defaultSpellListHtml() {
 void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("login", _login);
     settings->setValue("password", _password);
+    settings->setValue("reg_in_app", _reg_in_app);
+    settings->setValue("exp_lv", _exp_lv);
     settings->setValue("allowed_add", _allowedAdd);
     settings->setValue("allowed_accept", _allowedAccept);
     settings->setValue("accounts", accountToString());
@@ -1253,6 +1256,8 @@ void QWarloksDuelCore::saveGameParameters() {
 void QWarloksDuelCore::loadGameParameters() {
     _login = settings->value("login", "").toString();
     _password = settings->value("password", "").toString();
+    _reg_in_app = settings->value("reg_in_app", "false").toBool();
+    _exp_lv = settings->value("exp_lv", "0").toBool();
     _allowedAdd = settings->value("allowed_add", "true").toBool();
     _allowedAccept = settings->value("allowed_accept", "true").toBool();
     accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());

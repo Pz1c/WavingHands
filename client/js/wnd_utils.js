@@ -1,6 +1,7 @@
 var wnd_error = "wnd_error.qml";
 var wnd_battle_result = "wnd_battle_result.qml";
 var wnd_new_user = "wnd_new_user.qml";
+var wnd_login = "wnd_login.qml";
 //var wnd_main_menu = "wnd_main_menu.qml";
 var wnd_profile = "wnd_profile.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
@@ -112,14 +113,15 @@ function processEscape() {
         var wnd_last_name = arr_wnd_stack[arr_wnd_stack.length - 1].code;
         console.log("processEscape", wnd_last_name);
         closeChild();
-        if (wnd_last_name === wnd_main_menu) {
+        /*if (wnd_last_name === wnd_main_menu) {
             Qt.quit();
-        } else if (arr_wnd_stack.length === 0) {
+        } else  if (arr_wnd_stack.length === 0) {
             if (!is_game_in_progress) {
-                showMainMenu();
+                //showMainMenu();
+                Qt.quit();
             }
             return;
-        }
+        } */
     } else {
         // TODO add confirmation
         //if (is_game_in_progress) {
@@ -224,4 +226,8 @@ function showUserProfile(own) {
 
 function showNewUserMenu() {
     showWnd(wnd_new_user, 1, 0, 1);
+}
+
+function showLogin() {
+    showWnd(wnd_login, 1, 0, 1);
 }

@@ -10,9 +10,9 @@ Item {
     property alias horizontalAlignment: tTitle.horizontalAlignment
     property alias verticalAlignment: tTitle.verticalAlignment
     property alias fontSizeMode: tTitle.fontSizeMode
+    property alias font: tTitle.font
     property alias text: tTitle.text
     property alias wrapMode: tTitle.wrapMode
-    property alias font: tTitle.font
 
     Rectangle {
         id: ltBG

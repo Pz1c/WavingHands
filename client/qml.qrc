@@ -29,10 +29,7 @@
         <file>qml/paralyze.qml</file>
         <file>qml/person_charmed.qml</file>
         <file>qml/spell_details.qml</file>
-        <file>qml/user_profile.qml</file>
         <file>qml/warlock.qml</file>
-        <file>qml/tip_message.qml</file>
-        <file>qml/LargeText.qml</file>
         <file>res/first-place.png</file>
         <file>js/wnd_utils.js</file>
         <file>qml/windows/wnd_new_user.qml</file>
@@ -48,5 +45,7 @@
         <file>qml/components/GoldenStore.qml</file>
         <file>qml/components/LargeText.qml</file>
         <file>qml/components/LabeledTextInput.qml</file>
+        <file>qml/windows/wnd_login.qml</file>
+        <file>qml/windows/wnd_profile.qml</file>
     </qresource>
 </RCC>
