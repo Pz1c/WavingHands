@@ -16,7 +16,7 @@ BaseWindow {
     Rectangle {
         id: dialogWindow
         anchors.fill: content_item
-        color: "black"
+        color: "snow"
 
         ScrollView {
             id: svError
@@ -30,7 +30,7 @@ BaseWindow {
                     //height: svLog.height
                     font.pixelSize: 0.05 * dialogWindow.height
                     wrapMode: Text.WordWrap
-                    color: "white"
+                    color: "black"
 
                     onLinkActivated: {
                         Qt.mainWindow.linkActivated(link);

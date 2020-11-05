@@ -15,7 +15,7 @@ BaseWindow {
     Rectangle {
         id: dialogWindow
         anchors.fill: content_item
-        color: "black"
+        color: "snow"
         z: 11
 
         LabeledTextInput {
@@ -25,9 +25,7 @@ BaseWindow {
             anchors.horizontalCenter: parent.horizontalCenter
             height: 0.40 * dialogWindow.height
             width: dialogWindow.width
-            title_color: "white"
             title: dict.getStringByCode("Login")
-            text_color: "white"
             placeholderText: "Merlin"
             regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
         }
@@ -39,9 +37,7 @@ BaseWindow {
             anchors.horizontalCenter: parent.horizontalCenter
             height: 0.40 * dialogWindow.height
             width: dialogWindow.width
-            title_color: "white"
             title: dict.getStringByCode("Password")
-            text_color: "white"
             isPassword: true
             placeholderText: ""
             regularExpression: /^.{4,10}$/
@@ -58,14 +54,14 @@ BaseWindow {
             ltiLogin.border_color = "red";
             ++err_cnt;
         } else {
-            ltiLogin.border_color = "white";
+            ltiLogin.border_color = "black";
         }
 
         if ((ltiPass.text.length < 4) || (ltiPass.text.length > 10)) {
             ltiPass.border_color = "red";
             ++err_cnt;
         } else {
-            ltiPass.border_color = "white";
+            ltiPass.border_color = "black";
         }
 
         if (err_cnt === 0) {

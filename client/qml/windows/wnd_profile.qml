@@ -16,7 +16,7 @@ BaseWindow {
     Rectangle {
         id: dialogWindow
         anchors.fill: content_item
-        color: "black"
+        color: "snow"
         z: 11
 
         ScrollView {

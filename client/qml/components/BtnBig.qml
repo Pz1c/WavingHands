@@ -17,7 +17,7 @@ Rectangle {
     signal clicked
 
     color: transparent ? "transparent" : (active ? bg_color_active : bg_color_inactive)
-    radius: 5
+    radius: transparent ? 0 : 5
     border.color: (active ? border_color_active : border_color_inactive)
 
     LargeText {

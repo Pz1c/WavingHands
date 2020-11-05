@@ -72,7 +72,7 @@ Item {
         //anchors.left: parent.left
         //anchors.right: parent.right
         //height: 0.05 * parent.height
-        color: "black"
+        color: "snow"
         z: 10
 
         Rectangle {
@@ -108,7 +108,7 @@ Item {
             anchors.right: iCancel.left
             //width: parent.width - parent.height
             text: "Base Window"
-            color: "white"
+            color: "darkgrey"
         }
     }
 
@@ -118,7 +118,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         height: body_height_prc / 100 * iRoot.height
         width: body_width_prc / 100 * iRoot.width
-        //color: "green"
+        color: "snow"
         z: 10
     }
 
@@ -128,7 +128,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         height: control_height_prc / 100 * parent.height
         width: bwBody.width
-        color: "black"
+        color: "snow"
         z: 10
         visible: false
 

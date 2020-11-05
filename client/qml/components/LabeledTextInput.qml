@@ -17,8 +17,8 @@ Item {
     property alias placeholderTextColor: tiMain.placeholderTextColor
     property alias horizontalAlignment: ltiTitle.horizontalAlignment
     property alias verticalAlignment: ltiTitle.verticalAlignment
-    property string bg_color: "white"
-    property string border_color: "white"
+    property string bg_color: "snow"
+    property string border_color: "black"
 
     LargeText {
         id: ltiTitle
@@ -28,7 +28,7 @@ Item {
         anchors.leftMargin: 0.05 * parent.width
         height: 0.45 * parent.height
         width: 0.9 * dialogWindow.width
-        color: "yellow"
+        color: "black"
         fontSizeMode: Text.Fit
         horizontalAlignment: Text.AlignLeft
     }

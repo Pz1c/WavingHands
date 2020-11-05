@@ -47,5 +47,6 @@
         <file>qml/components/LabeledTextInput.qml</file>
         <file>qml/windows/wnd_login.qml</file>
         <file>qml/windows/wnd_profile.qml</file>
+        <file>js/gui_utils.js</file>
     </qresource>
 </RCC>

@@ -2,8 +2,8 @@
 //import QtQuick.Window 2.1
 //import QtQuick.Controls 1.1
 
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.12
 
 import ua.sp.warloksduel 1.8
@@ -13,6 +13,7 @@ import "qrc:/js/main_utils.js" as MUtils
 import "qrc:/js/ai_utils.js" as AI
 import "qrc:/js/user_profile_utils.js" as UU
 import "qrc:/js/wnd_utils.js" as WNDU
+import "qrc:/js/gui_utils.js" as GUI
 import "qrc:/qml/windows"
 import "qrc:/qml/components"
 import "qrc:/qml"
@@ -39,12 +40,7 @@ ApplicationWindow {
         onIsLoadingChanged: MUtils.isLoadingChanged()
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
-        onRegisterNewUserChanged: {
-                closeChild();
-                tipTxt = warlockDictionary.getStringByCode("JustRegistered");
-                showTipMessage(true);
-                //Qt.core.createNewChallenge(1, 0, 1, 1, 2, 2, "First battle, TRANING BOT ONLY");
-            }
+        onRegisterNewUserChanged: GUI.newUserRegistered()
         onOrderSubmitedChanged: MUtils.cleanOrders()
         onTimerStateChanged: changeTimerState()
         onChallengeListChanged: MUtils.loadChallengesList(false)
@@ -96,6 +92,8 @@ ApplicationWindow {
                 //text: qsTr("‹")
                 height: tbTop.height
                 width: tbTop.height
+                anchors.left: parent.left
+
                 onClicked: showUserProfile()
                 background: Image {
                     anchors.fill: parent
@@ -120,6 +118,7 @@ ApplicationWindow {
                 id: tbMenu
                 height: tbTop.height
                 width: tbTop.height
+                anchors.right: parent.right
                 onClicked: dMenu.open()
                 background: Image {
                     anchors.fill: parent
@@ -141,13 +140,66 @@ ApplicationWindow {
         }
     }
 
+    BtnBig {
+        id: bbNewGame
+        text_color: "black"
+        text: warlockDictionary.getStringByCode("NewGame")
+        bg_color_active: "mediumorchid"
+
+        width: 0.5 * parent.width
+        height: 0.05 * parent.height
+        anchors.top: parent.top
+        anchors.topMargin: 0.03 * parent.height
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        onClicked: {
+            console.log("start game")
+        }
+    }
+
+    BtnBig {
+        id: bbNewBotGame
+        text_color: "black"
+        text: warlockDictionary.getStringByCode("NewGameWithBot")
+        transparent: true
+        border.width: 0
+        visible: core.allowedAdd
+
+        width: 0.5 * parent.width
+        height: 0.03 * parent.height
+        anchors.top: bbNewGame.bottom
+        anchors.topMargin: 0.01 * parent.height
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        onClicked: {
+            console.log("start game with bot")
+        }
+    }
+
+    ScrollView {
+        id: iBattleList
+        anchors.top: bbNewBotGame.bottom
+        anchors.topMargin: 0.01 * parent.height
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        visible: core.allowedAdd
+
+        ListView {
+            id: lvBattle
+            model: GUI.loadChallengesList()
+            delegate: Rectangle {
+                id: rdBattleItem
+            }
+        }
+    }
+
     function addDuel() {
         console.log("add duel");
         if (core.allowedAdd) {
             MUtils.showWindow("new_challenge.qml");
         } else {
-            tipTxt = warlockDictionary.getStringByCode("WaitTrainingBattle");
-            showTipMessage(true);
+            showTipMessage(warlockDictionary.getStringByCode("WaitTrainingBattle"), true);
         }
     }
 
@@ -206,10 +258,10 @@ ApplicationWindow {
         }
     }
 
-    function showTipMessage(allowClose) {
-        console.log("Tip: ", tipTxt, allowClose);
+    function showTipMessage(TipTxt, allowClose) {
+        console.log("Tip: ", TipTxt, allowClose);
         allowCloseTip = allowClose ? true : false;
-        WNDU.showErrorWnd({text:tipTxt,type:1});
+        WNDU.showErrorWnd({text:TipTxt,type:1});
     }
 
     function showErrorMessage() {
@@ -239,6 +291,7 @@ ApplicationWindow {
     }
 
     function showNewUserMenu() {
+        logEvent("registration_started");
         WNDU.showNewUserMenu();
         //MUtils.showWindow("new_user_menu.qml", child_wnd);
     }
@@ -317,6 +370,10 @@ ApplicationWindow {
     }*/
 
     function logEvent(event_name, params) {
+        if (core.isAI) {
+            return;
+        }
+
         if (!params) {
             params = {};
         }
@@ -352,6 +409,7 @@ ApplicationWindow {
         */
         //tipTxt = warlockDictionary.getStringByCode("JustRegistered");
         //showTipMessage(true);
+        logEvent("gameFieldReady");
     }
 
     Component.onCompleted: creationFinished()
