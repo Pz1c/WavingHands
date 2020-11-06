@@ -83,48 +83,55 @@ ApplicationWindow {
     property bool allowCloseTip: false;
     property bool is_game_in_progress: false
 
+    color: "#551470"
+
     header: ToolBar {
-        id: tbTop
-        RowLayout {
-            anchors.fill: parent
-            ToolButton {
-                id: tbProfile
-                //text: qsTr("‹")
-                height: tbTop.height
-                width: tbTop.height
-                anchors.left: parent.left
+            id: tbTop
+            //anchors.fill: parent
 
-                onClicked: showUserProfile()
-                background: Image {
-                    anchors.fill: parent
-                    source: "res/user.png"
+            Rectangle {
+                anchors.fill: parent
+                color: "#551470"
+
+                ToolButton {
+                    id: tbProfile
+                    //text: qsTr("‹")
+                    height: tbTop.height
+                    width: tbTop.height
+                    anchors.left: parent.left
+
+                    onClicked: showUserProfile()
+                    background: Image {
+                        anchors.fill: parent
+                        source: "res/user.png"
+                    }
                 }
-            }
 
-            LargeText {
-                id: lPlayerTitle
-                text: "Hi, " + core.login
-                horizontalAlignment: Qt.AlignHCenter
-                verticalAlignment: Qt.AlignVCenter
-                fontSizeMode: Text.VerticalFit
+                LargeText {
+                    id: lPlayerTitle
+                    text: "Hi, " + core.login
+                    horizontalAlignment: Qt.AlignHCenter
+                    verticalAlignment: Qt.AlignVCenter
+                    fontSizeMode: Text.VerticalFit
+                    color: "#FEE206"
 
-                anchors.left: tbProfile.right
-                anchors.right: tbMenu.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-            }
-
-            ToolButton {
-                id: tbMenu
-                height: tbTop.height
-                width: tbTop.height
-                anchors.right: parent.right
-                onClicked: dMenu.open()
-                background: Image {
-                    anchors.fill: parent
-                    source: "res/list.png"
+                    anchors.left: tbProfile.right
+                    anchors.right: tbMenu.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
                 }
-            }
+
+                ToolButton {
+                    id: tbMenu
+                    height: tbTop.height
+                    width: tbTop.height
+                    anchors.right: parent.right
+                    onClicked: dMenu.open()
+                    background: Image {
+                        anchors.fill: parent
+                        source: "res/list.png"
+                    }
+                }
         }
     }
 
@@ -140,56 +147,98 @@ ApplicationWindow {
         }
     }
 
-    BtnBig {
-        id: bbNewGame
-        text_color: "black"
-        text: warlockDictionary.getStringByCode("NewGame")
-        bg_color_active: "mediumorchid"
+    Rectangle {
+        id: rBody
+        anchors.fill: parent
+        color: "#210430"
 
-        width: 0.5 * parent.width
-        height: 0.05 * parent.height
-        anchors.top: parent.top
-        anchors.topMargin: 0.03 * parent.height
-        anchors.horizontalCenter: parent.horizontalCenter
+        BtnBig {
+            id: bbNewGame
+            text_color: "#ABF4F4"
+            text: warlockDictionary.getStringByCode("NewGame")
+            bg_color_active: "#551470"
+            border_color_active: "#551470"
 
-        onClicked: {
-            console.log("start game")
+            width: 0.5 * parent.width
+            height: 0.05 * parent.height
+            anchors.top: parent.top
+            anchors.topMargin: 0.03 * parent.height
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            onClicked: {
+                console.log("start game")
+            }
         }
-    }
 
-    BtnBig {
-        id: bbNewBotGame
-        text_color: "black"
-        text: warlockDictionary.getStringByCode("NewGameWithBot")
-        transparent: true
-        border.width: 0
-        visible: core.allowedAdd
+        BtnBig {
+            id: bbNewBotGame
+            text_color: "#ABF4F4"
+            text: warlockDictionary.getStringByCode("NewGameWithBot")
+            transparent: true
+            border.width: 0
+            visible: core.allowedAdd || true
 
-        width: 0.5 * parent.width
-        height: 0.03 * parent.height
-        anchors.top: bbNewGame.bottom
-        anchors.topMargin: 0.01 * parent.height
-        anchors.horizontalCenter: parent.horizontalCenter
+            width: 0.5 * parent.width
+            height: 0.03 * parent.height
+            anchors.top: bbNewGame.bottom
+            anchors.topMargin: 0.01 * parent.height
+            anchors.horizontalCenter: parent.horizontalCenter
 
-        onClicked: {
-            console.log("start game with bot")
+            onClicked: {
+                console.log("start game with bot")
+            }
         }
-    }
 
-    ScrollView {
-        id: iBattleList
-        anchors.top: bbNewBotGame.bottom
-        anchors.topMargin: 0.01 * parent.height
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        visible: core.allowedAdd
+        ScrollView {
+            id: iBattleList
+            anchors.top: bbNewBotGame.bottom
+            anchors.topMargin: 0.01 * parent.height
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            visible: core.allowedAdd || true
 
-        ListView {
-            id: lvBattle
-            model: GUI.loadChallengesList()
-            delegate: Rectangle {
-                id: rdBattleItem
+            ListView {
+                id: lvBattle
+                model: GUI.loadChallengesList()
+                delegate: Item {
+                        id: idRoot
+                        width: mainWindow.width
+                        height: 0.1 * mainWindow.height
+                        Rectangle {
+                        id: rdBattleItem
+                        color: "darkgrey"
+                        radius: 20
+                        border.width: 1
+                        border.color: lvBattle.model[index].s === 1 ? "green" : "darkgrey"
+                        anchors.fill: parent
+                        anchors.topMargin: 0.01 * mainWindow.height
+                        anchors.bottomMargin: 0.01 * mainWindow.height
+                        anchors.leftMargin: 0.02 * mainWindow.width
+                        anchors.rightMargin: 0.02 * mainWindow.width
+
+                        LargeText {
+                            id: rdbiText
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            anchors.leftMargin: 0.05 * parent.width
+                            anchors.right: rdbiIcon.left
+                            anchors.rightMargin: 0.05 * parent.width
+                            color: "#2DA0A5"
+                            text: lvBattle.model[index].d ? lvBattle.model[index].d : "Battle #" + lvBattle.model[index].id
+                        }
+
+                        Image {
+                            id: rdbiIcon
+                            source: "res/fight.png"
+                            width: parent.height
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.right: parent.right
+                        }
+                    }
+                }
             }
         }
     }
