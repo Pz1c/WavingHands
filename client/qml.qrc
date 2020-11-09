@@ -48,5 +48,6 @@
         <file>qml/windows/wnd_login.qml</file>
         <file>qml/windows/wnd_profile.qml</file>
         <file>js/gui_utils.js</file>
+        <file>res/background.png</file>
     </qresource>
 </RCC>

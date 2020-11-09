@@ -89,6 +89,8 @@ void QWarlockDictionary::fillGameDictionary() {
                                      "Hey #login#, let's fight!<br>Check your spell book, and learn how to cast spells.<br>Just pick a gesture for each of your hands.<br>Gestures are letters W, S, D, P, C, F<br>Letters add up to words (like DPP), and words are spells (like Amnesia).<br>Let's go!");
     fillDictionary("NewGame", "Нова гра", "Новая игра", "New Game");
     fillDictionary("NewGameWithBot", "Грати з ботом", "Играть с ботом", "Play against Bot");
+    fillDictionary("ActiveGameTitle", "", "", "Your Games");
+    fillDictionary("FinishedGameTitle", "", "", "Finished Games");
 
 
     // spell book name

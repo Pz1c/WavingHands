@@ -5,11 +5,10 @@ function newUserRegistered() {
     Qt.gameField.logEvent("registration_finished", {login: l_login});
 }
 
-function loadChallengesList() {
+function loadChallengesList(filter) {
     /*if (!Qt.core) {
         return [];
     }*/
-
     return [{id:1,d:"test001 asd asd sd",s:1},{id:1,d:"test002 asd asd sd",s:1},{id:1,d:"test003 asd asd sd",s:1},
             {id:1,d:"test001 asd asd sd",s:0},{id:1,d:"test001 asd asd sd",s:0},{id:1,d:"test001 asd asd sd",s:0},
             {id:1,d:"test001 asd asd sd",s:2},{id:1,d:"test001 asd asd sd",s:2},{id:1,d:"test001 asd asd sd",s:2},{id:1,d:"test001 asd asd sd",s:2},{id:1,d:"test001 asd asd sd",s:2},{id:1,d:"test001 asd asd sd",s:2},{id:1,d:"test001 asd asd sd",s:2}];

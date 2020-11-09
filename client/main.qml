@@ -91,7 +91,7 @@ ApplicationWindow {
 
             Rectangle {
                 anchors.fill: parent
-                color: "#551470"
+                color: "#210430"
 
                 ToolButton {
                     id: tbProfile
@@ -113,7 +113,7 @@ ApplicationWindow {
                     horizontalAlignment: Qt.AlignHCenter
                     verticalAlignment: Qt.AlignVCenter
                     fontSizeMode: Text.VerticalFit
-                    color: "#FEE206"
+                    color: "#FEE2D6"
 
                     anchors.left: tbProfile.right
                     anchors.right: tbMenu.left
@@ -147,10 +147,17 @@ ApplicationWindow {
         }
     }
 
-    Rectangle {
+    Image {
+        id: iBG
+        source: "res/background.png"
+        anchors.fill: parent
+        z: -1
+    }
+
+    Item {
         id: rBody
         anchors.fill: parent
-        color: "#210430"
+        //color: "#210430"
 
         BtnBig {
             id: bbNewGame
@@ -158,9 +165,16 @@ ApplicationWindow {
             text: warlockDictionary.getStringByCode("NewGame")
             bg_color_active: "#551470"
             border_color_active: "#551470"
+            radius: 30
+
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "#FEE2D6" }
+                GradientStop { position: 0.5; color: "#551470" }
+                GradientStop { position: 1.0; color: "#FEE2D6" }
+            }
 
             width: 0.5 * parent.width
-            height: 0.05 * parent.height
+            height: 0.1 * parent.height
             anchors.top: parent.top
             anchors.topMargin: 0.03 * parent.height
             anchors.horizontalCenter: parent.horizontalCenter
@@ -172,14 +186,14 @@ ApplicationWindow {
 
         BtnBig {
             id: bbNewBotGame
-            text_color: "#ABF4F4"
+            text_color: "#A8F4F4"
             text: warlockDictionary.getStringByCode("NewGameWithBot")
             transparent: true
             border.width: 0
             visible: core.allowedAdd || true
 
             width: 0.5 * parent.width
-            height: 0.03 * parent.height
+            height: 0.05 * parent.height
             anchors.top: bbNewGame.bottom
             anchors.topMargin: 0.01 * parent.height
             anchors.horizontalCenter: parent.horizontalCenter
@@ -195,47 +209,148 @@ ApplicationWindow {
             anchors.topMargin: 0.01 * parent.height
             anchors.bottom: parent.bottom
             anchors.left: parent.left
+            anchors.leftMargin: 0.05 * mainWindow.width
             anchors.right: parent.right
+            anchors.rightMargin: 0.05 * mainWindow.width
             visible: core.allowedAdd || true
+            contentHeight: iMainScrollBody.height
 
-            ListView {
-                id: lvBattle
-                model: GUI.loadChallengesList()
-                delegate: Item {
-                        id: idRoot
-                        width: mainWindow.width
-                        height: 0.1 * mainWindow.height
-                        Rectangle {
-                        id: rdBattleItem
-                        color: "darkgrey"
-                        radius: 20
-                        border.width: 1
-                        border.color: lvBattle.model[index].s === 1 ? "green" : "darkgrey"
-                        anchors.fill: parent
-                        anchors.topMargin: 0.01 * mainWindow.height
-                        anchors.bottomMargin: 0.01 * mainWindow.height
-                        anchors.leftMargin: 0.02 * mainWindow.width
-                        anchors.rightMargin: 0.02 * mainWindow.width
+            Item {
+                id:iMainScrollBody
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: ltActiveBattle.height + lvActiveBattle.height + ltFinishedBattle.height + lvFinishedBattle.height
 
-                        LargeText {
-                            id: rdbiText
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            anchors.leftMargin: 0.05 * parent.width
-                            anchors.right: rdbiIcon.left
-                            anchors.rightMargin: 0.05 * parent.width
-                            color: "#2DA0A5"
-                            text: lvBattle.model[index].d ? lvBattle.model[index].d : "Battle #" + lvBattle.model[index].id
+                LargeText {
+                    id: ltActiveBattle
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: 0.05 * mainWindow.height
+                    horizontalAlignment: Text.AlignLeft
+                    fontSizeMode: Text.VerticalFit
+                    color: "#2DA0A5"
+                    text: warlockDictionary.getStringByCode("ActiveGameTitle")
+                }
+
+
+                ListView {
+                    id: lvActiveBattle
+                    model: GUI.loadChallengesList(1)
+                    anchors.top: ltActiveBattle.bottom
+                    anchors.topMargin: 0.01 * mainWindow.height
+                    width: 0.9 * mainWindow.width
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    height: model.length * 0.08 * mainWindow.height
+                    delegate: Item {
+                            id: idRoot
+                            width: lvActiveBattle.width
+                            height: 0.08 * mainWindow.height
+                            Rectangle {
+                            id: rdBattleItem
+                            color: "darkgrey"
+                            radius: 30
+                            anchors.fill: parent
+                            anchors.topMargin: 0.01 * mainWindow.height
+                            anchors.bottomMargin: 0.01 * mainWindow.height
+                            /*anchors.leftMargin: 0.02 * mainWindow.width
+                            anchors.rightMargin: 0.02 * mainWindow.width*/
+
+                            LargeText {
+                                id: rdbiText
+                                anchors.top: rdBattleItem.top
+                                anchors.bottom: rdBattleItem.bottom
+                                anchors.left: rdBattleItem.left
+                                anchors.leftMargin: 0.01 * parent.width
+                                width: 0.90 * parent.width - parent.height
+                                //anchors.rightMargin: 0.05 * parent.width
+                                color: "#FEE2D6"
+                                text: lvActiveBattle.model[index].d ? lvActiveBattle.model[index].d : "Battle #" + lvActiveBattle.model[index].id
+                            }
+
+                            Image {
+                                id: rdbifIcon
+                                source: "res/fight.png"
+                                width: parent.height
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                anchors.right: rdbifSign.left
+                            }
+
+                            LargeText {
+                                id: rdbifSign
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                anchors.right: parent.right
+                                anchors.rightMargin: 0.05 * parent.width
+                                width: 0.05 * parent.width
+                                color: "#FEE2D6"
+                                fontSizeMode: Text.VerticalFit
+                                text: ">"
+                            }
                         }
+                    }
+                }
 
-                        Image {
-                            id: rdbiIcon
-                            source: "res/fight.png"
-                            width: parent.height
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.right: parent.right
+                LargeText {
+                    id: ltFinishedBattle
+                    anchors.top: lvActiveBattle.bottom
+                    anchors.topMargin: 0.01 * mainWindow.height
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0.05 * mainWindow.width
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0.05 * mainWindow.width
+                    height: 0.05 * mainWindow.height
+                    horizontalAlignment: Text.AlignLeft
+                    fontSizeMode: Text.VerticalFit
+                    color: "#2DA0A5"
+                    text: warlockDictionary.getStringByCode("FinishedGameTitle")
+                }
+
+                ListView {
+                    id: lvFinishedBattle
+                    model: GUI.loadChallengesList(2)
+                    anchors.top: ltFinishedBattle.bottom
+                    anchors.topMargin: 0.01 * mainWindow.height
+                    width: 0.9 * mainWindow.width
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    height: model.length * 0.08 * mainWindow.height
+                    delegate: Item {
+                            id: idfRoot
+                            width: lvFinishedBattle.width
+                            height: 0.08 * mainWindow.height
+                            Rectangle {
+                            id: rdfBattleItem
+                            radius: 30
+                            color: "darkgrey"
+                            anchors.fill: parent
+                            anchors.topMargin: 0.01 * mainWindow.height
+                            anchors.bottomMargin: 0.01 * mainWindow.height
+                            /*anchors.leftMargin: 0.02 * mainWindow.width
+                            anchors.rightMargin: 0.02 * mainWindow.width*/
+
+                            LargeText {
+                                id: rdbifText
+                                anchors.top: rdfBattleItem.top
+                                anchors.bottom: rdfBattleItem.bottom
+                                anchors.left: rdfBattleItem.left
+                                anchors.leftMargin: 0.01 * parent.width
+                                width: 0.90 * parent.width - parent.height
+                                color: "#10C9F5"
+                                fontSizeMode: Text.VerticalFit
+                                text: lvFinishedBattle.model[index].d ? lvFinishedBattle.model[index].d : "Battle #" + lvFinishedBattle.model[index].id
+                            }
+
+                            Image {
+                                id: rdbiIcon
+                                source: "res/fight.png"
+                                width: parent.height
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                anchors.right: parent.right
+                                anchors.rightMargin: 0.05 * parent.width
+                            }
                         }
                     }
                 }
