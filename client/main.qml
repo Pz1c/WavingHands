@@ -6,7 +6,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.12
 
-import ua.sp.warloksduel 1.8
+import ua.sp.warloksduel 1.9
 import ua.sp.warlockdictionary 1.0
 
 import "qrc:/js/main_utils.js" as MUtils
@@ -37,7 +37,10 @@ ApplicationWindow {
         id: core
         onNeedLogin: getLoginFromUser()
         onErrorOccurred: showErrorMessage()
-        onIsLoadingChanged: MUtils.isLoadingChanged()
+        onIsLoadingChanged: {
+            console.log("core.onIsLoadingChanged");
+            WNDU.isLoadingChanged();
+        }
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onRegisterNewUserChanged: GUI.newUserRegistered()
@@ -58,7 +61,7 @@ ApplicationWindow {
         }
         onAccountMenuChanged: {
             console.log("onAccountMenuChanged");
-            MUtils.showLoginMenu(core.getMenuItems());
+            GUI.showLoginMenu(core.getMenuItems());
         }
 
         Component.onCompleted: {
@@ -249,7 +252,7 @@ ApplicationWindow {
                             height: 0.08 * mainWindow.height
                             Rectangle {
                             id: rdBattleItem
-                            color: "darkgrey"
+                            color: "#544653"
                             radius: 30
                             anchors.fill: parent
                             anchors.topMargin: 0.01 * mainWindow.height
@@ -289,6 +292,15 @@ ApplicationWindow {
                                 fontSizeMode: Text.VerticalFit
                                 text: ">"
                             }
+
+                            MouseArea {
+                                id: maActiveBattle
+                                anchors.fill: parent
+                                onClicked: {
+                                    console.log("getBattle", index, JSON.stringify(lvActiveBattle.model[index]));
+                                    core.getBattle(lvActiveBattle.model[index].id, lvActiveBattle.model[index].s);
+                                }
+                            }
                         }
                     }
                 }
@@ -323,7 +335,7 @@ ApplicationWindow {
                             Rectangle {
                             id: rdfBattleItem
                             radius: 30
-                            color: "darkgrey"
+                            color: "#544653"
                             anchors.fill: parent
                             anchors.topMargin: 0.01 * mainWindow.height
                             anchors.bottomMargin: 0.01 * mainWindow.height
@@ -561,15 +573,14 @@ ApplicationWindow {
         MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage");
         MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " ";
         MUtils.default_spell_list = JSON.parse(core.defaultSpellListHtml);
-        showNewUserMenu();
-        /*if (core.login === '') {
+        if (core.login === '') {
             showNewUserMenu();
         } else {
             core.scanState();
-        }*/
+        }
         /*MUtils.cleanOrders();
         MUtils.showList();
-        MUtils.showLoginMenu(core.accountMenu);
+        GUI.showLoginMenu(core.accountMenu);
         */
         //tipTxt = warlockDictionary.getStringByCode("JustRegistered");
         //showTipMessage(true);

@@ -76,7 +76,6 @@ public:
     QString finishedBattles();
     QString finishedBattle();
     int readyBattle();
-    int isLoading();
     int loadedBattleID();
     QString targets();
     QString warlocks();
@@ -118,7 +117,6 @@ signals:
     void finishedBattlesChanged();
     void finishedBattleChanged();
     void readyBattleChanged();
-    void isLoadingChanged();
     void loadedBattleIDChanged();
     void targetsChanged();
     void warlocksChanged();

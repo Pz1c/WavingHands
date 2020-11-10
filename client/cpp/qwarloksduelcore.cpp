@@ -38,8 +38,7 @@ QWarloksDuelCore::~QWarloksDuelCore() {
 }
 
 void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description) {
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_CHALLENGE)));
@@ -71,8 +70,7 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
 }
 
 void QWarloksDuelCore::sendMessage(const QString &Msg) {
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_SENDMESS)));
@@ -91,8 +89,7 @@ void QWarloksDuelCore::sendMessage(const QString &Msg) {
 void QWarloksDuelCore::regNewUser(QString Login, QString Email) {
     _login = Login;
     _password = QGameUtils::rand(10);
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_PLAYER)));
@@ -123,8 +120,7 @@ void QWarloksDuelCore::loginToSite() {
         return;
     }
 
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_LOGIN)));
@@ -205,8 +201,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         // perhapse bad login
         if (Data.indexOf("Failed Login</TITLE>") != 0) {
             _errorMsg = "Wrong login or password";
-            _isLoading = false;
-            emit isLoadingChanged();
+            setIsLoading(false);
             emit needLogin();
             emit errorOccurred();
             return false;
@@ -325,8 +320,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     return true;
 }
@@ -398,8 +392,7 @@ void QWarloksDuelCore::scanState() {
     }
 
     if (_elo == 0) {
-        _isLoading = true;
-        emit isLoadingChanged();
+        setIsLoading(true);
     }
 
     QNetworkRequest request;
@@ -413,8 +406,7 @@ void QWarloksDuelCore::scanState() {
 
 void QWarloksDuelCore::getChallengeList() {
     /*if (_elo == 0) {
-        _isLoading = true;
-        emit isLoadingChanged();
+        setIsLoading(true);
     }*/
 
     QNetworkRequest request;
@@ -427,8 +419,7 @@ void QWarloksDuelCore::getChallengeList() {
 }
 
 void QWarloksDuelCore::getTopList() {
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_PLAYERS)));
@@ -440,8 +431,7 @@ void QWarloksDuelCore::getTopList() {
 }
 
 void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card) {
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     _loadedBattleID = battle_id;
     _loadedBattleType = 0;
@@ -456,8 +446,7 @@ void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card) {
 }
 
 void QWarloksDuelCore::rejectChallenge(int battle_id) {
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     _loadedBattleID = battle_id;
     _loadedBattleType = 0;
@@ -472,8 +461,7 @@ void QWarloksDuelCore::rejectChallenge(int battle_id) {
 }
 
 void QWarloksDuelCore::deleteMsg(QString msg_from) {
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_DELLMESS).arg(msg_from)));
@@ -505,9 +493,7 @@ void QWarloksDuelCore::sendOrders(QString orders) {
         emit errorOccurred();
         return;
     }
-
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_SUBMIT)));
@@ -557,8 +543,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
         loginToSite();
         return;
     }
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_GET_BATTLE).arg(QString::number(_loadedBattleID), _loadedBattleType == 2 ? "1" : "0")));
@@ -571,8 +556,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
 
 void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
     qDebug() << "getWarlockInfo" << Login;
-    _isLoading = true;
-    emit isLoadingChanged();
+    setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_GET_PROFILE).arg(Login)));
@@ -1102,22 +1086,19 @@ void QWarloksDuelCore::slotReadyRead() {
             new_url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
             break;
     }
-    _isLoading = false;
     processData(data, statusCode, url, new_url.toString());
-    emit isLoadingChanged();
+    setIsLoading(false);
 }
 
 void QWarloksDuelCore::slotError(QNetworkReply::NetworkError error) {
-    _isLoading = false;
-    emit isLoadingChanged();
+    setIsLoading(false);
     _errorMsg = "Network problem details: " + _reply->errorString();
     emit errorOccurred();
     qDebug() << "slotError" << error << _reply->errorString();
 }
 
 void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {
-    _isLoading = false;
-    emit isLoadingChanged();
+    setIsLoading(false);
     _errorMsg = "Sll error details: \n";
     foreach(QSslError err, error_list) {
         _errorMsg.append(err.errorString());

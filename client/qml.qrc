@@ -3,7 +3,6 @@
         <file>main.qml</file>
         <file>res/settings.png</file>
         <file>res/user.png</file>
-        <file>res/loading.gif</file>
         <file>res/refresh.png</file>
         <file>res/add.png</file>
         <file>res/list.png</file>
@@ -18,9 +17,7 @@
         <file>qml/edit_lang.qml</file>
         <file>qml/edit_login.qml</file>
         <file>qml/edit_network.qml</file>
-        <file>qml/error_message.qml</file>
         <file>qml/finished_battle.qml</file>
-        <file>qml/loading.qml</file>
         <file>qml/menu_main.qml</file>
         <file>qml/monster_target.qml</file>
         <file>qml/new_challenge.qml</file>
@@ -49,5 +46,6 @@
         <file>qml/windows/wnd_profile.qml</file>
         <file>js/gui_utils.js</file>
         <file>res/background.png</file>
+        <file>qml/windows/wnd_loading.qml</file>
     </qresource>
 </RCC>

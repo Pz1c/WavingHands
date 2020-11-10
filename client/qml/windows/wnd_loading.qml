@@ -1,15 +1,6 @@
-// source https://qt-project.org/forums/viewthread/26455
-
-// This QML file is used to create a simple popup
-// It will show an overlay on top of the parent and a small white area
-// that is the dialog itself. For demo purposes no fancy stuff in the popup
-
 import QtQuick 2.0
-// Use an item as container to group both the overlay and the dialog
-// I do this because the overlay itself has an opacity set, and otherwise
-// also the dialog would have been semi-transparent.
-// I use an Item instead of an Rectangle. Always use an 'Item' if it does not
-// display stuff itself, this is better performance wise.
+import QtQuick.Controls 2.12
+
 Item {
     id: dialogLoading
     anchors.fill: parent
@@ -40,10 +31,19 @@ Item {
         }
     }
 
-    // This rectangle is the actual popup
-    AnimatedImage {
+    BusyIndicator {
         id: aiLoading
         anchors.centerIn: parent
-        source: "qrc:///res/loading.gif"
+        running: true
+        width: 0.5 * parent.width
+        height: 0.5 * parent.width
+    }
+
+    function showWnd() {
+        visible = true;
+    }
+
+    function hideWnd() {
+        visible = false;
     }
 }
