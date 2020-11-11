@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QWarlockDictionary::getInstance();
-    qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 1, 9, "WarlocksDuelCore");
+    qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");
     qmlRegisterSingletonType<QWarlockDictionary>("ua.sp.warlockdictionary", 1, 0, "WarlockDictionary", gamedictionary_qobject_singletontype_provider);
 
     QQmlApplicationEngine engine;

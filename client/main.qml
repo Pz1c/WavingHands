@@ -6,7 +6,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.12
 
-import ua.sp.warloksduel 1.9
+import ua.sp.warloksduel 2.0
 import ua.sp.warlockdictionary 1.0
 
 import "qrc:/js/main_utils.js" as MUtils
@@ -33,20 +33,37 @@ ApplicationWindow {
         }
     }
 
+    property int timerCounter: 0
+    Timer {
+        id: tScanTimer
+        interval: core.isAI ? 20000 : 60000
+        running: false
+        repeat: true
+
+        onTriggered: {
+            console.log("start scanning");
+            core.scanState(true);
+            if (--timerCounter <= 0) {
+                tScanTimer.interval = core.isAI ? 10000 : 60000;
+            }
+        }
+    }
+
     WarlocksDuelCore {
         id: core
         onNeedLogin: getLoginFromUser()
         onErrorOccurred: showErrorMessage()
         onIsLoadingChanged: {
             console.log("core.onIsLoadingChanged");
-            WNDU.isLoadingChanged();
+            GUI.isLoadingChanged();
         }
+        onBattleListChanged: GUI.newBattleList()
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onRegisterNewUserChanged: GUI.newUserRegistered()
         onOrderSubmitedChanged: MUtils.cleanOrders()
         onTimerStateChanged: changeTimerState()
-        onChallengeListChanged: MUtils.loadChallengesList(false)
+        //onChallengeListChanged: MUtils.loadChallengesList(false)
         onSpellListHtmlChanged: MUtils.loadSpellList()
         onTopListChanged: MUtils.loadTopList(false)
         onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
@@ -87,6 +104,26 @@ ApplicationWindow {
     property bool is_game_in_progress: false
 
     color: "#551470"
+
+    Rectangle {
+        id: rLoading
+        anchors.fill: parent
+        color: "#000000"
+        opacity: 0.6
+        z:1000
+
+        BusyIndicator {
+            id: aiLoading
+            anchors.centerIn: parent
+            running: rLoading.visible
+            width: 0.5 * parent.width
+            height: 0.5 * parent.width
+        }
+
+        MouseArea {
+            anchors.fill: parent
+        }
+    }
 
     header: ToolBar {
             id: tbTop
@@ -240,7 +277,7 @@ ApplicationWindow {
 
                 ListView {
                     id: lvActiveBattle
-                    model: GUI.loadChallengesList(1)
+                    model: GUI.loadBattleList(1)
                     anchors.top: ltActiveBattle.bottom
                     anchors.topMargin: 0.01 * mainWindow.height
                     width: 0.9 * mainWindow.width
@@ -269,15 +306,15 @@ ApplicationWindow {
                                 width: 0.90 * parent.width - parent.height
                                 //anchors.rightMargin: 0.05 * parent.width
                                 color: "#FEE2D6"
-                                text: lvActiveBattle.model[index].d ? lvActiveBattle.model[index].d : "Battle #" + lvActiveBattle.model[index].id
+                                text: lvActiveBattle.model[index].d
                             }
 
                             Image {
                                 id: rdbifIcon
-                                source: "res/fight.png"
-                                width: parent.height
-                                anchors.top: parent.top
-                                anchors.bottom: parent.bottom
+                                source: lvActiveBattle.model[index].s === 1 ? "res/circle.png" : "res/wait.png"
+                                width: 0.5 * parent.height
+                                height: 0.5 * parent.height
+                                anchors.verticalCenter: parent.verticalCenter
                                 anchors.right: rdbifSign.left
                             }
 
@@ -308,11 +345,8 @@ ApplicationWindow {
                 LargeText {
                     id: ltFinishedBattle
                     anchors.top: lvActiveBattle.bottom
-                    anchors.topMargin: 0.01 * mainWindow.height
                     anchors.left: parent.left
-                    anchors.leftMargin: 0.05 * mainWindow.width
                     anchors.right: parent.right
-                    anchors.rightMargin: 0.05 * mainWindow.width
                     height: 0.05 * mainWindow.height
                     horizontalAlignment: Text.AlignLeft
                     fontSizeMode: Text.VerticalFit
@@ -322,7 +356,7 @@ ApplicationWindow {
 
                 ListView {
                     id: lvFinishedBattle
-                    model: GUI.loadChallengesList(2)
+                    model: GUI.loadBattleList(2)
                     anchors.top: ltFinishedBattle.bottom
                     anchors.topMargin: 0.01 * mainWindow.height
                     width: 0.9 * mainWindow.width
@@ -351,15 +385,15 @@ ApplicationWindow {
                                 width: 0.90 * parent.width - parent.height
                                 color: "#10C9F5"
                                 fontSizeMode: Text.VerticalFit
-                                text: lvFinishedBattle.model[index].d ? lvFinishedBattle.model[index].d : "Battle #" + lvFinishedBattle.model[index].id
+                                text: lvFinishedBattle.model[index].d
                             }
 
                             Image {
                                 id: rdbiIcon
-                                source: "res/fight.png"
-                                width: parent.height
-                                anchors.top: parent.top
-                                anchors.bottom: parent.bottom
+                                source: lvFinishedBattle.model[index].d.indexOf(core.login) === -1 ? "res/RIP2.png" : "res/stars.png"
+                                width: 0.5 * parent.height
+                                height: 0.5 * parent.height
+                                anchors.verticalCenter: parent.verticalCenter
                                 anchors.right: parent.right
                                 anchors.rightMargin: 0.05 * parent.width
                             }
@@ -505,11 +539,11 @@ ApplicationWindow {
     function changeTimerState() {
         if (Qt.core.timerState === 1) {
             if (!tScanTimer.running) {
-                tScanTimer.start()
+                tScanTimer.start();
             }
         } else {
             if (tScanTimer.running) {
-                tScanTimer.stop()
+                tScanTimer.stop();
             }
         }
     }
@@ -578,12 +612,6 @@ ApplicationWindow {
         } else {
             core.scanState();
         }
-        /*MUtils.cleanOrders();
-        MUtils.showList();
-        GUI.showLoginMenu(core.accountMenu);
-        */
-        //tipTxt = warlockDictionary.getStringByCode("JustRegistered");
-        //showTipMessage(true);
         logEvent("gameFieldReady");
     }
 

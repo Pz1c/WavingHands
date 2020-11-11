@@ -81,7 +81,7 @@ function showWnd(wnd_name, close_current, close_all_stack, add_in_stack, only_cr
 }
 
 function finishedShowWnd(wnd_obj) {
-    console.log("finishedShowWnd", current_wnd_code, wnd_obj);
+    console.log("finishedShowWnd", current_wnd_code, wnd_obj, arr_wnd_obj[current_wnd_code]);
 
     if (!wnd_obj) {
         wnd_obj = arr_wnd_obj[current_wnd_code];
@@ -248,13 +248,14 @@ function hideLoading() {
     }
     wndLoading.visible = false;
 }
-
+/*
 function isLoadingChanged() {
     var is_loading = Qt.core.isLoading;
     console.log("isLoadingChanged", is_loading);
     if (is_loading === 1) {
-        showWnd(wnd_loading, 0, 0, 0, 0);
+        showWnd(wnd_loading, 0, 0, 1);
     } else {
         hideWindow(wnd_loading);
     }
 }
+*/

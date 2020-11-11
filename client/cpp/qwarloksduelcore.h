@@ -61,6 +61,7 @@ class QWarloksDuelCore : public QGameCore
     Q_PROPERTY(bool allowedAdd READ allowedAdd NOTIFY allowedAddChanged)
     Q_PROPERTY(QString warlockInfo READ warlockInfo NOTIFY warlockInfoChanged)
     Q_PROPERTY(QString accountMenu READ accountMenu NOTIFY accountMenuChanged)
+    Q_PROPERTY(QString battleList READ battleList NOTIFY battleListChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr);
@@ -105,6 +106,7 @@ public:
     QString warlockInfo();
     QString accountMenu();
     QString getOnlineUrl(int battle_id = 0);
+    QString battleList();
 
 signals:
     void needLogin();
@@ -145,11 +147,13 @@ signals:
     void topListChanged();
     void warlockInfoChanged();
     void accountMenuChanged();
+    void battleListChanged();
+
 
 public slots:
 
-    void scanState();
-    void getChallengeList();
+    void scanState(bool Silent = false);
+    void getChallengeList(bool Silent = false);
     void getTopList();
     void acceptChallenge(int battle_id, bool from_card = false);
     void rejectChallenge(int battle_id);
@@ -214,6 +218,8 @@ protected:
     QString accountToString();
     void accountsFromString(QString acc);
 
+    void generateBattleList();
+
 private:
     // user login
     bool _isLogined;
@@ -242,6 +248,7 @@ private:
     QStringList _shown_battles;
     QString _finishedBattle;
     QMap<int, QString> _challenge;
+    QMap<int, QString> _battleDesc;
     QStringList _msg;
     QList<QValueName> _accounts;
 
@@ -267,6 +274,7 @@ private:
     bool _isParaFDF;
     QString _fire;
     QString _challengeList;
+    QString _battleList;
     QString _spellListHtml;
     QString _prevGestures;
     QString _topList;

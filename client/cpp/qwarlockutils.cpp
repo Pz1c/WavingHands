@@ -12,16 +12,19 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
     QList<int> res_list;
     int idx1 = Data.indexOf(Search);
     if (idx1 == -1) {
+        qDebug() << "QWarlockUtils::getBattleList" << "return -1";
         return res_list;
     }
     idx1 += Search.length();
     int idx2 = Data.indexOf("<TABLE", idx1);
     if (idx2 == -1) {
+        qDebug() << "QWarlockUtils::getBattleList" << "return -2";
         return res_list;
     }
     idx2 += 7;
     int idx3 = Data.indexOf("</TABLE", idx2);
     if (idx3 == -1) {
+        qDebug() << "QWarlockUtils::getBattleList" << "return -3";
         return res_list;
     }
     int idx4 = idx2;
@@ -45,6 +48,7 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
         }
     }
 
+    qDebug() << "QWarlockUtils::getBattleList" << Search << res_list;
     return res_list;
 }
 
