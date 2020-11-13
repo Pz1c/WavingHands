@@ -53,8 +53,12 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
 }
 
 
-QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd) {
-    int idx1 = Data.indexOf(Search);
+QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos) {
+    if (Pos == -1) {
+        Pos = 0;
+    }
+    int idx1 = Data.indexOf(Search, Pos);
+    Pos = -1;
     if (idx1 == -1) {
         return "";
     }
@@ -82,12 +86,13 @@ QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString 
         idx3 = Data.length();
     }
     QString res = Data.mid(idx2, idx3 - idx2);
-    qDebug() << "getStringFromData " << Search << " res: " << res << Data << idx2 << idx3 << Data.length();
+    Pos = idx3;
+    //qDebug() << "getStringFromData " << Search << " res: " << res << Data << idx2 << idx3 << Data.length();
     return res;
 }
 
-int QWarlockUtils::getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd) {
-    QString res = getStringFromData(Data, Search, ValueBegin, ValueEnd);
+int QWarlockUtils::getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos) {
+    QString res = getStringFromData(Data, Search, ValueBegin, ValueEnd, Pos);
     bool ok;
     int int_res = res.toInt(&ok, 10);
     int final_res = ok ? int_res : 0;
@@ -104,10 +109,11 @@ bool QWarlockUtils::parseTargetList(QString &Data, QList<QValueName>& _Targets, 
 
 bool QWarlockUtils::parseMonster(QString &Data, QList<QMonster *> &result, QString &error) {
     error.clear();
-    QString name = getStringFromData(Data, "WIDTH=\"50%\"", ">", "</TD");
-    QString state = getStringFromData(Data, "CLASS=lightbg>", "", "</TD");
-    QString owner = getStringFromData(Data, "Owned by:", " ", "</TD");
-    QString attack = getStringFromData(Data, "Attacking:", " ", "</TD");
+    int pos = 0;
+    QString name = getStringFromData(Data, "WIDTH=\"50%\"", ">", "</TD", pos);
+    QString state = getStringFromData(Data, "CLASS=lightbg>", "", "</TD", pos);
+    QString owner = getStringFromData(Data, "Owned by:", " ", "</TD", pos);
+    QString attack = getStringFromData(Data, "Attacking:", " ", "</TD", pos);
     QMonster *res = new QMonster(name, state, owner, attack);
     result.append(res);
     return true;
@@ -115,10 +121,11 @@ bool QWarlockUtils::parseMonster(QString &Data, QList<QMonster *> &result, QStri
 
 bool QWarlockUtils::parseWarlock(QString &Data, QList<QWarlock *> &result, QString &error, const QString &player) {
     error.clear();
-    QString name = getStringFromData(Data, "WIDTH=\"50%\"", "html\">", "</A>");
-    QString state = getStringFromData(Data, "a href=\"/player/", "<TD CLASS=lightbg>", "</TD");
-    QString lh = getStringFromData(Data, "LH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>").replace("&nbsp;", " ").replace("&gt;", ">");
-    QString rh = getStringFromData(Data, "RH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>").replace("&nbsp;", " ").replace("&gt;", ">");
+    int pos = 0;
+    QString name = getStringFromData(Data, "WIDTH=\"50%\"", "html\">", "</A>", pos);
+    QString state = getStringFromData(Data, "a href=\"/player/", "<TD CLASS=lightbg>", "</TD", pos);
+    QString lh = getStringFromData(Data, "LH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>", pos).replace("&nbsp;", " ").replace("&gt;", ">");
+    QString rh = getStringFromData(Data, "RH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>", pos).replace("&nbsp;", " ").replace("&gt;", ">");
     QWarlock *res = new QWarlock(name, state, lh, rh, name.toLower().indexOf(player) != -1);
     result.append(res);
     return true;

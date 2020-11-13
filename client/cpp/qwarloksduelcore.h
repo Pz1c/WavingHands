@@ -219,6 +219,7 @@ protected:
     void accountsFromString(QString acc);
 
     void generateBattleList();
+    int parseBattleDescription(QString &Data);
 
 private:
     // user login

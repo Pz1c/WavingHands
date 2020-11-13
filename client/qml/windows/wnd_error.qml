@@ -13,10 +13,10 @@ BaseWindow {
     body_height_prc: 60
 
     // This rectangle is the actual popup
-    Rectangle {
+    Item {
         id: dialogWindow
         anchors.fill: content_item
-        color: "snow"
+        //color: "transparent"
 
         ScrollView {
             id: svError
@@ -30,7 +30,8 @@ BaseWindow {
                     //height: svLog.height
                     font.pixelSize: 0.05 * dialogWindow.height
                     wrapMode: Text.WordWrap
-                    color: "black"
+                    color: "lightgrey"
+                    textFormat: Text.RichText
 
                     onLinkActivated: {
                         Qt.mainWindow.linkActivated(link);
@@ -71,6 +72,10 @@ BaseWindow {
             title_color = "red";
             break;
         }
+        if (Qt.error.title) {
+            title_text = Qt.error.title;
+        }
+
         Qt.error = {};
     }
 

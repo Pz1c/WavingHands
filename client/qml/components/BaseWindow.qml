@@ -55,12 +55,12 @@ Item {
         z: 0
     }
 
-    /*Image {
+    Image {
         id: iTopBg
         anchors.fill: parent
-        source: "qrc:/res/level/empty_paper.png"
+        source: "qrc:/res/background.png"
         z: 1
-    }*/
+    }
 
     Rectangle {
         id: rTitle

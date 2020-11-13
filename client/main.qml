@@ -397,6 +397,15 @@ ApplicationWindow {
                                 anchors.right: parent.right
                                 anchors.rightMargin: 0.05 * parent.width
                             }
+
+                            MouseArea {
+                                id: maFinishedBattle
+                                anchors.fill: parent
+                                onClicked: {
+                                    console.log("getFinishedBattle", index, JSON.stringify(lvFinishedBattle.model[index]));
+                                    core.getBattle(lvFinishedBattle.model[index].id, lvFinishedBattle.model[index].s);
+                                }
+                            }
                         }
                     }
                 }

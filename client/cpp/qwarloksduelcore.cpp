@@ -24,6 +24,8 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _isParaFDF = false;
     _isTimerActive = false;
 
+    _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
+
     prepareSpellHtmlList();
 }
 
@@ -569,14 +571,114 @@ void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
+int QWarloksDuelCore::parseBattleDescription(QString &Data) {
+    int res = 0;
+    QString curr_desc = _battleDesc.contains(_loadedBattleID) ? _battleDesc[_loadedBattleID] : "";
+    QString new_desc = curr_desc;
+    if (_loadedBattleType == 1) {
+        int idx = Data.indexOf("has not yet begun.");
+        if (idx != -1) {
+            // unstarted
+            res = -1;
+            int cnt = 0, last_found= 0;
+            new_desc.clear();
+            while(idx != -1) {
+                QString wl = QWarlockUtils::getStringFromData(Data, "<A HREF=\"/player", "/", ".html", idx);
+                if (!wl.isEmpty()) {
+                    ++cnt;
+                    last_found = idx;
+                    if (wl.toLower().compare(login().toLower()) != 0) {
+                        if (!new_desc.isEmpty()) {
+                            new_desc.append(",");
+                        }
+                        new_desc.append(wl);
+                    }
+                }
+            }
+            if (new_desc.length() > 12) {
+                new_desc = new_desc.mid(0, 10);
+                new_desc.append("...");
+            }
+            int need = QWarlockUtils::getIntFromPlayerData(Data, "Battle for", " ", "<HR>", last_found);
+            new_desc.append(QString("%1/%2").arg(intToStr(cnt), intToStr(need)));
+        } else {
+            // wait
+            res = 0;
+            new_desc.clear();
+            idx = 0;
+            while(idx != -1) {
+                QString wl = QWarlockUtils::getStringFromData(Data, "<a href=\"/player", "/", ".html", idx);
+                if (!wl.isEmpty()) {
+                    if (wl.toLower().compare(login().toLower()) != 0) {
+                        if (!new_desc.isEmpty()) {
+                            new_desc.append(",");
+                        }
+                        new_desc.append(wl);
+                    }
+                }
+            }
+            if (new_desc.length() > 12) {
+                new_desc = new_desc.mid(0, 10);
+                new_desc.append("...");
+            }
+        }
+    } else if ((_loadedBattleType == 1) && curr_desc.isEmpty()) {
+        // ready
+        res = 1;
+        new_desc.clear();
+        int idx = 0;
+        while(idx != -1) {
+            QString wl = QWarlockUtils::getStringFromData(Data, "<a href=\"/player", "/", ".html", idx);
+            if (!wl.isEmpty()) {
+                if (wl.toLower().compare(login().toLower()) != 0) {
+                    if (!new_desc.isEmpty()) {
+                        new_desc.append(",");
+                    }
+                    new_desc.append(wl);
+                }
+            }
+        }
+        if (new_desc.length() > 12) {
+            new_desc = new_desc.mid(0, 10);
+            new_desc.append("...");
+        }
+    } else if ((_loadedBattleType == 2) && (curr_desc.indexOf("!") == -1)) {
+        // finished
+        res = 2;
+        new_desc = "No one win";
+        int idx = Data.indexOf(" is victorious!");
+        if (idx != -1) {
+            int idx2 = idx - 13; // max login length is 10
+            idx2 = Data.indexOf("<B>", idx2);
+            idx2 += 3;
+            new_desc = Data.mid(idx2, idx - idx2);
+            new_desc.append(" win!");
+        }
+
+    }
+    if (!new_desc.isEmpty() && (new_desc.compare(curr_desc) != 0)) {
+        _battleDesc[_loadedBattleID] = new_desc;
+    }
+
+    return res;
+}
+
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
+
+    int state = parseBattleDescription(Data);
+    if (state == -1) { // unstarted
+        _finishedBattle = _battleDesc[_loadedBattleID];
+        emit finishedBattleChanged();
+        return false;
+    }
+
     _isParaFDF = Data.indexOf("(ParaFDF)") != -1;
     QString point1 = "<A TARGET=_blank HREF=\"/rules/1/quickref.html\">Spell Reference</A></DIV>";
     QString point2 = _loadedBattleType != 0 ? "</BODY>" : "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">";
     int idx1 = Data.indexOf(point1);
     if (idx1 == -1) {
-        _errorMsg = "Wrong battle answer";
+        _errorMsg = "Wrong battle answer!";
         emit errorOccurred();
         return false;
     }
@@ -587,13 +689,15 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         emit errorOccurred();
         return false;
     }
+
     qDebug() << "finishGetFinishedBattle all fine";
     _finishedBattle = Data.mid(idx1, idx2 - idx1).replace("<a href=\"/player", "<b atr=\"")
             .replace("<A CLASS=amonoturn HREF=\"/warlocks", "<b atr=\"").replace("</A>", "</b>").replace("</a>", "</b>")
             .replace("BLOCKQUOTE", "p").replace("WIDTH=\"100%\"", "").replace("WIDTH=\"50%\"", "");
 
+    int Pos = 0;
     if (Data.indexOf("<INPUT TYPE=SUBMIT VALUE=\"Force Surrender Attempt\">") != -1) {
-        QString turn = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=force VALUE=1>", "<INPUT TYPE=HIDDEN NAME=turn VALUE=\"", "\"");
+        QString turn = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=force VALUE=1>", "<INPUT TYPE=HIDDEN NAME=turn VALUE=\"", "\"", Pos);
         _finishedBattle.append(QString("<br><p align=center><a href=\"/force_surrender/%1/%2\">Force Surrender Attempt</a></p><br>").arg(QString::number(_loadedBattleID), turn));
     }
 
@@ -736,8 +840,10 @@ bool QWarloksDuelCore::butifyTurnMessage() {
 bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _charmPersonList = QWarlockUtils::getCharmedPersonList(Data);
     _paralyzeList = QWarlockUtils::getParalyseList(Data);
-    _loadedBattleTurn = QWarlockUtils::getIntFromPlayerData(Data, "<INPUT TYPE=HIDDEN NAME=turn", "VALUE=", ">");
-    _fire = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=CHECKBOX CLASS=check NAME=FIRE VALUE=1", ">", "<");
+    int Pos = 0;
+    _loadedBattleTurn = QWarlockUtils::getIntFromPlayerData(Data, "<INPUT TYPE=HIDDEN NAME=turn", "VALUE=", ">", Pos);
+    Pos = 0;
+    _fire = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=CHECKBOX CLASS=check NAME=FIRE VALUE=1", ">", "<", Pos);
     _isDelay = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=DELAY") != -1;
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
@@ -912,16 +1018,18 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     qDebug() << "QWarloksDuelCore::parsePlayerInfo";
     QList<int> old_read(_ready_in_battles), old_wait(_waiting_in_battles);
     _challenge.clear();
-    _played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>");
-    _won = QWarlockUtils::getIntFromPlayerData(Data, "Won:", "<TD>", "</TD>");
-    _died = QWarlockUtils::getIntFromPlayerData(Data, "Died:", "<TD>", "</TD>");
-    _ladder = QWarlockUtils::getIntFromPlayerData(Data, "Ladder Score:", "<TD>", "</TD>");
-    _melee = QWarlockUtils::getIntFromPlayerData(Data, "Melee Score:", "<TD>", "</TD>");
-    _elo = QWarlockUtils::getIntFromPlayerData(Data, "Elo:", "<TD>", "</TD>");
+    int Idx = 0;
+    _played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>", Idx);
+    _won = QWarlockUtils::getIntFromPlayerData(Data, "Won:", "<TD>", "</TD>", Idx);
+    _died = QWarlockUtils::getIntFromPlayerData(Data, "Died:", "<TD>", "</TD>", Idx);
+    _ladder = QWarlockUtils::getIntFromPlayerData(Data, "Ladder Score:", "<TD>", "</TD>", Idx);
+    _melee = QWarlockUtils::getIntFromPlayerData(Data, "Melee Score:", "<TD>", "</TD>", Idx);
+    _elo = QWarlockUtils::getIntFromPlayerData(Data, "Elo:", "<TD>", "</TD>", Idx);
     _ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
     _waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
     _finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
-    QString challendge = QWarlockUtils::getStringFromData(Data, "Challenged to battles:</TD>", "<TD>", "</TD>");
+    Idx = 0;
+    QString challendge = QWarlockUtils::getStringFromData(Data, "Challenged to battles:</TD>", "<TD>", "</TD>", Idx);
     if (!challendge.isEmpty()) {
         parseChallendge(challendge);
     }
@@ -1002,14 +1110,15 @@ bool QWarloksDuelCore::finishScan(QString &Data) {
 
 bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     qDebug() << "QWarloksDuelCore::finishScanWarlock" << Data;
-    QString login = QWarlockUtils::getStringFromData(Data, "Info for", " ", " ");
-    _warlockId = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=rcpt VALUE", "=", ">");
-    int played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>");
-    int won = QWarlockUtils::getIntFromPlayerData(Data, "Won:", "<TD>", "</TD>");
-    int died = QWarlockUtils::getIntFromPlayerData(Data, "Died:", "<TD>", "</TD>");
-    int ladder = QWarlockUtils::getIntFromPlayerData(Data, "Ladder Score:", "<TD>", "</TD>");
-    int melee = QWarlockUtils::getIntFromPlayerData(Data, "Melee Score:", "<TD>", "</TD>");
-    int elo = QWarlockUtils::getIntFromPlayerData(Data, "Elo:", "<TD>", "</TD>");
+    int pos = 0;
+    QString login = QWarlockUtils::getStringFromData(Data, "Info for", " ", " ", pos);
+    _warlockId = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=rcpt VALUE", "=", ">", pos);
+    int played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>", pos);
+    int won = QWarlockUtils::getIntFromPlayerData(Data, "Won:", "<TD>", "</TD>", pos);
+    int died = QWarlockUtils::getIntFromPlayerData(Data, "Died:", "<TD>", "</TD>", pos);
+    int ladder = QWarlockUtils::getIntFromPlayerData(Data, "Ladder Score:", "<TD>", "</TD>", pos);
+    int melee = QWarlockUtils::getIntFromPlayerData(Data, "Melee Score:", "<TD>", "</TD>", pos);
+    int elo = QWarlockUtils::getIntFromPlayerData(Data, "Elo:", "<TD>", "</TD>", pos);
     QList<int> ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
     QList<int> waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
     QList<int> finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");

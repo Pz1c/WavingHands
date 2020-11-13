@@ -19,7 +19,8 @@ QMonster::QMonster(const QString &Name, const QString &Status, const QString &Ow
         _strength = 0;
     }
     //_hp = _strength;
-    _hp = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Health", ":", " #;#)"));
+    int pos = 0;
+    _hp = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Health", ":", " #;#)", pos));
 }
 
 QString QMonster::name() {
