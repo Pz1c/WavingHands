@@ -20,11 +20,12 @@
 #define GAME_SERVER_URL_REFUSE_CHALLENGE "https://games.ravenblack.net/refuse?back=player&num=%1"
 #define GAME_SERVER_URL_DELLMESS "https://games.ravenblack.net/delmess?from=%1"
 #define GAME_SERVER_URL_SUBMIT "https://games.ravenblack.net/warlocksubmit"
-#define GAME_SERVER_URL_GET_BATTLE "https://games.ravenblack.net/warlocks?num=%1&full=%2"
+#define GAME_SERVER_URL_GET_BATTLE "https://games.ravenblack.net/warlocks?num=%1"
 #define GAME_SERVER_URL_GET_PROFILE "https://games.ravenblack.net/player/%1.html"
 #define GAME_SERVER_URL_NEW_CHALLENGE "https://games.ravenblack.net/newchallenge"
 #define GAME_SERVER_URL_NEW_PLAYER "https://games.ravenblack.net/newplayer?action=new"
 #define GAME_SERVER_URL_SENDMESS "https://games.ravenblack.net/sendmess"
+#define GAME_SERVER_URL_GET_FINISHED_BATTLE "https://games.visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&show_data=1"
 
 
 #define intToStr QString::number

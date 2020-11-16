@@ -550,7 +550,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
     setIsLoading(true);
 
     QNetworkRequest request;
-    request.setUrl(QUrl(QString(GAME_SERVER_URL_GET_BATTLE).arg(QString::number(_loadedBattleID), _loadedBattleType == 2 ? "1" : "0")));
+    request.setUrl(QUrl(QString(_loadedBattleType == 2 ? GAME_SERVER_URL_GET_FINISHED_BATTLE : GAME_SERVER_URL_GET_BATTLE).arg(QString::number(_loadedBattleID))));
 
     _reply = _nam.get(request);
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
@@ -703,7 +703,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
     butifyTurnMessage();
 
-    if (_loadedBattleType != 0) {
+    if (_loadedBattleType != 1) {
         emit finishedBattleChanged();
         return false;
     }
@@ -1222,7 +1222,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return !finishOrderSubmit(data, statusCode, new_url);
     }
 
-    if (url.indexOf("/warlocks") != -1) {
+    if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1)) {
         return !finishGetFinishedBattle(data);
     }
 

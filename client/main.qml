@@ -143,7 +143,7 @@ ApplicationWindow {
                     onClicked: showUserProfile()
                     background: Image {
                         anchors.fill: parent
-                        source: "res/user.png"
+                        source: "res/trophy.png"
                     }
                 }
 
@@ -169,7 +169,7 @@ ApplicationWindow {
                     onClicked: dMenu.open()
                     background: Image {
                         anchors.fill: parent
-                        source: "res/list.png"
+                        source: "res/menu.png"
                     }
                 }
         }

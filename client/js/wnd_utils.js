@@ -1,11 +1,11 @@
 var wnd_error = "wnd_error.qml";
-var wnd_battle_result = "wnd_battle_result.qml";
+//var wnd_battle_result = "wnd_battle_result.qml";
 var wnd_new_user = "wnd_new_user.qml";
 var wnd_login = "wnd_login.qml";
 //var wnd_main_menu = "wnd_main_menu.qml";
 var wnd_profile = "wnd_profile.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
-var wnd_loading = "wnd_loading.qml";
+var wnd_battle = "wnd_battle.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -233,29 +233,6 @@ function showLogin() {
     showWnd(wnd_login, 1, 0, 1);
 }
 
-function showLoading() {
-    console.log("showLoading")
-    if (!wndLoading) {
-        wndLoading = Qt.createComponent("qrc:///qml/loading.qml").createObject(mainWindow, {});
-    }
-    wndLoading.visible = true;
+function showBattle() {
+    showWnd(wnd_battle, 0, 1, 1);
 }
-
-function hideLoading() {
-    console.log("hideLoading")
-    if (!wndLoading) {
-        wndLoading = Qt.createComponent("qrc:///qml/loading.qml").createObject(mainWindow, {});
-    }
-    wndLoading.visible = false;
-}
-/*
-function isLoadingChanged() {
-    var is_loading = Qt.core.isLoading;
-    console.log("isLoadingChanged", is_loading);
-    if (is_loading === 1) {
-        showWnd(wnd_loading, 0, 0, 1);
-    } else {
-        hideWindow(wnd_loading);
-    }
-}
-*/

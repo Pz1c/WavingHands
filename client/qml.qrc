@@ -46,12 +46,12 @@
         <file>qml/windows/wnd_profile.qml</file>
         <file>js/gui_utils.js</file>
         <file>res/background.png</file>
-        <file>qml/windows/wnd_loading.qml</file>
         <file>res/circle.png</file>
         <file>res/menu.png</file>
         <file>res/RIP2.png</file>
         <file>res/stars.png</file>
         <file>res/trophy.png</file>
         <file>res/wait.png</file>
+        <file>qml/windows/wnd_battle.qml</file>
     </qresource>
 </RCC>
