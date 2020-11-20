@@ -6,6 +6,7 @@
 
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import ua.sp.warlockdictionary 1.0
 
 Item {
     id: iRoot
@@ -13,7 +14,7 @@ Item {
     z: 0
 
     property double height_koeff: iRoot.height / 800
-    property var dict: Qt.dictionary
+    property var dict: WarlockDictionary
     property alias title_text: ltTitle.text
     property alias title_color: ltTitle.color
     property alias content_item: bwBody
@@ -55,24 +56,17 @@ Item {
         z: 0
     }
 
-    Image {
-        id: iTopBg
-        anchors.fill: parent
-        source: "qrc:/res/background.png"
-        z: 1
-    }
-
-    Rectangle {
+    Item {
         id: rTitle
-        anchors.top: parent.top
-        anchors.topMargin: 0.05 * parent.height
+        anchors.bottom: bwBody.top
+        //anchors.topMargin: 0.05 * parent.height
         height: title_height_prc / 100 * parent.height
         width: bwBody.width
         anchors.horizontalCenter: parent.horizontalCenter
         //anchors.left: parent.left
         //anchors.right: parent.right
         //height: 0.05 * parent.height
-        color: "snow"
+        //color: "snow"
         z: 10
 
         Rectangle {
@@ -112,23 +106,33 @@ Item {
         }
     }
 
-    Rectangle {
+    Item {
         id: bwBody
-        anchors.top: rTitle.bottom
+        anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter
         height: body_height_prc / 100 * iRoot.height
         width: body_width_prc / 100 * iRoot.width
-        color: "snow"
+        //color: "snow"
         z: 10
     }
 
-    Rectangle {
+    Image {
+        id: iTopBg
+        anchors.top: rTitle.top
+        anchors.bottom: bwControl.bottom
+        anchors.left: bwControl.left
+        anchors.right: bwControl.right
+        source: "qrc:/res/background.png"
+        z: 9
+    }
+
+    Item {
         id: bwControl
         anchors.top: bwBody.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         height: control_height_prc / 100 * parent.height
         width: bwBody.width
-        color: "snow"
+        //color: "snow"
         z: 10
         visible: false
 
@@ -202,7 +206,7 @@ Item {
     function hideWnd() {
         visible = false;
         //ttWait.stop();
-        Qt.gameField.loadingStop();
+        //Qt.gameField.loadingStop();
     }
 
     function fixHeight() {

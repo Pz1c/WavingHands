@@ -26,7 +26,6 @@
         <file>qml/paralyze.qml</file>
         <file>qml/person_charmed.qml</file>
         <file>qml/spell_details.qml</file>
-        <file>qml/warlock.qml</file>
         <file>res/first-place.png</file>
         <file>js/wnd_utils.js</file>
         <file>qml/windows/wnd_new_user.qml</file>
@@ -53,5 +52,7 @@
         <file>res/trophy.png</file>
         <file>res/wait.png</file>
         <file>qml/windows/wnd_battle.qml</file>
+        <file>js/battle_utils.js</file>
+        <file>qml/game_components/Warlock.qml</file>
     </qresource>
 </RCC>

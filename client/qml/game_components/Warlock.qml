@@ -1,19 +1,11 @@
-import QtQuick 2.0
-import QtQuick.Controls 2.0
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import "qrc:/qml/components"
 
 Rectangle {
     id: rWarlock
-    x: 0
-    y: 0
-    width:parent.width
 
-    property string w_warlock_status: ""
-    property string w_left_g: ""
-    property string w_right_g: ""
-    property var w_possible_spells: []
-    property real height_koeff: Qt.height_coeff
-    property var dict: Qt.mainWindow.warlockDictionary
-    property bool w_send_gestures: false
+
 
     Text {
        id: tLabel

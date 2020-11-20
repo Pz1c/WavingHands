@@ -29,6 +29,8 @@
 
 
 #define intToStr QString::number
+#define boolToInt(val) (val?1:0)
+#define boolToIntS(val) (val?"1":"0")
 
 #define DEBUG_MESSAGE_PATTERN "%{time} %{function} %{message}"
 

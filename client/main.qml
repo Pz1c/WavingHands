@@ -9,11 +9,11 @@ import QtQuick.Layouts 1.12
 import ua.sp.warloksduel 2.0
 import ua.sp.warlockdictionary 1.0
 
+import "qrc:/js/gui_utils.js" as GUI
 import "qrc:/js/main_utils.js" as MUtils
 import "qrc:/js/ai_utils.js" as AI
 import "qrc:/js/user_profile_utils.js" as UU
 import "qrc:/js/wnd_utils.js" as WNDU
-import "qrc:/js/gui_utils.js" as GUI
 import "qrc:/qml/windows"
 import "qrc:/qml/components"
 import "qrc:/qml"
@@ -33,6 +33,29 @@ ApplicationWindow {
         }
     }
 
+    Dialog {
+        id: mdNoGesture
+        title: warlockDictionary.getStringByCode("AreYouSure")
+        //icon: StandardIcon.Warning
+        property alias text: ltModal.text
+        contentItem: LargeText {
+            id: ltModal
+            text: warlockDictionary.getStringByCode("NoGestureForTurn")
+        }
+        modal: true
+        standardButtons: Dialog.Ok | Dialog.Cancel
+
+        property bool isSendOrderAction: false
+
+        onAccepted: {
+            if (isSendOrderAction) {
+                BU.sendOrderEx();
+            } else {
+                Qt.quit();
+            }
+        }
+    }
+
     property int timerCounter: 0
     Timer {
         id: tScanTimer
@@ -49,28 +72,29 @@ ApplicationWindow {
         }
     }
 
+    property alias gameCore: core
+    property var gERROR: ({})
+    property var gBattle: ({})
+
     WarlocksDuelCore {
         id: core
         onNeedLogin: getLoginFromUser()
         onErrorOccurred: showErrorMessage()
-        onIsLoadingChanged: {
-            console.log("core.onIsLoadingChanged");
-            GUI.isLoadingChanged();
-        }
-        onBattleListChanged: GUI.newBattleList()
+        onIsLoadingChanged: GUI.isLoadingChanged(core)
+        onBattleListChanged: GUI.newBattleList(core)
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
-        onRegisterNewUserChanged: GUI.newUserRegistered()
-        onOrderSubmitedChanged: MUtils.cleanOrders()
+        onRegisterNewUserChanged: GUI.newUserRegistered(core)
+        //onOrderSubmitedChanged: MUtils.cleanOrders(core)
         onTimerStateChanged: changeTimerState()
         //onChallengeListChanged: MUtils.loadChallengesList(false)
-        onSpellListHtmlChanged: MUtils.loadSpellList()
-        onTopListChanged: MUtils.loadTopList(false)
-        onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
+        //onSpellListHtmlChanged: MUtils.loadSpellList(core)
+        //onTopListChanged: MUtils.loadTopList(false)
+        //onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
         onAllowedAcceptChanged: {
             console.log("onAllowedAcceptChanged");
-            closeChild();
-            MUtils.loadChallengesList(false);
+            //closeChild();
+            //MUtils.loadChallengesList(false);
         }
         onWarlockInfoChanged: {
             console.log("onWarlockInfoChanged");
@@ -83,6 +107,11 @@ ApplicationWindow {
 
         Component.onCompleted: {
             console.log("Core.completed");
+            if (core.login === '') {
+                showNewUserMenu();
+            } else {
+                core.scanState();
+            }
         }
     }
 
@@ -95,12 +124,12 @@ ApplicationWindow {
     property var warlockDictionary: WarlockDictionary
     property real height_koeff: 1//rMain.height / 800
     property bool exit_on_back_button: true
-    property var  battles: MUtils.loadChallengesList(true)
-    property var  top_player: MUtils.loadTopList(true)
-    property var  spells: MUtils.default_spell_list
+    //property var  battles: MUtils.loadChallengesList(true)
+    //property var  top_player: MUtils.loadTopList(true)
+    //property var  spells: MUtils.default_spell_list
     property bool action_send_order: true
     property string tipTxt;
-    property bool allowCloseTip: false;
+    //property bool allowCloseTip: false;
     property bool is_game_in_progress: false
 
     color: "#551470"
@@ -249,9 +278,9 @@ ApplicationWindow {
             anchors.topMargin: 0.01 * parent.height
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            anchors.leftMargin: 0.05 * mainWindow.width
+            //anchors.leftMargin: 0.05 * mainWindow.width
             anchors.right: parent.right
-            anchors.rightMargin: 0.05 * mainWindow.width
+            //anchors.rightMargin: 0.05 * mainWindow.width
             visible: core.allowedAdd || true
             contentHeight: iMainScrollBody.height
 
@@ -302,10 +331,12 @@ ApplicationWindow {
                                 anchors.top: rdBattleItem.top
                                 anchors.bottom: rdBattleItem.bottom
                                 anchors.left: rdBattleItem.left
-                                anchors.leftMargin: 0.01 * parent.width
+                                anchors.leftMargin: 0.03 * parent.width
                                 width: 0.90 * parent.width - parent.height
                                 //anchors.rightMargin: 0.05 * parent.width
                                 color: "#FEE2D6"
+                                horizontalAlignment: Text.AlignLeft
+
                                 text: lvActiveBattle.model[index].d
                             }
 
@@ -381,10 +412,12 @@ ApplicationWindow {
                                 anchors.top: rdfBattleItem.top
                                 anchors.bottom: rdfBattleItem.bottom
                                 anchors.left: rdfBattleItem.left
-                                anchors.leftMargin: 0.01 * parent.width
+                                anchors.leftMargin: 0.03 * parent.width
                                 width: 0.90 * parent.width - parent.height
                                 color: "#10C9F5"
                                 fontSizeMode: Text.VerticalFit
+                                horizontalAlignment: Text.AlignLeft
+
                                 text: lvFinishedBattle.model[index].d
                             }
 
@@ -484,24 +517,23 @@ ApplicationWindow {
     }
 
     function showErrorMessage() {
-        console.log("Error: ", Qt.core.errorMsg)
+        console.log("Error: ", core.errorMsg)
         if (!core.isAI) {
-            WNDU.showErrorWnd({text:Qt.core.errorMsg});
+            WNDU.showErrorWnd({text:core.errorMsg});
         }
     }
 
     function showFinishedBattle() {
         console.log("showFinishedBattle")
-        WNDU.showErrorWnd({text:Qt.core.finishedBattle,type:1});
+        WNDU.showErrorWnd({text:core.finishedBattle,type:1,title:"Battle #" + core.loadedBattleID});
         //MUtils.showWindow("finished_battle.qml");
     }
 
     function showReadyBattle() {
-        console.log("showReadyBattle", allowCloseTip);
-        if (allowCloseTip) {
-            closeChild();
-        }
-        MUtils.showReadyBattle();
+        var battle_str = core.battleInfo();
+        console.log("showReadyBattle", battle_str);
+        gBattle = JSON.parse(battle_str);
+        WNDU.showBattle();
     }
 
     function openBattleOnline() {
@@ -512,17 +544,11 @@ ApplicationWindow {
     function showNewUserMenu() {
         logEvent("registration_started");
         WNDU.showNewUserMenu();
-        //MUtils.showWindow("new_user_menu.qml", child_wnd);
     }
 
     function showSpellDetails(spell_code) {
-        WNDU.showErrorWnd({text:getSpellDescription(spell_code),type:1});
-        //MUtils.showWindow("spell_details.qml");
-    }
-
-    function hideNewUserMenu() {
-        console.log("hideNewUserMenu")
-        MUtils.hideNewUserWnd()
+        logEvent("spell_details", {code:spell_code});
+        WNDU.showErrorWnd({text:warlockDictionary.getStringByCode(spell_code + "_desc"),type:1,title:warlockDictionary.getStringByCode(spell_code)});
     }
 
     function processEscape() {
@@ -537,16 +563,13 @@ ApplicationWindow {
         WNDU.closeChild();
     }
 
-    function getSpellDescription(currSpell) {
-        return "<h2>" + warlockDictionary.getStringByCode(currSpell) + "</h2><p>" + warlockDictionary.getStringByCode(currSpell + "_desc") + "</p>"
-    }
 
     function linkActivated(link) {
         MUtils.linkActivated(link)
     }
 
     function changeTimerState() {
-        if (Qt.core.timerState === 1) {
+        if (core.timerState === 1) {
             if (!tScanTimer.running) {
                 tScanTimer.start();
             }
@@ -560,33 +583,6 @@ ApplicationWindow {
     function changeGesture(Gesture, Left) {
         MUtils.changeGesture(Gesture, Left);
     }
-
-    /*function changeLanguage(new_lang, child_wnd) {
-        if (child_wnd) {
-            child_wnd.destroy();
-        }
-        warlockDictionary.setCurrentLang(new_lang)
-        setNewLanguage()
-    }
-
-    function setNewLanguage() {
-        MUtils.default_spell_list = JSON.parse(core.defaultSpellListHtml);
-        Qt.core.prepareSpellHtmlList(1==1, 1==1);
-        var tmp_l_arr = [warlockDictionary.getStringByCode("Neither"),
-                         warlockDictionary.getStringByCode("Left"),
-                         warlockDictionary.getStringByCode("Right"),
-                         warlockDictionary.getStringByCode("Two-handed")]
-        tLHGLabel.text = warlockDictionary.getStringByCode("LeftHand")
-        tRHGLabel.text = warlockDictionary.getStringByCode("RightHand")
-        tDelayLabel.text = warlockDictionary.getStringByCode("DelaySpell")
-        cbDelay.model = tmp_l_arr
-        tPermanentLabel.text = warlockDictionary.getStringByCode("MakeSpellPermanent")
-        cbPermanent.model = tmp_l_arr
-        tChatMessage.text = warlockDictionary.getStringByCode("ChatMessage")
-        labelDoit.text = warlockDictionary.getStringByCode("Submit")
-        MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage")
-        MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " "
-    }*/
 
     function logEvent(event_name, params) {
         if (core.isAI) {
@@ -607,20 +603,13 @@ ApplicationWindow {
 
     function creationFinished() {
         console.log("main.creationFinished");
-        Qt.core = core;
-        Qt.mainWindow = mainWindow;
-        Qt.gameField = mainWindow;
-        Qt.height_coeff = height_koeff;
-        Qt.dictionary = warlockDictionary;
+        //core = core;
+        GUI.G_CORE = core;
+        GUI.G_GAME_FIELD = mainWindow;
         MUtils.dict = warlockDictionary;
         MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage");
         MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " ";
         MUtils.default_spell_list = JSON.parse(core.defaultSpellListHtml);
-        if (core.login === '') {
-            showNewUserMenu();
-        } else {
-            core.scanState();
-        }
         logEvent("gameFieldReady");
     }
 

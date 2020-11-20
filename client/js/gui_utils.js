@@ -1,14 +1,17 @@
 var G_BATTLE_LIST = [[],[]];
+var G_ERROR = {};
+var G_GAME_FIELD;
+var G_CORE;
 
 function newUserRegistered() {
-    var l_login = Qt.core.login;
-    Qt.gameField.closeChild();
-    Qt.gameField.showTipMessage(Qt.dictionary.getStringByCode("JustRegistered").replace("#login#", l_login), true);
-    Qt.gameField.logEvent("registration_finished", {login: l_login});
+    var l_login = core.login;
+    closeChild();
+    showTipMessage(warlockDictionary.getStringByCode("JustRegistered").replace("#login#", l_login), true);
+    logEvent("registration_finished", {login: l_login});
 }
 
 function newBattleList() {
-    G_BATTLE_LIST = JSON.parse(Qt.core.battleList);
+    G_BATTLE_LIST = JSON.parse(core.battleList);
     lvActiveBattle.model = G_BATTLE_LIST[0];
     lvFinishedBattle.model = G_BATTLE_LIST[1];
 }
@@ -18,7 +21,7 @@ function loadBattleList(filter) {
 }
 
 function autoLogin(idx) {
-    Qt.core.autoLogin(idx);
+    core.autoLogin(idx);
 }
 
 function showLoginMenu(menu_str) {
@@ -49,7 +52,7 @@ function showLoginMenu(menu_str) {
 }
 
 function isLoadingChanged() {
-    var is_loading = Qt.core.isLoading;
+    var is_loading = core.isLoading;
     console.log("isLoadingChanged", is_loading);
     rLoading.visible = is_loading === 1;
 }

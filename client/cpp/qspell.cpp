@@ -146,7 +146,11 @@ QString QSpell::toString() const {
     return json();
 }
 
-bool QSpell::sortAsc(QSpell *s1, QSpell *s2) {
+bool QSpell::operator < (const QSpell &s) const {
+    return QSpell::sortAsc(this, &s);
+}
+
+bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
     if ((s1->_spellType == s2->_spellType) && (s1->_turnToCast == s2->_turnToCast)) {
         return s1->_level < s2->_level;
     }
@@ -156,10 +160,17 @@ bool QSpell::sortAsc(QSpell *s1, QSpell *s2) {
     if (s1->_turnToCast != s2->_turnToCast) {
         return s1->_turnToCast > s2->_turnToCast;
     }
-    return s1->_level < s2->_level;
+    if (s1->_level != s2->_level) {
+        return s1->_level < s2->_level;
+    }
+    if (s1->_spellID != s2->_spellID) {
+        return s1->_spellID < s2->_spellID;
+    }
+
+    return s1->_hand < s2->_hand;
 }
 
-bool QSpell::sortDesc(QSpell *s1, QSpell *s2) {
+bool QSpell::sortDesc(const QSpell *s1, const QSpell *s2) {
     return !sortAsc(s1, s2);
 }
 

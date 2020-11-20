@@ -206,7 +206,7 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
     QString possible_right = warlock->possibleRightGestures();
     QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF());
     logSpellList(sl, "QWarlockSpellChecker::getSpellsList before");
-    std::sort(sl.begin(), sl.end(), QSpell::sortDesc);
+    std::sort(sl.begin(), sl.end());
     logSpellList(sl, "QWarlockSpellChecker::getSpellsList after");
     return sl;
 }

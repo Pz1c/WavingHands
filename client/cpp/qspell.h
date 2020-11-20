@@ -5,6 +5,8 @@
 #include <QString>
 #include <QStringList>
 
+#include "qgameconstant.h"
+
 #define SPELL_TYPE_SUMMON_MONSTER 0
 #define SPELL_TYPE_POISON 1
 #define SPELL_TYPE_CONFUSION 2
@@ -81,8 +83,6 @@
 #define WARLOCK_ENEMY true
 
 #define SPELL_PRIORITY_ZERO -999
-
-#define intToStr QString::number
 #define SPELL_DEF_TARGER_NOBODY 0
 #define SPELL_DEF_TARGER_SELF 1
 #define SPELL_DEF_TARGER_ENEMY 2
@@ -118,8 +118,8 @@ public:
 
     QString toString() const;
 
-    static bool sortAsc(QSpell *s1, QSpell *s2);
-    static bool sortDesc(QSpell *s1, QSpell *s2);
+    static bool sortAsc(const QSpell *s1, const QSpell *s2) ;
+    static bool sortDesc(const QSpell *s1, const QSpell *s2);
     int level() const;
 
     bool possibleCast() const;
@@ -127,6 +127,8 @@ public:
 
     bool active() const;
     void setActive(bool active);
+
+    bool operator < (const QSpell &s) const;
 
 protected:
 

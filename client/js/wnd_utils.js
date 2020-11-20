@@ -14,6 +14,8 @@ var arr_wnd_obj = [];
 var arr_wnd_stack = [];
 var current_wnd_code;
 
+var gERROR = {};
+
 function getQmlFullName(name) {
     return "qrc:///qml/windows/" + name;
 }
@@ -124,12 +126,9 @@ function processEscape() {
             return;
         } */
     } else {
-        // TODO add confirmation
-        //if (is_game_in_progress) {
-            //Qt.core.cancelGame();
-        //} else {
-            Qt.quit();
-        //}
+        mdNoGesture.isSendOrderAction = false;
+        mdNoGesture.text = Qt.dictionary.getStringByCode("ConfirmExit");
+        mdNoGesture.visible = true;
     }
 }
 
@@ -206,12 +205,12 @@ function showSpellbookWindow() {
 }
 
 function showErrorWnd(error) {
-    Qt.error = error;
-    if (!Qt.error.type) {
-        Qt.error.type = 0;
+    mainWindow.gERROR = error;
+    if (!mainWindow.gERROR.type) {
+        mainWindow.gERROR.type = 0;
     }
-    if (!Qt.error.id) {
-        Qt.error.id = -1;
+    if (!mainWindow.gERROR.id) {
+        mainWindow.gERROR.id = -1;
     }
 
     showWnd(wnd_error, 0, 0, 1);

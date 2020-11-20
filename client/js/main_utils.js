@@ -286,7 +286,7 @@ function getPossibleSpell(right, desirable_spell) {
 }
 
 function loadSpellList() {
-    var str = Qt.core.spellListHtml;
+    var str = core.spellListHtml;
     console.log("loadSpellList", str);
     if (str.length === 0) {
         console.log("loadSpellList empty")

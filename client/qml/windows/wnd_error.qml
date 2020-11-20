@@ -34,8 +34,8 @@ BaseWindow {
                     textFormat: Text.RichText
 
                     onLinkActivated: {
-                        Qt.mainWindow.linkActivated(link);
-                        Qt.gameField.processEscape();
+                        mainWindow.linkActivated(link);
+                        mainWindow.processEscape();
                     }
                 }
         }
@@ -44,7 +44,7 @@ BaseWindow {
     }
 
     onCancel: {
-        Qt.gameField.processEscape();
+        mainWindow.processEscape();
     }
 
     function showWnd() {
@@ -57,26 +57,26 @@ BaseWindow {
     }
 
     function initErrFields() {
-        console.log("wnd_error.initErrFields", JSON.stringify(Qt.error));
-        if (!Qt.error || !Qt.error.id) {
+        console.log("wnd_error.initErrFields", JSON.stringify(mainWindow.gERROR));
+        if (!mainWindow.gERROR || !mainWindow.gERROR.id) {
             return;
         }
-        ltError.text = Qt.error.text;
-        switch(Qt.error.type) {
+        ltError.text = mainWindow.gERROR.text;
+        switch(mainWindow.gERROR.type) {
         case 1:
             title_text = dict.getStringByCode("WndInfoTitle");
-            title_color = "white";
+            title_color = "black";
             break;
         default:
             title_text = dict.getStringByCode("WndErrorTitle");
             title_color = "red";
             break;
         }
-        if (Qt.error.title) {
-            title_text = Qt.error.title;
+        if (mainWindow.gERROR.title) {
+            title_text = mainWindow.gERROR.title;
         }
 
-        Qt.error = {};
+        mainWindow.gERROR = {};
     }
 
     Component.onCompleted: {

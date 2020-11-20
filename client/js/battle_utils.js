@@ -1,12 +1,12 @@
 // windows
-var wndUP, wndLoading, wndTmp, wndNew, wndErr;
+//var wndUP, wndLoading, wndTmp, wndNew, wndErr;
 // monster command
-var cMonsterTarget,mtTaskList=[],mtMonsterObj=[],cpTaskList=[],pTaskList=[],cPersonCharmed,cParalyze,cpPersonObj=[],pParalyzeObj=[];
-var cWarlockObject;
+//var cMonsterTarget,mtTaskList=[],mtMonsterObj=[],cpTaskList=[],pTaskList=[],cPersonCharmed,cParalyze,cpPersonObj=[],pParalyzeObj=[];
+//var cWarlockObject;
 // target list
-var arrTarget,arrTargetID,arrVisibleTarget,strVisibleTarget,arrRPG,arrLPG;
+//var arrTarget,arrTargetID,arrVisibleTarget,strVisibleTarget,arrRPG,arrLPG;
 // challendge list
-var arrChallengeList;
+//var arrChallengeList;
 // interface constant
 var dict, cChatMessage, cMosterFrom, default_spell_list;
 
@@ -35,17 +35,18 @@ function sendOrder() {
 
 function sendOrderEx() {
     // chat message
-    var post_request = "say$";
-    if ((teChatMsg.text !== cChatMessage) && (teChatMsg.text != "")) {
-        post_request += teChatMsg.text.replace("$", "sign:dollar").replace("#", "sign:pos_number")
+    /*var post_request = "say$";
+    var chat_message = '';//teChatMsg.text
+    if ((chat_message !== cChatMessage) && (chat_message !== "")) {
+        post_request += chat_message.replace("$", "sign:dollar").replace("#", "sign:pos_number");
     }
-    post_request += "#"
+    post_request += "#";
     // gesture
-    var g = arrLPG[cbLHG.currentText]
+    var g = arrLPG[cbLHG.currentText];
     post_request += "LH$"+g+"#";
-    g = arrRPG[cbRHG.currentText]
-    console.log("cbLHT.currentText", cbLHT.currentText)
-    console.log("cbRHT.currentText", cbRHT.currentText)
+    g = arrRPG[cbRHG.currentText];
+    console.log("cbLHT.currentText", cbLHT.currentText);
+    console.log("cbRHT.currentText", cbRHT.currentText);
     post_request += "RH$"+g+"#";
     post_request += "LHS$"+(cbLHS.currentText === " " ? "" : cbLHS.currentText.replace(" ", "+"))+"#";
     post_request += "RHS$"+(cbRHS.currentText === " " ? "" : cbRHS.currentText.replace(" ", "+"))+"#";
@@ -122,46 +123,7 @@ function sendOrderEx() {
     rMain.timerCounter = 30;
     tScanTimer.restart();
     //tSpellList.text = ''
-    showList();
-}
-
-function acceptChallenge(link) {
-    console.log("acceptChallenge", link)
-
-    Qt.core.acceptChallenge(link.split("/")[2])
-}
-
-function loadChallengesList(need_return) {
-    if (!Qt.core) {
-        return [];
-    }
-    var list_str = Qt.core.challengeList;
-    console.log("loadChallengesList", need_return, list_str);
-    var arr = (list_str && (list_str.length > 0) && !Qt.core.isAI && Qt.core.allowedAccept) ? JSON.parse(list_str) : [];
-    mainWindow.battles = arr;
-    console.log("loadChallengesList", need_return, Qt.core.isAI, list_str, Qt.core.readyInBattles, Qt.core.waitingInBattles);
-    if (need_return) {
-        return arr;
-    } else {
-        tvChallengeList.model = arr;
-    }
-}
-
-function loadTopList(need_return) {
-    if (!Qt.core) {
-        return [];
-    }
-    var list_str = Qt.core.topList;
-    console.log("loadTopList", need_return, list_str);
-    var arr = (list_str && (list_str.length > 0)) ? JSON.parse(list_str) : [];
-    mainWindow.battles = arr;
-    console.log("loadTopList", need_return, Qt.core.isAI, list_str, Qt.core.readyInBattles, Qt.core.waitingInBattles);
-    if (need_return) {
-        return arr;
-    } else {
-        mainWindow.top_player = arr;
-        //tvTopList.model = arr;
-    }
+    showList();*/
 }
 
 function getSpellList(right) {
@@ -285,21 +247,7 @@ function getPossibleSpell(right, desirable_spell) {
     //cbRHS.currentText = cbRHS.model[cbRHS.currentIndex];
 }
 
-function loadSpellList() {
-    var str = Qt.core.spellListHtml;
-    console.log("loadSpellList", str);
-    if (str.length === 0) {
-        console.log("loadSpellList empty")
-        mainWindow.spells = default_spell_list;
-    } else {
-        console.log("loadSpellList full")
-        mainWindow.spells = JSON.parse(str);
-        // tSpellList.text = lst
-    }
-}
-
-function showReadyBattle() {
-    showLoading();
+function prepareReadyBattle() {
     battle = {};
     battle.isFDF = Qt.core.isParaFDF === 1;
     battle.turn_num = Qt.core.getLoadedBattleTurn();
@@ -537,7 +485,7 @@ function finishLoadParalyzeEx(char_person_list) {
         pParalyzeObj.push(sprite);
         console.log("looks like created: " + sprite.p_label + " x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("lvaoParalyze.width: " + lvaoParalyze.width);
-        if (currLeft != 0) {
+        if (currLeft !== 0) {
             console.log("currentleft.w: " + currLeft.width)
             if (currLeft.width + sprite.width + 6 < lvaoParalyze.width) {
                 sprite.y = currLeft.y
