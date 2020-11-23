@@ -206,7 +206,7 @@ Item {
     function hideWnd() {
         visible = false;
         //ttWait.stop();
-        //Qt.gameField.loadingStop();
+        //mainWindow.loadingStop();
     }
 
     function fixHeight() {
@@ -230,6 +230,6 @@ Item {
 
     Component.onCompleted: {
         initFields();
-        //Qt.gameField.storeWnd(dMainItem);
+        //mainWindow.storeWnd(dMainItem);
     }
 }

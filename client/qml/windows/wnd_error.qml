@@ -47,6 +47,11 @@ BaseWindow {
         mainWindow.processEscape();
     }
 
+    onAction1: {
+        mainWindow.openBattleOnline();
+        mainWindow.processEscape();
+    }
+
     function showWnd() {
         initFields();
         visible = true;
@@ -66,6 +71,10 @@ BaseWindow {
         case 1:
             title_text = dict.getStringByCode("WndInfoTitle");
             title_color = "black";
+            break;
+        case 2: // battle info
+            with_action1 = true;
+            action1_text = dict.getStringByCode("WatchOnline");
             break;
         default:
             title_text = dict.getStringByCode("WndErrorTitle");

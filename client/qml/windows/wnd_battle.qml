@@ -19,19 +19,27 @@ BaseWindow {
     // This rectangle is the actual popup
     Item {
         id: dialogWindow
+        z: 11
         anchors.fill: content_item
         //color: "transparent"
 
         ScrollView {
-            id: svWarlocks
-            anchors.fill: parent
+            id: bfWarlocks
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: bfAll.top
 
 
         }
 
-
-
-        z: 11
+        Item {
+            id: bfAll
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 0.2 * parent.height
+        }
     }
 
     onCancel: {
@@ -39,7 +47,7 @@ BaseWindow {
     }
 
     function showWnd() {
-        initFields();
+        initBattleFields();
         visible = true;
     }
 
@@ -52,7 +60,8 @@ BaseWindow {
         if (!mainWindow.gBattle || !mainWindow.gBattle.id) {
             return;
         }
-        title_text = "Battle #"+mainWindow.gBattle.id;
+        title_text = "Battle #" + mainWindow.gBattle.id;
+        BU.prepareBattle(mainWindow.gBattle);
     }
 
     Component.onCompleted: {

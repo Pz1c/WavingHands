@@ -524,8 +524,9 @@ ApplicationWindow {
     }
 
     function showFinishedBattle() {
-        console.log("showFinishedBattle")
-        WNDU.showErrorWnd({text:core.finishedBattle,type:1,title:"Battle #" + core.loadedBattleID});
+        var bit = core.loadedBattleID;
+        logEvent("showFinishedBattle", {battle_id:core.loadedBattleID});
+        WNDU.showErrorWnd({text:core.finishedBattle,type:2,title:"Battle #" + bit});
         //MUtils.showWindow("finished_battle.qml");
     }
 

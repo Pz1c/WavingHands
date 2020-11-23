@@ -116,7 +116,7 @@ BaseWindow {
     }
 
     onCancel: {
-        Qt.gameField.processEscape();
+        mainWindow.processEscape();
     }
 
     function initProfileFields() {

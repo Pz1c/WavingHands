@@ -28,7 +28,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("ProxyUser", "Проксі користувач", "Прокси пользователь", "Proxy user");
     fillDictionary("ProxyPass", "Проксі пароль", "Прокси пароль", "Proxy password");
     fillDictionary("Close", "Закрити", "Закрыть", "Close");
-    fillDictionary("WatchOnline", "Переглянути онлайн", "Смотреть онлайн", "Watch online");
+    fillDictionary("WatchOnline", "Переглянути онлайн", "Смотреть онлайн", "Watch in browser");
     fillDictionary("Settings", "Налаштування", "Настройки", "Settings");
     fillDictionary("LoginSett", "Налаштування входу", "Настройки входа", "Login settings");
     fillDictionary("NetworkSett", "Налаштування підключення", "Настройки сети", "Network settings");

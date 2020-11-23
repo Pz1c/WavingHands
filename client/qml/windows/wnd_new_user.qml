@@ -56,7 +56,7 @@ BaseWindow {
     }
 
     onCancel: {
-        Qt.gameField.processEscape();
+        mainWindow.processEscape();
     }
 
     onApply: {
@@ -82,7 +82,7 @@ BaseWindow {
 
     onAction1: {
         console.log("wnd_new_user.onAction1");
-        Qt.gameField.getLoginFromUser(true);
+        mainWindow.getLoginFromUser(true);
     }
 
     Component.onCompleted: {

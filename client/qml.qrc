@@ -6,7 +6,6 @@
         <file>res/refresh.png</file>
         <file>res/add.png</file>
         <file>res/list.png</file>
-        <file>res/fight.png</file>
         <file>res/spellbook.png</file>
         <file>html/spelllist_en.htm</file>
         <file>img/reg.png</file>
@@ -17,7 +16,6 @@
         <file>qml/edit_lang.qml</file>
         <file>qml/edit_login.qml</file>
         <file>qml/edit_network.qml</file>
-        <file>qml/finished_battle.qml</file>
         <file>qml/menu_main.qml</file>
         <file>qml/monster_target.qml</file>
         <file>qml/new_challenge.qml</file>
@@ -26,7 +24,6 @@
         <file>qml/paralyze.qml</file>
         <file>qml/person_charmed.qml</file>
         <file>qml/spell_details.qml</file>
-        <file>res/first-place.png</file>
         <file>js/wnd_utils.js</file>
         <file>qml/windows/wnd_new_user.qml</file>
         <file>qml/windows/wnd_error.qml</file>
@@ -54,5 +51,17 @@
         <file>qml/windows/wnd_battle.qml</file>
         <file>js/battle_utils.js</file>
         <file>qml/game_components/Warlock.qml</file>
+        <file>qml/components/IconInfo.qml</file>
+        <file>res/heart.png</file>
+        <file>qml/components/IconInfoR.qml</file>
+        <file>res/g_-.png</file>
+        <file>res/g__.png</file>
+        <file>res/g_c.png</file>
+        <file>res/g_d.png</file>
+        <file>res/g_f.png</file>
+        <file>res/g_p.png</file>
+        <file>res/g_s.png</file>
+        <file>res/g_w.png</file>
+        <file>res/stars_light.png</file>
     </qresource>
 </RCC>

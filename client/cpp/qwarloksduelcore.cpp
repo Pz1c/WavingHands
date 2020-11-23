@@ -1667,7 +1667,7 @@ QString QWarloksDuelCore::spellListHtml() {
 
 QString QWarloksDuelCore::getOnlineUrl(int battle_id) {
     int bit = battle_id == 0 ? _loadedBattleID : battle_id;
-    return QString(GAME_SERVER_URL_GET_BATTLE).arg(intToStr(bit), "1");
+    return QString(GAME_SERVER_URL_GET_FINISHED_BATTLE).arg(intToStr(bit));
 }
 
 QString QWarloksDuelCore::battleList() {

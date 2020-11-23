@@ -123,6 +123,7 @@ bool QWarlockUtils::parseWarlock(QString &Data, QList<QWarlock *> &result, QStri
     error.clear();
     int pos = 0;
     QString name = getStringFromData(Data, "WIDTH=\"50%\"", "html\">", "</A>", pos);
+    pos = 0;
     QString state = getStringFromData(Data, "a href=\"/player/", "<TD CLASS=lightbg>", "</TD", pos);
     QString lh = getStringFromData(Data, "LH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>", pos).replace("&nbsp;", " ").replace("&gt;", ">");
     QString rh = getStringFromData(Data, "RH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>", pos).replace("&nbsp;", " ").replace("&gt;", ">");

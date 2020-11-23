@@ -45,7 +45,7 @@ BaseWindow {
     }
 
     onCancel: {
-        Qt.gameField.processEscape();
+        mainWindow.processEscape();
     }
 
     onApply: {
