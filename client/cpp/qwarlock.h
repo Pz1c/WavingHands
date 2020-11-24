@@ -56,6 +56,11 @@ private:
     int _maladroit;
     bool _surrender;
     bool _active;
+    int _mshield;
+    int _delay;
+    int _time_stop;
+    int _haste;
+    int _permanency;
     QString _name;
     QString _status;
     QString _leftGestures;

@@ -4,7 +4,6 @@
         <file>res/settings.png</file>
         <file>res/user.png</file>
         <file>res/refresh.png</file>
-        <file>res/add.png</file>
         <file>res/list.png</file>
         <file>res/spellbook.png</file>
         <file>html/spelllist_en.htm</file>
@@ -63,5 +62,8 @@
         <file>res/g_s.png</file>
         <file>res/g_w.png</file>
         <file>res/stars_light.png</file>
+        <file>res/chat.png</file>
+        <file>res/elemental_fire.png</file>
+        <file>res/elemental_ice.png</file>
     </qresource>
 </RCC>
