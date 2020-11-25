@@ -2,26 +2,27 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "qrc:/qml/components"
 
-Rectangle {
+Item {
     id: rWarlock
 
-    property var warlock: ({})
+    property var l_warlock: ({})
+
 
     LargeText {
        id: ltName
-       text: warlock.name
+       text: l_warlock.name
        anchors.top: parent.top
-       anchors.verticalCenter: parent.verticalCenter
+       anchors.horizontalCenter: parent.horizontalCenter
        height: 0.1 * parent.height
        width: 0.3 * parent.width
-       bg_color: "#210430"
-       color: "#A8F4F4"
+       bg_color: l_warlock.player ? "#210430" : "#544653"
+       color: l_warlock.player ? "#A8F4F4" : "#FEE2D6"
     }
 
     IconInfo {
         id: iiHP
         source: "qrc:/res/heart.png";
-        text: warlock.hp
+        text: l_warlock.hp
         height: 0.15 * parent.height
         width: height
         anchors.top: parent.top
@@ -38,7 +39,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.topMargin: 0.01 * parent.height
         anchors.right: parent.right
-        visible: warlock.banked_spell !== ""
+        visible: l_warlock.banked_spell !== ""
     }
 
     Item {
@@ -61,26 +62,25 @@ Rectangle {
 
     ScrollView {
         id: svGestures
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 0.01 * parent.height
         anchors.left: parent.left
         anchors.right: iiLeft.left
-        height: 0.59 * parent.height
+        anchors.bottom: rBottomLine.top
+        anchors.top: iCharm.bottom
 
         ListView {
             id: lwGestures
             anchors.fill: parent
             orientation: ListView.Horizontal
-            model: warlock.print_g
+            model: l_warlock.print_g
             delegate: Item {
                 id: lwiGesture
-                height: parent.height
+                height: iiLeft.height
                 width: iiLeft.width
 
                 IconInfoR {
                     id: iiHL
-                    source: "qrc:/res/"+lwGestures[index].l+".png"
-                    iconVisible: lwGestures[index].lv
+                    source: "qrc:/res/"+lwGestures.model[index].l+".png"
+                    iconVisible: lwGestures.model[index].lv
                     textVisible: false
                     height: iiLeft.height
                     width: parent.width
@@ -91,13 +91,13 @@ Rectangle {
 
                 IconInfoR {
                     id: iiHR
-                    source: "qrc:/res/"+lwGestures[index].r+".png"
-                    iconVisible: lwGestures[index].rv
+                    source: "qrc:/res/"+lwGestures.model[index].r+".png"
+                    iconVisible: lwGestures.model[index].rv
                     textVisible: false
                     height: iiLeft.height
                     width: parent.width
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 0.01 * rWarlock.height
+                    anchors.bottomMargin: 0.05 * rWarlock.height
                     anchors.right: parent.right
                 }
             }
@@ -108,7 +108,7 @@ Rectangle {
         id: iiLeft
         source: "qrc:/res/stars_light.png";
         text: ""
-        height: 0.29 * parent.height
+        height: 0.37 * parent.height
         width: 0.7 * height
         anchors.bottom: iiRight.top
         anchors.bottomMargin: 0.01 * parent.height
@@ -119,11 +119,19 @@ Rectangle {
         id: iiRight
         source: "qrc:/res/stars_light.png";
         text: ""
-        height: 0.29 * parent.height
-        width: 0.7 * height
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 0.01 * parent.height
+        height: iiLeft.height
+        width: iiLeft.width
+        anchors.bottom: rBottomLine.top
         anchors.right: parent.right
+    }
+
+    Rectangle {
+        id: rBottomLine
+        height: 0.03 * parent.height
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.left: parent.left
+        color: "#FEE2D6"
     }
 
 

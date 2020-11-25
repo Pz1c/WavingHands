@@ -18,7 +18,7 @@ BaseWindow {
 
     // This rectangle is the actual popup
     Item {
-        id: dialogWindow
+        id: battleWindow
         z: 11
         anchors.fill: content_item
         //color: "transparent"
@@ -30,7 +30,12 @@ BaseWindow {
             anchors.right: parent.right
             anchors.bottom: bfAll.top
 
-
+            Item {
+                id: iWarlocks
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+            }
         }
 
         Item {
@@ -38,38 +43,38 @@ BaseWindow {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 0.2 * parent.height
+            height: 0.1 * parent.height
 
             LargeText {
                id: ltAll
                text: "All"
                anchors.top: parent.top
-               anchors.verticalCenter: parent.verticalCenter
-               height: 0.2 * parent.height
+               anchors.horizontalCenter: parent.horizontalCenter
+               height: 0.5 * parent.height
                width: 0.3 * parent.width
-               bg_color: "#210430"
-               color: "#A8F4F4"
+               bg_color: "#544653"
+               color: "#FEE2D6"
             }
 
             IconInfo {
                 id: iiElemental
                 source: "qrc:/res/elemental_fire.png";
                 text: "3"
-                height: 0.15 * parent.height
+                height: 0.9 * parent.height
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.01 * parent.height
+                anchors.topMargin: 0.05 * parent.height
                 anchors.left: parent.left
             }
 
             IconInfo {
                 id: iiChat
-                source: "qrc:/res/banked_spell.png";
+                source: "qrc:/res/chat.png";
                 text: ""
-                height: 0.15 * parent.height
+                height: 0.9 * parent.height
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.01 * parent.height
+                anchors.topMargin: 0.05 * parent.height
                 anchors.right: parent.right
             }
         }
@@ -94,7 +99,7 @@ BaseWindow {
             return;
         }
         title_text = "Battle #" + mainWindow.gBattle.id;
-        BU.prepareBattle(mainWindow.gBattle);
+        BU.applyBattle(mainWindow.gBattle);
     }
 
     Component.onCompleted: {

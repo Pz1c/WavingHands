@@ -13,10 +13,10 @@ Image {
 
     LargeText {
         id: btnText
-        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.bottom: parent.bottom
-        height: 0.1 * parent.height
-        width: 0.1 * parent.width
+        height: 0.3 * parent.height
+        width: 0.3 * parent.width
         color: "white"
         fontSizeMode: Text.Fit
     }

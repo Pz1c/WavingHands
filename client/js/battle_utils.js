@@ -1,50 +1,27 @@
 var battle = {};
+var cWarlockObject;
+const G_WARLOCK_HEIGHT_COEFF = 0.45;
 
-function copyObject(from, to, except) {
-    var check_exclude = except && Array.isArray(except) && (except.length > 0);
-    for(var key in from) {
-        if (check_exclude && except.include(key)) {
-            continue;
-        }
-
-        to[key] = from[key];
-    }
-}
-
-function preparePrintGestures(GL, GR) {
-    var res = [], item, ll, lr;
-    for(var i = 1, Ln = GL.length; i < Ln; ++i) {
-        ll = GL.substr(i, 1);
-        lr = GR.substr(i, 1);
-        if (ll === ' ') {
-            ll = '_';
-        }
-        if (lr === ' ') {
-            lr = '_';
-        }
-
-        item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== '_', rv: lr !== '_'};
-        res.push(item);
-    }
-    return res;
-}
-
+Qt.include("battle_gui_utils.js");
 
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
     w.print_g = preparePrintGestures(w.L, w.R);
+    if (w.player) {
+        w.banked_spell = battle.fire;
+    }
 
     return w;
 }
 
 function parseTargets(targets_str) {
     battle.targetsList = [];
-    battle.targetsMap = [];
-    var strs = targets_str.split('#'), trgs;
+    battle.targetsMap = {};
+    var strs = strToArr2D(targets_str, '#', ';', true);
+    console.log("parseTargets", JSON.stringify(strs));
     for(var i = 0, Ln = strs.length; i < Ln; ++i) {
-        trgs = strs[i].split(",");
-        battle.targetsList.push(trgs[1]);
-        battle.targetsMap[trgs[0]] = trgs[1];
+        battle.targetsList.push(strs[i][1]);
+        battle.targetsMap[strs[i][1]] = strs[i][0];
     }
 }
 
@@ -78,4 +55,74 @@ function prepareBattle(raw_battle) {
     }
 
     parseTargets(raw_battle.targets);
+
+    console.log("prepared battle", JSON.stringify(battle));
+}
+
+function prepareElemental() {
+    if (battle.elemental.hp > 0) {
+        iiElemental.text = battle.elemental.hp;
+        iiElemental.source = "qrc:/res/elemental_"+battle.elemental.type+".png";
+        iiElemental.visible = true;
+    } else {
+        iiElemental.visible = false;
+    }
+}
+
+function prepareWarlocks() {
+    console.log("iWarlocks");
+    cleanChildren(iWarlocks);
+
+    if (!cWarlockObject) {
+        cWarlockObject = Qt.createComponent("qrc:///qml/game_components/Warlock.qml");
+    }
+    if (cWarlockObject.status === Component.Error) {
+        console.log("Error loading component: " + cWarlockObject.errorString());
+        return ;
+    }
+
+    if (cWarlockObject.status === Component.Ready) {
+        console.log("component ready");
+        finishPrepareWarlockList();
+    } else {
+        console.log("connect to component ready signal");
+        cWarlockObject.statusChanged.connect(finishPrepareWarlockList);
+    }
+}
+
+function finishPrepareWarlockList() {
+    console.log("finishPrepareWarlockList", battleWindow.height, battleWindow.width);
+    if (cWarlockObject.status === Component.Error || cWarlockObject.status !== Component.Ready) {
+        console.log("Error loading component:", cWarlockObject.errorString());
+        return ;
+    }
+    var curr_y = 0;
+    var total_height = 0;
+    for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        if (!battle.warlocks[i] || !battle.warlocks[i].active) {
+            continue;
+        }
+        var arr_m = battle.warlocks[i];
+        var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT_COEFF * battleWindow.height, width: battleWindow.width});
+        if (sprite === null) {
+            console.log("Error creating object");
+            continue;
+        }
+        console.log("looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
+        console.log("svWarlocks.w: " + iWarlocks.width);
+        console.log("svWarlocks.h: " + iWarlocks.height);
+        curr_y += sprite.height;
+        total_height += sprite.height;
+    }
+    iWarlocks.height = total_height;
+}
+
+function prepareGUI() {
+    prepareElemental();
+    prepareWarlocks()
+}
+
+function applyBattle(raw_battle) {
+    prepareBattle(raw_battle);
+    prepareGUI();
 }

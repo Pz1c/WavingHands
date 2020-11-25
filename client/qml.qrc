@@ -65,5 +65,7 @@
         <file>res/chat.png</file>
         <file>res/elemental_fire.png</file>
         <file>res/elemental_ice.png</file>
+        <file>js/battle_gui_utils.js</file>
+        <file>res/banked_spell.png</file>
     </qresource>
 </RCC>
