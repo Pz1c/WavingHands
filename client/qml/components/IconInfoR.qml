@@ -19,6 +19,8 @@ Rectangle {
         GradientStop { position: 1.0; color: "#FEE2D6" }
     }
 
+    radius: 10
+
     Image {
         id: iIcon
         anchors.fill: parent;

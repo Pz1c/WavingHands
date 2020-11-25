@@ -52,6 +52,7 @@ BaseWindow {
                anchors.horizontalCenter: parent.horizontalCenter
                height: 0.5 * parent.height
                width: 0.3 * parent.width
+               bg_visible: true
                bg_color: "#544653"
                color: "#FEE2D6"
             }

@@ -15,6 +15,7 @@ Item {
        anchors.horizontalCenter: parent.horizontalCenter
        height: 0.1 * parent.height
        width: 0.3 * parent.width
+       bg_visible: true
        bg_color: l_warlock.player ? "#210430" : "#544653"
        color: l_warlock.player ? "#A8F4F4" : "#FEE2D6"
     }
@@ -62,10 +63,12 @@ Item {
 
     ScrollView {
         id: svGestures
+        anchors.bottom: rBottomLine.top
         anchors.left: parent.left
         anchors.right: iiLeft.left
-        anchors.bottom: rBottomLine.top
-        anchors.top: iCharm.bottom
+        height: 0.73 * rWarlock.height
+        ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+        ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
         ListView {
             id: lwGestures
@@ -74,7 +77,7 @@ Item {
             model: l_warlock.print_g
             delegate: Item {
                 id: lwiGesture
-                height: iiLeft.height
+                height: svGestures.height
                 width: iiLeft.width
 
                 IconInfoR {
@@ -82,7 +85,7 @@ Item {
                     source: "qrc:/res/"+lwGestures.model[index].l+".png"
                     iconVisible: lwGestures.model[index].lv
                     textVisible: false
-                    height: iiLeft.height
+                    height: 0.3 * rWarlock.height
                     width: parent.width
                     anchors.bottom: iiHR.top
                     anchors.bottomMargin: 0.01 * rWarlock.height
@@ -94,7 +97,7 @@ Item {
                     source: "qrc:/res/"+lwGestures.model[index].r+".png"
                     iconVisible: lwGestures.model[index].rv
                     textVisible: false
-                    height: iiLeft.height
+                    height: 0.3 * rWarlock.height
                     width: parent.width
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 0.05 * rWarlock.height
@@ -108,7 +111,7 @@ Item {
         id: iiLeft
         source: "qrc:/res/stars_light.png";
         text: ""
-        height: 0.37 * parent.height
+        height: 0.35 * parent.height
         width: 0.7 * height
         anchors.bottom: iiRight.top
         anchors.bottomMargin: 0.01 * parent.height
@@ -122,6 +125,7 @@ Item {
         height: iiLeft.height
         width: iiLeft.width
         anchors.bottom: rBottomLine.top
+        anchors.bottomMargin: 0.02 * parent.height
         anchors.right: parent.right
     }
 
