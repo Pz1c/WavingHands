@@ -25,6 +25,12 @@ function preparePrintGestures(GL, GR) {
         if (lr === ' ') {
             lr = '_';
         }
+        if (ll === '?') {
+            ll = '=';
+        }
+        if (lr === '?') {
+            lr = '=';
+        }
 
         item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== '_', rv: lr !== '_'};
         res.push(item);

@@ -56,7 +56,7 @@ Item {
 
     Item {
         id: iCharm
-        anchors.top: iiBanked.bottom
+        anchors.top: iiHP.bottom
         anchors.topMargin: 0.01 * parent.height
         anchors.right: parent.right
         width: 0.5 * parent.width
@@ -198,14 +198,15 @@ Item {
     }
 
     function prepareState() {
+        console.log("prepareState", l_warlock.statusIcons.length, iCharm.x, iCharm.width, iCharm.height);
         if (l_IconInfoObj.status === Component.Error || l_IconInfoObj.status !== Component.Ready) {
             console.log("prepareState: Error loading component:", l_IconInfoObj.errorString());
             return ;
         }
-        var curr_x = iCharm.x + iCharm.width - iCharm.height;
+        var curr_x = iCharm.width - iCharm.height;
         var total_width = 0;
         for(var i = 0, Ln = l_warlock.statusIcons.length; i < Ln; ++i) {
-            if (!l_warlock.statusIcons[i] || !battle.statusIcons[i].value) {
+            if (!l_warlock.statusIcons[i] || !l_warlock.statusIcons[i].value) {
                 continue;
             }
             var arr_m = l_warlock.statusIcons[i];
@@ -214,7 +215,7 @@ Item {
                 console.log("prepareState: Error creating object");
                 continue;
             }
-            console.log("prepareState: looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
+            console.log("prepareState: looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width, JSON.stringify(arr_m));
 
             curr_x -= sprite.width;
             total_width += sprite.width;

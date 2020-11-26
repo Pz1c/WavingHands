@@ -85,5 +85,6 @@
         <file>res/goblin.png</file>
         <file>res/ogre.png</file>
         <file>res/troll.png</file>
+        <file>res/g_=.png</file>
     </qresource>
 </RCC>
