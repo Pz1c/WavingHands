@@ -78,6 +78,10 @@ BaseWindow {
                 anchors.top: parent.top
                 anchors.topMargin: 0.05 * parent.height
                 anchors.right: parent.right
+
+                onClicked: {
+                    mainWindow.showFinishedBattle();
+                }
             }
         }
     }
