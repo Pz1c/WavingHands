@@ -55,6 +55,7 @@ BaseWindow {
                bg_visible: true
                bg_color: "#544653"
                color: "#FEE2D6"
+               border_visible: false
             }
 
             IconInfo {

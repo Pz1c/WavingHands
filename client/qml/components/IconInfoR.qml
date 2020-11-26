@@ -14,11 +14,9 @@ Rectangle {
 
     signal clicked
 
-    gradient: Gradient {
-        GradientStop { position: 0.0; color: "#E7FFFF" }
-        GradientStop { position: 1.0; color: "#FEE2D6" }
-    }
-
+    color: "transparent"
+    border.color: "#E7FFFF"
+    border.width: 3
     radius: 10
 
     Image {

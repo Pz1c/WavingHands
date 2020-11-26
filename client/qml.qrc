@@ -67,5 +67,23 @@
         <file>res/elemental_ice.png</file>
         <file>js/battle_gui_utils.js</file>
         <file>res/banked_spell.png</file>
+        <file>res/amnesia.png</file>
+        <file>res/charmed.png</file>
+        <file>res/coldproof.png</file>
+        <file>res/delay.png</file>
+        <file>res/disease.png</file>
+        <file>res/fireproof.png</file>
+        <file>res/haste.png</file>
+        <file>res/maladroit.png</file>
+        <file>res/mshield.png</file>
+        <file>res/paralized.png</file>
+        <file>res/permanency.png</file>
+        <file>res/poison.png</file>
+        <file>res/scared.png</file>
+        <file>res/shield.png</file>
+        <file>res/giant.png</file>
+        <file>res/goblin.png</file>
+        <file>res/ogre.png</file>
+        <file>res/troll.png</file>
     </qresource>
 </RCC>

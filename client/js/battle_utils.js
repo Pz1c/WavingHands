@@ -1,5 +1,5 @@
 var battle = {};
-var cWarlockObject;
+var cWarlockObject,cIconObject;
 const G_WARLOCK_HEIGHT_COEFF = 0.45;
 
 Qt.include("battle_gui_utils.js");
@@ -7,6 +7,7 @@ Qt.include("battle_gui_utils.js");
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
     w.print_g = preparePrintGestures(w.L, w.R);
+    w.statusIcons = prepareStatusIcon(w);
     if (w.player) {
         w.banked_spell = battle.fire;
     }
@@ -19,9 +20,14 @@ function parseTargets(targets_str) {
     battle.targetsMap = {};
     var strs = strToArr2D(targets_str, '#', ';', true);
     console.log("parseTargets", JSON.stringify(strs));
+    var title;
     for(var i = 0, Ln = strs.length; i < Ln; ++i) {
-        battle.targetsList.push(strs[i][1]);
-        battle.targetsMap[strs[i][1]] = strs[i][0];
+        title = strs[i][1];
+        if (title === " ") {
+            title = "Default";
+        }
+        battle.targetsList.push(title);
+        battle.targetsMap[title] = strs[i][0];
     }
 }
 
@@ -37,6 +43,15 @@ function prepareBattle(raw_battle) {
             battle.elemental = m;
             battle.elemental.type = m.name.indexOf("Fire") !== -1 ? "fire" : "ice";
             continue;
+        }
+        if (m.name.indexOf("Goblin") !== -1) {
+            m.icon = "goblin";
+        } else if (m.name.indexOf("Ogre") !== -1) {
+            m.icon = "ogre";
+        } else if (m.name.indexOf("Troll") !== -1) {
+            m.icon = "troll";
+        } else if (m.name.indexOf("Giant") !== -1) {
+            m.icon = "giant";
         }
 
         if (!battle.monsters[m.owner]) {
@@ -76,6 +91,9 @@ function prepareWarlocks() {
     if (!cWarlockObject) {
         cWarlockObject = Qt.createComponent("qrc:///qml/game_components/Warlock.qml");
     }
+    if (!cIconObject) {
+        cIconObject = Qt.createComponent("qrc:///qml/components/IconInfo.qml");
+    }
     if (cWarlockObject.status === Component.Error) {
         console.log("Error loading component: " + cWarlockObject.errorString());
         return ;
@@ -103,7 +121,7 @@ function finishPrepareWarlockList() {
             continue;
         }
         var arr_m = battle.warlocks[i];
-        var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT_COEFF * battleWindow.height, width: battleWindow.width});
+        var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT_COEFF * battleWindow.height, width: battleWindow.width});
         if (sprite === null) {
             console.log("Error creating object");
             continue;

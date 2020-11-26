@@ -1,3 +1,6 @@
+var icon_status_code = ["scared","confused","charmed","paralized","shield","coldproof","fireproof","poison","desease","amnesia","maladroit","mshield","delay","time_stop","haste","permanency"];
+var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"haste"};
+
 function copyObject(from, to, except) {
     var check_exclude = except && Array.isArray(except) && (except.length > 0);
     for(var key in from) {
@@ -48,4 +51,19 @@ function cleanChildren(component) {
         console.log("destroying: " + i)
         component.children[i-1].destroy();
     }
+}
+
+function prepareStatusIcon(w) {
+    var res = [], code, val, icon_name;
+    for (var i = 0, Ln = icon_status_code.length; i < Ln; ++i) {
+        code = icon_status_code[i];
+        if (!w[code] || (w[code] === 0)) {
+            continue;
+        }
+        icon_name = icon_status_code_to_icon[code] ? icon_status_code_to_icon[code] : code;
+        val = w[code] === 999 ? "∞" : w[code];
+        res.push({icon: icon_name, value: val});
+    }
+
+    return res;
 }
