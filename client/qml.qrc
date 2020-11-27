@@ -1,11 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>res/settings.png</file>
-        <file>res/user.png</file>
-        <file>res/refresh.png</file>
-        <file>res/list.png</file>
-        <file>res/spellbook.png</file>
         <file>html/spelllist_en.htm</file>
         <file>img/reg.png</file>
         <file>js/ai_utils.js</file>
@@ -86,5 +81,6 @@
         <file>res/g_=.png</file>
         <file>res/background_battle.png</file>
         <file>qml/windows/wnd_chat.qml</file>
+        <file>res/summon.png</file>
     </qresource>
 </RCC>

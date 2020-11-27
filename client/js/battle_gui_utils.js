@@ -38,6 +38,20 @@ function preparePrintGestures(GL, GR) {
     return res;
 }
 
+function getMonsterIconByName(name) {
+    if (name.indexOf("Goblin") !== -1) {
+        return "goblin";
+    } else if (name.indexOf("Ogre") !== -1) {
+        return "ogre";
+    } else if (name.indexOf("Troll") !== -1) {
+        return "troll";
+    } else if (name.indexOf("Giant") !== -1) {
+        return "giant";
+    } else {
+        return "summon";
+    }
+}
+
 function strToArr2D(str, sep1, sep2, skip_empty) {
     var res = [];
     var arr1 = str.split(sep1);

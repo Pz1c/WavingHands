@@ -120,6 +120,7 @@ BaseWindow {
     }
 
     function initProfileFields() {
+        mainWindow.storeWnd(dMainItem);
         console.log("user_profile.initProfileFields", Qt.show_info_self);
         tPlayerInfo.text = Qt.show_info_self ? Qt.core.playerInfo : Qt.core.warlockInfo;
         rSendMsg.visible = !Qt.show_info_self;

@@ -89,6 +89,7 @@ BaseWindow {
     }
 
     Component.onCompleted: {
+        mainWindow.storeWnd(dMainItem);
         initErrFields();
     }
 }

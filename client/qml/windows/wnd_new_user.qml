@@ -86,6 +86,7 @@ BaseWindow {
     }
 
     Component.onCompleted: {
+        mainWindow.storeWnd(dMainItem);
         console.log("wnd_new_user.onCompleted", dialogWindow.z, content_item.z);
     }
 }

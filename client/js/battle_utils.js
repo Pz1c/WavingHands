@@ -6,6 +6,12 @@ Qt.include("battle_gui_utils.js");
 
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
+    if (w.summon_left) {
+        w.monsters.push({icon:"summon",hp:"L",owner:w.name,name:"LH:"+w.name});
+    }
+    if (w.summon_right) {
+        w.monsters.push({icon:"summon",hp:"R",owner:w.name,name:"RH:"+w.name});
+    }
     w.print_g = preparePrintGestures(w.L, w.R);
     w.statusIcons = prepareStatusIcon(w);
     if (w.player) {
@@ -35,7 +41,7 @@ function prepareBattle(raw_battle) {
     battle.id = raw_battle.id;
     battle.warlocks = [];
     battle.elemental = {hp:0,type:"fire"};
-    battle.monsters = [];
+    battle.monsters = {};
 
     var i, Ln;
     for(i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
@@ -45,15 +51,7 @@ function prepareBattle(raw_battle) {
             battle.elemental.type = m.name.indexOf("Fire") !== -1 ? "fire" : "ice";
             continue;
         }
-        if (m.name.indexOf("Goblin") !== -1) {
-            m.icon = "goblin";
-        } else if (m.name.indexOf("Ogre") !== -1) {
-            m.icon = "ogre";
-        } else if (m.name.indexOf("Troll") !== -1) {
-            m.icon = "troll";
-        } else if (m.name.indexOf("Giant") !== -1) {
-            m.icon = "giant";
-        }
+        m.icon = getMonsterIconByName(m.name);
 
         if (!battle.monsters[m.owner]) {
             battle.monsters[m.owner] = [];
@@ -72,7 +70,7 @@ function prepareBattle(raw_battle) {
 
     parseTargets(raw_battle.targets);
     battle.chat = raw_battle.chat;
-
+    delete battle.monsters;
     console.log("prepared battle", JSON.stringify(battle));
 }
 
@@ -90,17 +88,16 @@ function prepareWarlocks() {
     console.log("iWarlocks");
     cleanChildren(iWarlocks);
 
-    if (!cWarlockObject) {
-        cWarlockObject = Qt.createComponent("qrc:///qml/game_components/Warlock.qml");
-    }
     if (!cIconObject) {
         cIconObject = Qt.createComponent("qrc:///qml/components/IconInfo.qml");
+    }
+    if (!cWarlockObject) {
+        cWarlockObject = Qt.createComponent("qrc:///qml/game_components/Warlock.qml");
     }
     if (cWarlockObject.status === Component.Error) {
         console.log("Error loading component: " + cWarlockObject.errorString());
         return ;
     }
-
     if (cWarlockObject.status === Component.Ready) {
         console.log("component ready");
         finishPrepareWarlockList();
