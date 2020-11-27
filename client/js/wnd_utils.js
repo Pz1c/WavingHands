@@ -6,6 +6,7 @@ var wnd_login = "wnd_login.qml";
 var wnd_profile = "wnd_profile.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_battle = "wnd_battle.qml";
+var wnd_chat = "wnd_chat.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -48,6 +49,7 @@ function showWnd(wnd_name, close_current, close_all_stack, add_in_stack, only_cr
         wnd_obj = {code: wnd_name, full_name: getQmlFullName(wnd_name)};
         wnd_obj.wnd = Qt.createComponent(wnd_obj.full_name);
         arr_wnd_obj[wnd_name] = wnd_obj;
+        console.log("add into arr_wnd_obj", wnd_name);
     } else {
         wnd_obj = arr_wnd_obj[wnd_name];
     }
@@ -172,8 +174,8 @@ function refreshWindow(wnd_name, force) {
         }
     } else {
         console.log("refreshWindow", "wnd not found", wnd_name);
-    }
-    return false;
+        return false;
+    }    
 }
 
 function hideWindow(wnd_name) {
@@ -186,7 +188,6 @@ function hideWindow(wnd_name) {
         console.log("hideWindow", wnd_name, "not found");
     }
 }
-
 
 function prepareGameWindows() {
 
@@ -204,7 +205,7 @@ function showSpellbookWindow() {
     showWnd(wnd_spellbook, 0, 0, 1);
 }
 
-function showErrorWnd(error) {
+function showErrorWnd(error, chat) {
     mainWindow.gERROR = error;
     if (!mainWindow.gERROR.type) {
         mainWindow.gERROR.type = 0;
@@ -213,15 +214,7 @@ function showErrorWnd(error) {
         mainWindow.gERROR.id = -1;
     }
 
-    showWnd(wnd_error, 0, 0, 1);
-}
-
-function showMainMenu() {
-    showWnd(wnd_main_menu, 0, 0, 1);
-}
-
-function showUserProfile(own) {
-    showWnd(wnd_main_menu, 0, 0, 1);
+    showWnd(chat ? wnd_chat : wnd_error, 0, 0, 1);
 }
 
 function showNewUserMenu() {

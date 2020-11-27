@@ -53,49 +53,62 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
 }
 
 
-QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos) {
+QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos, bool NoChangePos) {
+    qDebug() << "QWarlockUtils::getStringFromData" << (Data.length() > 60 ? Data.left(60) : Data) << Search << ValueBegin << ValueEnd << Pos << NoChangePos;
+    int old_pos = Pos, idx1, idx2 = 0, idx3 = -1;
     if (Pos == -1) {
         Pos = 0;
     }
-    int idx1 = Data.indexOf(Search, Pos);
-    Pos = -1;
-    if (idx1 == -1) {
+    do {
+        idx1 = Data.indexOf(Search, Pos);
+        if (idx1 == -1) {
+            break;
+        }
+        idx1 += Search.length();
+
+        idx2 = ValueBegin.isEmpty() ? idx1 : Data.indexOf(ValueBegin, idx1);
+        if (idx2 == -1) {
+            break;
+        }
+
+        idx2 += ValueBegin.length();
+
+        idx3 = -1;
+        QStringList ve = ValueEnd.split("#;#");
+        foreach(QString v, ve) {
+            int idx = Data.indexOf(v, idx2);
+            if (idx == -1) {
+                continue;
+            }
+            if ((idx3 == -1) || (idx < idx3)) {
+                idx3 = idx;
+            }
+        }
+        if (idx3 == -1) {
+            idx3 = Data.length();
+        }
+    } while(false);
+    if (NoChangePos) {
+        Pos = old_pos;
+    } else {
+        Pos = idx3;
+    }
+    if (idx3 != -1) {
+        QString res = Data.mid(idx2, idx3 - idx2);
+        qDebug() << "QWarlockUtils::getStringFromData" << idx1 << idx2 << idx3 << res;
+        return res;
+    } else {
+        qDebug() << "QWarlockUtils::getStringFromData not found" << idx1 << idx2 << idx3;
         return "";
     }
-    idx1 += Search.length();
-
-    int idx2 = ValueBegin.isEmpty() ? idx1 : Data.indexOf(ValueBegin, idx1);
-    if (idx2 == -1) {
-        return "";
-    }
-
-    idx2 += ValueBegin.length();
-
-    int idx3 = -1;
-    QStringList ve = ValueEnd.split("#;#");
-    foreach(QString v, ve) {
-        int idx = Data.indexOf(v, idx2);
-        if (idx == -1) {
-            continue;
-        }
-        if ((idx3 == -1) || (idx < idx3)) {
-            idx3 = idx;
-        }
-    }
-    if (idx3 == -1) {
-        idx3 = Data.length();
-    }
-    QString res = Data.mid(idx2, idx3 - idx2);
-    Pos = idx3;
-    //qDebug() << "getStringFromData " << Search << " res: " << res << Data << idx2 << idx3 << Data.length();
-    return res;
 }
 
-int QWarlockUtils::getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos) {
-    QString res = getStringFromData(Data, Search, ValueBegin, ValueEnd, Pos);
+int QWarlockUtils::getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos, bool NoChangePos) {
+    QString res = getStringFromData(Data, Search, ValueBegin, ValueEnd, Pos, NoChangePos);
     bool ok;
     int int_res = res.toInt(&ok, 10);
     int final_res = ok ? int_res : 0;
+    qDebug() << "QWarlockUtils::getIntFromPlayerData" << res << int_res << ok << final_res;
     return final_res;
 }
 

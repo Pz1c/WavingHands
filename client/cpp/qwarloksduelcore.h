@@ -283,6 +283,7 @@ private:
     QString _topList;
     QString _warlockInfo;
     QString _warlockId;
+    QString _chat;
 
     // management
     bool _isTimerActive;

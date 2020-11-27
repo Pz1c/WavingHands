@@ -11,7 +11,6 @@
         <file>js/ai_utils.js</file>
         <file>js/main_utils.js</file>
         <file>js/user_profile_utils.js</file>
-        <file>qml/btn_battle.qml</file>
         <file>qml/edit_lang.qml</file>
         <file>qml/edit_login.qml</file>
         <file>qml/edit_network.qml</file>
@@ -22,7 +21,6 @@
         <file>qml/new_user_menu.qml</file>
         <file>qml/paralyze.qml</file>
         <file>qml/person_charmed.qml</file>
-        <file>qml/spell_details.qml</file>
         <file>js/wnd_utils.js</file>
         <file>qml/windows/wnd_new_user.qml</file>
         <file>qml/windows/wnd_error.qml</file>
@@ -86,5 +84,7 @@
         <file>res/ogre.png</file>
         <file>res/troll.png</file>
         <file>res/g_=.png</file>
+        <file>res/background_battle.png</file>
+        <file>qml/windows/wnd_chat.qml</file>
     </qresource>
 </RCC>

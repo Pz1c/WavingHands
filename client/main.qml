@@ -523,6 +523,23 @@ ApplicationWindow {
         }
     }
 
+    function showBattleChat(battle_id, chat_msg, new_msg) {
+        console.log("showBattleChat");
+        WNDU.showErrorWnd({text:chat_msg, title: "Battle #" + battle_id + " chat", msg: new_msg}, true);
+    }
+
+    function storeBattleChatMsg(msg) {
+        var btl_wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (btl_wnd) {
+            console.log("storeBattleChatMsg", "found battle wnd", WNDU.wnd_battle);
+            btl_wnd.storeChatMsg(msg);
+        } else {
+            console.log("storeBattleChatMsg", "not found battle wnd");
+        }
+
+        processEscape();
+    }
+
     function showFinishedBattle() {
         var bit = core.loadedBattleID;
         logEvent("showFinishedBattle", {battle_id:core.loadedBattleID});
@@ -557,7 +574,7 @@ ApplicationWindow {
     }
 
     function storeWnd(wnd) {
-        //WNDU.wndTmp = wnd;
+        WNDU.storeWnd(wnd);
     }
 
     function closeChild() {

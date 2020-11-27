@@ -20,6 +20,7 @@ Item {
        bg_color: l_warlock.player ? "#210430" : "#544653"
        color: l_warlock.player ? "#A8F4F4" : "#FEE2D6"
        border_visible: false
+       radius: 10
     }
 
     IconInfo {
@@ -45,22 +46,36 @@ Item {
         visible: l_warlock.player && (l_warlock.banked_spell !== "")
     }
 
-    Item {
-        id: iMonsters
+    ScrollView {
+        id: svMonsters
         anchors.top: iiHP.bottom
         anchors.topMargin: 0.01 * parent.height
         anchors.left: parent.left
         width: 0.5 * parent.width
         height: 0.15 * parent.height
+        ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+        ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+
+        Item {
+            id: iMonsters
+            anchors.fill: parent
+        }
     }
 
-    Item {
-        id: iCharm
+    ScrollView {
+        id: svCharm
         anchors.top: iiHP.bottom
         anchors.topMargin: 0.01 * parent.height
         anchors.right: parent.right
         width: 0.5 * parent.width
         height: 0.15 * parent.height
+        ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+        ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+
+        Item {
+            id: iCharm
+            anchors.fill: parent
+        }
     }
 
     ScrollView {
@@ -92,11 +107,11 @@ Item {
                     anchors.bottom: iiHR.top
                     anchors.bottomMargin: 0.01 * rWarlock.height
                     anchors.right: parent.right
+                    active: false
                     gradient: Gradient {
                             GradientStop { position: 0.0; color: "#E7FFFF" }
                             GradientStop { position: 1.0; color: "#FEE2D6" }
                         }
-
                 }
 
                 IconInfo {
@@ -109,11 +124,11 @@ Item {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 0.05 * rWarlock.height
                     anchors.right: parent.right
+                    active: false
                     gradient: Gradient {
                             GradientStop { position: 0.0; color: "#E7FFFF" }
                             GradientStop { position: 1.0; color: "#FEE2D6" }
                         }
-
                 }
             }
         }
@@ -156,6 +171,14 @@ Item {
 
     Component.onCompleted: finishWarlockCreation();
 
+    function iconClick(data) {
+        console.log("iconClick", l_warlock.name, JSON.stringify(data));
+    }
+
+    function iconDoubleClick(data) {
+        console.log("iconDoubleClick", l_warlock.name, JSON.stringify(data));
+    }
+
     function scrollGestures() {
         if (!svGestures.ScrollBar || !svGestures.ScrollBar.horizontal) {
             return;
@@ -173,57 +196,43 @@ Item {
         console.log("Warlock.qml.finishWarlockCreation", svGestures.ScrollBar.horizontal.position, cnt);
     }
 
-    function prepareMonsters() {
+    function prepareDynamic(arr, parent, code_value, start_x, incerment) {
         if (l_IconInfoObj.status === Component.Error || l_IconInfoObj.status !== Component.Ready) {
-            console.log("prepareMonsters Error loading component:", l_IconInfoObj.errorString());
+            console.log("prepareDynamic Error loading component:", l_IconInfoObj.errorString());
             return ;
         }
-        var curr_x = 0;
+        var curr_x = start_x;
         var total_width = 0;
-        for(var i = 0, Ln = l_warlock.monsters.length; i < Ln; ++i) {
-            if (!l_warlock.monsters[i] || (l_warlock.monsters[i].hp <= 0)) {
+        for(var i = 0, Ln = arr.length; i < Ln; ++i) {
+            if (!arr[i]) {
                 continue;
             }
-            var arr_m = l_warlock.monsters[i];
-            var sprite = l_IconInfoObj.createObject(iMonsters, {l_data: arr_m,x: curr_x, y: 0, height: iMonsters.height, width: iMonsters.height, text: arr_m.hp, source: "qrc:/res/"+arr_m.icon+".png"});
+            var arr_m = arr[i];
+            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value], source: "qrc:/res/"+arr_m.icon+".png"});
             if (sprite === null) {
-                console.log("prepareMonsters Error creating object");
+                console.log("prepareDynamic Error creating object");
                 continue;
             }
-            console.log("prepareMonsters looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
+            console.log("prepareDynamic looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
+            sprite.clicked.connect(function () { rWarlock.iconClick(arr_m); });
+            sprite.doubleClicked.connect(function () { rWarlock.iconDoubleClick(arr_m); });
 
-            curr_x += sprite.width;
+            curr_x += incerment * sprite.width;
             total_width += sprite.width;
         }
     }
 
-    function prepareState() {
-        console.log("prepareState", l_warlock.statusIcons.length, iCharm.x, iCharm.width, iCharm.height);
-        if (l_IconInfoObj.status === Component.Error || l_IconInfoObj.status !== Component.Ready) {
-            console.log("prepareState: Error loading component:", l_IconInfoObj.errorString());
-            return ;
-        }
-        var curr_x = iCharm.width - iCharm.height;
-        var total_width = 0;
-        for(var i = 0, Ln = l_warlock.statusIcons.length; i < Ln; ++i) {
-            if (!l_warlock.statusIcons[i] || !l_warlock.statusIcons[i].value) {
-                continue;
-            }
-            var arr_m = l_warlock.statusIcons[i];
-            var sprite = l_IconInfoObj.createObject(iCharm, {l_data: arr_m,x: curr_x, y: 0, height: iCharm.height, width: iCharm.height, text: arr_m.value, source: "qrc:/res/"+arr_m.icon+".png"});
-            if (sprite === null) {
-                console.log("prepareState: Error creating object");
-                continue;
-            }
-            console.log("prepareState: looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width, JSON.stringify(arr_m));
+    function prepareMonsters() {
+        prepareDynamic(l_warlock.monsters, iMonsters, "hp", 0, 1);
+    }
 
-            curr_x -= sprite.width;
-            total_width += sprite.width;
-        }
+    function prepareState() {
+        prepareDynamic(l_warlock.statusIcons, iCharm, "value", iCharm.width - iCharm.height, -1);
     }
 
 
     function finishWarlockCreation() {
+        console.log("finishWarlockCreation", JSON.stringify(l_warlock));
         scrollGestures();
         prepareMonsters();
         prepareState();

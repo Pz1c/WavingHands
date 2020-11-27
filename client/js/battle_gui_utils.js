@@ -68,7 +68,7 @@ function prepareStatusIcon(w) {
         }
         icon_name = icon_status_code_to_icon[code] ? icon_status_code_to_icon[code] : code;
         val = w[code] === 999 ? "∞" : w[code];
-        res.push({icon: icon_name, value: val});
+        res.push({action: code, icon: icon_name, value: val});
     }
 
     return res;

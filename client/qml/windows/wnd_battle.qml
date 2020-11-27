@@ -7,7 +7,7 @@ import "qrc:/qml/components"
 import "qrc:/js/battle_utils.js" as BU
 
 BaseWindow {
-    id: dMainItem
+    id: battleItem
 
     with_controls: true
     //with_apply: false
@@ -15,6 +15,9 @@ BaseWindow {
     body_height_prc: 90
     title_height_prc: 5
     control_height_prc: 5
+    with_action1: true
+    action1_text: "Chat"
+    bg_source: "qrc:/res/background_battle.png"
 
     // This rectangle is the actual popup
     Item {
@@ -56,6 +59,7 @@ BaseWindow {
                bg_color: "#544653"
                color: "#FEE2D6"
                border_visible: false
+               radius: 10
             }
 
             IconInfo {
@@ -90,6 +94,15 @@ BaseWindow {
         mainWindow.processEscape();
     }
 
+    onAction1: {
+        mainWindow.showBattleChat(BU.battle.id, BU.battle.chat, BU.battle.chat_msg);
+    }
+
+    function storeChatMsg(msg) {
+        console.log("storeChatMsg", msg);
+        BU.battle.chat_msg = msg;
+    }
+
     function showWnd() {
         initBattleFields();
         visible = true;
@@ -109,6 +122,7 @@ BaseWindow {
     }
 
     Component.onCompleted: {
+        mainWindow.storeWnd(battleItem);
         initBattleFields();
     }
 }

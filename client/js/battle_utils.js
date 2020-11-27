@@ -32,6 +32,7 @@ function parseTargets(targets_str) {
 }
 
 function prepareBattle(raw_battle) {
+    battle.id = raw_battle.id;
     battle.warlocks = [];
     battle.elemental = {hp:0,type:"fire"};
     battle.monsters = [];
@@ -70,6 +71,7 @@ function prepareBattle(raw_battle) {
     }
 
     parseTargets(raw_battle.targets);
+    battle.chat = raw_battle.chat;
 
     console.log("prepared battle", JSON.stringify(battle));
 }
@@ -135,9 +137,15 @@ function finishPrepareWarlockList() {
     iWarlocks.height = total_height;
 }
 
+function prepareChat() {
+    console.log("prepareChat", )
+    battleItem.action1_text = battle.chat.length > 0 ? "Chat*" : "Chat";
+}
+
 function prepareGUI() {
     prepareElemental();
-    prepareWarlocks()
+    prepareWarlocks();
+    prepareChat();
 }
 
 function applyBattle(raw_battle) {

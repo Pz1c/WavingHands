@@ -19,6 +19,7 @@ Item {
     property alias verticalAlignment: ltiTitle.verticalAlignment
     property string bg_color: "snow"
     property string border_color: "black"
+    property alias validator: tiMain.validator
 
     LargeText {
         id: ltiTitle

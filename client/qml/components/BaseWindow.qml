@@ -18,7 +18,8 @@ Item {
     property alias title_text: ltTitle.text
     property alias title_color: ltTitle.color
     property alias content_item: bwBody
-    //property alias bg_visible: iTopBg.visible
+    property alias bg_visible: iTopBg.visible
+    property alias bg_source: iTopBg.source
     property alias with_controls: bwControl.visible
     property alias with_cancell: bbCancel.visible
     property alias with_apply: bbApply.visible

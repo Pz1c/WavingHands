@@ -676,7 +676,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
     _isParaFDF = Data.indexOf("(ParaFDF)") != -1;
     QString point1 = "<A TARGET=_blank HREF=\"/rules/1/quickref.html\">Spell Reference</A></DIV>";
-    QString point2 = _loadedBattleType != 1 ? "</BODY>" : "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">";
+    QString point2 = _loadedBattleType != 1 ? "</BODY>" : "<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=";
     int idx1 = Data.indexOf(point1);
     if (idx1 == -1) {
         _errorMsg = "Wrong battle answer!";
@@ -689,6 +689,14 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         _errorMsg = "Wrong battle answer!";
         emit errorOccurred();
         return false;
+    }
+
+    _chat.clear();
+    if (Data.indexOf("\".<BR>") != -1) {
+        int cidx1 = Data.indexOf("<BLOCKQUOTE>") + 12;
+        int cidx2 = Data.lastIndexOf("\".<BR>");
+        _chat = Data.mid(cidx1, cidx2 - cidx1);
+        _chat = _chat.replace(" says \"", ": ").replace("\".<BR>", ".<br>").replace('"', "\\\"");
     }
 
     qDebug() << "finishGetFinishedBattle all fine" << state << point2;
@@ -710,7 +718,14 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         return false;
     }
 
-    QString ReadyData = Data.mid(idx2, Data.length() - idx2);
+    int idx3 = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">", idx1);
+    if (idx3 == -1) {
+        _errorMsg = "Wrong battle answer!";
+        emit errorOccurred();
+        return false;
+    }
+
+    QString ReadyData = Data.mid(idx3, Data.length() - idx3);
     if (ReadyData.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\"") == -1) {
         // mean battle finished just now
         _errorMsg = "Looks like battle already finished, please wait for refresh";
@@ -845,9 +860,8 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _charmPersonList = QWarlockUtils::getCharmedPersonList(Data);
     _paralyzeList = QWarlockUtils::getParalyseList(Data);
     int Pos = 0;
-    _loadedBattleTurn = QWarlockUtils::getIntFromPlayerData(Data, "<INPUT TYPE=HIDDEN NAME=turn", "VALUE=", ">", Pos);
-    Pos = 0;
-    _fire = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=CHECKBOX CLASS=check NAME=FIRE VALUE=1", ">", "<", Pos);
+    _loadedBattleTurn = QWarlockUtils::getIntFromPlayerData(Data, "<INPUT TYPE=HIDDEN NAME=turn", "VALUE=", ">", Pos, true);
+    _fire = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=CHECKBOX CLASS=check NAME=FIRE VALUE=1", ">", "<", Pos, true);
     _isDelay = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=DELAY") != -1;
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
@@ -868,6 +882,7 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
         _extraOrderInfo.append(QString("%1=%2").arg(par_name, par_val));
     }
     qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn;
+
     return _loadedBattleTurn != 0;
 }
 
@@ -1682,8 +1697,8 @@ QString QWarloksDuelCore::battleInfo() {
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":%12,\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\"}")
+                   "\"targets\":\"%15\",\"chat\":\"%16\"}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg);
+            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat);
 }

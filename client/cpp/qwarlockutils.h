@@ -23,8 +23,8 @@ public:
     QWarlockUtils();
 
     static QList<int> getBattleList(QString &Data, QString Search);
-    static QString getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos);
-    static int getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos);
+    static QString getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos, bool NoChangePos = false);
+    static int getIntFromPlayerData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos, bool NoChangePos = false);
     static bool parseTargetList(QString &Data, QList<QValueName> &_Targets, QString &error);
     static bool parseMonster(QString &Data, QList<QMonster *> &result, QString &error);
     static bool parseWarlock(QString &Data, QList<QWarlock *> &result, QString &error, const QString &player);

@@ -5,6 +5,7 @@ Item {
     id: ltRoot
     property alias bg_visible: ltBG.visible
     property alias bg_color: ltBG.color
+    property alias radius: ltBG.radius
     property bool  border_visible: true
     property alias color: tTitle.color
     property alias horizontalAlignment: tTitle.horizontalAlignment

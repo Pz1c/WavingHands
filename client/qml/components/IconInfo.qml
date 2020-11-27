@@ -15,6 +15,7 @@ Rectangle {
     property var l_data: ({})
 
     signal clicked
+    signal doubleClicked
 
     color: "#551470"
     radius: 10
@@ -36,18 +37,52 @@ Rectangle {
         fontSizeMode: Text.Fit
     }
 
+    SequentialAnimation on color {
+        id: saClick
+        loops: 1
+        running: false
+
+        ColorAnimation {
+            from: "#551470"
+            to: "white"
+            duration: 200
+        }
+        ColorAnimation {
+            from: "white"
+            to: "#551470"
+            duration: 200
+        }
+    }
+
     //Mouse area to react on click events
     MouseArea {
         anchors.fill: button
+        //pressAndHoldInterval: 500
         onClicked: {
             if (active) {
+                saClick.loops = 1;
+                saClick.start();
                 button.clicked();
             }
+        }
+        /*onDoubleClicked: {
+            if (active) {
+                saClick.loops = 2;
+                saClick.start();
+                button.doubleClicked();
+            }
+        }*/
+        onPressAndHold: {
+            //if (active) {
+                saClick.loops = 2;
+                saClick.start();
+                button.doubleClicked();
+            //}
         }
     }
 
     function onFinishCreation() {
-        console.log("Button.onFinishCreation");
+        console.log("IconInfo.onFinishCreation");
     }
 
     Component.onCompleted: onFinishCreation();
