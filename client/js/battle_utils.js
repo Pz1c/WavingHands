@@ -135,8 +135,9 @@ function finishPrepareWarlockList() {
 }
 
 function prepareChat() {
-    console.log("prepareChat", )
-    battleItem.action1_text = battle.chat.length > 0 ? "Chat*" : "Chat";
+    var with_msg = battle.chat.indexOf(" says ") !== -1;
+    console.log("prepareChat", with_msg, battle.chat);
+    battleItem.action1_text = with_msg ? "Chat*" : "Chat";
 }
 
 function prepareGUI() {

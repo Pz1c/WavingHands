@@ -537,7 +537,7 @@ function finishLoadParalyzeEx(char_person_list) {
         pParalyzeObj.push(sprite);
         console.log("looks like created: " + sprite.p_label + " x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("lvaoParalyze.width: " + lvaoParalyze.width);
-        if (currLeft != 0) {
+        if (currLeft !== 0) {
             console.log("currentleft.w: " + currLeft.width)
             if (currLeft.width + sprite.width + 6 < lvaoParalyze.width) {
                 sprite.y = currLeft.y

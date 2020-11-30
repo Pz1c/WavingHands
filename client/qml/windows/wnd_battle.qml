@@ -9,12 +9,12 @@ import "qrc:/js/battle_utils.js" as BU
 BaseWindow {
     id: battleItem
 
-    with_controls: true
+    with_controls: false
     //with_apply: false
     body_width_prc: 100
-    body_height_prc: 90
+    body_height_prc: 95
     title_height_prc: 5
-    control_height_prc: 5
+    control_height_prc: 0
     with_action1: true
     action1_text: "Chat"
     bg_source: "qrc:/res/background_battle.png"
@@ -84,7 +84,7 @@ BaseWindow {
                 anchors.right: parent.right
 
                 onClicked: {
-                    mainWindow.showFinishedBattle();
+                    mainWindow.showBattleChat(BU.battle.id, BU.battle.chat_msg);
                 }
             }
         }
@@ -94,9 +94,9 @@ BaseWindow {
         mainWindow.processEscape();
     }
 
-    onAction1: {
+    /*onAction1: {
         mainWindow.showBattleChat(BU.battle.id, BU.battle.chat, BU.battle.chat_msg);
-    }
+    }*/
 
     function storeChatMsg(msg) {
         console.log("storeChatMsg", msg);

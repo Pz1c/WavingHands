@@ -7,13 +7,10 @@
         <file>js/main_utils.js</file>
         <file>js/user_profile_utils.js</file>
         <file>qml/edit_lang.qml</file>
-        <file>qml/edit_login.qml</file>
         <file>qml/edit_network.qml</file>
         <file>qml/menu_main.qml</file>
         <file>qml/monster_target.qml</file>
         <file>qml/new_challenge.qml</file>
-        <file>qml/new_user.qml</file>
-        <file>qml/new_user_menu.qml</file>
         <file>qml/paralyze.qml</file>
         <file>qml/person_charmed.qml</file>
         <file>js/wnd_utils.js</file>
@@ -82,5 +79,9 @@
         <file>res/background_battle.png</file>
         <file>qml/windows/wnd_chat.qml</file>
         <file>res/summon.png</file>
+        <file>qml/windows/wnd_gesture.qml</file>
+        <file>res/back_arrow.png</file>
+        <file>res/send_0.png</file>
+        <file>res/send_1.png</file>
     </qresource>
 </RCC>

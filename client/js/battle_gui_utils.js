@@ -1,4 +1,5 @@
-var icon_status_code = ["scared","confused","charmed","paralized","shield","coldproof","fireproof","poison","desease","amnesia","maladroit","mshield","delay","time_stop","haste","permanency"];
+var icon_status_code = ["scared","confused","charmed","paralized","shield","coldproof","fireproof","poison","desease","amnesia","maladroit","mshield","delay",
+                        "time_stop","haste","permanency","blindness","invisibility"];
 var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"haste"};
 
 function copyObject(from, to, except) {

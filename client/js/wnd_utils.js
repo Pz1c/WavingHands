@@ -7,6 +7,7 @@ var wnd_profile = "wnd_profile.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_battle = "wnd_battle.qml";
 var wnd_chat = "wnd_chat.qml";
+var wnd_gesture = "wnd_gesture.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -227,4 +228,8 @@ function showLogin() {
 
 function showBattle() {
     showWnd(wnd_battle, 0, 1, 1);
+}
+
+function showGesture() {
+    showWnd(wnd_gesture, 0, 0, 1);
 }

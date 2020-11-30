@@ -144,6 +144,10 @@ Item {
         anchors.bottomMargin: 0.01 * parent.height
         anchors.right: parent.right
         visible: l_warlock.player
+
+        onClicked: {
+            mainWindow.showGesture(true, "");
+        }
     }
 
     IconInfoR {
@@ -156,6 +160,9 @@ Item {
         //anchors.bottomMargin: 0.02 * parent.height
         anchors.right: parent.right
         visible: l_warlock.player
+        onClicked: {
+            mainWindow.showGesture(false, "");
+        }
     }
 
     Rectangle {

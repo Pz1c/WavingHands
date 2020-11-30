@@ -61,6 +61,8 @@ private:
     int _time_stop;
     int _haste;
     int _permanency;
+    int _blindness;
+    int _invisibility;
     QString _name;
     QString _status;
     QString _leftGestures;

@@ -523,9 +523,9 @@ ApplicationWindow {
         }
     }
 
-    function showBattleChat(battle_id, chat_msg, new_msg) {
+    function showBattleChat(battle_id, new_msg) {
         console.log("showBattleChat");
-        WNDU.showErrorWnd({text:chat_msg, title: "Battle #" + battle_id + " chat", msg: new_msg}, true);
+        WNDU.showErrorWnd({text:core.finishedBattle, title: "Battle #" + battle_id + " chat", msg: new_msg}, true);
     }
 
     function storeBattleChatMsg(msg) {
@@ -544,7 +544,6 @@ ApplicationWindow {
         var bit = core.loadedBattleID;
         logEvent("showFinishedBattle", {battle_id:core.loadedBattleID});
         WNDU.showErrorWnd({text:core.finishedBattle,type:2,title:"Battle #" + bit});
-        //MUtils.showWindow("finished_battle.qml");
     }
 
     function showReadyBattle() {
@@ -567,6 +566,11 @@ ApplicationWindow {
     function showSpellDetails(spell_code) {
         logEvent("spell_details", {code:spell_code});
         WNDU.showErrorWnd({text:warlockDictionary.getStringByCode(spell_code + "_desc"),type:1,title:warlockDictionary.getStringByCode(spell_code)});
+    }
+
+    function showGesture(isLeft, CurrGesture) {
+        mainWindow.gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, g: CurrGesture};
+        WNDU.showGesture();
     }
 
     function processEscape() {

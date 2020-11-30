@@ -195,7 +195,7 @@ protected:
     bool finishGetFinishedBattle(QString &Data);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
-    bool butifyTurnMessage();
+    bool butifyTurnMessage(QString &str);
     bool parseTargetList(QString &Data);
     bool parseUnits(QString &Data);
     bool parseMonsterCommand(QString &Data);

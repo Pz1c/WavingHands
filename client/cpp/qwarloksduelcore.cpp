@@ -691,14 +691,6 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         return false;
     }
 
-    _chat.clear();
-    if (Data.indexOf("\".<BR>") != -1) {
-        int cidx1 = Data.indexOf("<BLOCKQUOTE>") + 12;
-        int cidx2 = Data.lastIndexOf("\".<BR>");
-        _chat = Data.mid(cidx1, cidx2 - cidx1);
-        _chat = _chat.replace(" says \"", ": ").replace("\".<BR>", ".<br>").replace('"', "\\\"");
-    }
-
     qDebug() << "finishGetFinishedBattle all fine" << state << point2;
     _finishedBattle = Data.mid(idx1, idx2 - idx1).replace("<a href=\"/player", "<b atr=\"")
             .replace("<A CLASS=amonoturn HREF=\"/warlocks", "<b atr=\"").replace("</A>", "</b>").replace("</a>", "</b>")
@@ -710,13 +702,18 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         _finishedBattle.append(QString("<br><p align=center><a href=\"/force_surrender/%1/%2\">Force Surrender Attempt</a></p><br>").arg(QString::number(_loadedBattleID), turn));
     }
 
-    butifyTurnMessage();
+    butifyTurnMessage(_finishedBattle);
 
     if (_loadedBattleType != 1) {
         qDebug() << "battle is not ready end there";
         emit finishedBattleChanged();
         return false;
     }
+
+    /*int cidx1 = Data.indexOf("<U>Turn");
+    int cidx2 = Data.indexOf("</BLOCKQUOTE>", cidx1);
+    _chat = Data.mid(cidx1, cidx2 - cidx1);
+    butifyTurnMessage(_chat);*/
 
     int idx3 = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">", idx1);
     if (idx3 == -1) {
@@ -850,8 +847,8 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
     return true;
 }
 
-bool QWarloksDuelCore::butifyTurnMessage() {
-    _finishedBattle = _finishedBattle.replace("<H2>", "").replace("</H2>", "").replace("<p>", "").replace("</p>", "")
+bool QWarloksDuelCore::butifyTurnMessage(QString &str) {
+    str = str.replace("<H2>", "").replace("</H2>", "").replace("<p>", "").replace("</p>", "")
             .replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
     return true;
 }
@@ -912,11 +909,13 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
         return false;
     }
 
-    if (!butifyTurnMessage()) {
+    /*if (!butifyTurnMessage()) {
         _errorMsg = "Can't butify message";
         emit errorOccurred();
         return false;
-    }
+    }*/
+
+
     if (!parseMonsterCommand(Data)) {
         _errorMsg = "Can't parse monsters command";
         emit errorOccurred();
