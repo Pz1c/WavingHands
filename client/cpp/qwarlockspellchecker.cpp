@@ -214,7 +214,7 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
 QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool Enemy) {
     qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right;
     QList<QSpell *> sl = getStriktSpellsList(Left.replace(" ", ""), Right.replace(" ", ""), Enemy);
-    std::sort(sl.begin(), sl.end(), QSpell::sortDesc);
+    std::sort(sl.begin(), sl.end());
 
     QString res;
     foreach(QSpell *s, sl) {

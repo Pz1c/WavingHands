@@ -14,8 +14,10 @@ function prepareWarlock(w) {
     }
     w.print_g = preparePrintGestures(w.L, w.R);
     w.statusIcons = prepareStatusIcon(w);
+    w.banked_spell = w.player && (battle.fire !== "");
     if (w.player) {
-        w.banked_spell = battle.fire;
+        battle.L = w.L;
+        battle.R = w.R;
     }
 
     return w;
@@ -42,6 +44,8 @@ function prepareBattle(raw_battle) {
     battle.warlocks = [];
     battle.elemental = {hp:0,type:"fire"};
     battle.monsters = {};
+    battle.ngL = "-";
+    battle.ngR = "-";
 
     var i, Ln;
     for(i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
@@ -135,9 +139,9 @@ function finishPrepareWarlockList() {
 }
 
 function prepareChat() {
-    var with_msg = battle.chat.indexOf(" says ") !== -1;
+    var with_msg = battle.chat > 0;
     console.log("prepareChat", with_msg, battle.chat);
-    battleItem.action1_text = with_msg ? "Chat*" : "Chat";
+    iiChat.text = with_msg ? battle.chat : "";
 }
 
 function prepareGUI() {
@@ -146,7 +150,9 @@ function prepareGUI() {
     prepareChat();
 }
 
-function applyBattle(raw_battle) {
+function applyBattle() {
+    var raw_battle = mainWindow.gBattle;
     prepareBattle(raw_battle);
     prepareGUI();
+    mainWindow.gBattle = battle;
 }

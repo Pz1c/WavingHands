@@ -83,5 +83,7 @@
         <file>res/back_arrow.png</file>
         <file>res/send_0.png</file>
         <file>res/send_1.png</file>
+        <file>res/blindness.png</file>
+        <file>res/invisibility.png</file>
     </qresource>
 </RCC>

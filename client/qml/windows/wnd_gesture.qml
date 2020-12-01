@@ -123,6 +123,9 @@ BaseWindow {
                 anchors.bottomMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                onClicked: {
+                    setGesture("C");
+                }
             }
 
             IconInfo {
@@ -137,6 +140,9 @@ BaseWindow {
                 anchors.bottomMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                onClicked: {
+                    setGesture("D");
+                }
             }
 
             IconInfo {
@@ -151,6 +157,9 @@ BaseWindow {
                 anchors.bottomMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                onClicked: {
+                    setGesture("F");
+                }
             }
 
             IconInfo {
@@ -165,6 +174,9 @@ BaseWindow {
                 anchors.bottomMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                onClicked: {
+                    setGesture("S");
+                }
             }
 
             IconInfo {
@@ -179,6 +191,9 @@ BaseWindow {
                 anchors.topMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                onClicked: {
+                    setGesture("P");
+                }
             }
 
             IconInfo {
@@ -193,6 +208,9 @@ BaseWindow {
                 anchors.topMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                onClicked: {
+                    setGesture("W");
+                }
             }
 
             IconInfo {
@@ -207,6 +225,9 @@ BaseWindow {
                 anchors.topMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                onClicked: {
+                    setGesture(">");
+                }
             }
 
             IconInfo {
@@ -221,6 +242,9 @@ BaseWindow {
                 anchors.topMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                onClicked: {
+                    setGesture("-");
+                }
             }
 
             IconInfo {
@@ -257,11 +281,32 @@ BaseWindow {
         visible = false;
     }
 
+    function clearAll() {
+        for (var i = 0; i < 8; ++i) {
+            arrGesture[i].height = 0.3 * iGesture.height;
+            arrGesture[i].color = "snow";
+        }
+    }
+
+    function setGesture(new_gesture) {
+        clearAll()
+        mapGesture[new_gesture].height = 0.4 * iGesture.height;
+        mapGesture[new_gesture].color = "lightblue";
+        currGesture = new_gesture;
+        if (new_gesture === "-") {
+            lvSpellList.model = [];
+        } else if (new_gesture === ">") {
+            lvSpellList.model = [{g:">",t:"Stab",cg:">"}];
+        } else {
+            lvSpellList.model = mainWindow.getSpellList(new_gesture);
+        }
+    }
+
     function initGFields() {
         console.log("wnd_gesture.initGFields", JSON.stringify(mainWindow.gERROR));
         //ltError.text = mainWindow.gERROR.text;
         title_text = mainWindow.gERROR.title;
-        currGesture = mainWindow.gERROR.g;
+        setGesture(mainWindow.gERROR.g);
         mainWindow.gERROR = {};
     }
 

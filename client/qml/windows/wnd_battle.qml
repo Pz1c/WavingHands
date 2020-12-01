@@ -84,7 +84,7 @@ BaseWindow {
                 anchors.right: parent.right
 
                 onClicked: {
-                    mainWindow.showBattleChat(BU.battle.id, BU.battle.chat_msg);
+                    mainWindow.showBattleChat();
                 }
             }
         }
@@ -92,15 +92,6 @@ BaseWindow {
 
     onCancel: {
         mainWindow.processEscape();
-    }
-
-    /*onAction1: {
-        mainWindow.showBattleChat(BU.battle.id, BU.battle.chat, BU.battle.chat_msg);
-    }*/
-
-    function storeChatMsg(msg) {
-        console.log("storeChatMsg", msg);
-        BU.battle.chat_msg = msg;
     }
 
     function showWnd() {
@@ -118,7 +109,7 @@ BaseWindow {
             return;
         }
         title_text = "Battle #" + mainWindow.gBattle.id;
-        BU.applyBattle(mainWindow.gBattle);
+        BU.applyBattle();
     }
 
     Component.onCompleted: {

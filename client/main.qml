@@ -10,7 +10,7 @@ import ua.sp.warloksduel 2.0
 import ua.sp.warlockdictionary 1.0
 
 import "qrc:/js/gui_utils.js" as GUI
-import "qrc:/js/main_utils.js" as MUtils
+//import "qrc:/js/main_utils.js" as MUtils
 import "qrc:/js/ai_utils.js" as AI
 import "qrc:/js/user_profile_utils.js" as UU
 import "qrc:/js/wnd_utils.js" as WNDU
@@ -446,28 +446,12 @@ ApplicationWindow {
         }
     }
 
-    function addDuel() {
-        console.log("add duel");
-        if (core.allowedAdd) {
-            MUtils.showWindow("new_challenge.qml");
-        } else {
-            showTipMessage(warlockDictionary.getStringByCode("WaitTrainingBattle"), true);
-        }
-    }
-
-    function openRecords() {
-        console.log("openRecords");
-        core.getTopList();
-        MUtils.showTop();
-    }
-
     function refreshData() {
         console.log("user start scanning");
         core.scanState()
     }
 
     function showMainMenu() {
-        //WNDU.showMainMenu();
         dMenu.open();
     }
 
@@ -482,31 +466,6 @@ ApplicationWindow {
             WNDU.showLogin();
         } else {
             showNewUserMenu();
-        }
-    }
-
-    function showProxySettings(child_wnd) {
-        MUtils.showWindow("edit_network.qml", child_wnd);
-    }
-
-    function showLangSettings(child_wnd) {
-        MUtils.showWindow("edit_lang.qml", child_wnd);
-    }
-
-    function showRegisterUser(child_wnd) {
-        console.log("showNewUserMenu")
-        if (child_wnd) {
-            child_wnd.destroy()
-        }
-
-        MUtils.showNewUserWnd();
-    }
-
-    function closeUserProfile() {
-        WNDU.closeChild();
-        if (MUtils.wndUP) {
-            MUtils.wndUP.destroy();
-            MUtils.wndUP = null;
         }
     }
 
@@ -525,18 +484,11 @@ ApplicationWindow {
 
     function showBattleChat(battle_id, new_msg) {
         console.log("showBattleChat");
-        WNDU.showErrorWnd({text:core.finishedBattle, title: "Battle #" + battle_id + " chat", msg: new_msg}, true);
+        WNDU.showErrorWnd({text:core.finishedBattle, title: "Battle #" + gBattle.battle_id + " chat", msg: gBattle.chat_msg}, true);
     }
 
     function storeBattleChatMsg(msg) {
-        var btl_wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
-        if (btl_wnd) {
-            console.log("storeBattleChatMsg", "found battle wnd", WNDU.wnd_battle);
-            btl_wnd.storeChatMsg(msg);
-        } else {
-            console.log("storeBattleChatMsg", "not found battle wnd");
-        }
-
+        gBattle.chat_msg = msg;
         processEscape();
     }
 
@@ -568,9 +520,23 @@ ApplicationWindow {
         WNDU.showErrorWnd({text:warlockDictionary.getStringByCode(spell_code + "_desc"),type:1,title:warlockDictionary.getStringByCode(spell_code)});
     }
 
-    function showGesture(isLeft, CurrGesture) {
-        mainWindow.gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, g: CurrGesture};
+    function showGesture(isLeft) {
+        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft};
+        gBattle.currentHand = isLeft ? "L" : "R";
+        gBattle.currentHandIdx = isLeft ? 0 : 1;
         WNDU.showGesture();
+    }
+
+    function getSpellList(new_gesture) {
+        gBattle["ng" + gBattle.currentHand] = new_gesture;
+        var res = [];
+        var arr = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
+        for (var i = 0, Ln = arr.length; i < Ln; ++i) {
+            if (arr[i].h === gBattle.currentHandIdx) {
+                res.push(arr[i]);
+            }
+        }
+        return res;
     }
 
     function processEscape() {
@@ -585,9 +551,8 @@ ApplicationWindow {
         WNDU.closeChild();
     }
 
-
     function linkActivated(link) {
-        MUtils.linkActivated(link)
+        GUI.linkActivated(link)
     }
 
     function changeTimerState() {
@@ -602,9 +567,9 @@ ApplicationWindow {
         }
     }
 
-    function changeGesture(Gesture, Left) {
+    /*function changeGesture(Gesture, Left) {
         MUtils.changeGesture(Gesture, Left);
-    }
+    }*/
 
     function logEvent(event_name, params) {
         if (core.isAI) {
@@ -619,19 +584,7 @@ ApplicationWindow {
         analytics.logEvent(event_name, params);
     }
 
-    function loadingStop() {
-        MUtils.hideLoading();
-    }
-
     function creationFinished() {
-        console.log("main.creationFinished");
-        //core = core;
-        GUI.G_CORE = core;
-        GUI.G_GAME_FIELD = mainWindow;
-        MUtils.dict = warlockDictionary;
-        MUtils.cChatMessage = warlockDictionary.getStringByCode("ChatMessage");
-        MUtils.cMosterFrom = warlockDictionary.getStringByCode("MonsterFrom") + " ";
-        MUtils.default_spell_list = JSON.parse(core.defaultSpellListHtml);
         logEvent("gameFieldReady");
     }
 

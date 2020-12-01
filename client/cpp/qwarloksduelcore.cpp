@@ -710,6 +710,11 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         return false;
     }
 
+    int ccnt = 0, idxc = 0;
+    while((idxc = Data.indexOf(" says ", idxc)) != -1) {
+        ++ccnt;
+    }
+    _chat = intToStr(ccnt);
     /*int cidx1 = Data.indexOf("<U>Turn");
     int cidx2 = Data.indexOf("</BLOCKQUOTE>", cidx1);
     _chat = Data.mid(cidx1, cidx2 - cidx1);
