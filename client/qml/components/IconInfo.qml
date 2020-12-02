@@ -5,6 +5,7 @@ Rectangle {
     id: button
 
     property bool active: true
+    property bool animationEnabled: true
     property alias text_color: btnText.color
     property alias text: btnText.text
     property alias fontSizeMode: btnText.fontSizeMode
@@ -43,13 +44,13 @@ Rectangle {
         running: false
 
         ColorAnimation {
-            from: "#551470"
-            to: "white"
+            from: button.color
+            to: "snow"
             duration: 200
         }
         ColorAnimation {
-            from: "white"
-            to: "#551470"
+            from: "snow"
+            to: button.color
             duration: 200
         }
     }
@@ -60,24 +61,28 @@ Rectangle {
         //pressAndHoldInterval: 500
         onClicked: {
             if (active) {
-                saClick.loops = 1;
-                saClick.start();
+                animate(1);
                 button.clicked();
             }
         }
         /*onDoubleClicked: {
             if (active) {
-                saClick.loops = 2;
-                saClick.start();
+                animate(2);
                 button.doubleClicked();
             }
         }*/
         onPressAndHold: {
             //if (active) {
-                saClick.loops = 2;
-                saClick.start();
+                animate(2);
                 button.doubleClicked();
             //}
+        }
+    }
+
+    function animate(cnt) {
+        if (animationEnabled){
+            saClick.loops = cnt;
+            saClick.start();
         }
     }
 

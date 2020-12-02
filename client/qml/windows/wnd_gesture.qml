@@ -15,7 +15,10 @@ BaseWindow {
 
     property string currGesture: ""
     property var arrGesture: [iiGC,iiGD,iiGF,iiGS,iiGP,iiGW,iiGSt,iiGN]
+    property var arrGestureVal: ["C","D","F","S","P","W",">","-"]
     property var mapGesture: ({"C":iiGC,"D":iiGD,"F":iiGF,"S":iiGS,"P":iiGP,"W":iiGW,">":iiGSt,"-":iiGN})
+    property var arrPossibleGesture: []
+    property var arrSpell: []
 
     // This rectangle is the actual popup
     Item {
@@ -29,7 +32,8 @@ BaseWindow {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: iGesture.top
-
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
             ListView {
                 id: lvSpellList
@@ -39,14 +43,17 @@ BaseWindow {
                 delegate: Item {
                         id: idRoot
                         width: lvSpellList.width
-                        height: 0.1 * dialogWindow.height
+                        height: 0.08 * dialogWindow.height
                         Rectangle {
                         id: rdSpellItem
-                        color: "#544653"
+                        color: "transparent"
                         radius: 30
-                        anchors.fill: parent
-                        anchors.topMargin: 0.01 * dialogWindow.height
+                        anchors.centerIn: parent
+                        height: 0.95 * parent.height
+                        width: 0.95 * parent.width
                         anchors.bottomMargin: 0.01 * dialogWindow.height
+                        border.color: "#A8F4F4"
+                        border.width: lvSpellList.model[index].choose === 1 ? 3 : 0
 
                         LargeText {
                             id: rdbiGesture
@@ -56,38 +63,42 @@ BaseWindow {
                             anchors.leftMargin: 0.03 * parent.width
                             width: 0.40 * parent.width
                             //anchors.rightMargin: 0.05 * parent.width
-                            color: "#FEE2D6"
+                            color: "snow"
                             horizontalAlignment: Text.AlignLeft
-                            text: lvSpellList.model[index].g
+                            text: lvSpellList.model[index].gp
                         }
 
                         LargeText {
                             id: rdbifTitle
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
+                            anchors.verticalCenter: rdSpellItem.verticalCenter
                             anchors.left: rdbiGesture.right
+                            anchors.leftMargin: 0.01 * parent.width
                             anchors.right: rdbifInfo.left
-                            color: "#FEE2D6"
+                            anchors.rightMargin: 0.01 * parent.width
+                            height: 0.8 * rdSpellItem.height
+                            color: "snow"
                             fontSizeMode: Text.VerticalFit
                             horizontalAlignment: Text.AlignRight
-                            text: lvSpellList.model[index].t
+                            text: lvSpellList.model[index].n
                         }
 
-                        Image {
+                        IconInfo {
                             id: rdbifInfo
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
+                            anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
-                            width: 0.5 * height
+                            anchors.rightMargin: 0.03 * parent.width
+                            height: 0.8 * parent.height
+                            width: 0.1 * parent.width
                             source: "qrc:/res/g_=.png";
+                            color: "snow"
                             z: 13
 
-                            MouseArea {
-                                id: maSpellInfo
-                                anchors.fill: parent
-                                onClicked: {
-                                    console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
-                                    mainWindow.showSpellDetails(lvSpellList.model[index].cg);
+                            onClicked: {
+                                console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
+                                if(lvSpellList.model[index].gp !== "?") {
+                                    mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                } else {
+
                                 }
                             }
                         }
@@ -96,7 +107,13 @@ BaseWindow {
                             id: maSpell
                             anchors.fill: parent
                             onClicked: {
-                                console.log("choose spell", index, JSON.stringify(lvSpellList.model[index]));
+                                console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpell[index]));
+                                if (arrSpell[index].t === 1) {
+                                    arrSpell[index].choose = 1;
+                                    arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
+                                    mainWindow.gBattle.spellIdx = index;
+                                    lvSpellList.model = arrSpell;
+                                }
                             }
                         }
                     }
@@ -109,7 +126,7 @@ BaseWindow {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 0.3 * parent.height
+            height: 0.3 * dialogWindow.height
 
             IconInfo {
                 id: iiGC
@@ -123,6 +140,7 @@ BaseWindow {
                 anchors.bottomMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                animationEnabled: false
                 onClicked: {
                     setGesture("C");
                 }
@@ -140,6 +158,7 @@ BaseWindow {
                 anchors.bottomMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                animationEnabled: false
                 onClicked: {
                     setGesture("D");
                 }
@@ -157,6 +176,7 @@ BaseWindow {
                 anchors.bottomMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                animationEnabled: false
                 onClicked: {
                     setGesture("F");
                 }
@@ -174,6 +194,7 @@ BaseWindow {
                 anchors.bottomMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                animationEnabled: false
                 onClicked: {
                     setGesture("S");
                 }
@@ -191,6 +212,7 @@ BaseWindow {
                 anchors.topMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                animationEnabled: false
                 onClicked: {
                     setGesture("P");
                 }
@@ -208,6 +230,7 @@ BaseWindow {
                 anchors.topMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                animationEnabled: false
                 onClicked: {
                     setGesture("W");
                 }
@@ -225,6 +248,7 @@ BaseWindow {
                 anchors.topMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                animationEnabled: false
                 onClicked: {
                     setGesture(">");
                 }
@@ -242,6 +266,7 @@ BaseWindow {
                 anchors.topMargin: 0.05 * parent.height
                 active: true
                 color: "snow"
+                animationEnabled: false
                 onClicked: {
                     setGesture("-");
                 }
@@ -249,15 +274,19 @@ BaseWindow {
 
             IconInfo {
                 id: iiSend
-                source: "qrc:/res/send_0.png"
+                source: "qrc:/res/send_"+(active ? "1" : "0")+".png"
                 textVisible: false
                 height: 0.20 * parent.width
                 width: 0.20 * parent.width
                 anchors.right: parent.right
                 anchors.leftMargin: 0.03 * parent.width
                 anchors.verticalCenter: parent.verticalCenter
-                active: true
+                active: false
                 color: "transparent"
+
+                onClicked: {
+
+                }
             }
 
         }
@@ -273,7 +302,7 @@ BaseWindow {
     }
 
     function showWnd() {
-        initGFields()();
+        initGFields();
         visible = true;
     }
 
@@ -282,30 +311,45 @@ BaseWindow {
     }
 
     function clearAll() {
+        var set_enable = arrPossibleGesture.length > 0;
         for (var i = 0; i < 8; ++i) {
             arrGesture[i].height = 0.3 * iGesture.height;
-            arrGesture[i].color = "snow";
+            if (set_enable && (i < 6)) {
+                arrGesture[i].active = arrPossibleGesture.indexOf(arrGestureVal[i]) !== -1;
+            } else {
+                arrGesture[i].active = true;
+            }
+
+            if (arrGesture[i].active) {
+                arrGesture[i].color = "snow";
+            } else {
+                arrGesture[i].color = "darksalmon";
+            }
         }
     }
 
     function setGesture(new_gesture) {
         clearAll()
-        mapGesture[new_gesture].height = 0.4 * iGesture.height;
+        if (!new_gesture) {return;}
+        iiSend.active = true;
+        mapGesture[new_gesture].height = 0.12 * dialogWindow.height;
         mapGesture[new_gesture].color = "lightblue";
         currGesture = new_gesture;
         if (new_gesture === "-") {
-            lvSpellList.model = [];
+            arrSpell = [{gp:"?",n:"Default",t:1,choose:1}];
         } else if (new_gesture === ">") {
-            lvSpellList.model = [{g:">",t:"Stab",cg:">"}];
+            arrSpell = [{gp:">",n:"Stab",t:1,choose:1}];
         } else {
-            lvSpellList.model = mainWindow.getSpellList(new_gesture);
+            arrSpell = mainWindow.getSpellList(new_gesture);
         }
+        lvSpellList.model = arrSpell;
     }
 
     function initGFields() {
         console.log("wnd_gesture.initGFields", JSON.stringify(mainWindow.gERROR));
-        //ltError.text = mainWindow.gERROR.text;
+        iiSend.active = false;
         title_text = mainWindow.gERROR.title;
+        arrPossibleGesture = mainWindow.gERROR.pga;
         setGesture(mainWindow.gERROR.g);
         mainWindow.gERROR = {};
     }

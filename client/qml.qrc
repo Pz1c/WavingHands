@@ -85,5 +85,6 @@
         <file>res/send_1.png</file>
         <file>res/blindness.png</file>
         <file>res/invisibility.png</file>
+        <file>js/game_constant.js</file>
     </qresource>
 </RCC>

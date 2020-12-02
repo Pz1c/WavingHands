@@ -70,7 +70,7 @@ BaseWindow {
         switch(mainWindow.gERROR.type) {
         case 1:
             title_text = dict.getStringByCode("WndInfoTitle");
-            title_color = "black";
+            title_color = "snow";
             break;
         case 2: // battle info
             with_action1 = true;

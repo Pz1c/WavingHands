@@ -9,9 +9,10 @@ import QtQuick.Layouts 1.12
 import ua.sp.warloksduel 2.0
 import ua.sp.warlockdictionary 1.0
 
+import "qrc:/js/game_constant.js" as GC
 import "qrc:/js/gui_utils.js" as GUI
 //import "qrc:/js/main_utils.js" as MUtils
-import "qrc:/js/ai_utils.js" as AI
+//import "qrc:/js/ai_utils.js" as AI
 import "qrc:/js/user_profile_utils.js" as UU
 import "qrc:/js/wnd_utils.js" as WNDU
 import "qrc:/qml/windows"
@@ -520,23 +521,38 @@ ApplicationWindow {
         WNDU.showErrorWnd({text:warlockDictionary.getStringByCode(spell_code + "_desc"),type:1,title:warlockDictionary.getStringByCode(spell_code)});
     }
 
-    function showGesture(isLeft) {
-        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft};
+    function showGesture(isLeft, possible_gestures) {
+        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(",")};
         gBattle.currentHand = isLeft ? "L" : "R";
-        gBattle.currentHandIdx = isLeft ? 0 : 1;
+        gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
         WNDU.showGesture();
     }
 
     function getSpellList(new_gesture) {
+        console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture);
         gBattle["ng" + gBattle.currentHand] = new_gesture;
-        var res = [];
-        var arr = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
+        var res = [], arr_cast_now = [], arr_cast_later = [];
+        console.log("mainWindow.getSpellList", gBattle.L, gBattle.R, gBattle.ngL, gBattle.ngR);
+        //var str = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
+        //console.log("mainWindow.getSpellList", str);
+        var arr = gBattle.warlocks[0].spells, s, idx;
         for (var i = 0, Ln = arr.length; i < Ln; ++i) {
-            if (arr[i].h === gBattle.currentHandIdx) {
-                res.push(arr[i]);
+            s = arr[i];
+            s.choose = 0;
+            if ((s.h === gBattle.currentHandIdx) && (s.ng === new_gesture)) {
+                if (s.t === 1) {
+                    s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
+                    arr_cast_now.push(s);
+                } else {
+                    idx = s.g.length - s.t + 1;
+                    s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                    arr_cast_later.push(s);
+                }
             }
         }
-        return res;
+        arr_cast_now.push({gp:"?",n:"Default",choose:1,t:1});
+        gBattle.spellIdx = arr_cast_now.length - 1;
+        return arr_cast_now.concat(arr_cast_later);
     }
 
     function processEscape() {

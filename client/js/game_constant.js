@@ -1,0 +1,3 @@
+const WARLOCK_HAND_NONE = 0;
+const WARLOCK_HAND_LEFT = 1;
+const WARLOCK_HAND_RIGHT= 2;

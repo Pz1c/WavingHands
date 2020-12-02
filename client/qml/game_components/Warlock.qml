@@ -146,7 +146,7 @@ Item {
         visible: l_warlock.player
 
         onClicked: {
-            mainWindow.showGesture(true, "");
+            mainWindow.showGesture(true, l_warlock.plg);
         }
     }
 
@@ -161,7 +161,7 @@ Item {
         anchors.right: parent.right
         visible: l_warlock.player
         onClicked: {
-            mainWindow.showGesture(false, "");
+            mainWindow.showGesture(false, l_warlock.prg);
         }
     }
 

@@ -46,6 +46,7 @@ function prepareBattle(raw_battle) {
     battle.monsters = {};
     battle.ngL = "-";
     battle.ngR = "-";
+    battle.actions = {lh:{},rh:{},chat:""};
 
     var i, Ln;
     for(i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
