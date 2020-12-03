@@ -94,6 +94,28 @@ BaseWindow {
         mainWindow.processEscape();
     }
 
+    function iconClick(data) {
+        console.log("wnd_battle.iconClick", JSON.stringify(data));
+    }
+
+    function iconDoubleClick(data) {
+        console.log("wnd_battle.iconDoubleClick", JSON.stringify(data));
+    }
+
+    function setTargetingOnOff(Enable) {
+        for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+            iWarlocks.children[i].targetingOnOff(Enable);
+        }
+        iiElemental.border.width = Enable ? 3 : 0;
+        iiChat.active = !Enable;
+        iiChat.opacity = Enable ? 0.3 : 1;
+    }
+
+    function prepareToTargeting(gesture) {
+        iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
+        setTargetingOnOff(true);
+    }
+
     function showWnd() {
         initBattleFields();
         visible = true;

@@ -46,10 +46,10 @@ function prepareBattle(raw_battle) {
     battle.monsters = {};
     battle.ngL = "-";
     battle.ngR = "-";
-    battle.actions = {lh:{},rh:{},chat:""};
+    battle.actions = {L:{},R:{},chat:""};
 
     var i, Ln;
-    for(i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
+    for (i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
         var m = raw_battle.monsters[i];
         if (!m.owner) {
             battle.elemental = m;
@@ -130,6 +130,8 @@ function finishPrepareWarlockList() {
             console.log("Error creating object");
             continue;
         }
+        sprite.clicked.connect(iconClick);
+        sprite.doubleClicked.connect(iconDoubleClick);
         console.log("looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("svWarlocks.w: " + iWarlocks.width);
         console.log("svWarlocks.h: " + iWarlocks.height);

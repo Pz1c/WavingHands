@@ -555,6 +555,13 @@ ApplicationWindow {
         return arr_cast_now.concat(arr_cast_later);
     }
 
+    function setGesture(gesture, spell) {
+        console.log("setGesture", gesture, JSON.stringify(spell));
+        gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(gesture);
+        WNDU.processEscape();
+    }
+
     function processEscape() {
         WNDU.processEscape();
     }

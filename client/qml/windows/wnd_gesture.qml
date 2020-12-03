@@ -285,7 +285,7 @@ BaseWindow {
                 color: "transparent"
 
                 onClicked: {
-
+                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx]);
                 }
             }
 

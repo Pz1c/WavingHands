@@ -15,11 +15,13 @@ Rectangle {
 
     property var l_data: ({})
 
-    signal clicked
-    signal doubleClicked
+    signal clicked(var data)
+    signal doubleClicked(var data)
 
     color: "#551470"
     radius: 10
+    border.color: "snow"
+    border.width: 0
 
     Image {
         id: iIcon
@@ -62,7 +64,7 @@ Rectangle {
         onClicked: {
             if (active) {
                 animate(1);
-                button.clicked();
+                button.clicked(l_data);
             }
         }
         /*onDoubleClicked: {
@@ -74,7 +76,7 @@ Rectangle {
         onPressAndHold: {
             //if (active) {
                 animate(2);
-                button.doubleClicked();
+                button.doubleClicked(l_data);
             //}
         }
     }

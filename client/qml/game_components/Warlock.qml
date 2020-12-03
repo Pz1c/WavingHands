@@ -8,6 +8,8 @@ Item {
     property var l_warlock: ({})
     property var l_IconInfoObj: ({})
 
+    signal clicked(var data)
+    signal doubleClicked(var data)
 
     LargeText {
        id: ltName
@@ -32,6 +34,13 @@ Item {
         anchors.top: parent.top
         //anchors.topMargin: 0.01 * parent.height
         anchors.left: parent.left
+        onClicked: {
+            iconClick({action:"hp"});
+        }
+
+        onDoubleClicked: {
+            iconDoubleClick({action:"hp"});
+        }
     }
 
     IconInfo {
@@ -44,6 +53,14 @@ Item {
         //anchors.topMargin: 0.01 * parent.height
         anchors.right: parent.right
         visible: l_warlock.player && (l_warlock.banked_spell !== "")
+
+        onClicked: {
+            iconClick({action:"banked"});
+        }
+
+        onDoubleClicked: {
+            iconDoubleClick({action:"banked"});
+        }
     }
 
     ScrollView {
@@ -174,16 +191,59 @@ Item {
         color: "#FEE2D6"
     }
 
-
-
     Component.onCompleted: finishWarlockCreation();
+
+    function targetingOnOff(Enable) {
+        console.log("Warlock.targetingOnOff", l_warlock.name, Enable);
+        var opacity = Enable ? 0.3 : 1;
+        var border_width = Enable ? 3 : 0;
+        lwGestures.opacity = opacity;
+        iiLeft.opacity = opacity;
+        iiRight.opacity = opacity;
+        //iiHP.active = Enable;
+        iiHP.border.width = border_width;
+        if (iiBanked.visible) {
+            iiBanked.opacity = opacity;
+        }
+        var item, i, Ln;
+        for (i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
+            item = iMonsters.children[i];
+            item.border.width = border_width;
+            //item.active = Enable;
+        }
+        for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
+            item = iCharm.children[i];
+            if ((item.l_data.action === "permanency") || (item.l_data.action === "delay")) {
+                item.border.width = border_width;
+                //item.active = Enable;
+            } else {
+                item.opacity = opacity;
+                //item.active = !Enable;
+            }
+        }
+    }
+
+    function setGesture(Hand, GestureIcon) {
+        console.log("Warlock.setGesture", Hand, GestureIcon);
+        if (Hand === "L") {
+            iiLeft.source = "qrc:/res/" + GestureIcon + ".png";
+            iiLeft.color = "lightblue";
+        } else if (Hand === "R") {
+            iiRight.source = "qrc:/res/" + GestureIcon + ".png";
+            iiRight.color = "lightblue";
+        }
+    }
 
     function iconClick(data) {
         console.log("iconClick", l_warlock.name, JSON.stringify(data));
+        data.warlock_name = l_warlock.name;
+        clicked(data);
     }
 
     function iconDoubleClick(data) {
         console.log("iconDoubleClick", l_warlock.name, JSON.stringify(data));
+        data.warlock_name = l_warlock.name;
+        doubleClicked(data);
     }
 
     function scrollGestures() {
@@ -221,8 +281,8 @@ Item {
                 continue;
             }
             console.log("prepareDynamic looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
-            sprite.clicked.connect(function () { rWarlock.iconClick(arr_m); });
-            sprite.doubleClicked.connect(function () { rWarlock.iconDoubleClick(arr_m); });
+            sprite.clicked.connect(rWarlock.iconClick);
+            sprite.doubleClicked.connect(rWarlock.iconDoubleClick);
 
             curr_x += incerment * sprite.width;
             total_width += sprite.width;
@@ -236,7 +296,6 @@ Item {
     function prepareState() {
         prepareDynamic(l_warlock.statusIcons, iCharm, "value", iCharm.width - iCharm.height, -1);
     }
-
 
     function finishWarlockCreation() {
         console.log("finishWarlockCreation", JSON.stringify(l_warlock));

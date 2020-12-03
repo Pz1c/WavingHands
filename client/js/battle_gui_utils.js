@@ -13,26 +13,23 @@ function copyObject(from, to, except) {
     }
 }
 
+function getIconByGesture(G) {
+    if (G === ' ') {
+        G = '_';
+    }
+    if (G === '?') {
+        G = '=';
+    }
+    return G.toLowerCase();
+}
+
 function preparePrintGestures(GL, GR) {
     var res = [], item, ll, lr;
-    GL = GL.toLowerCase();
-    GR = GR.toLowerCase();
+    //GL = GL.toLowerCase();
+    //GR = GR.toLowerCase();
     for(var i = 1, Ln = GL.length; i < Ln; ++i) {
-        ll = GL.substr(i, 1);
-        lr = GR.substr(i, 1);
-        if (ll === ' ') {
-            ll = '_';
-        }
-        if (lr === ' ') {
-            lr = '_';
-        }
-        if (ll === '?') {
-            ll = '=';
-        }
-        if (lr === '?') {
-            lr = '=';
-        }
-
+        ll = getIconByGesture(GL.substr(i, 1));
+        lr = getIconByGesture(GR.substr(i, 1));
         item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== '_', rv: lr !== '_'};
         res.push(item);
     }
