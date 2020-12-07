@@ -19,6 +19,10 @@ BaseWindow {
     action1_text: "Chat"
     bg_source: "qrc:/res/background_battle.png"
 
+    property int operationMode: 0
+    // 0 - normal state
+    // 1 - spell targeting
+
     // This rectangle is the actual popup
     Item {
         id: battleWindow
@@ -96,10 +100,41 @@ BaseWindow {
 
     function iconClick(data) {
         console.log("wnd_battle.iconClick", JSON.stringify(data));
+        if (operationMode === 1) {
+            if ((data.action === "permanency") || (data.action === "delay")) {
+
+            } else {
+                setTargetingOnOff(false);
+                operationMode = 0;
+            }
+        } else {
+            iconDoubleClick(data);
+        }
     }
 
     function iconDoubleClick(data) {
         console.log("wnd_battle.iconDoubleClick", JSON.stringify(data));
+        var msg_text, msg_title;
+        switch(data.action) {
+        case "hp":
+            msg_title = "Warlock's hit point"
+            msg_text = data.value + " damage to death";
+            break;
+        case "m":
+            msg_title = "Monster"
+            msg_text = data.name;
+            if (data.owner !== "") {
+                msg_text += "("+data.owner+")";
+            }
+            msg_text += " " + data.status;
+            msg_text += " " + data.target;
+            break;
+        default: // spell
+            msg_title = "Charm";
+            msg_text  = data.action;
+            break;
+        }
+        mainWindow.showErrorWnd({type:1,text:msg_text,title:msg_title});
     }
 
     function setTargetingOnOff(Enable) {
@@ -114,6 +149,7 @@ BaseWindow {
     function prepareToTargeting(gesture) {
         iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
         setTargetingOnOff(true);
+        operationMode = 1;
     }
 
     function showWnd() {

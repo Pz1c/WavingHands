@@ -6,12 +6,12 @@ Qt.include("battle_gui_utils.js");
 
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
-    if (w.summon_left) {
-        w.monsters.push({icon:"summon",hp:"L",owner:w.name,name:"LH:"+w.name});
+    /*if (w.summon_left) {
+        w.monsters.push({icon:"summon",hp:"L",owner:w.name,name:"LH:"+w.name,action:"m"});
     }
     if (w.summon_right) {
-        w.monsters.push({icon:"summon",hp:"R",owner:w.name,name:"RH:"+w.name});
-    }
+        w.monsters.push({icon:"summon",hp:"R",owner:w.name,name:"RH:"+w.name,action:"m"});
+    }*/
     w.print_g = preparePrintGestures(w.L, w.R);
     w.statusIcons = prepareStatusIcon(w);
     w.banked_spell = w.player && (battle.fire !== "");
@@ -27,6 +27,7 @@ function parseTargets(targets_str) {
     battle.targetsList = [];
     battle.targetsMap = {};
     var strs = strToArr2D(targets_str, '#', ';', true);
+    var m_owner;
     console.log("parseTargets", JSON.stringify(strs));
     var title;
     for(var i = 0, Ln = strs.length; i < Ln; ++i) {
@@ -36,6 +37,14 @@ function parseTargets(targets_str) {
         }
         battle.targetsList.push(title);
         battle.targetsMap[title] = strs[i][0];
+
+        if ((title.indexOf("LH:") === 0) || (title.indexOf("RH:") === 0)) {
+            m_owner = title.substr(3);
+            if (!battle.monsters[m_owner]) {
+                battle.monsters[m_owner] = [];
+            }
+            battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m"});
+        }
     }
 }
 
@@ -47,6 +56,7 @@ function prepareBattle(raw_battle) {
     battle.ngL = "-";
     battle.ngR = "-";
     battle.actions = {L:{},R:{},chat:""};
+    parseTargets(raw_battle.targets);
 
     var i, Ln;
     for (i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
@@ -57,6 +67,7 @@ function prepareBattle(raw_battle) {
             continue;
         }
         m.icon = getMonsterIconByName(m.name);
+        m.action = "m";
 
         if (!battle.monsters[m.owner]) {
             battle.monsters[m.owner] = [];
@@ -72,8 +83,6 @@ function prepareBattle(raw_battle) {
         prepareWarlock(w);
         battle.warlocks.unshift(w);
     }
-
-    parseTargets(raw_battle.targets);
     battle.chat = raw_battle.chat;
     delete battle.monsters;
     console.log("prepared battle", JSON.stringify(battle));

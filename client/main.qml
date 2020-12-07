@@ -473,19 +473,23 @@ ApplicationWindow {
     function showTipMessage(TipTxt, allowClose) {
         console.log("Tip: ", TipTxt, allowClose);
         allowCloseTip = allowClose ? true : false;
-        WNDU.showErrorWnd({text:TipTxt,type:1});
+        showErrorWnd({text:TipTxt,type:1});
+    }
+
+    function showErrorWnd(data) {
+        WNDU.showErrorWnd(data);
     }
 
     function showErrorMessage() {
         console.log("Error: ", core.errorMsg)
         if (!core.isAI) {
-            WNDU.showErrorWnd({text:core.errorMsg});
+            showErrorWnd({text:core.errorMsg});
         }
     }
 
     function showBattleChat(battle_id, new_msg) {
         console.log("showBattleChat");
-        WNDU.showErrorWnd({text:core.finishedBattle, title: "Battle #" + gBattle.battle_id + " chat", msg: gBattle.chat_msg}, true);
+        showErrorWnd({text:core.finishedBattle, title: "Battle #" + gBattle.battle_id + " chat", msg: gBattle.chat_msg}, true);
     }
 
     function storeBattleChatMsg(msg) {
@@ -496,7 +500,7 @@ ApplicationWindow {
     function showFinishedBattle() {
         var bit = core.loadedBattleID;
         logEvent("showFinishedBattle", {battle_id:core.loadedBattleID});
-        WNDU.showErrorWnd({text:core.finishedBattle,type:2,title:"Battle #" + bit});
+        showErrorWnd({text:core.finishedBattle,type:2,title:"Battle #" + bit});
     }
 
     function showReadyBattle() {
@@ -518,7 +522,7 @@ ApplicationWindow {
 
     function showSpellDetails(spell_code) {
         logEvent("spell_details", {code:spell_code});
-        WNDU.showErrorWnd({text:warlockDictionary.getStringByCode(spell_code + "_desc"),type:1,title:warlockDictionary.getStringByCode(spell_code)});
+        showErrorWnd({text:warlockDictionary.getStringByCode(spell_code + "_desc"),type:1,title:warlockDictionary.getStringByCode(spell_code)});
     }
 
     function showGesture(isLeft, possible_gestures) {

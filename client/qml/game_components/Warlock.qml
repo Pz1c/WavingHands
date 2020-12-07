@@ -35,7 +35,7 @@ Item {
         //anchors.topMargin: 0.01 * parent.height
         anchors.left: parent.left
         onClicked: {
-            iconClick({action:"hp"});
+            iconClick({action:"hp",value:text});
         }
 
         onDoubleClicked: {
@@ -280,7 +280,7 @@ Item {
                 console.log("prepareDynamic Error creating object");
                 continue;
             }
-            console.log("prepareDynamic looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
+            console.log("prepareDynamic looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width, JSON.stringify(arr_m));
             sprite.clicked.connect(rWarlock.iconClick);
             sprite.doubleClicked.connect(rWarlock.iconDoubleClick);
 
