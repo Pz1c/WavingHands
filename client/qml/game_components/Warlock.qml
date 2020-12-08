@@ -263,19 +263,20 @@ Item {
         console.log("Warlock.qml.finishWarlockCreation", svGestures.ScrollBar.horizontal.position, cnt);
     }
 
-    function prepareDynamic(arr, parent, code_value, start_x, incerment) {
+    function prepareDynamic(type, arr, parent, code_value, start_x, incerment) {
         if (l_IconInfoObj.status === Component.Error || l_IconInfoObj.status !== Component.Ready) {
             console.log("prepareDynamic Error loading component:", l_IconInfoObj.errorString());
             return ;
         }
         var curr_x = start_x;
-        var total_width = 0;
+        var total_width = 0, is_checkbox;
         for(var i = 0, Ln = arr.length; i < Ln; ++i) {
             if (!arr[i]) {
                 continue;
             }
             var arr_m = arr[i];
-            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value], source: "qrc:/res/"+arr_m.icon+".png"});
+            is_checkbox = (type === "s") && ((arr_m.action === "permanency") || (arr_m.action === "delay"));
+            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value], source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox});
             if (sprite === null) {
                 console.log("prepareDynamic Error creating object");
                 continue;
@@ -290,11 +291,11 @@ Item {
     }
 
     function prepareMonsters() {
-        prepareDynamic(l_warlock.monsters, iMonsters, "hp", 0, 1);
+        prepareDynamic("m", l_warlock.monsters, iMonsters, "hp", 0, 1);
     }
 
     function prepareState() {
-        prepareDynamic(l_warlock.statusIcons, iCharm, "value", iCharm.width - iCharm.height, -1);
+        prepareDynamic("s", l_warlock.statusIcons, iCharm, "value", iCharm.width - iCharm.height, -1);
     }
 
     function finishWarlockCreation() {

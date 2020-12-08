@@ -702,7 +702,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         _finishedBattle.append(QString("<br><p align=center><a href=\"/force_surrender/%1/%2\">Force Surrender Attempt</a></p><br>").arg(QString::number(_loadedBattleID), turn));
     }
 
-    butifyTurnMessage(_finishedBattle);
+    butifyTurnMessage(_finishedBattle, true);
 
     if (_loadedBattleType != 1) {
         qDebug() << "battle is not ready end there";
@@ -852,9 +852,15 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
     return true;
 }
 
-bool QWarloksDuelCore::butifyTurnMessage(QString &str) {
+bool QWarloksDuelCore::butifyTurnMessage(QString &str, bool CleanGestures) {
     str = str.replace("<H2>", "").replace("</H2>", "").replace("<p>", "").replace("</p>", "")
             .replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
+    int idx = str.indexOf("<FONT CLASS=monoturn>");
+    if (CleanGestures && (idx != -1)) {
+        QString part2 = str.mid(idx).replace("<FONT CLASS=monoturn>Turn:</FONT>", "<!--");
+        part2 = part2.replace("<FONT CLASS=monoturn>", "<!--").replace("</FONT>", "-->");
+        str = str.mid(0, idx).append(part2);
+    }
     return true;
 }
 

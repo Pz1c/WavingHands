@@ -108,7 +108,7 @@ BaseWindow {
                             anchors.fill: parent
                             onClicked: {
                                 console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpell[index]));
-                                if (arrSpell[index].t === 1) {
+                                if ((arrSpell[index].t === 1) && (arrSpell[index].choose !== 1)) {
                                     arrSpell[index].choose = 1;
                                     arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
                                     mainWindow.gBattle.spellIdx = index;

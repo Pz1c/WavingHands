@@ -6,6 +6,8 @@ Rectangle {
 
     property bool active: true
     property bool animationEnabled: true
+    property bool checkbox: false
+    property bool checked: false
     property alias text_color: btnText.color
     property alias text: btnText.text
     property alias fontSizeMode: btnText.fontSizeMode
@@ -65,6 +67,10 @@ Rectangle {
             if (active) {
                 animate(1);
                 button.clicked(l_data);
+                if (checkbox) {
+                    checked = !checked;
+                    button.border.width = checked ? 3 : 0;
+                }
             }
         }
         /*onDoubleClicked: {

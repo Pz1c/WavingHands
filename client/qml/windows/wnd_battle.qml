@@ -22,6 +22,8 @@ BaseWindow {
     property int operationMode: 0
     // 0 - normal state
     // 1 - spell targeting
+    property int permanency: 0
+    property int delay: 0
 
     // This rectangle is the actual popup
     Item {
@@ -101,11 +103,16 @@ BaseWindow {
     function iconClick(data) {
         console.log("wnd_battle.iconClick", JSON.stringify(data));
         if (operationMode === 1) {
-            if ((data.action === "permanency") || (data.action === "delay")) {
-
-            } else {
+            if (data.action === "permanency") {
+                permanency = !permanency ? 1 : 0;
+            } else if (data.action === "delay") {
+                delay = !delay ? 1 : 0;
+            } else if ((data.action === "hp") || (data.action === "m")) {
                 setTargetingOnOff(false);
                 operationMode = 0;
+                mainWindow.setSpellTarget(data.name, permanency, delay);
+            } else {
+                mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }
         } else {
             iconDoubleClick(data);
@@ -150,6 +157,8 @@ BaseWindow {
         iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
         setTargetingOnOff(true);
         operationMode = 1;
+        permanency = 0;
+        delay = 0;
     }
 
     function showWnd() {

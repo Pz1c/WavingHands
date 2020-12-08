@@ -489,7 +489,7 @@ ApplicationWindow {
 
     function showBattleChat(battle_id, new_msg) {
         console.log("showBattleChat");
-        showErrorWnd({text:core.finishedBattle, title: "Battle #" + gBattle.battle_id + " chat", msg: gBattle.chat_msg}, true);
+        showErrorWnd({text:core.finishedBattle, title: "Battle #" + gBattle.id + " chat", msg: gBattle.chat_msg}, true);
     }
 
     function storeBattleChatMsg(msg) {
@@ -564,6 +564,12 @@ ApplicationWindow {
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
         WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(gesture);
         WNDU.processEscape();
+    }
+
+    function setSpellTarget(TargetName, Permanent, Delay) {
+        gBattle.actions[gBattle.currentHand].target = TargetName;
+        gBattle.actions[gBattle.currentHand].permanent = Permanent;
+        gBattle.actions[gBattle.currentHand].delay = Delay;
     }
 
     function processEscape() {
