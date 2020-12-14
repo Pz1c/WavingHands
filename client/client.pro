@@ -1,9 +1,9 @@
 TEMPLATE = app
 
-QT += qml quick network
-android {
-    QT += androidextras
-}
+QT += qml quick network multimedia multimediawidgets
+#android {
+#    QT += androidextras
+#}
 
 HEADERS += \
     cpp/qmonster.h \

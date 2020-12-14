@@ -50,7 +50,7 @@ ApplicationWindow {
 
         onAccepted: {
             if (isSendOrderAction) {
-                BU.sendOrderEx();
+                //BU.sendOrderEx();
             } else {
                 Qt.quit();
             }
@@ -526,7 +526,7 @@ ApplicationWindow {
     }
 
     function showGesture(isLeft, possible_gestures) {
-        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(",")};
+        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","), g:""};
         gBattle.currentHand = isLeft ? "L" : "R";
         gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
         WNDU.showGesture();
@@ -535,7 +535,7 @@ ApplicationWindow {
     function getSpellList(new_gesture) {
         console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture);
         gBattle["ng" + gBattle.currentHand] = new_gesture;
-        var res = [], arr_cast_now = [], arr_cast_later = [];
+        var res = [], arr_cast_now = [], arr_cast_later = [], arr_cast_other = [];
         console.log("mainWindow.getSpellList", gBattle.L, gBattle.R, gBattle.ngL, gBattle.ngR);
         //var str = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
         //console.log("mainWindow.getSpellList", str);
@@ -543,26 +543,38 @@ ApplicationWindow {
         for (var i = 0, Ln = arr.length; i < Ln; ++i) {
             s = arr[i];
             s.choose = 0;
-            if ((s.h === gBattle.currentHandIdx) && (s.ng === new_gesture)) {
-                if (s.t === 1) {
-                    s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
-                    arr_cast_now.push(s);
+            if (s.h === gBattle.currentHandIdx) {
+                if (s.ng === new_gesture) {
+                    if (s.t === 1) {
+                        s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
+                        s.cast_type = 1;
+                        arr_cast_now.push(s);
+                    } else {
+                        idx = s.g.length - s.t + 1;
+                        s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                        s.cast_type = 2;
+                        arr_cast_later.push(s);
+                    }
                 } else {
-                    idx = s.g.length - s.t + 1;
+                    idx = s.g.length - s.t;
                     s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
-                    arr_cast_later.push(s);
+                    s.cast_type = 3;
+                    arr_cast_other.push(s);
                 }
             }
         }
-        arr_cast_now.push({gp:"?",n:"Default",choose:1,t:1});
+        arr_cast_now.push({gp:"?",n:"Default",choose:1,t:1,cast_type:1});
         gBattle.spellIdx = arr_cast_now.length - 1;
-        return arr_cast_now.concat(arr_cast_later);
+        return arr_cast_now.concat(arr_cast_later).concat(arr_cast_other);
     }
 
-    function setGesture(gesture, spell) {
+    function setGesture(gesture, spell, use_default) {
         console.log("setGesture", gesture, JSON.stringify(spell));
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(gesture);
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].battleChanged();
+        if (!use_default) {
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(gesture);
+        }
         WNDU.processEscape();
     }
 

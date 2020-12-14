@@ -276,7 +276,8 @@ Item {
             }
             var arr_m = arr[i];
             is_checkbox = (type === "s") && ((arr_m.action === "permanency") || (arr_m.action === "delay"));
-            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value], source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox});
+            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value],
+                                                        source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox, blink: arr_m.active});
             if (sprite === null) {
                 console.log("prepareDynamic Error creating object");
                 continue;

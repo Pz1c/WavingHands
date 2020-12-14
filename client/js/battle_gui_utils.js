@@ -1,6 +1,8 @@
 var icon_status_code = ["scared","confused","charmed","paralized","shield","coldproof","fireproof","poison","desease","amnesia","maladroit","mshield","delay",
                         "time_stop","haste","permanency","blindness","invisibility"];
 var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"haste"};
+var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paralized":"FFF","shield":"WWP","coldproof":"SSFP","fireproof":"WWFP","poison":"DWWFWD","desease":"DSFFFc",
+                         "amnesia":"DPP","maladroit":"DSF","mshield":"WWS","delay":"DWSSSP","time_stop":"SPPc","haste":"PWPWWc","permanency":"SPFPSDW","blindness":"DWFFd","invisibility":"PPws"};
 
 function copyObject(from, to, except) {
     var check_exclude = except && Array.isArray(except) && (except.length > 0);
@@ -80,8 +82,25 @@ function prepareStatusIcon(w) {
         }
         icon_name = icon_status_code_to_icon[code] ? icon_status_code_to_icon[code] : code;
         val = w[code] === 999 ? "∞" : w[code];
-        res.push({action: code, icon: icon_name, value: val});
+        res.push({action: code, icon: icon_name, value: val, active: (w.control_paralyze && (code === "paralized")) || (w.control_charmed && (code === "charmed"))});
     }
 
     return res;
+}
+
+function getSpellNameForOrder(action) {
+    // strange gestures
+    if ((action.g === ">") || (action.g === "?") || (action.g === "-")) {
+        return "";
+    }
+    // default spell
+    if (action.s.gp === "?") {
+        return "";
+    }
+
+    return action.s.replace(" ", "+");
+}
+
+function getSpellTargetForOrder(action, targetMap) {
+    return targetMap[action.target].replace(" ", "+");
 }

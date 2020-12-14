@@ -108,11 +108,15 @@ BaseWindow {
                             anchors.fill: parent
                             onClicked: {
                                 console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpell[index]));
-                                if ((arrSpell[index].t === 1) && (arrSpell[index].choose !== 1)) {
+                                if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
                                     arrSpell[index].choose = 1;
                                     arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
                                     mainWindow.gBattle.spellIdx = index;
                                     lvSpellList.model = arrSpell;
+                                } else if (arrSpell[index].cast_type === 2) {
+                                    mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1}, true);
+                                } else if (arrSpell[index].cast_type === 3) {
+                                    setGesture(arrSpell[index].ng);
                                 }
                             }
                         }
@@ -330,11 +334,12 @@ BaseWindow {
 
     function setGesture(new_gesture) {
         clearAll()
-        if (!new_gesture) {return;}
-        iiSend.active = true;
-        mapGesture[new_gesture].height = 0.12 * dialogWindow.height;
-        mapGesture[new_gesture].color = "lightblue";
-        currGesture = new_gesture;
+        if (new_gesture !== "") {
+            iiSend.active = true;
+            mapGesture[new_gesture].height = 0.12 * dialogWindow.height;
+            mapGesture[new_gesture].color = "lightblue";
+            currGesture = new_gesture;
+        }
         if (new_gesture === "-") {
             arrSpell = [{gp:"?",n:"Default",t:1,choose:1}];
         } else if (new_gesture === ">") {

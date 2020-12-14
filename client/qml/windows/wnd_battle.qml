@@ -68,6 +68,31 @@ BaseWindow {
                radius: 10
             }
 
+            BtnBig {
+                id: bbSendOrders
+                text_color: "#ABF4F4"
+                text: warlockDictionary.getStringByCode("SendOrders")
+                bg_color_active: "#551470"
+                border_color_active: "#551470"
+                radius: 30
+                visible: false
+
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "#FEE2D6" }
+                    GradientStop { position: 0.5; color: "#551470" }
+                    GradientStop { position: 1.0; color: "#FEE2D6" }
+                }
+
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: 0.6 * parent.height
+                width: 0.5 * parent.width
+
+                onClicked: {
+                    console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
+                }
+            }
+
             IconInfo {
                 id: iiElemental
                 source: "qrc:/res/elemental_fire.png";
@@ -77,6 +102,14 @@ BaseWindow {
                 anchors.top: parent.top
                 anchors.topMargin: 0.05 * parent.height
                 anchors.left: parent.left
+
+                onClicked: {
+                    iconClick(iiElemental.l_data)
+                }
+
+                onDoubleClicked: {
+                    iconDoubleClick(iiElemental.l_data)
+                }
             }
 
             IconInfo {
@@ -114,6 +147,8 @@ BaseWindow {
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }
+        } else if (data.active || (data.action === "m")) {
+            console.log("DO some action");
         } else {
             iconDoubleClick(data);
         }
@@ -121,7 +156,7 @@ BaseWindow {
 
     function iconDoubleClick(data) {
         console.log("wnd_battle.iconDoubleClick", JSON.stringify(data));
-        var msg_text, msg_title;
+        var msg_text, msg_title, spell_code;
         switch(data.action) {
         case "hp":
             msg_title = "Warlock's hit point"
@@ -131,14 +166,24 @@ BaseWindow {
             msg_title = "Monster"
             msg_text = data.name;
             if (data.owner !== "") {
-                msg_text += "("+data.owner+")";
+                msg_text += " (owner by "+data.owner+")";
             }
-            msg_text += " " + data.status;
-            msg_text += " " + data.target;
+            if (data.status) {
+                msg_text += " " + data.status;
+            }
+            if (data.target) {
+                msg_text += " attack " + data.target;
+            }
             break;
         default: // spell
-            msg_title = "Charm";
-            msg_text  = data.action;
+            spell_code = BU.icon_status_spell[data.action];
+            if (spell_code) {
+                msg_title = dict.getStringByCode(spell_code);
+                msg_text  = dict.getStringByCode(spell_code + "_desc");
+            } else {
+                msg_title = "Charm";
+                msg_text  = data.action;
+            }
             break;
         }
         mainWindow.showErrorWnd({type:1,text:msg_text,title:msg_title});
@@ -151,6 +196,10 @@ BaseWindow {
         iiElemental.border.width = Enable ? 3 : 0;
         iiChat.active = !Enable;
         iiChat.opacity = Enable ? 0.3 : 1;
+    }
+
+    function battleChanged() {
+        bbSendOrders.visible = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g);
     }
 
     function prepareToTargeting(gesture) {
@@ -177,6 +226,7 @@ BaseWindow {
         }
         title_text = "Battle #" + mainWindow.gBattle.id;
         BU.applyBattle();
+        battleChanged();
     }
 
     Component.onCompleted: {

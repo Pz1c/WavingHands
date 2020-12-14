@@ -8,6 +8,8 @@ Rectangle {
     property bool animationEnabled: true
     property bool checkbox: false
     property bool checked: false
+    property bool blink: false
+    property bool disbleBlinkAfterClick: true
     property alias text_color: btnText.color
     property alias text: btnText.text
     property alias fontSizeMode: btnText.fontSizeMode
@@ -44,8 +46,8 @@ Rectangle {
 
     SequentialAnimation on color {
         id: saClick
-        loops: 1
-        running: false
+        loops: Animation.Infinite
+        running: blink
 
         ColorAnimation {
             from: button.color
@@ -65,6 +67,11 @@ Rectangle {
         //pressAndHoldInterval: 500
         onClicked: {
             if (active) {
+                if (blink && disbleBlinkAfterClick) {
+                    blink = false;
+                    saClick.stop();
+                }
+
                 animate(1);
                 button.clicked(l_data);
                 if (checkbox) {

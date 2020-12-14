@@ -21,23 +21,25 @@ BaseWindow {
         ScrollView {
             id: svError
             anchors.fill: parent
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-                Text {
-                    id: ltError
-                    y: 0
-                    x: 0
-                    width: dialogWindow.width - 0.11 * dialogWindow.height
-                    //height: svLog.height
-                    font.pixelSize: 0.05 * dialogWindow.height
-                    wrapMode: Text.WordWrap
-                    color: "lightgrey"
-                    textFormat: Text.RichText
+            Text {
+                id: ltError
+                y: 0
+                x: 0
+                width: 0.9 * dialogWindow.width
+                //height: svLog.height
+                font.pixelSize: 0.05 * dialogWindow.height
+                wrapMode: Text.WordWrap
+                color: "lightgrey"
+                textFormat: Text.RichText
 
-                    onLinkActivated: {
-                        mainWindow.linkActivated(link);
-                        mainWindow.processEscape();
-                    }
+                onLinkActivated: {
+                    mainWindow.linkActivated(link);
+                    mainWindow.processEscape();
                 }
+            }
         }
 
         z: 11

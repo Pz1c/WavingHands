@@ -6,13 +6,10 @@ Qt.include("battle_gui_utils.js");
 
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
-    /*if (w.summon_left) {
-        w.monsters.push({icon:"summon",hp:"L",owner:w.name,name:"LH:"+w.name,action:"m"});
-    }
-    if (w.summon_right) {
-        w.monsters.push({icon:"summon",hp:"R",owner:w.name,name:"RH:"+w.name,action:"m"});
-    }*/
     w.print_g = preparePrintGestures(w.L, w.R);
+    w.id = battle.targetsMap[w.name];
+    w.control_paralyze = battle.paralyze.indexOf(w.id) !== -1;
+    w.control_charmed  = battle.charm.indexOf(w.id) !== -1;
     w.statusIcons = prepareStatusIcon(w);
     w.banked_spell = w.player && (battle.fire !== "");
     if (w.player) {
@@ -55,7 +52,9 @@ function prepareBattle(raw_battle) {
     battle.monsters = {};
     battle.ngL = "-";
     battle.ngR = "-";
-    battle.actions = {L:{},R:{},chat:""};
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:{},F:{}};
+    battle.paralyze = raw_battle.paralyze.split(";");
+    battle.charm = raw_battle.charm.split(";");
     parseTargets(raw_battle.targets);
 
     var i, Ln;
@@ -64,6 +63,7 @@ function prepareBattle(raw_battle) {
         if (!m.owner) {
             battle.elemental = m;
             battle.elemental.type = m.name.indexOf("Fire") !== -1 ? "fire" : "ice";
+            battle.elemental.action = "m";
             continue;
         }
         m.icon = getMonsterIconByName(m.name);
@@ -92,6 +92,7 @@ function prepareElemental() {
     if (battle.elemental.hp > 0) {
         iiElemental.text = battle.elemental.hp;
         iiElemental.source = "qrc:/res/elemental_"+battle.elemental.type+".png";
+        iiElemental.l_data = battle.elemental;
         iiElemental.visible = true;
     } else {
         iiElemental.visible = false;
@@ -167,4 +168,84 @@ function applyBattle() {
     prepareBattle(raw_battle);
     prepareGUI();
     mainWindow.gBattle = battle;
+}
+
+function prepareOrder() {
+    console.log("prepareOrder", JSON.stringify(battle.actions), JSON.stringify(mainWindow.gBattle.actions));
+    var actions = battle.actions;
+    var post_request = "say$";
+    if (actions.C !== "") {
+        post_request += actions.C.replace("$", "sign:dollar").replace("#", "sign:pos_number");
+    }
+    post_request += "#";
+    // gesture
+    post_request += "LH$"+actions.L.g+"#";
+    post_request += "RH$"+actions.R.g+"#";
+    post_request += "LHS$"+getSpellNameForOrder(actions.L)+"#";
+    post_request += "RHS$"+getSpellNameForOrder(actions.R)+"#";
+    post_request += "LHT$"+getSpellTargetForOrder(actions.L, battle.targetMap)+"#";
+    post_request += "RHT$"+getSpellTargetForOrder(actions.R, battle.targetMap)+"#";
+
+    var i, Ln;
+    for(i = 0, Ln = mtMonsterObj.length; i < Ln; ++i) {
+        console.log("mt_label", mtMonsterObj[i].mt_id, mtMonsterObj[i].mt_value);
+        if (!mtMonsterObj[i].mt_value || mtMonsterObj[i].mt_value === ' ') {
+            continue;
+        }
+
+        post_request += mtMonsterObj[i].mt_id + "$" + arrTarget[mtMonsterObj[i].mt_value].replace(" ", "+") + "#"
+    }
+
+    for(i = 0, Ln = cpPersonObj.length; i < Ln; ++i) {
+        console.log("pc_gesture_value", cpPersonObj[i].pc_gesture_value, cpPersonObj[i].pc_gesture_value.replace(">", "&gt;"))
+        console.log("cpPersonObj", cpPersonObj[i])
+        var pc_gv = cpPersonObj[i].pc_gesture_value;
+        if (!pc_gv || pc_gv === '') {
+            pc_gv = "-"
+        }
+        if (pc_gv === ">") {
+            pc_gv = "&gt;"
+        }
+
+        post_request += "DIRECTHAND" + cpPersonObj[i].pc_target_id + "$" + cpPersonObj[i].pc_hand_value + "#"
+        post_request += "DIRECTGESTURE" + cpPersonObj[i].pc_target_id + "$" + pc_gv + "#"
+    }
+
+    for(i = 0, Ln = pParalyzeObj.length; i < Ln; ++i) {
+        post_request += "PARALYZE" + pParalyzeObj[i].p_target_id + "$" + pParalyzeObj[i].p_hand_value + "#"
+    }
+
+    if (lvaoDelay.visible) {
+        post_request += "DELAY$"
+        switch(cbDelay.currentIndex) {
+            case 0:
+                post_request += "#"
+                break;
+            case 1:
+                post_request += "LH#"
+                break;
+            default:
+                post_request += "RH#"
+                break;
+        }
+    }
+
+    if (lvaoPermanent.visible) {
+        post_request += "PERM$"
+        switch(cbPermanent.currentIndex) {
+            case 0:
+                post_request += "#"
+                break;
+            case 1:
+                post_request += "LH#"
+                break;
+            default:
+                post_request += "RH#"
+                break;
+        }
+    }
+
+    if (lvaoFire.visible && cbFire.checked) {
+        post_request += "FIRE$1#"
+    }
 }
