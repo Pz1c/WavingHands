@@ -90,6 +90,7 @@ BaseWindow {
 
                 onClicked: {
                     console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
+                    BU.prepareOrder()
                 }
             }
 
@@ -135,20 +136,24 @@ BaseWindow {
 
     function iconClick(data) {
         console.log("wnd_battle.iconClick", JSON.stringify(data));
-        if (operationMode === 1) {
-            if (data.action === "permanency") {
+        if (operationMode >= 1) {
+            if ((operationMode === 1) && (data.action === "permanency")) {
                 permanency = !permanency ? 1 : 0;
-            } else if (data.action === "delay") {
+            } else if ((operationMode === 1) && (data.action === "delay")) {
                 delay = !delay ? 1 : 0;
             } else if ((data.action === "hp") || (data.action === "m")) {
                 setTargetingOnOff(false);
+                mainWindow.setSpellTarget(data.name, permanency, delay, operationMode);
                 operationMode = 0;
-                mainWindow.setSpellTarget(data.name, permanency, delay);
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }
-        } else if (data.active || (data.action === "m")) {
-            console.log("DO some action");
+        } else if (data.action === "m") {
+            data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
+            mainWindow.gBattle.currentMonsterIdx = data.action_idx;
+            mainWindow.showErrorWnd({type:4,text:"",title:"",data:data});
+        } else if (data.active) {
+            console.log("DO some action", JSON.stringify(data));
         } else {
             iconDoubleClick(data);
         }
@@ -156,7 +161,8 @@ BaseWindow {
 
     function iconDoubleClick(data) {
         console.log("wnd_battle.iconDoubleClick", JSON.stringify(data));
-        var msg_text, msg_title, spell_code;
+        var msg_text, msg_title, spell_code, msg_type = 1;
+
         switch(data.action) {
         case "hp":
             msg_title = "Warlock's hit point"
@@ -167,6 +173,9 @@ BaseWindow {
             msg_text = data.name;
             if (data.owner !== "") {
                 msg_text += " (owner by "+data.owner+")";
+                msg_type = 4;
+                data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
+                mainWindow.gBattle.currentMonsterIdx = data.action_idx;
             }
             if (data.status) {
                 msg_text += " " + data.status;
@@ -186,12 +195,12 @@ BaseWindow {
             }
             break;
         }
-        mainWindow.showErrorWnd({type:1,text:msg_text,title:msg_title});
+        mainWindow.showErrorWnd({type:msg_type,text:msg_text,title:msg_title,data:data});
     }
 
-    function setTargetingOnOff(Enable) {
+    function setTargetingOnOff(Enable, IsSpell) {
         for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
-            iWarlocks.children[i].targetingOnOff(Enable);
+            iWarlocks.children[i].targetingOnOff(Enable, IsSpell);
         }
         iiElemental.border.width = Enable ? 3 : 0;
         iiChat.active = !Enable;
@@ -202,10 +211,12 @@ BaseWindow {
         bbSendOrders.visible = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g);
     }
 
-    function prepareToTargeting(gesture) {
-        iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
-        setTargetingOnOff(true);
-        operationMode = 1;
+    function prepareToTargeting(gesture, is_spell) {
+        if (is_spell) {
+            iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
+        }
+        setTargetingOnOff(true, is_spell);
+        operationMode = is_spell ? 1 : 2;
         permanency = 0;
         delay = 0;
     }

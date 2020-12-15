@@ -45,11 +45,11 @@ QML_IMPORT_PATH =
 
 # Make these modules of QtFirebase
 # NOTE QTFIREBASE_SDK_PATH can be symlinked to match $$PWD/firebase_cpp_sdk
-QTFIREBASE_SDK_PATH = d:/Android/firebase_cpp_sdk
+#QTFIREBASE_SDK_PATH = d:/Android/firebase_cpp_sdk
 #QTFIREBASE_CONFIG += analytics admob remote_config
-QTFIREBASE_CONFIG += analytics admob
+#QTFIREBASE_CONFIG += analytics admob
 # include QtFirebase
-include(../../library/QtFirebase/qtfirebase.pri)
+#include(../../library/QtFirebase/qtfirebase.pri)
 
 # Default rules for deployment.
 include(deployment.pri)

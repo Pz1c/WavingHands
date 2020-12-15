@@ -116,11 +116,11 @@ ApplicationWindow {
         }
     }
 
-    AnalyticItem {
+    /*AnalyticItem {
         id: analytics
         userId: //take uuid
             core.uuid
-    }
+    }*/
 
     property var warlockDictionary: WarlockDictionary
     property real height_koeff: 1//rMain.height / 800
@@ -489,11 +489,11 @@ ApplicationWindow {
 
     function showBattleChat(battle_id, new_msg) {
         console.log("showBattleChat");
-        showErrorWnd({text:core.finishedBattle, title: "Battle #" + gBattle.id + " chat", msg: gBattle.chat_msg}, true);
+        showErrorWnd({type:3,text:core.finishedBattle, title: "Battle #" + gBattle.id + " chat", msg: gBattle.actions.C});
     }
 
     function storeBattleChatMsg(msg) {
-        gBattle.chat_msg = msg;
+        gBattle.actions.C = msg;
         processEscape();
     }
 
@@ -573,15 +573,28 @@ ApplicationWindow {
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
         WNDU.arr_wnd_instance[WNDU.wnd_battle].battleChanged();
         if (!use_default) {
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(gesture);
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(gesture, true);
         }
         WNDU.processEscape();
     }
 
-    function setSpellTarget(TargetName, Permanent, Delay) {
-        gBattle.actions[gBattle.currentHand].target = TargetName;
-        gBattle.actions[gBattle.currentHand].permanent = Permanent;
-        gBattle.actions[gBattle.currentHand].delay = Delay;
+    function chooseMonsterTarget() {
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(0, false);
+        WNDU.processEscape();
+    }
+
+    function setSpellTarget(TargetName, Permanent, Delay, OperationType) {
+        if (OperationType === 1) {
+            gBattle.actions[gBattle.currentHand].target = TargetName;
+            if (Permanent === 1) {
+                gBattle.actions.P = gBattle.currentHandIdx;
+            }
+            if (Delay === 1) {
+                gBattle.actions.D = gBattle.currentHandIdx;
+            }
+        } else if (OperationType === 2) {
+            gBattle.actions.M[gBattle.currentMonsterIdx].target = TargetName;
+        }
     }
 
     function processEscape() {
@@ -626,7 +639,7 @@ ApplicationWindow {
         }
 
         console.log("logEvent", event_name, JSON.stringify(params));
-        analytics.logEvent(event_name, params);
+        //analytics.logEvent(event_name, params);
     }
 
     function creationFinished() {

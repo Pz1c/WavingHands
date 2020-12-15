@@ -8,6 +8,7 @@ var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_battle = "wnd_battle.qml";
 var wnd_chat = "wnd_chat.qml";
 var wnd_gesture = "wnd_gesture.qml";
+var wnd_monster = "wnd_monster.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -214,8 +215,20 @@ function showErrorWnd(error, chat) {
     if (!mainWindow.gERROR.id) {
         mainWindow.gERROR.id = -1;
     }
+    var wnd_name;
+    switch(error.type) {
+    case 3:
+        wnd_name = wnd_chat;
+        break;
+    case 4:
+        wnd_name = wnd_monster;
+        break;
+    default:
+        wnd_name = wnd_error;
+        break;
+    }
 
-    showWnd(chat ? wnd_chat : wnd_error, 0, 0, 1);
+    showWnd(wnd_name, 0, 0, 1);
 }
 
 function showNewUserMenu() {

@@ -91,6 +91,10 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("NewGameWithBot", "Грати з ботом", "Играть с ботом", "Play against Bot");
     fillDictionary("ActiveGameTitle", "", "", "Your Games");
     fillDictionary("FinishedGameTitle", "", "", "Finished Games");
+    fillDictionary("MonsterSetTarget", "", "", "Choose target");
+    fillDictionary("MonsterOwnerTitle", "", "", "Owner");
+    fillDictionary("MonsterTargetTitle", "", "", "Target");
+    fillDictionary("SendOrders", "", "", "Send orders");
 
 
     // spell book name

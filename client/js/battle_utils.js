@@ -26,21 +26,23 @@ function parseTargets(targets_str) {
     var strs = strToArr2D(targets_str, '#', ';', true);
     var m_owner;
     console.log("parseTargets", JSON.stringify(strs));
-    var title;
+    var title, obj_id;
     for(var i = 0, Ln = strs.length; i < Ln; ++i) {
+        obj_id = strs[i][0];
         title = strs[i][1];
         if (title === " ") {
             title = "Default";
         }
         battle.targetsList.push(title);
-        battle.targetsMap[title] = strs[i][0];
+        battle.targetsMap[title] = obj_id;
 
         if ((title.indexOf("LH:") === 0) || (title.indexOf("RH:") === 0)) {
             m_owner = title.substr(3);
             if (!battle.monsters[m_owner]) {
                 battle.monsters[m_owner] = [];
             }
-            battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m"});
+            battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m",action_idx:battle.actions.M.length});
+            battle.actions.M.push({id:obj_id,target:"",old_target:""});
         }
     }
 }
@@ -52,7 +54,14 @@ function prepareBattle(raw_battle) {
     battle.monsters = {};
     battle.ngL = "-";
     battle.ngR = "-";
-    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:{},F:{}};
+    // L left  obj
+    // R Right obj
+    // C Chat  text
+    // D Delay int 0 - none, 1 left, 2 right
+    // P Permanent int 0 - none, 1 left, 2 right
+    // F Fire bool
+    // M monsters arr of obj
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:0,P:0,F:false,M:[]};
     battle.paralyze = raw_battle.paralyze.split(";");
     battle.charm = raw_battle.charm.split(";");
     parseTargets(raw_battle.targets);
@@ -68,11 +77,14 @@ function prepareBattle(raw_battle) {
         }
         m.icon = getMonsterIconByName(m.name);
         m.action = "m";
+        m.action_idx = battle.actions.M.length;
 
         if (!battle.monsters[m.owner]) {
             battle.monsters[m.owner] = [];
         }
+
         battle.monsters[m.owner].push(m);
+        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.target,old_target:m.target});
     }
 
     for (i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {
@@ -83,7 +95,7 @@ function prepareBattle(raw_battle) {
         prepareWarlock(w);
         battle.warlocks.unshift(w);
     }
-    battle.chat = raw_battle.chat;
+    //battle.chat = raw_battle.chat;
     delete battle.monsters;
     console.log("prepared battle", JSON.stringify(battle));
 }
@@ -171,7 +183,7 @@ function applyBattle() {
 }
 
 function prepareOrder() {
-    console.log("prepareOrder", JSON.stringify(battle.actions), JSON.stringify(mainWindow.gBattle.actions));
+    console.log("prepareOrder", JSON.stringify(battle.actions));
     var actions = battle.actions;
     var post_request = "say$";
     if (actions.C !== "") {
@@ -186,14 +198,15 @@ function prepareOrder() {
     post_request += "LHT$"+getSpellTargetForOrder(actions.L, battle.targetMap)+"#";
     post_request += "RHT$"+getSpellTargetForOrder(actions.R, battle.targetMap)+"#";
 
-    var i, Ln;
-    for(i = 0, Ln = mtMonsterObj.length; i < Ln; ++i) {
-        console.log("mt_label", mtMonsterObj[i].mt_id, mtMonsterObj[i].mt_value);
-        if (!mtMonsterObj[i].mt_value || mtMonsterObj[i].mt_value === ' ') {
+    var i, Ln, m_obj;
+    for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
+        m_obj = actions.M[i];
+        console.log("mt_label", JSON.stringify(m_obj));
+        if (m_obj.target === m_obj.old_target) {
             continue;
         }
 
-        post_request += mtMonsterObj[i].mt_id + "$" + arrTarget[mtMonsterObj[i].mt_value].replace(" ", "+") + "#"
+        post_request += m_obj.id + "$" + battle.targetMap[m_obj.target].replace(" ", "+") + "#";
     }
 
     for(i = 0, Ln = cpPersonObj.length; i < Ln; ++i) {

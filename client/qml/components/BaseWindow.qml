@@ -25,6 +25,7 @@ Item {
     property alias with_apply: bbApply.visible
     property alias with_action1: bbAction1.visible
     property alias with_action2: bbAction2.visible
+    property alias apply_text: bbApply.text
     property alias action1_text: bbAction1.text
     property alias action1_text_color: bbAction1.text_color
     property alias action2_text: bbAction2.text

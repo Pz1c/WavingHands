@@ -193,7 +193,7 @@ Item {
 
     Component.onCompleted: finishWarlockCreation();
 
-    function targetingOnOff(Enable) {
+    function targetingOnOff(Enable, IsSpell) {
         console.log("Warlock.targetingOnOff", l_warlock.name, Enable);
         var opacity = Enable ? 0.3 : 1;
         var border_width = Enable ? 3 : 0;
@@ -213,7 +213,7 @@ Item {
         }
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
-            if ((item.l_data.action === "permanency") || (item.l_data.action === "delay")) {
+            if (IsSpell && l_warlock.player && ((item.l_data.action === "permanency") || (item.l_data.action === "delay"))) {
                 item.border.width = border_width;
                 //item.active = Enable;
             } else {

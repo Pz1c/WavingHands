@@ -19,6 +19,7 @@ BaseWindow {
     property var mapGesture: ({"C":iiGC,"D":iiGD,"F":iiGF,"S":iiGS,"P":iiGP,"W":iiGW,">":iiGSt,"-":iiGN})
     property var arrPossibleGesture: []
     property var arrSpell: []
+    property bool noNeedTarget: false
 
     // This rectangle is the actual popup
     Item {
@@ -113,9 +114,11 @@ BaseWindow {
                                     arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
                                     mainWindow.gBattle.spellIdx = index;
                                     lvSpellList.model = arrSpell;
+                                    noNeedTarget = false;
                                 } else if (arrSpell[index].cast_type === 2) {
                                     mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1}, true);
                                 } else if (arrSpell[index].cast_type === 3) {
+                                    noNeedTarget = true;
                                     setGesture(arrSpell[index].ng);
                                 }
                             }
@@ -289,7 +292,7 @@ BaseWindow {
                 color: "transparent"
 
                 onClicked: {
-                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx]);
+                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], noNeedTarget);
                 }
             }
 
