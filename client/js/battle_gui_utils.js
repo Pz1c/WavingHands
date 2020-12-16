@@ -98,9 +98,12 @@ function getSpellNameForOrder(action) {
         return "";
     }
 
-    return action.s.replace(" ", "+");
+    return action.s.n.replace(" ", "+");
 }
 
 function getSpellTargetForOrder(action, targetMap) {
+    if (!action.target || !targetMap[action.target]) {
+        return "";
+    }
     return targetMap[action.target].replace(" ", "+");
 }

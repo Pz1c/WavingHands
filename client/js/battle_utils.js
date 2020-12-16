@@ -61,7 +61,9 @@ function prepareBattle(raw_battle) {
     // P Permanent int 0 - none, 1 left, 2 right
     // F Fire bool
     // M monsters arr of obj
-    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:0,P:0,F:false,M:[]};
+    // CP - paralyze arr of obj
+    // CC - paralyze arr of obj
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:0,P:0,F:false,M:[],CP:[],CC:[]};
     battle.paralyze = raw_battle.paralyze.split(";");
     battle.charm = raw_battle.charm.split(";");
     parseTargets(raw_battle.targets);

@@ -214,8 +214,7 @@ Item {
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
             if (IsSpell && l_warlock.player && ((item.l_data.action === "permanency") || (item.l_data.action === "delay"))) {
-                item.border.width = border_width;
-                //item.active = Enable;
+                item.animate(Enable ? 0 : -1);
             } else {
                 item.opacity = opacity;
                 //item.active = !Enable;
@@ -276,8 +275,7 @@ Item {
             }
             var arr_m = arr[i];
             is_checkbox = (type === "s") && ((arr_m.action === "permanency") || (arr_m.action === "delay"));
-            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value],
-                                                        source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox, blink: arr_m.active});
+            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value], source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox});
             if (sprite === null) {
                 console.log("prepareDynamic Error creating object");
                 continue;

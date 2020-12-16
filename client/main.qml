@@ -568,22 +568,23 @@ ApplicationWindow {
         return arr_cast_now.concat(arr_cast_later).concat(arr_cast_other);
     }
 
-    function setGesture(gesture, spell, use_default) {
+    function setGesture(gesture, spell) {
         console.log("setGesture", gesture, JSON.stringify(spell));
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].battleChanged();
-        if (!use_default) {
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(gesture, true);
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture);
+        if (spell.need_target) {
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true);
         }
         WNDU.processEscape();
     }
 
     function chooseMonsterTarget() {
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(0, false);
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false);
         WNDU.processEscape();
     }
 
     function setSpellTarget(TargetName, Permanent, Delay, OperationType) {
+        console.log("main.setSpellTarget", TargetName, Permanent, Delay, OperationType, gBattle.currentHand);
         if (OperationType === 1) {
             gBattle.actions[gBattle.currentHand].target = TargetName;
             if (Permanent === 1) {

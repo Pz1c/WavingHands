@@ -142,8 +142,9 @@ BaseWindow {
             } else if ((operationMode === 1) && (data.action === "delay")) {
                 delay = !delay ? 1 : 0;
             } else if ((data.action === "hp") || (data.action === "m")) {
-                setTargetingOnOff(false);
-                mainWindow.setSpellTarget(data.name, permanency, delay, operationMode);
+                setTargetingOnOff(false, true);
+                var target_name = data.action === "hp" ? data.warlock_name : data.name;
+                mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
                 operationMode = 0;
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
@@ -211,10 +212,12 @@ BaseWindow {
         bbSendOrders.visible = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g);
     }
 
-    function prepareToTargeting(gesture, is_spell) {
-        if (is_spell) {
-            iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
-        }
+    function setGesture(gesture) {
+        iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
+        battleChanged();
+    }
+
+    function prepareToTargeting(is_spell) {
         setTargetingOnOff(true, is_spell);
         operationMode = is_spell ? 1 : 2;
         permanency = 0;

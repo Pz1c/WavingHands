@@ -47,7 +47,7 @@ Rectangle {
     SequentialAnimation on color {
         id: saClick
         loops: Animation.Infinite
-        running: blink
+        running: false
 
         ColorAnimation {
             from: button.color
@@ -95,14 +95,26 @@ Rectangle {
     }
 
     function animate(cnt) {
+        console.log("IconInfo.animate", cnt);
+        if (cnt === -1) {
+            saClick.stop();
+            return ;
+        }
+
         if (animationEnabled){
-            saClick.loops = cnt;
+            if (cnt) {
+                saClick.loops = cnt;
+            }
             saClick.start();
         }
     }
 
     function onFinishCreation() {
-        console.log("IconInfo.onFinishCreation");
+        console.log("IconInfo.onFinishCreation", JSON.stringify(l_data));
+        //if (l_data.action)
+        /*if (blink) {
+            saClick.start();
+        }*/
     }
 
     Component.onCompleted: onFinishCreation();

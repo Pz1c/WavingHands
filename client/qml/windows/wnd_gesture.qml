@@ -19,7 +19,6 @@ BaseWindow {
     property var mapGesture: ({"C":iiGC,"D":iiGD,"F":iiGF,"S":iiGS,"P":iiGP,"W":iiGW,">":iiGSt,"-":iiGN})
     property var arrPossibleGesture: []
     property var arrSpell: []
-    property bool noNeedTarget: false
 
     // This rectangle is the actual popup
     Item {
@@ -111,14 +110,13 @@ BaseWindow {
                                 console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpell[index]));
                                 if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
                                     arrSpell[index].choose = 1;
+                                    arrSpell[index].need_target = true;
                                     arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
                                     mainWindow.gBattle.spellIdx = index;
                                     lvSpellList.model = arrSpell;
-                                    noNeedTarget = false;
                                 } else if (arrSpell[index].cast_type === 2) {
-                                    mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1}, true);
+                                    mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:false});
                                 } else if (arrSpell[index].cast_type === 3) {
-                                    noNeedTarget = true;
                                     setGesture(arrSpell[index].ng);
                                 }
                             }
@@ -292,7 +290,7 @@ BaseWindow {
                 color: "transparent"
 
                 onClicked: {
-                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], noNeedTarget);
+                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx]);
                 }
             }
 
