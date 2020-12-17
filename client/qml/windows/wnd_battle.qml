@@ -153,6 +153,8 @@ BaseWindow {
             data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
             mainWindow.gBattle.currentMonsterIdx = data.action_idx;
             mainWindow.showErrorWnd({type:4,text:"",title:"",data:data});
+        } else if (data.action === "banked") {
+            mainWindow.gBattle.actions.F = data.checked ? 1 : 0;
         } else if (data.active) {
             console.log("DO some action", JSON.stringify(data));
         } else {
@@ -184,6 +186,10 @@ BaseWindow {
             if (data.target) {
                 msg_text += " attack " + data.target;
             }
+            break;
+        case "banked":
+            msg_title = "Banked spell";
+            msg_text = data.value + "<br>To get delayed spell cast Delay Effect DWSSSP<br>" + dict.getStringByCode("DWSSSP_desc");
             break;
         default: // spell
             spell_code = BU.icon_status_spell[data.action];

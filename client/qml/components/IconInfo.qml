@@ -29,17 +29,17 @@ Rectangle {
 
     Image {
         id: iIcon
-        anchors.centerIn: parent;
-        height: 0.9 * parent.height
-        width: 0.9 * parent.height
+        anchors.centerIn: button;
+        height: 0.9 * button.height
+        width: 0.9 * button.height
     }
 
     LargeText {
         id: btnText
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        height: 0.3 * parent.height
-        width: 0.3 * parent.width
+        anchors.right: button.right
+        anchors.bottom: button.bottom
+        height: 0.3 * button.height
+        width: 0.3 * button.width
         color: "white"
         fontSizeMode: Text.Fit
     }
@@ -73,11 +73,13 @@ Rectangle {
                 }
 
                 animate(1);
-                button.clicked(l_data);
                 if (checkbox) {
                     checked = !checked;
                     button.border.width = checked ? 3 : 0;
+                    l_data.checked = checked;
                 }
+
+                button.clicked(l_data);
             }
         }
         /*onDoubleClicked: {

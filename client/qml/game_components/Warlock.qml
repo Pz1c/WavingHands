@@ -53,13 +53,16 @@ Item {
         //anchors.topMargin: 0.01 * parent.height
         anchors.right: parent.right
         visible: l_warlock.player && (l_warlock.banked_spell !== "")
+        checkbox: true
+        checked: false
+        l_data: ({action:"banked",value:l_warlock.banked_spell,checked:false})
 
         onClicked: {
-            iconClick({action:"banked"});
+            iconClick(l_data);
         }
 
         onDoubleClicked: {
-            iconDoubleClick({action:"banked"});
+            iconDoubleClick(l_data);
         }
     }
 
@@ -302,5 +305,6 @@ Item {
         scrollGestures();
         prepareMonsters();
         prepareState();
+        iiBanked.visible = l_warlock.player && (l_warlock.banked_spell !== "");
     }
 }

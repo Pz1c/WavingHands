@@ -11,7 +11,7 @@ function prepareWarlock(w) {
     w.control_paralyze = battle.paralyze.indexOf(w.id) !== -1;
     w.control_charmed  = battle.charm.indexOf(w.id) !== -1;
     w.statusIcons = prepareStatusIcon(w);
-    w.banked_spell = w.player && (battle.fire !== "");
+    w.banked_spell = w.player && (battle.fire !== "") ? battle.fire : "";
     if (w.player) {
         battle.L = w.L;
         battle.R = w.R;
@@ -35,6 +35,7 @@ function parseTargets(targets_str) {
         }
         battle.targetsList.push(title);
         battle.targetsMap[title] = obj_id;
+        battle.targetsMap[obj_id] = title;
 
         if ((title.indexOf("LH:") === 0) || (title.indexOf("RH:") === 0)) {
             m_owner = title.substr(3);
@@ -47,8 +48,28 @@ function parseTargets(targets_str) {
     }
 }
 
+function setParaActions(paralyze, charm) {
+    battle.paralyze = paralyze !== "" ? paralyze.split(";") : [];
+    battle.charm = charm !== "" ? charm.split(";") : [];
+    var i, Ln;
+    for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
+        if (!battle.paralyze[i]) {
+            continue;
+        }
+
+        battle.actions.CP[battle.paralyze[i]] = "LH";
+    }
+    for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
+        if (!battle.charm[i]) {
+            continue;
+        }
+        battle.actions.CC[battle.charm[i]] = {h:"LH",g:"-"};
+    }
+}
+
 function prepareBattle(raw_battle) {
     battle.id = raw_battle.id;
+    battle.fire = raw_battle.fire;
     battle.warlocks = [];
     battle.elemental = {hp:0,type:"fire"};
     battle.monsters = {};
@@ -57,15 +78,14 @@ function prepareBattle(raw_battle) {
     // L left  obj
     // R Right obj
     // C Chat  text
-    // D Delay int 0 - none, 1 left, 2 right
-    // P Permanent int 0 - none, 1 left, 2 right
-    // F Fire bool
+    // D Delay int 0 - none, 1 left, 2 right, -1 unavailable
+    // P Permanent int 0 - none, 1 left, 2 right, -1 unavailable
+    // F Fire int 0, 1, -1
     // M monsters arr of obj
     // CP - paralyze arr of obj
     // CC - paralyze arr of obj
-    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:0,P:0,F:false,M:[],CP:[],CC:[]};
-    battle.paralyze = raw_battle.paralyze.split(";");
-    battle.charm = raw_battle.charm.split(";");
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
+    setParaActions(raw_battle.paralyze, raw_battle.charm);
     parseTargets(raw_battle.targets);
 
     var i, Ln;
@@ -185,22 +205,26 @@ function applyBattle() {
 }
 
 function prepareOrder() {
-    console.log("prepareOrder", JSON.stringify(battle.actions));
+    console.log("prepareOrder", "before", JSON.stringify(battle.actions));
     var actions = battle.actions;
     var post_request = "say$";
     if (actions.C !== "") {
         post_request += actions.C.replace("$", "sign:dollar").replace("#", "sign:pos_number");
     }
     post_request += "#";
+    console.log("prepareOrder", "point1", post_request);
     // gesture
     post_request += "LH$"+actions.L.g+"#";
     post_request += "RH$"+actions.R.g+"#";
+    console.log("prepareOrder", "point2", post_request);
     post_request += "LHS$"+getSpellNameForOrder(actions.L)+"#";
     post_request += "RHS$"+getSpellNameForOrder(actions.R)+"#";
-    post_request += "LHT$"+getSpellTargetForOrder(actions.L, battle.targetMap)+"#";
-    post_request += "RHT$"+getSpellTargetForOrder(actions.R, battle.targetMap)+"#";
+    console.log("prepareOrder", "point3", post_request);
+    post_request += "LHT$"+getSpellTargetForOrder(actions.L, battle.targetsMap)+"#";
+    post_request += "RHT$"+getSpellTargetForOrder(actions.R, battle.targetsMap)+"#";
+    console.log("prepareOrder", "point4", post_request);
 
-    var i, Ln, m_obj;
+    var i, Ln, m_obj, pc_gv;
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
         m_obj = actions.M[i];
         console.log("mt_label", JSON.stringify(m_obj));
@@ -208,59 +232,39 @@ function prepareOrder() {
             continue;
         }
 
-        post_request += m_obj.id + "$" + battle.targetMap[m_obj.target].replace(" ", "+") + "#";
+        post_request += m_obj.id + "$" + battle.targetsMap[m_obj.target].replace(" ", "+") + "#";
     }
-
-    for(i = 0, Ln = cpPersonObj.length; i < Ln; ++i) {
-        console.log("pc_gesture_value", cpPersonObj[i].pc_gesture_value, cpPersonObj[i].pc_gesture_value.replace(">", "&gt;"))
-        console.log("cpPersonObj", cpPersonObj[i])
-        var pc_gv = cpPersonObj[i].pc_gesture_value;
+    console.log("prepareOrder", "point5", post_request);
+    for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
+        post_request += "PARALYZE" + battle.paralyze[i] + "$" + actions.CP[battle.paralyze[i]] + "#";
+    }
+    console.log("prepareOrder", "point6", post_request);
+    for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
+        pc_gv = actions.CP[battle.charm[i]].g;
         if (!pc_gv || pc_gv === '') {
             pc_gv = "-"
         }
         if (pc_gv === ">") {
             pc_gv = "&gt;"
         }
-
-        post_request += "DIRECTHAND" + cpPersonObj[i].pc_target_id + "$" + cpPersonObj[i].pc_hand_value + "#"
-        post_request += "DIRECTGESTURE" + cpPersonObj[i].pc_target_id + "$" + pc_gv + "#"
+        post_request += "DIRECTHAND" + battle.charm[i] + "$" + actions.CP[battle.charm[i]].h + "#";
+        post_request += "DIRECTGESTURE" + battle.charm[i] + "$" + pc_gv + "#";
     }
+    console.log("prepareOrder", "point7", post_request);
 
-    for(i = 0, Ln = pParalyzeObj.length; i < Ln; ++i) {
-        post_request += "PARALYZE" + pParalyzeObj[i].p_target_id + "$" + pParalyzeObj[i].p_hand_value + "#"
+    if (actions.D !== -1) {
+        post_request += "DELAY$" + getHandByIdx(actions.D);
     }
-
-    if (lvaoDelay.visible) {
-        post_request += "DELAY$"
-        switch(cbDelay.currentIndex) {
-            case 0:
-                post_request += "#"
-                break;
-            case 1:
-                post_request += "LH#"
-                break;
-            default:
-                post_request += "RH#"
-                break;
-        }
+    console.log("prepareOrder", "point8", post_request);
+    if (actions.P !== -1) {
+        post_request += "PERM$" + getHandByIdx(actions.P);
     }
-
-    if (lvaoPermanent.visible) {
-        post_request += "PERM$"
-        switch(cbPermanent.currentIndex) {
-            case 0:
-                post_request += "#"
-                break;
-            case 1:
-                post_request += "LH#"
-                break;
-            default:
-                post_request += "RH#"
-                break;
-        }
-    }
-
-    if (lvaoFire.visible && cbFire.checked) {
+    console.log("prepareOrder", "point9", post_request);
+    if (actions.F === 1) {
         post_request += "FIRE$1#"
     }
+    console.log("prepareOrder", "after", post_request);
+
+    mainWindow.gameCore.sendOrders(post_request);
+    mainWindow.processEscape();
 }

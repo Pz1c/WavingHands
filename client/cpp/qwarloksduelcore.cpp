@@ -691,7 +691,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         return false;
     }
 
-    qDebug() << "finishGetFinishedBattle all fine" << state << point2;
+    qDebug() << "finishGetFinishedBattle all fine" << state << point2 << idx1 << idx2;
     _finishedBattle = Data.mid(idx1, idx2 - idx1).replace("<a href=\"/player", "<b atr=\"")
             .replace("<A CLASS=amonoturn HREF=\"/warlocks", "<b atr=\"").replace("</A>", "</b>").replace("</a>", "</b>")
             .replace("BLOCKQUOTE", "p").replace("WIDTH=\"100%\"", "").replace("WIDTH=\"50%\"", "");
@@ -702,7 +702,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         _finishedBattle.append(QString("<br><p align=center><a href=\"/force_surrender/%1/%2\">Force Surrender Attempt</a></p><br>").arg(QString::number(_loadedBattleID), turn));
     }
 
-    butifyTurnMessage(_finishedBattle, true);
+    butifyTurnMessage(_finishedBattle, _loadedBattleType == 1);
 
     if (_loadedBattleType != 1) {
         qDebug() << "battle is not ready end there";
@@ -712,6 +712,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
     int ccnt = 0, idxc = 0;
     while((idxc = Data.indexOf(" says ", idxc)) != -1) {
+        idxc += 6;
         ++ccnt;
     }
     _chat = intToStr(ccnt);

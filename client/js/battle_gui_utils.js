@@ -107,3 +107,11 @@ function getSpellTargetForOrder(action, targetMap) {
     }
     return targetMap[action.target].replace(" ", "+");
 }
+
+function getHandByIdx(idx) {
+    switch(idx) {
+        case 0: return "#";
+        case 1: return "LH#";
+        default: return "RH#";
+    }
+}
