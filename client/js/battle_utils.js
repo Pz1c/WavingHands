@@ -305,18 +305,18 @@ function getOrdersForReview(dictionary) {
     }
     var i, Ln, m_obj, pc_gv;
     for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
-        res.push({type:"CP",value:getCharmActionText("CP", actions.CP[battle.paralyze[i]], battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow"});
+        res.push({type:"CP",v:getCharmActionText("CP", actions.CP[battle.paralyze[i]], battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow"});
         console.log("getOrdersForReview", "point7", JSON.stringify(res));
     }
     for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
         console.log("getOrdersForReview before charm", i, Ln, battle.charm[i], JSON.stringify(actions.CC[battle.charm[i]]));
-        res.push({type:"CC",value:getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary), c:"snow"});
+        res.push({type:"CC",v:getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary), c:"snow"});
         console.log("getOrdersForReview", "point8", JSON.stringify(res));
     }
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
         m_obj = actions.M[i];
         console.log("mt_label", JSON.stringify(m_obj));
-        res.push({type:"M",value:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow"});
+        res.push({type:"M",v:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow"});
         console.log("getOrdersForReview", "point9", JSON.stringify(res));
     }
     return res;
