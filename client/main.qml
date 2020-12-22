@@ -598,6 +598,21 @@ ApplicationWindow {
         }
     }
 
+    function chooseCharm(Action, H, G) {
+        gERROR = {h:H,g:G,is_paralyze:Action === "paralyze",title:warlockDictionary.getStringByCode("TitleAction_" + Action)};
+        WNDU.showCharm();
+    }
+
+    function setCharm(H, G) {
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].setCharm(H, G);
+        WNDU.processEscape();
+    }
+
+    function showOrders(arr) {
+        gERROR = {title:warlockDictionary.getStringByCode("Review battle orders"), data: arr};
+        WNDU.showOrders();
+    }
+
     function processEscape() {
         WNDU.processEscape();
     }

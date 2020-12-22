@@ -101,12 +101,67 @@ function getSpellNameForOrder(action) {
     return action.s.n.replace(" ", "+");
 }
 
+function getSpellNameForOrderReview(action) {
+    // strange gestures
+    if (action.g === ">") {
+        return "Stab";
+    }
+
+    if ((action.g === "?") || (action.g === "-")) {
+        return "Unknown";
+    }
+    // default spell
+    if (action.s.gp === "?") {
+        return "Default";
+    }
+
+    return action.s.n;
+}
+
 function getSpellTargetForOrder(action, targetMap) {
     if (!action.target || !targetMap[action.target]) {
         return "";
     }
     return targetMap[action.target].replace(" ", "+");
 }
+
+function getSpellTargetForOrderReview(action, targetMap) {
+    if (!action.target || !targetMap[action.target]) {
+        return "Default";
+    }
+    return action.target;
+}
+
+// res.push({type:"RH",g:actions.R.g,s:getSpellNameForOrderReview(actions.R),t:getSpellTargetForOrderReview(actions.R, battle.targetsMap)});
+function getTextForHandAction(hand, action, targetMap, dict) {
+    var res = dict.getStringByCode(hand) + ": ";
+    res += action.g + " cast " + getSpellNameForOrderReview(action) + " spell on " + getSpellTargetForOrderReview(action, targetMap);
+    return res;
+}
+
+function getSpecActionText(type, action, dict) {
+    return dict.getStringByCode("TitleAction_" + type) + getHandTitleByIdx(action);
+}
+
+function getCharmActionText(type, action, target, dict) {
+
+    return dict.getStringByCode("TitleAction_" + type).replace("%1", getHandTitleByIdx(action.h)).replace("%2", action.g) + target;
+}
+
+function getMonsterActionText(action, target, targetMap, dict) {
+    return targetMap[action.id] + dict.getStringByCode("TitleAction_M") + target;
+}
+
+function getHandTitleByIdx(idx) {
+    switch(idx) {
+        case 0: return "None";
+        case 1:
+        case "LH": return "Left hand";
+        case 3: return "Two-hand";
+        default: return "Right hand";
+    }
+}
+
 
 function getHandByIdx(idx) {
     switch(idx) {

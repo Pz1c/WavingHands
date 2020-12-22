@@ -90,7 +90,7 @@ BaseWindow {
 
                 onClicked: {
                     console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
-                    BU.prepareOrder()
+                    mainWindow.showOrders(BU.getOrdersForReview(dict));
                 }
             }
 
@@ -157,6 +157,8 @@ BaseWindow {
             mainWindow.gBattle.actions.F = data.checked ? 1 : 0;
         } else if (data.active) {
             console.log("DO some action", JSON.stringify(data));
+            BU.battle.currentCharm = BU.getCharmDataByAction(data);
+            mainWindow.chooseCharm(data.action, BU.battle.currentCharm.h, BU.battle.currentCharm.g);
         } else {
             iconDoubleClick(data);
         }
@@ -223,11 +225,19 @@ BaseWindow {
         battleChanged();
     }
 
+    function setCharm(hand, gesture) {
+        BU.setCharm(hand, gesture);
+    }
+
     function prepareToTargeting(is_spell) {
         setTargetingOnOff(true, is_spell);
         operationMode = is_spell ? 1 : 2;
         permanency = 0;
         delay = 0;
+    }
+
+    function sendOrders() {
+        BU.prepareOrder();
     }
 
     function showWnd() {

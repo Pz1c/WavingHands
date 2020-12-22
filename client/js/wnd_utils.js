@@ -9,6 +9,8 @@ var wnd_battle = "wnd_battle.qml";
 var wnd_chat = "wnd_chat.qml";
 var wnd_gesture = "wnd_gesture.qml";
 var wnd_monster = "wnd_monster.qml";
+var wnd_charm = "wnd_charm.qml";
+var wnd_orders = "wnd_orders.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -245,4 +247,12 @@ function showBattle() {
 
 function showGesture() {
     showWnd(wnd_gesture, 0, 0, 1);
+}
+
+function showCharm() {
+    showWnd(wnd_charm, 0, 0, 1);
+}
+
+function showOrders() {
+    showWnd(wnd_orders, 0, 0, 1);
 }

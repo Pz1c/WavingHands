@@ -9,6 +9,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("SurrenderForTurn", "Ви хочете здатись?", "Вы хотите сдаться?", "Are you really want to surrender?");
     fillDictionary("LeftHand", "Ліва рука", "Левая рука", "Left Hand");
     fillDictionary("RightHand", "Права рука", "Правая рука", "Right Hand");
+    fillDictionary("LH", "Ліва рука", "Левая рука", "Left Hand");
+    fillDictionary("RH", "Права рука", "Правая рука", "Right Hand");
     fillDictionary("Submit", "Походити", "Походить", "Submit");
     fillDictionary("DelaySpell", "Зберегти закляття", "Сохранить заклятие", "Delay Spell");
     fillDictionary("Neither", "Зберегти закляття", "Сохранить заклятие", "Neither");
@@ -95,6 +97,12 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("MonsterOwnerTitle", "", "", "Owner");
     fillDictionary("MonsterTargetTitle", "", "", "Target");
     fillDictionary("SendOrders", "", "", "Send orders");
+    fillDictionary("TitleAction_charmed", "", "", "Choose gesture for Charmed warlock");
+    fillDictionary("TitleAction_D", "", "", "Try bank spell casted by ");
+    fillDictionary("TitleAction_P", "", "", "Try do permanent spell casted by ");
+    fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
+    fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
+    fillDictionary("TitleAction_M", "", "", " direct to attack ");
 
 
     // spell book name

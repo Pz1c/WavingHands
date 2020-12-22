@@ -87,5 +87,7 @@
         <file>res/invisibility.png</file>
         <file>js/game_constant.js</file>
         <file>qml/windows/wnd_monster.qml</file>
+        <file>qml/windows/wnd_charm.qml</file>
+        <file>qml/windows/wnd_orders.qml</file>
     </qresource>
 </RCC>

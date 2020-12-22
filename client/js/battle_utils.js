@@ -49,21 +49,28 @@ function parseTargets(targets_str) {
 }
 
 function setParaActions(paralyze, charm) {
-    battle.paralyze = paralyze !== "" ? paralyze.split(";") : [];
-    battle.charm = charm !== "" ? charm.split(";") : [];
+    battle.paralyze = [];
+    battle.charm = [];
     var i, Ln;
-    for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
-        if (!battle.paralyze[i]) {
-            continue;
+    if (paralyze !== "") {
+        var tp = paralyze.split(";");
+        for(i = 0, Ln = tp.length; i < Ln; ++i) {
+            if (!tp[i]) {
+                continue;
+            }
+            battle.paralyze.push(tp[i]);
+            battle.actions.CP[tp[i]] = {h:"LH",g:"-",t:"P"};
         }
-
-        battle.actions.CP[battle.paralyze[i]] = "LH";
     }
-    for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
-        if (!battle.charm[i]) {
-            continue;
+    if (charm !== "") {
+        var tc = charm.split(";");
+        for(i = 0, Ln = tc.length; i < Ln; ++i) {
+            if (!tc[i]) {
+                continue;
+            }
+            battle.charm.push(tc[i]);
+            battle.actions.CC[tc[i]] = {h:"LH",g:"-",t:"C"};
         }
-        battle.actions.CC[battle.charm[i]] = {h:"LH",g:"-"};
     }
 }
 
@@ -82,8 +89,8 @@ function prepareBattle(raw_battle) {
     // P Permanent int 0 - none, 1 left, 2 right, -1 unavailable
     // F Fire int 0, 1, -1
     // M monsters arr of obj
-    // CP - paralyze arr of obj
-    // CC - paralyze arr of obj
+    // CP - paralyze arr of obj by id
+    // CC - paralyze arr of obj by id
     battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
     setParaActions(raw_battle.paralyze, raw_battle.charm);
     parseTargets(raw_battle.targets);
@@ -236,18 +243,18 @@ function prepareOrder() {
     }
     console.log("prepareOrder", "point5", post_request);
     for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
-        post_request += "PARALYZE" + battle.paralyze[i] + "$" + actions.CP[battle.paralyze[i]] + "#";
+        post_request += "PARALYZE" + battle.paralyze[i] + "$" + actions.CP[battle.paralyze[i]].h + "#";
     }
     console.log("prepareOrder", "point6", post_request);
     for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
-        pc_gv = actions.CP[battle.charm[i]].g;
+        pc_gv = actions.CC[battle.charm[i]].g;
         if (!pc_gv || pc_gv === '') {
             pc_gv = "-"
         }
         if (pc_gv === ">") {
             pc_gv = "&gt;"
         }
-        post_request += "DIRECTHAND" + battle.charm[i] + "$" + actions.CP[battle.charm[i]].h + "#";
+        post_request += "DIRECTHAND" + battle.charm[i] + "$" + actions.CC[battle.charm[i]].h + "#";
         post_request += "DIRECTGESTURE" + battle.charm[i] + "$" + pc_gv + "#";
     }
     console.log("prepareOrder", "point7", post_request);
@@ -267,4 +274,64 @@ function prepareOrder() {
 
     mainWindow.gameCore.sendOrders(post_request);
     mainWindow.processEscape();
+}
+
+function getOrdersForReview(dictionary) {
+    console.log("getOrdersForReview", JSON.stringify(battle.actions));
+    var res = [];
+    var actions = battle.actions;
+    if (actions.C !== "") {
+        res.push({type:"C",v:"Say: " + actions.C});
+        console.log("getOrdersForReview", "point1", JSON.stringify(res));
+    }
+
+    // gesture
+    res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary),c:"snow"});
+    console.log("getOrdersForReview", "point2", JSON.stringify(res));
+    res.push({type:"RH",v:getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary),c:"snow"});
+    console.log("getOrdersForReview", "point3", JSON.stringify(res));
+
+    if (actions.D !== -1) {
+        res.push({type:"D",v:getSpecActionText("D", actions.D, dictionary),c:"snow"});
+        console.log("getOrdersForReview", "point4", JSON.stringify(res));
+    }
+    if (actions.P !== -1) {
+        res.push({type:"P",v:getSpecActionText("P", actions.P, dictionary),c:"snow"});
+        console.log("getOrdersForReview", "point5", JSON.stringify(res));
+    }
+    if (actions.F === 1) {
+        res.push({type:"F",v:battle.fire,c:"snow"});
+        console.log("getOrdersForReview", "point6", JSON.stringify(res));
+    }
+    var i, Ln, m_obj, pc_gv;
+    for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
+        res.push({type:"CP",value:getCharmActionText("CP", actions.CP[battle.paralyze[i]], battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow"});
+        console.log("getOrdersForReview", "point7", JSON.stringify(res));
+    }
+    for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
+        console.log("getOrdersForReview before charm", i, Ln, battle.charm[i], JSON.stringify(actions.CC[battle.charm[i]]));
+        res.push({type:"CC",value:getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary), c:"snow"});
+        console.log("getOrdersForReview", "point8", JSON.stringify(res));
+    }
+    for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
+        m_obj = actions.M[i];
+        console.log("mt_label", JSON.stringify(m_obj));
+        res.push({type:"M",value:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow"});
+        console.log("getOrdersForReview", "point9", JSON.stringify(res));
+    }
+    return res;
+}
+
+function getCharmDataByAction(action_data) {
+    var arr = action_data.action === "charmed" ? battle.actions.CC : battle.actions.CP;
+    var id = battle.targetsMap[action_data.warlock_name];
+    var res = arr[id];
+    res.id = id;
+    return res;
+}
+
+function setCharm(H, G) {
+    console.log("BU.setCharm", H, G, JSON.stringify(battle.currentCharm));
+    var T = battle.currentCharm.t;
+    battle.actions["C" + T][battle.currentCharm.id] = {h:H,g:G,t:T};
 }
