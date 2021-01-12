@@ -51,13 +51,15 @@ BaseWindow {
                             color: "snow"
                             horizontalAlignment: Text.AlignLeft
                             text: lvOrderList.model[index].v
+                            width: 0.9 * parent.width
+                            height: 0.8 * parent.height
                         }
 
                         MouseArea {
                             id: maSpell
                             anchors.fill: parent
                             onClicked: {
-                                console.log("clieck on order", index, JSON.stringify(lvOrderList.model[index]));
+                                console.log("click on order", index, JSON.stringify(lvOrderList.model[index]));
                             }
                         }
                     }
@@ -71,7 +73,7 @@ BaseWindow {
     }
 
     onApply: {
-        //send orders
+        mainWindow.confirmOrders();
     }
 
     function showWnd() {

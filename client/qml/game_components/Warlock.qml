@@ -156,32 +156,40 @@ Item {
 
     IconInfoR {
         id: iiLeft
-        source: "qrc:/res/stars_light.png";
+        source: l_warlock.player ? "qrc:/res/stars_light.png" : "qrc:/res/g_=.png";
         text: ""
         height: 0.35 * parent.height
         width: 0.7 * height
         anchors.bottom: iiRight.top
         anchors.bottomMargin: 0.01 * parent.height
         anchors.right: parent.right
-        visible: l_warlock.player
+        visible: l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed
 
         onClicked: {
-            mainWindow.showGesture(true, l_warlock.plg);
+            if (l_warlock.player) {
+                mainWindow.showGesture(true, l_warlock.plg);
+            } else {
+
+            }
         }
     }
 
     IconInfoR {
         id: iiRight
-        source: "qrc:/res/stars_light.png";
+        source: l_warlock.player ? "qrc:/res/stars_light.png" : "qrc:/res/g_=.png";
         text: ""
         height: iiLeft.height
         width: iiLeft.width
         anchors.bottom: rBottomLine.top
         //anchors.bottomMargin: 0.02 * parent.height
         anchors.right: parent.right
-        visible: l_warlock.player
+        visible: l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed
         onClicked: {
-            mainWindow.showGesture(false, l_warlock.prg);
+            if (l_warlock.player) {
+                mainWindow.showGesture(false, l_warlock.prg);
+            } else {
+
+            }
         }
     }
 

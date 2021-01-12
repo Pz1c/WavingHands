@@ -149,7 +149,12 @@ function getCharmActionText(type, action, target, dict) {
 }
 
 function getMonsterActionText(action, target, targetMap, dict) {
-    return targetMap[action.id] + dict.getStringByCode("TitleAction_M") + target;
+    var t = targetMap[action.id] + dict.getStringByCode("TitleAction_M") + target;
+    if (!target) {
+        t += "Default";
+    }
+
+    return t;
 }
 
 function getHandTitleByIdx(idx) {

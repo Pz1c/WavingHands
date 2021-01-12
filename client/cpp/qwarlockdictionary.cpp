@@ -7,6 +7,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("AreYouSure", "Ви впевненні?", "Вы уверенны?", "Are you sure?");
     fillDictionary("NoGestureForTurn", "Ви не задали жестів на цей хід!", "Вы не задали жесты для хода!", "You have no set gesture for this turn!");
     fillDictionary("SurrenderForTurn", "Ви хочете здатись?", "Вы хотите сдаться?", "Are you really want to surrender?");
+    fillDictionary("ConfirmOrdersForTurn", "", "", "Are you confirm your orders?");
     fillDictionary("LeftHand", "Ліва рука", "Левая рука", "Left Hand");
     fillDictionary("RightHand", "Права рука", "Правая рука", "Right Hand");
     fillDictionary("LH", "Ліва рука", "Левая рука", "Left Hand");

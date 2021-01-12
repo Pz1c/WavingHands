@@ -37,6 +37,7 @@ ApplicationWindow {
     Dialog {
         id: mdNoGesture
         title: warlockDictionary.getStringByCode("AreYouSure")
+        anchors.centerIn: parent
         //icon: StandardIcon.Warning
         property alias text: ltModal.text
         contentItem: LargeText {
@@ -50,7 +51,7 @@ ApplicationWindow {
 
         onAccepted: {
             if (isSendOrderAction) {
-                //BU.sendOrderEx();
+                confirmOrdersEx();
             } else {
                 Qt.quit();
             }
@@ -211,9 +212,22 @@ ApplicationWindow {
         height: mainWindow.height
         edge: Qt.RightEdge
 
-        Label {
-            text: "Content goes here!"
-            anchors.centerIn: parent
+        BtnBig {
+            id: bbMenuRefresh
+            text_color: "#A8F4F4"
+            text: warlockDictionary.getStringByCode("Refresh")
+            transparent: true
+            border.width: 0
+            height: 0.1 * parent.height
+            anchors.top: parent.top
+            anchors.topMargin: 0.01 * parent.height
+            anchors.left: parent.left
+            anchors.right: parent.right
+
+            onClicked: {
+                console.log("try refresh state");
+                core.scanState(1);
+            }
         }
     }
 
@@ -251,6 +265,7 @@ ApplicationWindow {
 
             onClicked: {
                 console.log("start game")
+                core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
             }
         }
 
@@ -269,7 +284,8 @@ ApplicationWindow {
             anchors.horizontalCenter: parent.horizontalCenter
 
             onClicked: {
-                console.log("start game with bot")
+                console.log("start game with bot");
+                core.createNewChallenge(1, 0, 1, 1, 2, 2, "TRANING BOT ONLY");
             }
         }
 
@@ -594,7 +610,9 @@ ApplicationWindow {
                 gBattle.actions.D = gBattle.currentHandIdx;
             }
         } else if (OperationType === 2) {
+            console.log("before", gBattle.currentMonsterIdx, JSON.stringify(gBattle.actions.M[gBattle.currentMonsterIdx]));
             gBattle.actions.M[gBattle.currentMonsterIdx].target = TargetName;
+            console.log("after", gBattle.currentMonsterIdx, JSON.stringify(gBattle.actions.M[gBattle.currentMonsterIdx]));
         }
     }
 
@@ -611,6 +629,17 @@ ApplicationWindow {
     function showOrders(arr) {
         gERROR = {title:warlockDictionary.getStringByCode("Review battle orders"), data: arr};
         WNDU.showOrders();
+    }
+
+    function confirmOrders() {
+        mdNoGesture.text = warlockDictionary.getStringByCode("ConfirmOrdersForTurn");
+        mdNoGesture.isSendOrderAction = true;
+        mdNoGesture.visible = true;
+    }
+
+    function confirmOrdersEx() {
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
+        WNDU.closeChilds();
     }
 
     function processEscape() {

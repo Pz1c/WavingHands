@@ -149,11 +149,11 @@ BaseWindow {
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }
-        } else if (data.action === "m") {
+        } else /*if (data.action === "m") {
             data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
             mainWindow.gBattle.currentMonsterIdx = data.action_idx;
             mainWindow.showErrorWnd({type:4,text:"",title:"",data:data});
-        } else if (data.action === "banked") {
+        } else */if (data.action === "banked") {
             mainWindow.gBattle.actions.F = data.checked ? 1 : 0;
         } else if (data.active) {
             console.log("DO some action", JSON.stringify(data));
@@ -166,7 +166,7 @@ BaseWindow {
 
     function iconDoubleClick(data) {
         console.log("wnd_battle.iconDoubleClick", JSON.stringify(data));
-        var msg_text, msg_title, spell_code, msg_type = 1;
+        var msg_text, msg_title, spell_code, msg_type = 1, target_name;
 
         switch(data.action) {
         case "hp":
@@ -179,14 +179,16 @@ BaseWindow {
             if (data.owner !== "") {
                 msg_text += " (owner by "+data.owner+")";
                 msg_type = 4;
+                console.log("get target", JSON.stringify(mainWindow.gBattle.actions), mainWindow.gBattle.actions.M[data.action_idx].target);
                 data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
                 mainWindow.gBattle.currentMonsterIdx = data.action_idx;
+                console.log("set target", data.target);
             }
             if (data.status) {
                 msg_text += " " + data.status;
             }
             if (data.target) {
-                msg_text += " attack " + data.target;
+                msg_text += " attack " + target_name;
             }
             break;
         case "banked":
