@@ -26,7 +26,7 @@ BaseWindow {
             anchors.bottom: rSendMsg.top
 
             width: dialogWindow.width
-            height: dialogWindow.height - btnDoit.height
+            height: dialogWindow.height - rSendMsg.height
 
             Text {
                   x: 5
@@ -50,7 +50,7 @@ BaseWindow {
             width: parent.width
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.bottom: btnDoit.top
+            anchors.bottom: parent.bottom
             border.width: 1
             border.color: "grey"
             radius: 3
@@ -106,7 +106,7 @@ BaseWindow {
                     onClicked: {
                         console.log("try core.sendMessage", teTxtMsg.text, teTxtMsg.text.length);
                         if (teTxtMsg.text.length > 0) {
-                            Qt.core.sendMessage(teTxtMsg.text);
+                            mainWindow.gameCore.sendMessage(teTxtMsg.text);
                         }
                         //MUtils.sendOrder()
                     }
@@ -122,7 +122,7 @@ BaseWindow {
     function initProfileFields() {
         mainWindow.storeWnd(dMainItem);
         console.log("user_profile.initProfileFields", Qt.show_info_self);
-        tPlayerInfo.text = Qt.show_info_self ? Qt.core.playerInfo : Qt.core.warlockInfo;
+        tPlayerInfo.text = Qt.show_info_self ? mainWindow.gameCore.playerInfo : mainWindow.gameCore.warlockInfo;
         rSendMsg.visible = !Qt.show_info_self;
     }
 

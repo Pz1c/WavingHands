@@ -51,7 +51,7 @@ BaseWindow {
             width: dialogWindow.width
             title: dict.getStringByCode("Say")
             title_color: "lightgray"
-            text_color: "black"
+            //text_color: "black"
             transparent: false
             //placeholderText: "write your message there"
             regularExpression: /.{0,256}$/

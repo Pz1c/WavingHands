@@ -76,7 +76,7 @@ BaseWindow {
         }
 
         if (err_cnt === 0) {
-            Qt.core.regNewUser(ltiLogin.text, ltiEmail.text);
+            mainWindow.gameCore.regNewUser(ltiLogin.text, ltiEmail.text);
         }
     }
 

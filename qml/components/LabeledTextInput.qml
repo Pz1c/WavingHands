@@ -44,7 +44,7 @@ Item {
         anchors.leftMargin: 0.05 * parent.width
         inputMethodHints: Qt.ImhNoPredictiveText
         validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
-        color: "white"
+        color: "black"
         echoMode: isPassword ? TextInput.Password : TextInput.Normal
         font.pixelSize: 0.8 * height
         background: Rectangle {

@@ -65,7 +65,7 @@ BaseWindow {
         }
 
         if (err_cnt === 0) {
-            Qt.core.setLogin(ltiLogin.text, ltiPass.text);
+            mainWindow.gameCore.setLogin(ltiLogin.text, ltiPass.text);
         }
     }
 
