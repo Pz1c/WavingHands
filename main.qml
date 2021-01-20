@@ -106,6 +106,9 @@ ApplicationWindow {
             console.log("onAccountMenuChanged");
             GUI.showLoginMenu(core.getMenuItems());
         }
+        onLoginChanged: {
+            closeChild()
+        }
 
         Component.onCompleted: {
             console.log("Core.completed");
