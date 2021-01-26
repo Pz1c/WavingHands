@@ -62,7 +62,7 @@ function linkActivated(link) {
     var a = link.split("/");
     switch(a[1]) {
         case "force_surrender":
-            mainWindow.core.forceSurrender(a[2], a[3])
+            mainWindow.gameCore.forceSurrender(a[2], a[3])
             break;
         case "show_spell_desc":
             mainWindow.showSpellDetails(a[2]);

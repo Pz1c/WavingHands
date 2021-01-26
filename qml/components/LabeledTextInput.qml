@@ -28,7 +28,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: 0.05 * parent.width
         height: 0.45 * parent.height
-        width: 0.9 * dialogWindow.width
+        width: 0.9 * parent.width
         color: "black"
         fontSizeMode: Text.Fit
         horizontalAlignment: Text.AlignLeft
@@ -37,7 +37,7 @@ Item {
     TextField {
         id: tiMain
         height: ltiTitle.height
-        width: 0.9 * dialogWindow.width
+        width: 0.9 * parent.width
         anchors.top: ltiTitle.bottom
         anchors.topMargin: 0.05 * parent.height
         anchors.left: parent.left
@@ -46,7 +46,8 @@ Item {
         validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
         color: "black"
         echoMode: isPassword ? TextInput.Password : TextInput.Normal
-        font.pixelSize: 0.8 * height
+        font.pixelSize: 0.36 * lbiMain.height
+        //font.pointSize: 0.2
         background: Rectangle {
             radius: 5
             //implicitWidth: 100
@@ -56,8 +57,16 @@ Item {
         }
     }
 
+    function setFontSize(real_height) {
+        console.log("LabeledTextInput.setFontSize", lbiMain.height, tiMain.height, real_height, tiMain.font.pixelSize);
+        var h = real_height ? real_height : lbiMain.height;
+        tiMain.font.pixelSize = 0.36 * h;
+        console.log("LabeledTextInput.setFontSize after", tiMain.font.pixelSize);
+    }
+
     function onFinishCreation() {
-        console.log("LabeledTextInput.onFinishCreation");
+        //console.log("LabeledTextInput.onFinishCreation", lbiMain.height, tiMain.height, tiMain.font.pixelSize);
+        //tiMain.font.pixelSize = 0.36 * lbiMain.height;
     }
 
     Component.onCompleted: onFinishCreation();

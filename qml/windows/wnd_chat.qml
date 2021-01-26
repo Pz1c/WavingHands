@@ -90,5 +90,6 @@ BaseWindow {
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
         initErrFields();
+        ltiMsg.setFontSize(0.20 * dialogWindow.height);
     }
 }

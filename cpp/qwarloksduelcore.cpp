@@ -1261,7 +1261,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return !finishOrderSubmit(data, statusCode, new_url);
     }
 
-    if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1)) {
+    if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1) || (url.indexOf("robot_gateway/wh/") != -1)) {
         return !finishGetFinishedBattle(data);
     }
 

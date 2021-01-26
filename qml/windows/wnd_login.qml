@@ -76,5 +76,7 @@ BaseWindow {
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
         console.log("wnd_new_user.onCompleted", dialogWindow.z, content_item.z);
+        ltiLogin.setFontSize(0.40 * dialogWindow.height);
+        ltiPass.setFontSize(0.40 * dialogWindow.height);
     }
 }

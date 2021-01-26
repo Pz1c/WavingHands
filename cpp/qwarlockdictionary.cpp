@@ -104,6 +104,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
     fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
     fillDictionary("TitleAction_M", "", "", " direct to attack ");
+    fillDictionary("Refresh", "", "", "Refresh");
 
 
     // spell book name
