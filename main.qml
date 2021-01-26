@@ -174,7 +174,9 @@ ApplicationWindow {
                     width: tbTop.height
                     anchors.left: parent.left
 
-                    onClicked: showUserProfile()
+                    onClicked: {
+                        //showUserProfile();
+                    }
                     background: Image {
                         anchors.fill: parent
                         source: "res/trophy.png"
