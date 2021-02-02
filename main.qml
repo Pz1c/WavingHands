@@ -288,6 +288,7 @@ ApplicationWindow {
 
             onClicked: {
                 console.log("start game btn 1");
+
                 core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
             }
         }

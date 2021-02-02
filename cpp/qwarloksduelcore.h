@@ -134,10 +134,6 @@ signals:
     //void charmPersonChanged();
     //void paralyzeChanged();
     void timerStateChanged();
-    //void isDelayChanged();
-    //void fireChanged();
-    //void isPermanentChanged();
-    //void isParaFDFChanged();
     void challengeSubmitedChanged();
     void challengeListChanged();
     void spellListHtmlChanged();
@@ -149,7 +145,10 @@ signals:
     void warlockInfoChanged();
     void accountMenuChanged();
     void battleListChanged();
-
+    //void isDelayChanged();
+    //void fireChanged();
+    //void isPermanentChanged();
+    //void isParaFDFChanged();
 
 public slots:
 

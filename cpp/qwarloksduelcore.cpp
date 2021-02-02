@@ -711,6 +711,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
     butifyTurnMessage(_finishedBattle, _loadedBattleType == 1);
 
+
     if (_loadedBattleType != 1) {
         qDebug() << "battle is not ready end there";
         emit finishedBattleChanged();

@@ -106,7 +106,6 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleAction_M", "", "", " direct to attack ");
     fillDictionary("Refresh", "", "", "Refresh");
 
-
     // spell book name
     fillDictionary("cDPW", "Розсіяти магію", "Развеять магию", "Dispel Magic");
     fillDictionary("cSWWS", "Прикликати Крижаного Елементаля", "Призвать Ледяного Елементаля", "Summon Ice Elemental");

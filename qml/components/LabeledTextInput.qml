@@ -5,6 +5,7 @@ Item {
     id: lbiMain
 
     //property bool active: true
+
     property bool transparent: true
     property bool isPassword: false
     property alias text_color: tiMain.color

@@ -68,6 +68,7 @@ BaseWindow {
         }
     }
 
+
     onCancel: {
         mainWindow.processEscape();
     }
