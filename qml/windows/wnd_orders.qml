@@ -73,7 +73,7 @@ BaseWindow {
     }
 
     onApply: {
-        mainWindow.confirmOrders();
+        mainWindow.confirmOrdersEx();
     }
 
     function showWnd() {

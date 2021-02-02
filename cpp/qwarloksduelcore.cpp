@@ -588,7 +588,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
                 if (!wl.isEmpty()) {
                     ++cnt;
                     last_found = idx;
-                    if (wl.toLower().compare(login().toLower()) != 0) {
+                    if (wl.compare(login(), Qt::CaseInsensitive) != 0) {
                         if (!new_desc.isEmpty()) {
                             new_desc.append(",");
                         }
@@ -610,7 +610,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
             while(idx != -1) {
                 QString wl = QWarlockUtils::getStringFromData(Data, "<a href=\"/player", "/", ".html", idx);
                 if (!wl.isEmpty()) {
-                    if (wl.toLower().compare(login().toLower()) != 0) {
+                    if (wl.compare(login(), Qt::CaseInsensitive) != 0) {
                         if (!new_desc.isEmpty()) {
                             new_desc.append(",");
                         }
@@ -643,7 +643,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
             new_desc = new_desc.mid(0, 10);
             new_desc.append("...");
         }
-    } else if ((_loadedBattleType == 2) && (curr_desc.indexOf("!") == -1)) {
+    } else if (((_loadedBattleType == 2) && (curr_desc.indexOf("!") == -1)) || ((_loadedBattleType == 1) && (Data.indexOf("is victorious!") != -1))) {
         // finished
         res = 2;
         new_desc = "No one win";
@@ -679,9 +679,16 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     QString point2 = _loadedBattleType != 1 ? "</BODY>" : "<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=";
     int idx1 = Data.indexOf(point1);
     if (idx1 == -1) {
-        _errorMsg = "Wrong battle answer!";
-        emit errorOccurred();
-        return false;
+        if (_loadedBattleType == 1) {
+            _loadedBattleType = 2; // battle already finish
+            point2 = "</BODY>";
+            idx1 = Data.indexOf(point1);
+        }
+        if (idx1 == -1) {
+            _errorMsg = "Wrong battle answer!";
+            emit errorOccurred();
+            return false;
+        }
     }
     idx1 += point1.length();
     int idx2 = Data.indexOf(point2, idx1);
@@ -1466,6 +1473,12 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("accounts", accountToString());
     settings->setValue("finished_battles", finishedBattles());
     settings->setValue("shown_battles", _shown_battles);
+    settings->setValue("played", _played);
+    settings->setValue("won", _won);
+    settings->setValue("died", _died);
+    settings->setValue("ladder", _ladder);
+    settings->setValue("melee", _melee);
+    settings->setValue("elo", _elo);
 
     settings->beginWriteArray("bd");
     QMap<int, QString>::iterator bdi;
@@ -1482,7 +1495,13 @@ void QWarloksDuelCore::loadGameParameters() {
     _login = settings->value("login", "").toString();
     _password = settings->value("password", "").toString();
     _reg_in_app = settings->value("reg_in_app", "false").toBool();
-    _exp_lv = settings->value("exp_lv", "0").toBool();
+    _exp_lv = settings->value("exp_lv", "0").toInt();
+    _played = settings->value("played", "0").toInt();
+    _won = settings->value("won", "0").toInt();
+    _died = settings->value("died", "0").toInt();
+    _ladder = settings->value("ladder", "0").toInt();
+    _melee = settings->value("melee", "0").toInt();
+    _elo = settings->value("elo", "1500").toInt();
     _allowedAdd = settings->value("allowed_add", "true").toBool();
     _allowedAccept = settings->value("allowed_accept", "true").toBool();
     accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());

@@ -1,7 +1,7 @@
 var G_BATTLE_LIST = [[],[]];
-var G_ERROR = {};
-var G_GAME_FIELD;
-var G_CORE;
+var G_CHALLENGE_LIST = [];
+var V_BTN1_TITLE = warlockDictionary.getStringByCode("NewGame");
+var V_BTN2_TITLE = warlockDictionary.getStringByCode("NewGameWithBot");
 
 function newUserRegistered() {
     var l_login = core.login;
@@ -20,18 +20,23 @@ function loadBattleList(filter) {
     return G_BATTLE_LIST[filter === 1 ? 0 : 1];
 }
 
+function loadChallengeList() {
+    G_CHALLENGE_LIST = JSON.parse(core.challengeList);
+}
+
 function autoLogin(idx) {
     core.autoLogin(idx);
 }
 
+/*
 function showLoginMenu(menu_str) {
     console.log("showLoginMenu", menu_str);
     var arr = JSON.parse(menu_str);
     var idx = 100;
 
-    /*while((mLoginsMenu.count > 0) && (--idx > 0)) {
-        mLoginsMenu.removeItem(mLoginsMenu.itemAt(0))
-    }*/
+//    while((mLoginsMenu.count > 0) && (--idx > 0)) {
+//        mLoginsMenu.removeItem(mLoginsMenu.itemAt(0))
+//    }
     var i, Ln;
     for (i = 0, Ln = 10; i < Ln; ++i) {
         mLoginsMenu.itemAt(i).visible = false;
@@ -49,7 +54,7 @@ function showLoginMenu(menu_str) {
         //mLoginsMenu.addItem(MenuItem {id: "test_" + i, text: login, "onTriggered": function () { console.log("onTriggered", login) }});
         //mLoginsMenu.addSeparator();
     }
-}
+}*/
 
 function isLoadingChanged() {
     var is_loading = core.isLoading;
@@ -61,10 +66,16 @@ function linkActivated(link) {
     console.log("linkActivated", link)
     var a = link.split("/");
     switch(a[1]) {
-        case "force_surrender":
-            mainWindow.gameCore.forceSurrender(a[2], a[3])
-            break;
-        case "show_spell_desc":
-            mainWindow.showSpellDetails(a[2]);
+        case "force_surrender": return mainWindow.gameCore.forceSurrender(a[2], a[3]);
+        case "show_spell_desc": return mainWindow.showSpellDetails(a[2]);
     }
+    return false;
+}
+
+function prepareNewGameBtn(ELO) {
+
+}
+
+function userProfileChanged() {
+
 }

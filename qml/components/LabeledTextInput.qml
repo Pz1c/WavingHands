@@ -34,26 +34,28 @@ Item {
         horizontalAlignment: Text.AlignLeft
     }
 
-    TextField {
-        id: tiMain
+    Rectangle {
+        id: rMain
         height: ltiTitle.height
         width: 0.9 * parent.width
         anchors.top: ltiTitle.bottom
         anchors.topMargin: 0.05 * parent.height
         anchors.left: parent.left
         anchors.leftMargin: 0.05 * parent.width
-        inputMethodHints: Qt.ImhNoPredictiveText
-        validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
-        color: "black"
-        echoMode: isPassword ? TextInput.Password : TextInput.Normal
-        font.pixelSize: 0.36 * lbiMain.height
-        //font.pointSize: 0.2
-        background: Rectangle {
-            radius: 5
-            //implicitWidth: 100
-            //implicitHeight: 24
-            color: transparent ? "transparent" : bg_color
-            border.color: border_color
+        radius: 5
+        color: transparent ? "transparent" : bg_color
+        border.color: border_color
+
+        TextField {
+            id: tiMain
+            anchors.fill: parent
+            //height: 0.95 * parent.height
+            //width: 0.95 * parent.width
+            inputMethodHints: Qt.ImhNoPredictiveText
+            validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
+            color: "black"
+            echoMode: isPassword ? TextInput.Password : TextInput.Normal
+            font.pixelSize: 0.8 * parent.height
         }
     }
 

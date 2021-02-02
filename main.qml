@@ -82,14 +82,14 @@ ApplicationWindow {
         id: core
         onNeedLogin: getLoginFromUser()
         onErrorOccurred: showErrorMessage()
-        onIsLoadingChanged: GUI.isLoadingChanged(core)
-        onBattleListChanged: GUI.newBattleList(core)
+        onIsLoadingChanged: GUI.isLoadingChanged()
+        onBattleListChanged: GUI.newBattleList()
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onRegisterNewUserChanged: GUI.newUserRegistered(core)
         //onOrderSubmitedChanged: MUtils.cleanOrders(core)
         onTimerStateChanged: changeTimerState()
-        //onChallengeListChanged: MUtils.loadChallengesList(false)
+        onChallengeListChanged: GUI.loadChallengeList()
         //onSpellListHtmlChanged: MUtils.loadSpellList(core)
         //onTopListChanged: MUtils.loadTopList(false)
         //onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
@@ -102,13 +102,11 @@ ApplicationWindow {
             console.log("onWarlockInfoChanged");
             showUserProfile(true);
         }
-        onAccountMenuChanged: {
+        /*onAccountMenuChanged: {
             console.log("onAccountMenuChanged");
             GUI.showLoginMenu(core.getMenuItems());
-        }
-        onLoginChanged: {
-            closeChild()
-        }
+        }*/
+        onLoginChanged: closeChild()
 
         Component.onCompleted: {
             console.log("Core.completed");
@@ -231,7 +229,27 @@ ApplicationWindow {
 
             onClicked: {
                 console.log("try refresh state");
+                dMenu.close();
                 core.scanState(1);
+            }
+        }
+
+        BtnBig {
+            id: bbMenuLogin
+            text_color: "#A8F4F4"
+            text: warlockDictionary.getStringByCode("Login")
+            transparent: true
+            border.width: 0
+            height: 0.1 * parent.height
+            anchors.top: bbMenuRefresh.bottom
+            anchors.topMargin: 0.01 * parent.height
+            anchors.left: parent.left
+            anchors.right: parent.right
+
+            onClicked: {
+                console.log("try login");
+                dMenu.close();
+                getLoginFromUser(true);
             }
         }
     }
@@ -251,7 +269,7 @@ ApplicationWindow {
         BtnBig {
             id: bbNewGame
             text_color: "#ABF4F4"
-            text: warlockDictionary.getStringByCode("NewGame")
+            text: GUI.V_BTN1_TITLE
             bg_color_active: "#551470"
             border_color_active: "#551470"
             radius: 30
@@ -269,7 +287,7 @@ ApplicationWindow {
             anchors.horizontalCenter: parent.horizontalCenter
 
             onClicked: {
-                console.log("start game")
+                console.log("start game btn 1");
                 core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
             }
         }
@@ -277,7 +295,7 @@ ApplicationWindow {
         BtnBig {
             id: bbNewBotGame
             text_color: "#A8F4F4"
-            text: warlockDictionary.getStringByCode("NewGameWithBot")
+            text: GUI.V_BTN2_TITLE
             transparent: true
             border.width: 0
             visible: core.allowedAdd || true
@@ -289,7 +307,7 @@ ApplicationWindow {
             anchors.horizontalCenter: parent.horizontalCenter
 
             onClicked: {
-                console.log("start game with bot");
+                console.log("start game btn 2");
                 core.createNewChallenge(1, 0, 1, 1, 2, 2, "TRANING BOT ONLY");
             }
         }
@@ -479,7 +497,7 @@ ApplicationWindow {
 
     function showUserProfile(other) {
         console.log("showUserProfile", other);
-        Qt.show_info_self = other === true ? false : true;
+        gERROR.show_info_self = other === true ? false : true;
         WNDU.showProfileWindow();
     }
 
@@ -694,6 +712,7 @@ ApplicationWindow {
 
     function creationFinished() {
         logEvent("gameFieldReady");
+        GUI.prepareNewGameBtn(core.el)
     }
 
     Component.onCompleted: creationFinished()

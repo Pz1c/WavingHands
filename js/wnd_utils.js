@@ -19,8 +19,6 @@ var arr_wnd_obj = [];
 var arr_wnd_stack = [];
 var current_wnd_code;
 
-var gERROR = {};
-
 function getQmlFullName(name) {
     return "qrc:///qml/windows/" + name;
 }
