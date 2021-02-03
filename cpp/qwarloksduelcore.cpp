@@ -39,15 +39,12 @@ QWarloksDuelCore::~QWarloksDuelCore() {
     saveParameters(true, true, true, true, true);
 }
 
-void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description) {
+void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description) { Q_UNUSED(Fast);
     setIsLoading(true);
 
     QNetworkRequest request;
     request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_CHALLENGE)));
-    QString p_data;
-    if (Fast) {
-        p_data.append("fast=1&");
-    }
+    QString p_data = "fast=1&";
     if (Private) {
         p_data.append("private=1&");
     }
@@ -56,11 +53,9 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     if (ParaFC) {
         desc.prepend("ParaFC ");
     }
-
     if (Maladroid) {
         desc.prepend("Maladroit ");
     }
-
     p_data.append(QUrl::toPercentEncoding(desc));
 
     qDebug() << p_data;
@@ -69,6 +64,8 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
     connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+
+    setTimeState(true);
 }
 
 void QWarloksDuelCore::sendMessage(const QString &Msg) {
@@ -573,9 +570,18 @@ void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
 
 int QWarloksDuelCore::parseBattleDescription(QString &Data) {
     qDebug() << "parseBattleDescription" << _loadedBattleID << _loadedBattleType;
+    if ((_loadedBattleType == 2) && (Data.indexOf(QString("Battle %1 does not exist.").arg(intToStr(_loadedBattleID))) != -1)) {
+        return -2;
+    }
+
+    if ((_loadedBattleType == 0) && (Data.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=") != -1)) {
+        _loadedBattleType = 1;
+    }
+
     int res = 0;
     QString curr_desc = _battleDesc.contains(_loadedBattleID) ? _battleDesc[_loadedBattleID] : "";
     QString new_desc = curr_desc;
+
     if (_loadedBattleType == 0) {
         int idx = Data.indexOf("has not yet begun.");
         if (idx != -1) {
@@ -631,7 +637,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
         while(idx != -1) {
             QString wl = QWarlockUtils::getStringFromData(Data, "<a href=\"/player", "/", ".html", idx);
             if (!wl.isEmpty()) {
-                if (wl.toLower().compare(login().toLower()) != 0) {
+                if (wl.compare(login(), Qt::CaseInsensitive) != 0) {
                     if (!new_desc.isEmpty()) {
                         new_desc.append(",");
                     }
@@ -668,11 +674,29 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
 
     int state = parseBattleDescription(Data);
-    if (state == -1) { // unstarted
+    if (state == -2) { // finished but deleted
+        _battleDesc.remove(_loadedBattleID);
+        if (_finished_battles.indexOf(_loadedBattleID) != -1) {
+            _finished_battles.removeAt(_finished_battles.indexOf(_loadedBattleID));
+        }
+        if (_shown_battles.indexOf(intToStr(_loadedBattleID)) != -1) {
+            _shown_battles.removeAt(_shown_battles.indexOf(intToStr(_loadedBattleID)));
+        }
+        _finishedBattle = "Sorry, but you battle already deleted from game server and we not store it on archive server";
+        emit finishedBattleChanged();
+        return false;
+    } else if (state == -1) { // unstarted
         _finishedBattle = "Battle not start yet:<br>" + _battleDesc[_loadedBattleID];
         emit finishedBattleChanged();
         return false;
     }
+
+    int ccnt = 0, idxc = 0;
+    while((idxc = Data.indexOf(" says ", idxc)) != -1) {
+        idxc += 6;
+        ++ccnt;
+    }
+    _chat = intToStr(ccnt);
 
     _isParaFDF = Data.indexOf("(ParaFDF)") != -1;
     QString point1 = "<A TARGET=_blank HREF=\"/rules/1/quickref.html\">Spell Reference</A></DIV>";
@@ -718,12 +742,6 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         return false;
     }
 
-    int ccnt = 0, idxc = 0;
-    while((idxc = Data.indexOf(" says ", idxc)) != -1) {
-        idxc += 6;
-        ++ccnt;
-    }
-    _chat = intToStr(ccnt);
     /*int cidx1 = Data.indexOf("<U>Turn");
     int cidx2 = Data.indexOf("</BLOCKQUOTE>", cidx1);
     _chat = Data.mid(cidx1, cidx2 - cidx1);
@@ -1103,15 +1121,16 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     qDebug() << "waiting: " << _waiting_in_battles;
     qDebug() << "finished: " << _finished_battles;
     qDebug() << "shown: " << _shown_battles;
+    emit playerInfoChanged();
     if (_ready_in_battles.count() > 0) {
         setTimeState(false);
         if (_isAI) {
             getBattle(_ready_in_battles.at(0), 0);
         }
-    } else if (new_fb_id > 0) {
-        //setTimeState(false);
-        //getBattle(new_fb_id, 2);
-    } else {
+    } else /* if (new_fb_id > 0) {
+        setTimeState(false);
+        getBattle(new_fb_id, 2);
+    }  else */ {
         setTimeState(true);
     }
     qDebug() << old_read <<  _ready_in_battles << old_wait << _waiting_in_battles;
@@ -1562,6 +1581,12 @@ QString QWarloksDuelCore::errorMsg() {
     return _errorMsg;
 }
 
+QString QWarloksDuelCore::playerJson() {
+    return QString("{\"name\":\"%1\",\"played\":%2,\"won\":%3,\"died\":%4,\"ladder\":%5,\"melee\":%6,\"elo\":%7}")
+            .arg(_login, QString::number(_played), QString::number(_won), QString::number(_died), QString::number(_ladder),
+                 QString::number(_melee), QString::number(_elo));
+}
+
 QString QWarloksDuelCore::playerInfo() {
     QString res;
     int idx;
@@ -1728,7 +1753,7 @@ QString QWarloksDuelCore::battleInfo() {
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":%12,\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":\"%16\"}")
+                   "\"targets\":\"%15\",\"chat\":%16}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat);

@@ -315,7 +315,7 @@ QString QWarlockUtils::parseChallengePart0(QString &Data) {
     //qDebug() << "Need more meat: " << str;
     res.append(str);
     res.append("#!#");
-    res.append(QString::number(cnt));
+    res.append(intToStr(cnt));
     return res;
 }
 
@@ -378,7 +378,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
                 logins = tmp.at(0);
                 need_more = tmp.at(1).toInt();
                 if (need_more > 1) {
-                    logins.append(QString(QWarlockDictionary::getInstance()->getStringByCode("NeedMore")).arg(QString::number(need_more)));
+                    logins.append(QString(QWarlockDictionary::getInstance()->getStringByCode("NeedMore")).arg(intToStr(need_more)));
                 }
                 total_count = tmp.at(2).toInt();
                 break;
@@ -416,16 +416,12 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
         break;
     }
     bool for_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("NO BOT") == -1);
+    bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
     qDebug() << "for_bot" << level << total_count << description << for_bot;
-    res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8,\"level_color\":\"%9\"}")
-            .arg(logins,
-                 QString::number(fast),
-                 level,
-                 QString::number(parafc),
-                 QString::number(maladroit),
-                 description, battle_id,
-                 for_bot ? "true" : "false",
-                 level_color);
+    res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8,\"level_color\":\"%9\""
+                  ",\"friendly\":%10,\"with_bot\":%11,\"need\":%12}")
+            .arg(logins, intToStr(fast), level, intToStr(parafc), intToStr(maladroit), description, battle_id, boolToStr(for_bot), level_color)
+            .arg(intToStr(friendly), boolToStr(with_bot), intToStr(need_more));
     //qDebug() << res;
     return res;
 }

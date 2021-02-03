@@ -115,7 +115,7 @@ BaseWindow {
                                     mainWindow.gBattle.spellIdx = index;
                                     lvSpellList.model = arrSpell;
                                 } else if (arrSpell[index].cast_type === 2) {
-                                    mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:false});
+                                    mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true});
                                 } else if (arrSpell[index].cast_type === 3) {
                                     setGesture(arrSpell[index].ng);
                                 }

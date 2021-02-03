@@ -77,6 +77,7 @@ function setParaActions(paralyze, charm) {
 function prepareBattle(raw_battle) {
     battle.id = raw_battle.id;
     battle.fire = raw_battle.fire;
+    battle.chat = raw_battle.chat;
     battle.warlocks = [];
     battle.elemental = {hp:0,type:"fire"};
     battle.monsters = {};
@@ -98,7 +99,7 @@ function prepareBattle(raw_battle) {
     var i, Ln;
     for (i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
         var m = raw_battle.monsters[i];
-        if (!m.owner) {
+        if (!m.owner || (m.owner === "Nobody")) {
             battle.elemental = m;
             battle.elemental.type = m.name.indexOf("Fire") !== -1 ? "fire" : "ice";
             battle.elemental.action = "m";

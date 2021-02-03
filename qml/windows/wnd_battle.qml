@@ -117,6 +117,7 @@ BaseWindow {
                 id: iiChat
                 source: "qrc:/res/chat.png";
                 text: ""
+                text_color: "snow"
                 height: 0.9 * parent.height
                 width: height
                 anchors.top: parent.top

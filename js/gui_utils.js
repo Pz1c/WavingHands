@@ -1,7 +1,10 @@
+var C_NG_PLAYER_CODE = 'player';
+var C_NG_BOT_CODE = 'bot';
 var G_BATTLE_LIST = [[],[]];
 var G_CHALLENGE_LIST = [];
-var V_BTN1_TITLE = warlockDictionary.getStringByCode("NewGame");
-var V_BTN2_TITLE = warlockDictionary.getStringByCode("NewGameWithBot");
+var G_PROFILE = {elo:1500};
+var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
+var V_BEST_BATTLE_ID = 0;
 
 function newUserRegistered() {
     var l_login = core.login;
@@ -11,7 +14,9 @@ function newUserRegistered() {
 }
 
 function newBattleList() {
-    G_BATTLE_LIST = JSON.parse(core.battleList);
+    var bl = core.battleList;
+    console.log("newBattleList", bl);
+    G_BATTLE_LIST = JSON.parse(bl);
     lvActiveBattle.model = G_BATTLE_LIST[0];
     lvFinishedBattle.model = G_BATTLE_LIST[1];
 }
@@ -26,6 +31,105 @@ function loadChallengeList() {
 
 function autoLogin(idx) {
     core.autoLogin(idx);
+}
+
+function prepareNewGameBtn(ELO) {
+    var V_BTN1_TITLE, V_BTN2_TITLE;
+    if (ELO <= 1500) {
+        V_BTN1_TITLE = warlockDictionary.getStringByCode("TrainingGame");
+        V_BTN2_TITLE = warlockDictionary.getStringByCode("NewGameWithPlayer");
+        V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
+    } else {
+        V_BTN1_TITLE = warlockDictionary.getStringByCode("NewGame");
+        V_BTN2_TITLE = warlockDictionary.getStringByCode("NewGameWithBot");
+        V_BTN_ACTION = [C_NG_PLAYER_CODE, C_NG_BOT_CODE];
+    }
+    bbNewGame.text = V_BTN1_TITLE;
+    bbNewBotGame.text = V_BTN2_TITLE;
+}
+
+function userProfileChanged() {
+    var old_elo = G_PROFILE.elo;
+    var str = core.playerJson();
+    console.log("userProfileChanged", str, old_elo);
+    G_PROFILE = JSON.parse(str);
+    if (old_elo !== G_PROFILE.elo) {
+        prepareNewGameBtn(G_PROFILE.elo);
+    }
+}
+
+function getJoinDialogText(b) {
+    var txt = warlockDictionary.getStringByCode(b.need === 1 ? "DialogStartBattle" : "DialogJoinBattle");
+    if (b.need === 1) {
+        txt = txt.replace("#NEED", b.need - 1);
+    }
+    txt = txt.replace("#ID", '#' + b.battle_id);
+    txt = txt.replace("#FL", b.level);
+    txt = txt.replace("#LOGINS", b.logins);
+    txt += "\n" + b.desc;
+    return txt;
+}
+
+function startGameWithPlayer() {
+    console.log("startGameWithPlayer", JSON.stringify(G_CHALLENGE_LIST));
+    var best_idx = -1, battle, bb;
+    for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
+        battle = G_CHALLENGE_LIST[i];
+        if ((battle.friendly === 1) && (battle.need === 1)) {
+            core.acceptChallenge(battle.battle_id, false);
+            return;
+        } else if (i !== best_idx) {
+            if (best_idx === -1) {
+                best_idx = 0;
+                continue;
+            }
+            bb = G_CHALLENGE_LIST[best_idx];
+            if (bb.need > battle.need) {
+                continue;
+            }
+            if (bb.friendly < b.friendly) {
+                continue;
+            }
+            if (bb.fast && !b.fast) {
+                continue;
+            }
+            best_idx = i;
+        }
+    }
+    if (best_idx === -1) {
+        core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
+    } else {
+        V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;
+        mdNoGesture.text = getJoinDialogText(G_CHALLENGE_LIST[best_idx]);
+        mdNoGesture.dialogType = 2;
+        mdNoGesture.visible = true;
+    }
+}
+
+function joinBattleDialogResult(accept) {
+    if (accept && V_BEST_BATTLE_ID) {
+        core.acceptChallenge(V_BEST_BATTLE_ID);
+    } else {
+        core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
+    }
+}
+
+function startGameWithBot() {
+    console.log("startGameWithBot", JSON.stringify(G_CHALLENGE_LIST));
+    for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
+        if (G_CHALLENGE_LIST[i].with_bot) {
+            core.acceptChallenge(G_CHALLENGE_LIST[i].battle_id, false);
+            return;
+        }
+    }
+    core.createNewChallenge(1, 0, 1, 1, 2, 2, "TRANING BOT ONLY");
+}
+
+function startGame(actionIdx) {
+    switch(V_BTN_ACTION[actionIdx]) {
+         case 'player': return startGameWithPlayer();
+         case 'bot': return startGameWithBot();
+    }
 }
 
 /*
@@ -70,13 +174,4 @@ function linkActivated(link) {
         case "show_spell_desc": return mainWindow.showSpellDetails(a[2]);
     }
     return false;
-}
-
-function prepareNewGameBtn(ELO) {
-
-}
-
-
-function userProfileChanged() {
-
 }

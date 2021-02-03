@@ -47,13 +47,19 @@ ApplicationWindow {
         modal: true
         standardButtons: Dialog.Ok | Dialog.Cancel
 
-        property bool isSendOrderAction: false
+        property int dialogType: 0
 
         onAccepted: {
-            if (isSendOrderAction) {
-                confirmOrdersEx();
-            } else {
-                Qt.quit();
+            switch(dialogType) {
+            case 0: return Qt.quit();
+            case 1: return confirmOrdersEx();
+            case 2: return joinBattleDialogResult(true);
+            }
+        }
+
+        onRejected: {
+            if (dialogType == 2) {
+                joinBattleDialogResult(false);
             }
         }
     }
@@ -106,6 +112,7 @@ ApplicationWindow {
             console.log("onAccountMenuChanged");
             GUI.showLoginMenu(core.getMenuItems());
         }*/
+        onPlayerInfoChanged: GUI.userProfileChanged()
         onLoginChanged: closeChild()
 
         Component.onCompleted: {
@@ -269,7 +276,7 @@ ApplicationWindow {
         BtnBig {
             id: bbNewGame
             text_color: "#ABF4F4"
-            text: GUI.V_BTN1_TITLE
+            text: warlockDictionary.getStringByCode("TrainingGame")
             bg_color_active: "#551470"
             border_color_active: "#551470"
             radius: 30
@@ -288,15 +295,14 @@ ApplicationWindow {
 
             onClicked: {
                 console.log("start game btn 1");
-
-                core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
+                GUI.startGame(0);
             }
         }
 
         BtnBig {
             id: bbNewBotGame
             text_color: "#A8F4F4"
-            text: GUI.V_BTN2_TITLE
+            text: warlockDictionary.getStringByCode("NewGameWithPlayer")
             transparent: true
             border.width: 0
             visible: core.allowedAdd || true
@@ -309,7 +315,7 @@ ApplicationWindow {
 
             onClicked: {
                 console.log("start game btn 2");
-                core.createNewChallenge(1, 0, 1, 1, 2, 2, "TRANING BOT ONLY");
+                GUI.startGame(1);
             }
         }
 
@@ -373,7 +379,8 @@ ApplicationWindow {
                                 anchors.bottom: rdBattleItem.bottom
                                 anchors.left: rdBattleItem.left
                                 anchors.leftMargin: 0.03 * parent.width
-                                width: 0.90 * parent.width - parent.height
+                                anchors.right: rdbifIcon.left
+                                //width: 0.90 * parent.width - parent.height
                                 //anchors.rightMargin: 0.05 * parent.width
                                 color: "#FEE2D6"
                                 horizontalAlignment: Text.AlignLeft
@@ -387,19 +394,8 @@ ApplicationWindow {
                                 width: 0.5 * parent.height
                                 height: 0.5 * parent.height
                                 anchors.verticalCenter: parent.verticalCenter
-                                anchors.right: rdbifSign.left
-                            }
-
-                            LargeText {
-                                id: rdbifSign
-                                anchors.top: parent.top
-                                anchors.bottom: parent.bottom
                                 anchors.right: parent.right
-                                anchors.rightMargin: 0.05 * parent.width
-                                width: 0.05 * parent.width
-                                color: "#FEE2D6"
-                                fontSizeMode: Text.VerticalFit
-                                text: ">"
+                                anchors.rightMargin: 0.03 * parent.width
                             }
 
                             MouseArea {
@@ -469,7 +465,7 @@ ApplicationWindow {
                                 height: 0.5 * parent.height
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.right: parent.right
-                                anchors.rightMargin: 0.05 * parent.width
+                                anchors.rightMargin: 0.03 * parent.width
                             }
 
                             MouseArea {
@@ -657,7 +653,7 @@ ApplicationWindow {
 
     function confirmOrders() {
         mdNoGesture.text = warlockDictionary.getStringByCode("ConfirmOrdersForTurn");
-        mdNoGesture.isSendOrderAction = true;
+        mdNoGesture.dialogType = 1;
         mdNoGesture.visible = true;
     }
 
@@ -713,7 +709,7 @@ ApplicationWindow {
 
     function creationFinished() {
         logEvent("gameFieldReady");
-        GUI.prepareNewGameBtn(core.el)
+        //GUI.prepareNewGameBtn(1500);
     }
 
     Component.onCompleted: creationFinished()

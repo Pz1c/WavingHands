@@ -19,7 +19,6 @@ var arr_wnd_obj = [];
 var arr_wnd_stack = [];
 var current_wnd_code;
 
-
 function getQmlFullName(name) {
     return "qrc:///qml/windows/" + name;
 }
@@ -131,7 +130,7 @@ function processEscape() {
             return;
         } */
     } else {
-        mdNoGesture.isSendOrderAction = false;
+        mdNoGesture.dialogType = 0;
         mdNoGesture.text = Qt.dictionary.getStringByCode("ConfirmExit");
         mdNoGesture.visible = true;
     }
