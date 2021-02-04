@@ -117,7 +117,7 @@ BaseWindow {
                 id: iiChat
                 source: "qrc:/res/chat.png";
                 text: ""
-                text_color: "snow"
+                text_color: "yellow"
                 height: 0.9 * parent.height
                 width: height
                 anchors.top: parent.top
@@ -223,8 +223,12 @@ BaseWindow {
         bbSendOrders.visible = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g);
     }
 
-    function setGesture(gesture) {
+    function setGesture(gesture, is_maladroit) {
         iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
+        if (is_maladroit) {
+            iWarlocks.children[0].setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture));
+        }
+
         battleChanged();
     }
 

@@ -101,7 +101,7 @@ void QWarlock::checkPossibleGesture() {
     } else if (_scared > 0) {
         _possibleLeftGestures = "W,P";
         _possibleRightGestures = "W,P";
-    } else if (_maladroit > 0) {
+    } else if ((_maladroit > 0) && !_player) {
         _possibleLeftGestures = "W,S,D,C,F";
         _possibleRightGestures = "W,S,D,C,F";
     } else {

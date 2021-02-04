@@ -115,7 +115,7 @@ BaseWindow {
                                     mainWindow.gBattle.spellIdx = index;
                                     lvSpellList.model = arrSpell;
                                 } else if (arrSpell[index].cast_type === 2) {
-                                    mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true});
+                                    mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
                                 } else if (arrSpell[index].cast_type === 3) {
                                     setGesture(arrSpell[index].ng);
                                 }
@@ -281,16 +281,35 @@ BaseWindow {
                 id: iiSend
                 source: "qrc:/res/send_"+(active ? "1" : "0")+".png"
                 textVisible: false
-                height: 0.20 * parent.width
+                height: 0.4 * parent.height
                 width: 0.20 * parent.width
                 anchors.right: parent.right
                 anchors.leftMargin: 0.03 * parent.width
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.bottom: parent.verticalCenter
+                anchors.bottomMargin: 0.05 * parent.height
                 active: false
                 color: "transparent"
 
                 onClicked: {
-                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx]);
+                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], false);
+                }
+            }
+
+            IconInfo {
+                id: iiSendTarget
+                source: "qrc:/res/send_"+(active ? "1" : "0")+"_target.png"
+                textVisible: false
+                height: 0.4 * parent.height
+                width: 0.20 * parent.width
+                anchors.right: parent.right
+                anchors.leftMargin: 0.03 * parent.width
+                anchors.top: parent.verticalCenter
+                anchors.topMargin: 0.05 * parent.height
+                active: false
+                color: "transparent"
+
+                onClicked: {
+                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
                 }
             }
 
@@ -319,7 +338,7 @@ BaseWindow {
         var set_enable = arrPossibleGesture.length > 0;
         for (var i = 0; i < 8; ++i) {
             arrGesture[i].height = 0.3 * iGesture.height;
-            if (set_enable && (i < 6)) {
+            if (set_enable && ((i < 6) || (arrPossibleGesture.length === 1))) {
                 arrGesture[i].active = arrPossibleGesture.indexOf(arrGestureVal[i]) !== -1;
             } else {
                 arrGesture[i].active = true;
@@ -335,8 +354,13 @@ BaseWindow {
 
     function setGesture(new_gesture) {
         clearAll()
+        if (new_gesture === currGesture) {
+            currGesture = "";
+            new_gesture = "";
+        }
         if (new_gesture !== "") {
             iiSend.active = true;
+            iiSendTarget.active = true;
             mapGesture[new_gesture].height = 0.12 * dialogWindow.height;
             mapGesture[new_gesture].color = "lightblue";
             currGesture = new_gesture;
@@ -354,9 +378,10 @@ BaseWindow {
     function initGFields() {
         console.log("wnd_gesture.initGFields", JSON.stringify(mainWindow.gERROR));
         iiSend.active = false;
+        iiSendTarget.active = false;
         title_text = mainWindow.gERROR.title;
         arrPossibleGesture = mainWindow.gERROR.pga;
-        setGesture(mainWindow.gERROR.g);
+        setGesture(arrPossibleGesture.length === 1 ? arrPossibleGesture[0] : mainWindow.gERROR.g);
         mainWindow.gERROR = {};
     }
 

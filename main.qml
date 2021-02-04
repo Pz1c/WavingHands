@@ -564,7 +564,9 @@ ApplicationWindow {
     function showGesture(isLeft, possible_gestures) {
         gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","), g:""};
         gBattle.currentHand = isLeft ? "L" : "R";
+        gBattle.otherHand   = isLeft ? "R" : "L";
         gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
+        gBattle.otherHandIdx = isLeft ? GC.WARLOCK_HAND_RIGHT : GC.WARLOCK_HAND_LEFT;
         WNDU.showGesture();
     }
 
@@ -604,11 +606,16 @@ ApplicationWindow {
         return arr_cast_now.concat(arr_cast_later).concat(arr_cast_other);
     }
 
-    function setGesture(gesture, spell) {
+    function setGesture(gesture, spell, need_target) {
+        var is_maladroit = gBattle.warlocks[0].maladroit > 0;
         console.log("setGesture", gesture, JSON.stringify(spell));
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture);
-        if (spell.need_target) {
+        if (is_maladroit) {
+            gBattle.actions[gBattle.otherHand] = {g:gesture,s:{gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}};
+        }
+
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit);
+        if (need_target) {
             WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true);
         }
         WNDU.processEscape();

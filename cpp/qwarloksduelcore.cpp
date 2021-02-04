@@ -574,8 +574,11 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
         return -2;
     }
 
-    if ((_loadedBattleType == 0) && (Data.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=") != -1)) {
+    int idx_action = Data.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=");
+    if ((_loadedBattleType == 0) && (idx_action != -1)) {
         _loadedBattleType = 1;
+    } else if ((_loadedBattleType == 1) && (idx_action == -1)) {
+        _loadedBattleType = 2;
     }
 
     int res = 0;
@@ -649,7 +652,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
             new_desc = new_desc.mid(0, 10);
             new_desc.append("...");
         }
-    } else if (((_loadedBattleType == 2) && (curr_desc.indexOf("!") == -1)) || ((_loadedBattleType == 1) && (Data.indexOf("is victorious!") != -1))) {
+    } else if ((_loadedBattleType == 2) && (curr_desc.indexOf("!") == -1)) {
         // finished
         res = 2;
         new_desc = "No one win";
