@@ -582,22 +582,37 @@ ApplicationWindow {
             s = arr[i];
             s.choose = 0;
             if (s.h === gBattle.currentHandIdx) {
-                if (s.ng === new_gesture) {
+                if (new_gesture !== '') {
                     if (s.t === 1) {
-                        s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
-                        s.cast_type = 1;
-                        arr_cast_now.push(s);
-                    } else {
-                        idx = s.g.length - s.t + 1;
-                        s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
-                        s.cast_type = 2;
-                        arr_cast_later.push(s);
+                        if (s.ng === new_gesture) {
+                            s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
+                            s.cast_type = 1;
+                            arr_cast_now.push(s);
+                        } else {
+                            idx = s.g.length - s.t + 1;
+                            s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                            s.cast_type = 2;
+                            arr_cast_later.push(s);
+                        }
                     }
                 } else {
-                    idx = s.g.length - s.t;
-                    s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
-                    s.cast_type = 3;
-                    arr_cast_other.push(s);
+                    if (s.ng === new_gesture) {
+                        if (s.t === 1) {
+                            s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
+                            s.cast_type = 1;
+                            arr_cast_now.push(s);
+                        } else {
+                            idx = s.g.length - s.t + 1;
+                            s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                            s.cast_type = 2;
+                            arr_cast_later.push(s);
+                        }
+                    } else {
+                        idx = s.g.length - s.t;
+                        s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                        s.cast_type = 3;
+                        arr_cast_other.push(s);
+                    }
                 }
             }
         }
