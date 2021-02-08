@@ -1,6 +1,8 @@
 #ifndef QGAMECONSTANT
 #define QGAMECONSTANT
 
+#include <QList>
+
 #define SALT "(casdDasfa4242323f$CKASDf*0#2222@*$Y&_(a)-FAASS23"
 #define ORGANIZATION_NAME "Steel Programming"
 #define APPLICATION_NAME "WarloksDuel"
@@ -27,6 +29,7 @@
 #define GAME_SERVER_URL_SENDMESS "https://games.ravenblack.net/sendmess"
 #define GAME_SERVER_URL_GET_FINISHED_BATTLE "https://games.visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&show_data=1"
 
+static QStringList _lstAI = QStringList({"CONSTRUCT", "EARTHGOLEM", "IRONGOLEM"});
 
 #define intToStr QString::number
 #define boolToInt(val) (val?1:0)

@@ -233,7 +233,7 @@ private:
     QString _login;
     QString _password;
     QString _errorMsg;
-    QStringList _lstAI;
+    //QStringList _lstAI;
     QStringList _activeBattle;
 
     // user statistic

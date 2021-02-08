@@ -7,7 +7,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     init();
     GameDictionary->setCurrentLang("en");
 
-    _lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
+    //_lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
     _isLogined = false;
     _isAI = false;
     _botIdx = 0;
@@ -818,8 +818,8 @@ bool QWarloksDuelCore::parseMonsterCommand(QString &Data) {
     }
     QString lg = _leftGestures.replace(" ", "");
     QString rg = _rightGestures.replace(" ", "");
-    bool is_charm_l = (lg.length() >= 3) && (lg.right(3).compare("PSD") == 0);
-    bool is_charm_r = (rg.length() >= 3) && (rg.right(3).compare("PSD") == 0);
+    bool is_charm_l = lg.indexOf("PSD") == lg.size() - 3;
+    bool is_charm_r = rg.indexOf("PSD") == rg.size() - 3;
 //    qDebug() << "QWarloksDuelCore::parseMonsterCommand" << lg << rg << lg.right(3) << rg.right(3) <<
 //                lg.length() << rg.length() << lg.right(3).compare("PSD") << rg.right(3).compare("PSD")
 //             << is_charm_l << is_charm_r;

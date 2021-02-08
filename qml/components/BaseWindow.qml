@@ -81,6 +81,7 @@ Item {
             anchors.right: parent.right
             width: parent.height
             color: "red"
+            visible: false
 
             LargeText {
                 id: ltClose

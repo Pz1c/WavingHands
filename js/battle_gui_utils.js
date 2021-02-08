@@ -17,7 +17,7 @@ function copyObject(from, to, except) {
 
 function getIconByGesture(G) {
     if (G === ' ') {
-        G = '-';
+        //G = '-';
     }
     if (G === '>') {
         G = '_';
@@ -35,7 +35,7 @@ function preparePrintGestures(GL, GR) {
     for(var i = 1, Ln = GL.length; i < Ln; ++i) {
         ll = getIconByGesture(GL.substr(i, 1));
         lr = getIconByGesture(GR.substr(i, 1));
-        item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== '_', rv: lr !== '_'};
+        item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== ' ', rv: lr !== ' '};
         res.push(item);
     }
     return res;

@@ -14,7 +14,7 @@
 class QWarlock
 {
 public:
-    QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player);
+    QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player, bool isAI = false);
     ~QWarlock();
 
     QString name();
@@ -69,6 +69,7 @@ private:
     QString _rightGestures;
     QString _possibleLeftGestures;
     QString _possibleRightGestures;
+    bool _AI;
     bool _player;
     QList<QSpell *> _possibleSpells;
     QString _gestureR;

@@ -1,6 +1,6 @@
 #include "qwarlock.h"
 
-QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player) :
+QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player, bool isAI) :
     _scared(0), _confused(0), _charmed(0), _paralized(0), _shield(0), _coldproof(0), _fireproof(0), _hp(0), _poison(0), _desease(0), _amnesia(0),
     _maladroit(0), _bestSpellL(nullptr), _bestSpellR(nullptr)
 {
@@ -9,6 +9,7 @@ QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString R
     _leftGestures = LeftGestures;
     _rightGestures = RightGestures;
     _player = Player;
+    _AI = isAI;
     parseStatus();
     checkPossibleGesture();
 }
@@ -101,7 +102,7 @@ void QWarlock::checkPossibleGesture() {
     } else if (_scared > 0) {
         _possibleLeftGestures = "W,P";
         _possibleRightGestures = "W,P";
-    } else if ((_maladroit > 0) && !_player) {
+    } else if ((_maladroit > 0) && _AI) {
         _possibleLeftGestures = "W,S,D,C,F";
         _possibleRightGestures = "W,S,D,C,F";
     } else {
