@@ -16,9 +16,9 @@ function copyObject(from, to, except) {
 }
 
 function getIconByGesture(G) {
-    if (G === ' ') {
+    //if (G === ' ') {
         //G = '-';
-    }
+    //}
     if (G === '>') {
         G = '_';
     }

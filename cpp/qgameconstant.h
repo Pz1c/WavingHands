@@ -31,6 +31,7 @@
 
 static QStringList _lstAI = QStringList({"CONSTRUCT", "EARTHGOLEM", "IRONGOLEM"});
 
+
 #define intToStr QString::number
 #define boolToInt(val) (val?1:0)
 #define boolToIntS(val) (val?"1":"0")

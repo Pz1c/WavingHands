@@ -730,6 +730,7 @@ ApplicationWindow {
     }
 
     function creationFinished() {
+
         logEvent("gameFieldReady");
         //GUI.prepareNewGameBtn(1500);
     }

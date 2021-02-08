@@ -290,6 +290,7 @@ private:
 
     // Spell checker
     QWarlockSpellChecker SpellChecker;
+
 };
 
 #endif // QWARLOKSDUELCORE_H

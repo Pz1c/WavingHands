@@ -4,6 +4,7 @@ const G_WARLOCK_HEIGHT_COEFF = 0.45;
 
 Qt.include("battle_gui_utils.js");
 
+
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
     w.print_g = preparePrintGestures(w.L, w.R);

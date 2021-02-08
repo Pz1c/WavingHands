@@ -43,6 +43,6 @@ public:
     static QString parseChallengePart3(QString &Data);
     static int strValueToInt(QString val);
     static void appendSeparatedList(QString &list, const QString &data, const QString &separator = ",");
-
 };
+
 #endif // QWARLOCKUTILS_H

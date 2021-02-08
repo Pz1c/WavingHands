@@ -523,6 +523,7 @@ QString QWarlockUtils::parsePlayerTop(QString &Data) {
     return res;
 }
 
+
 int QWarlockUtils::strValueToInt(QString val) {
     if (val.compare("permanent") == 0) {
         return 999;

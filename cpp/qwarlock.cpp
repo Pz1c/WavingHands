@@ -32,6 +32,7 @@ QString QWarlock::status() {
     return _status;
 }
 
+
 QString QWarlock::leftGestures() {
     return _leftGestures;
 }

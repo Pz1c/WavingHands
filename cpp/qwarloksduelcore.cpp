@@ -1,5 +1,6 @@
 #include "qwarloksduelcore.h"
 
+
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     QGameCore(parent)
 {
@@ -28,6 +29,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
 
     prepareSpellHtmlList();
 }
+
 
 void QWarloksDuelCore::setOrganization() {
     qDebug() << "QWarloksDuelCore::setOrganization";

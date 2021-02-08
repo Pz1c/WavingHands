@@ -55,6 +55,7 @@ BaseWindow {
             width: 0.5 * parent.width
             color: "snow"
             text: dict.getStringByCode("MonsterTargetTitle")
+
         }
 
         LargeText {

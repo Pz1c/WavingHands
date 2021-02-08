@@ -77,6 +77,7 @@ private:
     QSpell *_bestSpellL;
     QSpell *_bestSpellR;
     bool _isParaFDF;
+
 };
 
 #endif // QWARLOCK_H
