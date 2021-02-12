@@ -573,7 +573,7 @@ ApplicationWindow {
     function getSpellList(new_gesture) {
         console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture);
         gBattle["ng" + gBattle.currentHand] = new_gesture;
-        var res = [], arr_cast_now = [], arr_cast_later = [], arr_cast_other = [];
+        var res = [], arr_cast_now = [{gp:"?",n:"Default",choose:1,t:1,cast_type:1}], arr_cast_later = [], arr_cast_other = [];
         console.log("mainWindow.getSpellList", gBattle.L, gBattle.R, gBattle.ngL, gBattle.ngR);
         //var str = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
         //console.log("mainWindow.getSpellList", str);
@@ -616,8 +616,8 @@ ApplicationWindow {
                 }
             }
         }
-        arr_cast_now.push({gp:"?",n:"Default",choose:1,t:1,cast_type:1});
-        gBattle.spellIdx = arr_cast_now.length - 1;
+        //arr_cast_now.push();
+        gBattle.spellIdx = 0;
         return arr_cast_now.concat(arr_cast_later).concat(arr_cast_other);
     }
 

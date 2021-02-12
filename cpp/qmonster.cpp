@@ -40,11 +40,11 @@ QString QMonster::target() {
 }
 
 bool QMonster::is_under_attack(const QString &user_login) {
-    return _target.toLower().compare(user_login.toLower()) == 0;
+    return _target.compare(user_login, Qt::CaseInsensitive) == 0;
 }
 
 bool QMonster::is_owner(const QString &user_login) {
-    return _owner.toLower().compare(user_login.toLower()) == 0;
+    return _owner.compare(user_login, Qt::CaseInsensitive) == 0;
 }
 
 QString QMonster::getColor(const QString &user_login) {
@@ -74,8 +74,7 @@ QString QMonster::html(const QString &user_login) {
 }
 
 QString QMonster::json(const QString &user_login) {
-    QString under_control = _owner.toLower().compare(user_login.toLower()) == 0 ? "true" : "false";
-    QString targeted = _target.toLower().compare(user_login.toLower()) == 0 ? "true" : "false";
+    bool targeted = _target.compare(user_login, Qt::CaseInsensitive) == 0;
     return QString("{\"under_control\":%1,\"name\":\"%2\",\"status\":\"%3\",\"owner\":\"%4\",\"target\":\"%5\",\"targeted\":%6,\"strength\":%7,\"color\":\"%8\",\"hp\":%9}")
-             .arg(under_control, _name, _status, _owner, _target, targeted, intToStr(_strength), getColor(user_login), intToStr(_hp));
+             .arg(boolToStr(is_owner(user_login)), _name, _status, _owner, _target, boolToStr(targeted), intToStr(_strength), getColor(user_login), intToStr(_hp));
 }

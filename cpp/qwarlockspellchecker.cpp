@@ -3,7 +3,7 @@
 QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     QObject(parent)
 {
-    Spells.append(new QSpell(0,"cDPW","Dispel Magic", SPELL_TYPE_REMOVE_ENCHANTMENT,10,1,10,SPELL_DEF_TARGER_NOBODY, 0));
+    Spells.append(new QSpell(0,"cDPW","Dispel Magic", SPELL_TYPE_REMOVE_ENCHANTMENT,10,1,10,SPELL_DEF_TARGER_SELF, 0));
     Spells.append(new QSpell(1,"cSWWS","Summon Ice Elemental", SPELL_TYPE_ELEMENTAL,14,0,15, SPELL_DEF_TARGER_NOBODY, 3));
     Spells.append(new QSpell(2,"cWSSW","Summon Fire Elemental", SPELL_TYPE_ELEMENTAL,15,1,15, SPELL_DEF_TARGER_NOBODY, 3));
     Spells.append(new QSpell(3,"cw","Magic Mirror", SPELL_TYPE_MAGIC_SHIELD,10,0,10, SPELL_DEF_TARGER_SELF, 0));

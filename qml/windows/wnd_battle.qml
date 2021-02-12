@@ -211,6 +211,12 @@ BaseWindow {
     }
 
     function setTargetingOnOff(Enable, IsSpell) {
+        if (Enable) {
+            battleChanged();
+        } else {
+            bbSendOrders.visible = false;
+        }
+
         for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
             iWarlocks.children[i].targetingOnOff(Enable, IsSpell);
         }

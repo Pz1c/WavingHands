@@ -285,17 +285,33 @@ BaseWindow {
                 width: 0.20 * parent.width
                 anchors.right: parent.right
                 anchors.leftMargin: 0.03 * parent.width
-                anchors.bottom: parent.verticalCenter
-                anchors.bottomMargin: 0.05 * parent.height
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.bottomMargin: 0.05 * parent.height
                 active: false
                 color: "transparent"
 
                 onClicked: {
-                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], false);
+                    var spell = arrSpell[mainWindow.gBattle.spellIdx], s;
+                    var need_targeting = (spell.n === "Stab") || (mainWindow.gBattle.spellIdx !== 0);
+                    if (!need_targeting) {
+                        for(var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
+                            s = arrSpell[i];
+                            if ((s.ng === currGesture) && (s.t === 1) && (s.dt !== 0)) {
+                                need_targeting = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], need_targeting);
+                }
+
+                onDoubleClicked: {
+                    mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
                 }
             }
 
-            IconInfo {
+            /*IconInfo {
                 id: iiSendTarget
                 source: "qrc:/res/send_"+(active ? "1" : "0")+"_target.png"
                 textVisible: false
@@ -311,7 +327,7 @@ BaseWindow {
                 onClicked: {
                     mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
                 }
-            }
+            }*/
 
         }
 
