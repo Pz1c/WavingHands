@@ -376,7 +376,7 @@ BaseWindow {
         }
         if (new_gesture !== "") {
             iiSend.active = true;
-            iiSendTarget.active = true;
+            //iiSendTarget.active = true;
             mapGesture[new_gesture].height = 0.12 * dialogWindow.height;
             mapGesture[new_gesture].color = "lightblue";
             currGesture = new_gesture;
@@ -394,7 +394,7 @@ BaseWindow {
     function initGFields() {
         console.log("wnd_gesture.initGFields", JSON.stringify(mainWindow.gERROR));
         iiSend.active = false;
-        iiSendTarget.active = false;
+        //iiSendTarget.active = false;
         title_text = mainWindow.gERROR.title;
         arrPossibleGesture = mainWindow.gERROR.pga;
         setGesture(arrPossibleGesture.length === 1 ? arrPossibleGesture[0] : mainWindow.gERROR.g);
