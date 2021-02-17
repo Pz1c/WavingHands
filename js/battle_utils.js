@@ -100,7 +100,9 @@ function prepareBattle(raw_battle) {
     var i, Ln;
     for (i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
         var m = raw_battle.monsters[i];
-        if (!m.owner || (m.owner === "Nobody")) {
+        m.is_elemental = !m.owner || (m.owner === "Nobody");
+        m.allow_choose_target = false;
+        if (m.is_elemental) {
             battle.elemental = m;
             battle.elemental.type = m.name.indexOf("Fire") !== -1 ? "fire" : "ice";
             battle.elemental.action = "m";
@@ -126,6 +128,7 @@ function prepareBattle(raw_battle) {
         prepareWarlock(w);
         battle.warlocks.unshift(w);
     }
+    battle.player_name = battle.warlocks[0].name;
     //battle.chat = raw_battle.chat;
     delete battle.monsters;
     console.log("prepared battle", JSON.stringify(battle));
@@ -287,6 +290,9 @@ function getOrdersForReview(dictionary) {
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
     }
 
+    if ((actions.L.g === "P") && actions.R.g === "P") {
+        res.push({type:"LH",v:dictionary.getStringByCode("TitleAction_p"),c:"red"});
+    }
     // gesture
     res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary),c:"snow"});
     console.log("getOrdersForReview", "point2", JSON.stringify(res));
@@ -336,4 +342,26 @@ function setCharm(H, G) {
     console.log("BU.setCharm", H, G, JSON.stringify(battle.currentCharm));
     var T = battle.currentCharm.t;
     battle.actions["C" + T][battle.currentCharm.id] = {h:H,g:G,t:T};
+}
+
+function checkIsMonsterCharmed(monster) {
+    if (monster.is_elemental) {
+        return false;
+    }
+    if (monster.owner === battle.player_name) {
+        return false;
+    }
+    var lp = battle.warlocks[0];
+    if (!lp["charm_" + (battle.currentHand === "L" ? "left" : "right")]) {
+        return false;
+    }
+    if (!battle.actions[battle.currentHand].s) {
+        return false;
+    }
+    var spell = battle.actions[battle.currentHand].s;
+    var res =  (spell.id === C_SPELL_CHARM_MONSTER) || (lp.amnesia > 0) || (lp.charmed > 0)|| (lp.confused > 0) || (lp.paralized > 0) || (lp.maladroit > 0);
+    if (res) {
+        monster.allow_choose_target = true;
+    }
+    return res;
 }

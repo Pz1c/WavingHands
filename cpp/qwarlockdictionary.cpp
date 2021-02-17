@@ -105,9 +105,11 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleAction_P", "", "", "Try do permanent spell casted by ");
     fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
     fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
+    fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P) -raising a white flag");
     fillDictionary("TitleAction_M", "", "", " direct to attack ");
     fillDictionary("Refresh", "", "", "Refresh");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
+    fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
 
     // spell book name

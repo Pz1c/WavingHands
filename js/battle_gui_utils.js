@@ -4,6 +4,56 @@ var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"haste"};
 var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paralized":"FFF","shield":"WWP","coldproof":"SSFP","fireproof":"WWFP","poison":"DWWFWD","desease":"DSFFFc",
                          "amnesia":"DPP","maladroit":"DSF","mshield":"WWS","delay":"DWSSSP","time_stop":"SPPc","haste":"PWPWWc","permanency":"SPFPSDW","blindness":"DWFFd","invisibility":"PPws"};
 
+var C_SPELL_DISPEL_MAGIC = 0;
+var C_SPELL_SUMMON_ICE_ELEMENTAL = 1;
+var C_SPELL_SUMMON_FIRE_ELEMENTAL = 2;
+var C_SPELL_MAGIC_MIRROR = 3;
+var C_SPELL_LIGHTNING_BOLT = 4;
+var C_SPELL_CURE_HEAVY_WOUNDS = 5;
+var C_SPELL_CURE_LIGHT_WOUNDS = 6;
+var C_SPELL_BLINDNESS1 = 7;
+var C_SPELL_AMNESIA = 8;
+var C_SPELL_CONFUSION = 9;
+var C_SPELL_DISEASE = 10;
+var C_SPELL_BLINDNESS2 = 11;
+var C_SPELL_DELAY_EFFECT = 12;
+var C_SPELL_POISON = 13;
+var C_SPELL_PARALYSIS = 14;
+var C_SPELL_SUMMON_GIANT = 15;
+var C_SPELL_SUMMON_TROLL = 16;
+var C_SPELL_SUMMON_OGRE = 17;
+var C_SPELL_SUMMON_GOBLIN = 18;
+var C_SPELL_FIREBALL = 19;
+var C_SPELL_SHIELD = 20;
+var C_SPELL_REMOVE_ENCHANTMENT = 21;
+var C_SPELL_INVISIBILITY = 22;
+var C_SPELL_CHARM_MONSTER = 23;
+var C_SPELL_CHARM_PERSON = 24;
+var C_SPELL_FINGER_OF_DEATH = 25;
+var C_SPELL_HASTE = 26;
+var C_SPELL_MAGIC_MISSILE = 27;
+var C_SPELL_ANTI_SPELL = 28;
+var C_SPELL_PERMANENCY = 29;
+var C_SPELL_TIME_STOP1 = 30;
+var C_SPELL_TIME_STOP2 = 31;
+var C_SPELL_RESIST_COLD = 32;
+var C_SPELL_FEAR = 33;
+var C_SPELL_FIRE_STORM = 34;
+var C_SPELL_CLAP_OF_LIGHTNING = 35;
+var C_SPELL_CAUSE_LIGHT_WOUNDS = 36;
+var C_SPELL_CAUSE_HEAVY_WOUNDS = 37;
+var C_SPELL_COUNTER_SPELL1 = 38;
+var C_SPELL_ICE_STORM = 39;
+var C_SPELL_RESIST_HEAT = 40;
+var C_SPELL_PROTECTION = 41;
+var C_SPELL_COUNTER_SPELL2 = 42;
+var C_SPELL_SURRENDER = 43;
+var C_SPELL_STAB = 44;
+var C_SPELL_DISEASE_FDF = 45;
+var C_SPELL_PARALYSIS_FDF = 46;
+var C_SPELL_PARALYSIS_FDFD = 47;
+
+
 function copyObject(from, to, except) {
     var check_exclude = except && Array.isArray(except) && (except.length > 0);
     for(var key in from) {

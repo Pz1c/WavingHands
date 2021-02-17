@@ -117,7 +117,7 @@ BaseWindow {
                 id: iiChat
                 source: "qrc:/res/chat.png";
                 text: ""
-                text_color: "yellow"
+                text_color: "red"
                 height: 0.9 * parent.height
                 width: height
                 anchors.top: parent.top
@@ -147,6 +147,10 @@ BaseWindow {
                 var target_name = data.action === "hp" ? data.warlock_name : data.name;
                 mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
                 operationMode = 0;
+                if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
+                    //open target window for charmed monster
+                    iconDoubleClick(data);
+                }
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }
@@ -177,7 +181,7 @@ BaseWindow {
         case "m":
             msg_title = "Monster"
             msg_text = data.name;
-            if (data.owner !== "") {
+            if (data.owner !== "Nobody") {
                 msg_text += " (owner by "+data.owner+")";
                 msg_type = 4;
                 console.log("get target", JSON.stringify(mainWindow.gBattle.actions), mainWindow.gBattle.actions.M[data.action_idx].target);
@@ -211,7 +215,7 @@ BaseWindow {
     }
 
     function setTargetingOnOff(Enable, IsSpell) {
-        if (Enable) {
+        if (!Enable) {
             battleChanged();
         } else {
             bbSendOrders.visible = false;

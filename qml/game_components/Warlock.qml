@@ -173,6 +173,12 @@ Item {
 
             }
         }
+
+        onDoubleClicked: {
+            if (l_warlock.player) {
+                mainWindow.chooseTargetForSpell(true);
+            }
+        }
     }
 
     IconInfoR {
@@ -190,6 +196,12 @@ Item {
                 mainWindow.showGesture(false, l_warlock.prg);
             } else {
 
+            }
+        }
+
+        onDoubleClicked: {
+            if (l_warlock.player) {
+                mainWindow.chooseTargetForSpell(false);
             }
         }
     }

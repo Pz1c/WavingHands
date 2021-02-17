@@ -115,21 +115,30 @@ void QWarlock::checkPossibleGesture() {
 QString QWarlock::separatedString() {
     //int Ln = _leftGestures.length();
     qDebug() << "QWarlock::separatedString" << _name << _bestSpellL << _bestSpellR << _possibleSpells;
-    bool charmL = _leftGestures.right(6).replace(" ", "").right(3).compare("PSD") == 0;
-    bool charmR = _rightGestures.right(6).replace(" ", "").right(3).compare("PSD") == 0;
+    bool charmL = false;
+    bool charmR = false;
     int summon_left = SPELL_ID_MAX, summon_right = SPELL_ID_MAX;
     QString res;
     foreach(QSpell *s, _possibleSpells) {
         if (!res.isEmpty()) {
             res.append(",");
         }
-        if ((s->spellType() == SPELL_TYPE_SUMMON_MONSTER) && (s->turnToCast() == 1)) {
-            if  (s->hand() == WARLOCK_HAND_LEFT) {
-                summon_left = qMin(summon_left, s->spellID());
-            } else {
-                summon_right = qMin(summon_right, s->spellID());
+        if (s->turnToCast() == 1) {
+            if (s->spellType() == SPELL_TYPE_SUMMON_MONSTER) {
+                if  (s->hand() == WARLOCK_HAND_LEFT) {
+                    summon_left = qMin(summon_left, s->spellID());
+                } else {
+                    summon_right = qMin(summon_right, s->spellID());
+                }
+            } else if (s->spellID() == SPELL_CHARM_PERSON) {
+                if  (s->hand() == WARLOCK_HAND_LEFT) {
+                    charmL = true;
+                } else {
+                    charmR = true;
+                }
             }
         }
+
         res.append(s->json());
     }
     res.prepend("[").append("]");

@@ -636,6 +636,19 @@ ApplicationWindow {
         WNDU.processEscape();
     }
 
+    function chooseTargetForSpell(isLeft) {
+        gBattle.currentHand = isLeft ? "L" : "R";
+        gBattle.otherHand   = isLeft ? "R" : "L";
+        gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
+        gBattle.otherHandIdx = isLeft ? GC.WARLOCK_HAND_RIGHT : GC.WARLOCK_HAND_LEFT;
+
+        if (!gBattle.actions[gBattle.currentHand].g) {
+            return;
+        }
+
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true);
+    }
+
     function chooseMonsterTarget() {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false);
         WNDU.processEscape();

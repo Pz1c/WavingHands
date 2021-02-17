@@ -13,6 +13,7 @@ Rectangle {
     property alias textVisible: btnText.visible
 
     signal clicked
+    signal doubleClicked
 
     color: "transparent"
     border.color: "#E7FFFF"
@@ -40,6 +41,12 @@ Rectangle {
         onClicked: {
             if (active) {
                 button.clicked();
+            }
+        }
+
+        onPressAndHold: {
+            if (active) {
+                button.doubleClicked();
             }
         }
     }
