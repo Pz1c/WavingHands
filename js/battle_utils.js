@@ -28,7 +28,7 @@ function parseTargets(targets_str) {
     var m_owner;
     console.log("parseTargets", JSON.stringify(strs));
     var title, obj_id;
-    for(var i = 0, Ln = strs.length; i < Ln; ++i) {
+    for (var i = 0, Ln = strs.length; i < Ln; ++i) {
         obj_id = strs[i][0];
         title = strs[i][1];
         if (title === " ") {

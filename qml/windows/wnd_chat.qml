@@ -69,7 +69,7 @@ BaseWindow {
     }
 
     function showWnd() {
-        initFields();
+        initErrFields();
         visible = true;
     }
 
