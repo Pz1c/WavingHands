@@ -73,7 +73,7 @@ BaseWindow {
                             anchors.verticalCenter: rdSpellItem.verticalCenter
                             anchors.left: rdbiGesture.right
                             anchors.leftMargin: 0.01 * parent.width
-                            anchors.right: rdbifInfo.left
+                            anchors.right: parent.right//rdbifInfo.left
                             anchors.rightMargin: 0.01 * parent.width
                             height: 0.8 * rdSpellItem.height
                             color: "snow"
@@ -82,7 +82,7 @@ BaseWindow {
                             text: lvSpellList.model[index].n
                         }
 
-                        IconInfo {
+                        /*IconInfo {
                             id: rdbifInfo
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
@@ -101,7 +101,7 @@ BaseWindow {
 
                                 }
                             }
-                        }
+                        }*/
 
                         MouseArea {
                             id: maSpell
@@ -118,6 +118,15 @@ BaseWindow {
                                     mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
                                 } else if (arrSpell[index].cast_type === 3) {
                                     setGesture(arrSpell[index].ng);
+                                }
+                            }
+
+                            onPressAndHold: {
+                                console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
+                                if(lvSpellList.model[index].gp !== "?") {
+                                    mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                } else {
+
                                 }
                             }
                         }
@@ -342,6 +351,9 @@ BaseWindow {
     }
 
     function showWnd() {
+        currGesture = "";
+        arrPossibleGesture = [];
+        arrSpell = [];
         initGFields();
         visible = true;
     }

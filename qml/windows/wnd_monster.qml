@@ -96,6 +96,7 @@ BaseWindow {
         ltStatus.text = m.status;
         ltOwnerValue.text = m.owner;
         ltTargetValue.text = m.target;
+        with_apply = !!m.under_control;
 
         mainWindow.gERROR = {};
     }

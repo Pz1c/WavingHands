@@ -149,6 +149,7 @@ BaseWindow {
                 operationMode = 0;
                 if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
                     //open target window for charmed monster
+                    data.under_control = true;
                     iconDoubleClick(data);
                 }
             } else {

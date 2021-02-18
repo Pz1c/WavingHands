@@ -105,7 +105,7 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            anchors.right: iCancel.left
+            anchors.right: parent.right//iCancel.left
             //width: parent.width - parent.height
             text: "Base Window"
             color: "darkgrey"

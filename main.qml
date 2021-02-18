@@ -237,7 +237,7 @@ ApplicationWindow {
             onClicked: {
                 console.log("try refresh state");
                 dMenu.close();
-                core.scanState(1);
+                core.scanState(0);
             }
         }
 
@@ -562,11 +562,11 @@ ApplicationWindow {
     }
 
     function showGesture(isLeft, possible_gestures) {
-        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","), g:""};
         gBattle.currentHand = isLeft ? "L" : "R";
         gBattle.otherHand   = isLeft ? "R" : "L";
         gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
         gBattle.otherHandIdx = isLeft ? GC.WARLOCK_HAND_RIGHT : GC.WARLOCK_HAND_LEFT;
+        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","), g:gBattle["ng" + gBattle.currentHand]};
         WNDU.showGesture();
     }
 
@@ -581,39 +581,41 @@ ApplicationWindow {
         for (var i = 0, Ln = arr.length; i < Ln; ++i) {
             s = arr[i];
             s.choose = 0;
-            if (s.h === gBattle.currentHandIdx) {
-                if (new_gesture !== '') {
-                    if (s.t === 1) {
-                        if (s.ng === new_gesture) {
-                            s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
-                            s.cast_type = 1;
-                            arr_cast_now.push(s);
-                        } else {
-                            idx = s.g.length - s.t + 1;
-                            s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
-                            s.cast_type = 2;
-                            arr_cast_later.push(s);
-                        }
-                    }
-                } else {
+            if (s.h !== gBattle.currentHandIdx) {
+                continue;
+            }
+
+            if (new_gesture !== '') {
+                if (s.t === 1) {
                     if (s.ng === new_gesture) {
-                        if (s.t === 1) {
-                            s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
-                            s.cast_type = 1;
-                            arr_cast_now.push(s);
-                        } else {
-                            idx = s.g.length - s.t + 1;
-                            s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
-                            s.cast_type = 2;
-                            arr_cast_later.push(s);
-                        }
-                    } else {
-                        idx = s.g.length - s.t;
+                        s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
+                        s.cast_type = 1;
+                        arr_cast_now.push(s);
+                    } /*else {
+                        idx = s.g.length - s.t + 1;
                         s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
-                        s.cast_type = 3;
-                        arr_cast_other.push(s);
-                    }
+                        s.cast_type = 2;
+                        arr_cast_later.push(s);
+                    }*/
                 }
+            } else {
+                /*if (s.ng === new_gesture) {
+                    if (s.t === 1) {
+                        s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
+                        s.cast_type = 1;
+                        arr_cast_now.push(s);
+                    } else {
+                        idx = s.g.length - s.t + 1;
+                        s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                        s.cast_type = 2;
+                        arr_cast_later.push(s);
+                    }
+                } else {*/
+                    idx = s.g.length - s.t;
+                    s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                    s.cast_type = 3;
+                    arr_cast_other.push(s);
+                //}
             }
         }
         //arr_cast_now.push();
@@ -622,10 +624,11 @@ ApplicationWindow {
     }
 
     function setGesture(gesture, spell, need_target) {
-        var is_maladroit = gBattle.warlocks[0].maladroit > 0;
-        console.log("setGesture", gesture, JSON.stringify(spell));
+        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) || ((gesture === "C") && !(gBattle.warlocks[0].amnesia > 0));
+        console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
-        if (is_maladroit) {
+        if (is_maladroit && (gBattle.actions[gBattle.otherHand].g !== gesture)) {
+            gBattle["ng" + gBattle.otherHand] = gesture;
             gBattle.actions[gBattle.otherHand] = {g:gesture,s:{gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}};
         }
 

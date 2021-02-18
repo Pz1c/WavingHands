@@ -82,8 +82,8 @@ function prepareBattle(raw_battle) {
     battle.warlocks = [];
     battle.elemental = {hp:0,type:"fire"};
     battle.monsters = {};
-    battle.ngL = "-";
-    battle.ngR = "-";
+    battle.ngL = "";
+    battle.ngR = "";
     // L left  obj
     // R Right obj
     // C Chat  text
@@ -117,7 +117,7 @@ function prepareBattle(raw_battle) {
         }
 
         battle.monsters[m.owner].push(m);
-        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.target,old_target:m.target});
+        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.target,old_target:m.target,under_control:true,owner:m.owner});
     }
 
     for (i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {
@@ -129,6 +129,17 @@ function prepareBattle(raw_battle) {
         battle.warlocks.unshift(w);
     }
     battle.player_name = battle.warlocks[0].name;
+    battle.enemy_name = battle.warlocks.length > 1 ? battle.warlocks[1].name : "Nobody";
+    for (i = 0, Ln = battle.actions.M.length; i < Ln; ++i) {
+        if (!battle.actions.M[i].target) {
+            battle.actions.M[i].target = battle.enemy_name;
+            battle.actions.M[i].old_target = battle.enemy_name;
+        }
+        if (battle.actions.M[i].owner !== battle.player_name) {
+            battle.actions.M[i].under_control = false;
+        }
+    }
+
     //battle.chat = raw_battle.chat;
     delete battle.monsters;
     console.log("prepared battle", JSON.stringify(battle));
@@ -362,6 +373,7 @@ function checkIsMonsterCharmed(monster) {
     var res =  (spell.id === C_SPELL_CHARM_MONSTER) || (lp.amnesia > 0) || (lp.charmed > 0)|| (lp.confused > 0) || (lp.paralized > 0) || (lp.maladroit > 0);
     if (res) {
         monster.allow_choose_target = true;
+        battle.actions.M[monster.action_idx].under_control = true;
     }
     return res;
 }
