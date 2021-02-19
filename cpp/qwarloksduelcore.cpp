@@ -1139,7 +1139,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
         setTimeState(true);
     }
     qDebug() << old_read <<  _ready_in_battles << old_wait << _waiting_in_battles;
-    bool changed = (_ready_in_battles.size() != old_read.size()) || (_waiting_in_battles.size() != old_wait.size());
+    bool changed = _ready_in_battles.size() > 0;
     if (!changed) {
         foreach(int bid, _ready_in_battles) {
             if (old_read.indexOf(bid) == -1) {
@@ -1149,8 +1149,24 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
         }
     }
     if (!changed) {
+        foreach(int bid, old_read) {
+            if (_ready_in_battles.indexOf(bid) == -1) {
+                changed = true;
+                break;
+            }
+        }
+    }
+    if (!changed) {
         foreach(int bid, _waiting_in_battles) {
             if (old_wait.indexOf(bid) == -1) {
+                changed = true;
+                break;
+            }
+        }
+    }
+    if (!changed) {
+        foreach(int bid, old_wait) {
+            if (_waiting_in_battles.indexOf(bid) == -1) {
                 changed = true;
                 break;
             }

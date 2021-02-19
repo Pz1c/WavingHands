@@ -161,11 +161,11 @@ function getSpellNameForOrderReview(action) {
     }
 
     if ((action.g === "?") || (action.g === "-")) {
-        return "Unknown";
+        return "Unknown spell";
     }
     // default spell
     if (action.s.gp === "?") {
-        return "Default";
+        return "Default spell";
     }
 
     return action.s.n;
@@ -188,7 +188,7 @@ function getSpellTargetForOrderReview(action, targetMap) {
 // res.push({type:"RH",g:actions.R.g,s:getSpellNameForOrderReview(actions.R),t:getSpellTargetForOrderReview(actions.R, battle.targetsMap)});
 function getTextForHandAction(hand, action, targetMap, dict) {
     var res = dict.getStringByCode(hand) + ": ";
-    res += action.g + " cast " + getSpellNameForOrderReview(action) + " spell on " + getSpellTargetForOrderReview(action, targetMap);
+    res += action.g + " cast " + getSpellNameForOrderReview(action) + " on " + getSpellTargetForOrderReview(action, targetMap);
     return res;
 }
 

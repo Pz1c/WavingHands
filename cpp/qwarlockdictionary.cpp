@@ -99,7 +99,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("MonsterSetTarget", "", "", "Choose target");
     fillDictionary("MonsterOwnerTitle", "", "", "Owner");
     fillDictionary("MonsterTargetTitle", "", "", "Target");
-    fillDictionary("SendOrders", "", "", "Send orders");
+    fillDictionary("ReviewOrders", "", "", "Review your orders");
+    fillDictionary("SendOrders", "", "", "Submit");
     fillDictionary("TitleAction_charmed", "", "", "Choose gesture for Charmed warlock");
     fillDictionary("TitleAction_D", "", "", "Try bank spell casted by ");
     fillDictionary("TitleAction_P", "", "", "Try do permanent spell casted by ");

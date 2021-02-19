@@ -34,36 +34,52 @@ BaseWindow {
                         id: idRoot
                         width: lvOrderList.width
                         height: 0.10 * dialogWindow.height
+
                         Rectangle {
-                        id: rdSpellItem
-                        color: "transparent"
-                        radius: 30
-                        anchors.centerIn: parent
-                        height: 0.95 * parent.height
-                        width: 0.95 * parent.width
-                        anchors.bottomMargin: 0.01 * dialogWindow.height
-                        border.color: lvOrderList.model[index].c
-                        border.width: 1
+                            id: rdSpellItem
+                            color: "transparent"
+                            radius: 30
+                            anchors.centerIn: parent
+                            height: 0.95 * parent.height
+                            width: 0.95 * parent.width
+                            anchors.bottomMargin: 0.01 * dialogWindow.height
+                            border.color: lvOrderList.model[index].c
+                            border.width: 1
 
-                        LargeText {
-                            id: rdbiGesture
-                            anchors.centerIn: rdSpellItem
-                            color: "snow"
-                            horizontalAlignment: Text.AlignLeft
-                            text: lvOrderList.model[index].v
-                            width: 0.9 * parent.width
-                            height: 0.8 * parent.height
-                        }
+                            LargeText {
+                                id: rdbiGesture
+                                anchors.centerIn: rdSpellItem
+                                color: "snow"
+                                horizontalAlignment: Text.AlignLeft
+                                text: lvOrderList.model[index].v
+                                width: 0.9 * parent.width
+                                height: 0.8 * parent.height
+                            }
 
-                        MouseArea {
-                            id: maSpell
-                            anchors.fill: parent
-                            onClicked: {
-                                console.log("click on order", index, JSON.stringify(lvOrderList.model[index]));
+                            MouseArea {
+                                id: maSpell
+                                anchors.fill: parent
+                                onClicked: {
+                                    console.log("click on order", index, JSON.stringify(lvOrderList.model[index]));
+                                    var item = lvOrderList.model[index];
+                                    switch(item.type) {
+                                    case "LH":
+                                        mainWindow.showGesture(true);
+                                        break;
+                                    case "LH":
+                                        mainWindow.showGesture(false);
+                                        break;
+                                    case "M":
+                                        mainWindow.gBattle.currentMonsterIdx = item.action_idx;
+                                        mainWindow.showErrorWnd({type:4,text:"",title:"Monster",data:mainWindow.gBattle.actions.M[item.action_idx],close_current:1});
+                                        break;
+                                    default:
+                                        mainWindow.closeChild();
+                                    }
+                                }
                             }
                         }
                     }
-                }
             }
         }
     }

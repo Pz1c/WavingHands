@@ -81,6 +81,8 @@ ApplicationWindow {
     }
 
     property alias gameCore: core
+    property alias mainContainer: iWndContainer
+    property alias mainHeader: tbTop
     property var gERROR: ({})
     property var gBattle: ({})
 
@@ -143,6 +145,12 @@ ApplicationWindow {
     property bool is_game_in_progress: false
 
     color: "#551470"
+
+    Item {
+        id: iWndContainer
+        anchors.fill: parent
+        z: 500
+    }
 
     Rectangle {
         id: rLoading
@@ -332,7 +340,7 @@ ApplicationWindow {
             contentHeight: iMainScrollBody.height
 
             Item {
-                id:iMainScrollBody
+                id: iMainScrollBody
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -562,11 +570,21 @@ ApplicationWindow {
     }
 
     function showGesture(isLeft, possible_gestures) {
+        var close_current = false;
+        if (!possible_gestures) {
+            possible_gestures = isLeft ? gBattle.warlocks[0].plg : gBattle.warlocks[0].prg;
+            close_current = true;
+        }
+
         gBattle.currentHand = isLeft ? "L" : "R";
         gBattle.otherHand   = isLeft ? "R" : "L";
         gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
         gBattle.otherHandIdx = isLeft ? GC.WARLOCK_HAND_RIGHT : GC.WARLOCK_HAND_LEFT;
         gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","), g:gBattle["ng" + gBattle.currentHand]};
+        if (close_current) {
+            closeChild();
+        }
+
         WNDU.showGesture();
     }
 
@@ -685,7 +703,7 @@ ApplicationWindow {
     }
 
     function showOrders(arr) {
-        gERROR = {title:warlockDictionary.getStringByCode("Review battle orders"), data: arr};
+        gERROR = {title:warlockDictionary.getStringByCode("ReviewOrders"), data: arr};
         WNDU.showOrders();
     }
 

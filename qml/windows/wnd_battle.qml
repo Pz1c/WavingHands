@@ -66,6 +66,16 @@ BaseWindow {
                color: "#FEE2D6"
                border_visible: false
                radius: 10
+
+               MouseArea {
+                   id: maAll
+                   anchors.fill: parent
+                   onClicked: {
+                        if (operationMode >= 1) {
+                            iconClick({action:"hp",warlock_name:"Nobody"});
+                        }
+                   }
+               }
             }
 
             BtnBig {
@@ -194,7 +204,7 @@ BaseWindow {
                 msg_text += " " + data.status;
             }
             if (data.target) {
-                msg_text += " attack " + target_name;
+                msg_text += " attack " + data.target;
             }
             break;
         case "banked":
@@ -225,6 +235,8 @@ BaseWindow {
         for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
             iWarlocks.children[i].targetingOnOff(Enable, IsSpell);
         }
+        ltAll.text = Enable ? "Nobody" : "All";
+        ltAll.border_visible = Enable;
         iiElemental.border.width = Enable ? 3 : 0;
         iiChat.active = !Enable;
         iiChat.opacity = Enable ? 0.3 : 1;
@@ -268,6 +280,7 @@ BaseWindow {
     }
 
     function initBattleFields() {
+        console.log("wnd_battle.initBattleFields", x, y, width, height, parent.x, parent.y, parent.width, parent.height);
         console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle));
         if (!mainWindow.gBattle || !mainWindow.gBattle.id) {
             return;

@@ -98,7 +98,7 @@ function finishedShowWnd(wnd_obj) {
     }
 
     if (wnd_obj.wnd.status === Component.Ready) {
-        wnd_obj.item = wnd_obj.wnd.createObject(mainWindow, {visible:!wnd_obj.only_create,z:++max_z_index,code:wnd_obj.code});
+        wnd_obj.item = wnd_obj.wnd.createObject(mainWindow.mainContainer, {x: 0, y: 0, visible:!wnd_obj.only_create,z:++max_z_index,code:wnd_obj.code});
         //wnd_obj.item.code = wnd_obj.code;
         console.log("create item", wnd_obj.code, wnd_obj.item.code);
         if (wnd_obj.add_in_stack) {
@@ -215,6 +215,10 @@ function showErrorWnd(error, chat) {
     if (!mainWindow.gERROR.id) {
         mainWindow.gERROR.id = -1;
     }
+    if (error.close_current !== 1) {
+        error.close_current = 0;
+    }
+
     var wnd_name;
     switch(error.type) {
     case 3:
@@ -228,7 +232,7 @@ function showErrorWnd(error, chat) {
         break;
     }
 
-    showWnd(wnd_name, 0, 0, 1);
+    showWnd(wnd_name, error.close_current, 0, 1);
 }
 
 function showNewUserMenu() {

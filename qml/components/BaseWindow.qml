@@ -10,10 +10,11 @@ import ua.sp.warlockdictionary 1.0
 
 Item {
     id: iRoot
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
-    anchors.right: parent.right
-    anchors.left: parent.left
+    anchors.fill: parent
+    //anchors.top: parent.top
+    //anchors.bottom: parent.bottom
+    //anchors.right: parent.right
+    //anchors.left: parent.left
     z: 0
 
     property double height_koeff: iRoot.height / 800

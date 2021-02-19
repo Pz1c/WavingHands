@@ -44,7 +44,7 @@ function parseTargets(targets_str) {
                 battle.monsters[m_owner] = [];
             }
             battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m",action_idx:battle.actions.M.length});
-            battle.actions.M.push({id:obj_id,target:"",old_target:""});
+            battle.actions.M.push({id:obj_id,target:"",old_target:"",under_control:true,owner:m.owner,status:""});
         }
     }
 }
@@ -117,7 +117,7 @@ function prepareBattle(raw_battle) {
         }
 
         battle.monsters[m.owner].push(m);
-        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.target,old_target:m.target,under_control:true,owner:m.owner});
+        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.target,old_target:m.target,under_control:true,owner:m.owner,name:m.name,status:m.status});
     }
 
     for (i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {
@@ -335,7 +335,7 @@ function getOrdersForReview(dictionary) {
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
         m_obj = actions.M[i];
         console.log("mt_label", JSON.stringify(m_obj));
-        res.push({type:"M",v:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow"});
+        res.push({type:"M",v:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow",action_idx:i});
         console.log("getOrdersForReview", "point9", JSON.stringify(res));
     }
     return res;
