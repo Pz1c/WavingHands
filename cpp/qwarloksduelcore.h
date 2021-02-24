@@ -275,6 +275,7 @@ private:
     bool _isDelay;
     bool _isPermanent;
     bool _isParaFDF;
+    bool _isParaFC;
     QString _fire;
     QString _challengeList;
     QString _battleList;

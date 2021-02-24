@@ -13,6 +13,7 @@ BaseWindow {
     body_height_prc: 70
     control_height_prc: 0
 
+    property bool isParalyze: false
     property var arrHands: [{h:"LH",choose:1},{h:"RH",choose:0}]
     property var currHand: 0
     property var currGesture: "-"
@@ -20,6 +21,10 @@ BaseWindow {
     property var arrGestureVal: ["C","D","F","S","P","W",">","-"]
     property var mapGesture: ({"C":iiGC,"D":iiGD,"F":iiGF,"S":iiGS,"P":iiGP,"W":iiGW,">":iiGSt,"-":iiGN})
     property var arrPossibleGesture: []
+    property var lastGesture: ({"LH":"","RH":""})
+    property var paraCFMap: ({"C":"F","S":"D","W":"P"})
+    property var paraFCMap: ({"F":"C","S":"D","W":"P"})
+    property var paraMap: ({})
 
     // This rectangle is the actual popup
     Item {
@@ -69,10 +74,11 @@ BaseWindow {
                             anchors.fill: parent
                             onClicked: {
                                 console.log("choose hand", index, JSON.stringify(lvHandList.model[index]), JSON.stringify(arrHands[index]));
-                                arrHands[currHand].choose = 0;
+                                setHand(lvHandList.model[index].h);
+                                /*arrHands[currHand].choose = 0;
                                 arrHands[index].choose = 1;
                                 currHand = index;
-                                lvHandList.model = arrHands;
+                                lvHandList.model = arrHands;*/
                             }
                         }
                     }
@@ -262,7 +268,7 @@ BaseWindow {
     }
 
     function showWnd() {
-        initGFields();
+        initChFields();
         visible = true;
     }
 
@@ -271,15 +277,10 @@ BaseWindow {
     }
 
     function clearAll() {
-        var set_enable = arrPossibleGesture.length > 0;
+        var set_enable = !isParalyze;
         for (var i = 0; i < 8; ++i) {
             arrGesture[i].height = 0.3 * iGesture.height;
-            if (set_enable && (i < 6)) {
-                arrGesture[i].active = arrPossibleGesture.indexOf(arrGestureVal[i]) !== -1;
-            } else {
-                arrGesture[i].active = true;
-            }
-
+            arrGesture[i].active = set_enable;
             if (arrGesture[i].active) {
                 arrGesture[i].color = "snow";
             } else {
@@ -288,17 +289,26 @@ BaseWindow {
         }
     }
 
-    function setHand(new_hand) {
+    function setHand(new_hand, force) {
         if (!new_hand || (new_hand === "")) {
             return;
         }
-        if (arrHands[currHand].h === new_hand) {
+        if ((arrHands[currHand].h === new_hand) && !force) {
             return;
         }
         arrHands[currHand].choose = 0;
         currHand = new_hand === "LH" ? 0 : 1;
         arrHands[currHand].choose = 1;
         lvHandList.model = arrHands;
+
+        if (isParalyze) {
+            var ng = paraMap[lastGesture[new_hand]];
+            if (!ng) {
+                ng = lastGesture[new_hand];
+            }
+            console.log("wnd_charm.setHand", ng, new_hand, JSON.stringify(arrHands[currHand]), JSON.stringify(paraMap), JSON.stringify(lastGesture))
+            setGesture(ng);
+        }
     }
 
     function setGesture(new_gesture) {
@@ -311,18 +321,26 @@ BaseWindow {
         }
     }
 
-    function initGFields() {
-        console.log("wnd_gesture.initGFields", JSON.stringify(mainWindow.gERROR));
+    function initChFields() {
+        console.log("wnd_charm.initChFields", JSON.stringify(mainWindow.gERROR));
         title_text = mainWindow.gERROR.title;
-        arrPossibleGesture = mainWindow.gERROR.is_paralyze ? [' '] : [];
-        setHand(mainWindow.gERROR.h);
-        setGesture(mainWindow.gERROR.g);
+        arrPossibleGesture = [];
+        isParalyze = mainWindow.gERROR.is_paralyze;
+        paraMap = mainWindow.gBattle.is_fc ? paraFCMap : paraCFMap;
+        if (isParalyze) {
+            lastGesture["LH"] = mainWindow.gERROR.lgL;
+            lastGesture["RH"] = mainWindow.gERROR.lgR;
+        }
+        setHand(mainWindow.gERROR.h, true);
+        if (!isParalyze) {
+            setGesture(mainWindow.gERROR.g);
+        }
         iiSend.active = true;
         mainWindow.gERROR = {};
     }
 
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
-        initGFields();
+        initChFields();
     }
 }

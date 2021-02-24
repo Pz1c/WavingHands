@@ -42,11 +42,19 @@ Item {
     property int title_height_prc: 10
     property int control_height_prc: 10
 
-
     signal cancel
     signal apply
     signal action1
     signal action2
+
+    Keys.onPressed: {
+        console.log("BaseWindow.KEY_PRESSED: " + event.key)
+        if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {
+            console.log("BaseWindow.BACK_KEY_PRESSED: " + event.key)
+            event.accepted = true;
+            mainWindow.processEscape();
+        }
+    }
 
     Rectangle {
         id: rOver

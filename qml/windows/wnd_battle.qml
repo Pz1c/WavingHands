@@ -174,7 +174,7 @@ BaseWindow {
         } else if (data.active) {
             console.log("DO some action", JSON.stringify(data));
             BU.battle.currentCharm = BU.getCharmDataByAction(data);
-            mainWindow.chooseCharm(data.action, BU.battle.currentCharm.h, BU.battle.currentCharm.g);
+            mainWindow.chooseCharm(data.action, BU.battle.currentCharm.h, BU.battle.currentCharm.g, data);
         } else {
             iconDoubleClick(data);
         }
@@ -256,6 +256,16 @@ BaseWindow {
     }
 
     function setCharm(hand, gesture) {
+        if (BU.battle.currentCharm.warlock_idx > 0) {
+            console.log(BU.battle.currentCharm.warlock_idx, "try to find", JSON.stringify(BU.battle.currentCharm));
+            var ww = iWarlocks.children[BU.battle.currentCharm.warlock_idx];
+            if (ww && ww.l_warlock) {
+                ww.setGesture(hand.substr(0, 1), "g_" + BU.getIconByGesture(gesture));
+            } else {
+                console.log(BU.battle.currentCharm.warlock_idx, "now found warlock");
+            }
+        }
+
         BU.setCharm(hand, gesture);
     }
 

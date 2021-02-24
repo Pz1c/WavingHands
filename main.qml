@@ -692,8 +692,13 @@ ApplicationWindow {
         }
     }
 
-    function chooseCharm(Action, H, G) {
-        gERROR = {h:H,g:G,is_paralyze:Action === "paralyze",title:warlockDictionary.getStringByCode("TitleAction_" + Action)};
+    function chooseCharm(Action, H, G, data) {
+        gERROR = {h:H,g:G,is_paralyze:Action === "paralized",title:warlockDictionary.getStringByCode("TitleAction_" + Action)};
+        if (gERROR.is_paralyze) {
+            gERROR.lgL = data.lgL;
+            gERROR.lgR = data.lgR;
+        }
+
         WNDU.showCharm();
     }
 

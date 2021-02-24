@@ -23,6 +23,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _loadedBattleID = 0;
 
     _isParaFDF = false;
+    _isParaFC = false;
     _isTimerActive = false;
 
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
@@ -704,6 +705,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     _chat = intToStr(ccnt);
 
     _isParaFDF = Data.indexOf("(ParaFDF)") != -1;
+    _isParaFC = Data.indexOf("(ParaFC)") != -1;
     QString point1 = "<A TARGET=_blank HREF=\"/rules/1/quickref.html\">Spell Reference</A></DIV>";
     QString point2 = _loadedBattleType != 1 ? "</BODY>" : "<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=";
     int idx1 = Data.indexOf(point1);
@@ -1774,8 +1776,8 @@ QString QWarloksDuelCore::battleInfo() {
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":%12,\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":%16}")
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat);
+            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC));
 }

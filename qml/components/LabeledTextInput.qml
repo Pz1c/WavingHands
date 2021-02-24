@@ -56,7 +56,7 @@ Item {
             validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
             color: "black"
             echoMode: isPassword ? TextInput.Password : TextInput.Normal
-            font.pixelSize: 0.8 * parent.height
+            font.pixelSize: 0.4 * parent.height
         }
     }
 

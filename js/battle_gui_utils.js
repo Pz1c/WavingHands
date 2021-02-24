@@ -127,7 +127,7 @@ function cleanChildren(component) {
 }
 
 function prepareStatusIcon(w) {
-    var res = [], code, val, icon_name;
+    var res = [], code, val, icon_name, a;
     for (var i = 0, Ln = icon_status_code.length; i < Ln; ++i) {
         code = icon_status_code[i];
         if (!w[code] || (w[code] === 0)) {
@@ -135,7 +135,13 @@ function prepareStatusIcon(w) {
         }
         icon_name = icon_status_code_to_icon[code] ? icon_status_code_to_icon[code] : code;
         val = w[code] === 999 ? "∞" : w[code];
-        res.push({action: code, icon: icon_name, value: val, active: (w.control_paralyze && (code === "paralized")) || (w.control_charmed && (code === "charmed"))});
+        a = {action: code, icon: icon_name, value: val, active: (w.control_paralyze && (code === "paralized")) || (w.control_charmed && (code === "charmed"))};
+        if (a.active && (code === "paralized")) {
+            a.lgL = w.lgL;
+            a.lgR = w.lgR;
+        }
+
+        res.push(a);
     }
 
     return res;

@@ -44,7 +44,7 @@ function parseTargets(targets_str) {
                 battle.monsters[m_owner] = [];
             }
             battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m",action_idx:battle.actions.M.length});
-            battle.actions.M.push({id:obj_id,target:"",old_target:"",under_control:true,owner:m.owner,status:""});
+            battle.actions.M.push({id:obj_id,target:"",old_target:"",under_control:true,owner:m_owner,status:""});
         }
     }
 }
@@ -76,14 +76,18 @@ function setParaActions(paralyze, charm) {
 }
 
 function prepareBattle(raw_battle) {
-    battle.id = raw_battle.id;
+    battle = {id:raw_battle.id,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
+        monsters:{},ngL:"",ngR:""};
+    /*battle.id = raw_battle.id;
     battle.fire = raw_battle.fire;
     battle.chat = raw_battle.chat;
+    battle.is_fdf = raw_battle.is_fdf;
+    battle.is_fc = raw_battle.is_fc;
     battle.warlocks = [];
     battle.elemental = {hp:0,type:"fire"};
     battle.monsters = {};
     battle.ngL = "";
-    battle.ngR = "";
+    battle.ngR = "";*/
     // L left  obj
     // R Right obj
     // C Chat  text
@@ -192,6 +196,7 @@ function finishPrepareWarlockList() {
             continue;
         }
         var arr_m = battle.warlocks[i];
+        arr_m.warlock_idx = i;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT_COEFF * battleWindow.height, width: battleWindow.width});
         if (sprite === null) {
             console.log("Error creating object");
@@ -346,6 +351,11 @@ function getCharmDataByAction(action_data) {
     var id = battle.targetsMap[action_data.warlock_name];
     var res = arr[id];
     res.id = id;
+    res.warlock_idx = action_data.warlock_idx;
+    if (!!action_data.hand) {
+        res.h = action_data.hand;
+    }
+
     return res;
 }
 

@@ -102,6 +102,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("ReviewOrders", "", "", "Review your orders");
     fillDictionary("SendOrders", "", "", "Submit");
     fillDictionary("TitleAction_charmed", "", "", "Choose gesture for Charmed warlock");
+    fillDictionary("TitleAction_paralized", "", "", "Choose paralyzed hand");
     fillDictionary("TitleAction_D", "", "", "Try bank spell casted by ");
     fillDictionary("TitleAction_P", "", "", "Try do permanent spell casted by ");
     fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
