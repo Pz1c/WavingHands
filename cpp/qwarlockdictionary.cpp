@@ -113,6 +113,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
+    fillDictionary("LoginAs", "", "", "Login as ...");
+    fillDictionary("SpellbookTitle", "", "", "Spellbook");
 
     // spell book name
     fillDictionary("cDPW", "Розсіяти магію", "Развеять магию", "Dispel Magic");

@@ -249,5 +249,6 @@ QString QWarlockSpellChecker::getSpellBook(bool IsFDF) {
     }
     res.append("]").prepend("[");
 
+    qDebug() << "QWarlockSpellChecker::getSpellBook" << res;
     return res;
 }

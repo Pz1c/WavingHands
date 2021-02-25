@@ -11,6 +11,7 @@ var wnd_gesture = "wnd_gesture.qml";
 var wnd_monster = "wnd_monster.qml";
 var wnd_charm = "wnd_charm.qml";
 var wnd_orders = "wnd_orders.qml";
+var wnd_spellbook = "wnd_spellbook.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -257,4 +258,8 @@ function showCharm() {
 
 function showOrders() {
     showWnd(wnd_orders, 0, 0, 1);
+}
+
+function showSpellbook() {
+    showWnd(wnd_spellbook, 0, 0, 1);
 }

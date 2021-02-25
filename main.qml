@@ -112,7 +112,7 @@ ApplicationWindow {
         }
         /*onAccountMenuChanged: {
             console.log("onAccountMenuChanged");
-            GUI.showLoginMenu(core.getMenuItems());
+            GUI.prepareLoginMenu(core.accountMenu);
         }*/
         onPlayerInfoChanged: GUI.userProfileChanged()
         onLoginChanged: closeChild()
@@ -123,6 +123,7 @@ ApplicationWindow {
                 showNewUserMenu();
             } else {
                 core.scanState();
+                GUI.prepareLoginMenu(core.accountMenu);
             }
         }
     }
@@ -188,11 +189,11 @@ ApplicationWindow {
                     anchors.left: parent.left
 
                     onClicked: {
-                        //showUserProfile();
+                        WNDU.showSpellbook();
                     }
                     background: Image {
                         anchors.fill: parent
-                        source: "res/trophy.png"
+                        source: "res/chat.png"
                     }
                 }
 
@@ -256,8 +257,8 @@ ApplicationWindow {
             transparent: true
             border.width: 0
             height: 0.1 * parent.height
-            anchors.top: bbMenuRefresh.bottom
-            anchors.topMargin: 0.01 * parent.height
+            anchors.bottom: cbLoginAs.top
+            anchors.bottomMargin: 0.01 * parent.height
             anchors.left: parent.left
             anchors.right: parent.right
 
@@ -265,6 +266,24 @@ ApplicationWindow {
                 console.log("try login");
                 dMenu.close();
                 getLoginFromUser(true);
+            }
+        }
+
+        ComboBox {
+            id: cbLoginAs
+            height: 0.1 * parent.height
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 0.01 * parent.height
+            anchors.left: parent.left
+            anchors.right: parent.right
+            model: []
+
+            onCurrentIndexChanged: {
+                console.log("cbLoginAs.onAccepted", currentIndex, currentValue, core.login);
+                if ((currentIndex > 0) && (currentValue !== core.login)) {
+                    dMenu.close();
+                    core.autoLogin(currentIndex - 1)
+                }
             }
         }
     }
@@ -588,7 +607,15 @@ ApplicationWindow {
         WNDU.showGesture();
     }
 
+    function getFullSpellbook() {
+        return JSON.parse(core.getSpellBook());
+    }
+
     function getSpellList(new_gesture) {
+        if (new_gesture === "FULL_LIST") {
+            return getFullSpellbook();
+        }
+
         console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture);
         gBattle["ng" + gBattle.currentHand] = new_gesture;
         var res = [], arr_cast_now = [{gp:"?",n:"Default",choose:1,t:1,cast_type:1}], arr_cast_later = [], arr_cast_other = [];

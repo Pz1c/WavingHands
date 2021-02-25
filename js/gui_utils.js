@@ -5,6 +5,7 @@ var G_CHALLENGE_LIST = [];
 var G_PROFILE = {elo:1500};
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
 var V_BEST_BATTLE_ID = 0;
+var G_ACCOUNT_LIST = [];
 
 function newUserRegistered() {
     var l_login = core.login;
@@ -132,33 +133,23 @@ function startGame(actionIdx) {
     }
 }
 
-/*
-function showLoginMenu(menu_str) {
-    console.log("showLoginMenu", menu_str);
-    var arr = JSON.parse(menu_str);
-    var idx = 100;
-
-//    while((mLoginsMenu.count > 0) && (--idx > 0)) {
-//        mLoginsMenu.removeItem(mLoginsMenu.itemAt(0))
-//    }
-    var i, Ln;
-    for (i = 0, Ln = 10; i < Ln; ++i) {
-        mLoginsMenu.itemAt(i).visible = false;
-    }
-
-    for (i = 0, Ln = Math.min(10, arr.lst.length - 1); i < Ln; ++i) {
+function prepareLoginMenu(menu_str) {
+    console.log("prepareLoginMenu", menu_str);
+    var arr = JSON.parse(menu_str), i, Ln;
+    G_ACCOUNT_LIST = [warlockDictionary.getStringByCode("LoginAs")];
+    for (i = 0, Ln = arr.lst.length - 1; i < Ln; ++i) {
         var login = arr.lst[i].trim();
         if (login.length === 0) {
             break;
         }
         console.log("try to add", login);
-        mLoginsMenu.itemAt(i).visible = true;
-        mLoginsMenu.itemAt(i).text = login;
-        //var item = ;
-        //mLoginsMenu.addItem(MenuItem {id: "test_" + i, text: login, "onTriggered": function () { console.log("onTriggered", login) }});
-        //mLoginsMenu.addSeparator();
+        G_ACCOUNT_LIST.push(login);
     }
-}*/
+    cbLoginAs.model = G_ACCOUNT_LIST;
+    cbLoginAs.visible = G_ACCOUNT_LIST.length > 2;
+
+    console.log("prepareLoginMenu", cbLoginAs.visible, JSON.stringify(G_ACCOUNT_LIST), JSON.stringify(cbLoginAs.model));
+}//*/
 
 function isLoadingChanged() {
     var is_loading = core.isLoading;
