@@ -9,6 +9,10 @@ function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
     w.print_g = preparePrintGestures(w.L, w.R);
     w.id = battle.targetsMap[w.name];
+    w.paralyzed_hand = battle.paralyzed_hand[w.id];
+    if (!w.paralyzed_hand) {
+        w.paralyzed_hand = "";
+    }
     w.control_paralyze = battle.paralyze.indexOf(w.id) !== -1;
     w.control_charmed  = battle.charm.indexOf(w.id) !== -1;
     w.statusIcons = prepareStatusIcon(w);
@@ -43,7 +47,7 @@ function parseTargets(targets_str) {
             if (!battle.monsters[m_owner]) {
                 battle.monsters[m_owner] = [];
             }
-            battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m",action_idx:battle.actions.M.length});
+            battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m",action_idx:battle.actions.M.length,under_control:true});
             battle.actions.M.push({id:obj_id,target:"",old_target:"",under_control:true,owner:m_owner,status:""});
         }
     }
@@ -75,6 +79,15 @@ function setParaActions(paralyze, charm) {
     }
 }
 
+function parseParalyzedHands(arr) {
+    battle.paralyzed_hand = {};
+    var item;
+    for (var i = 0, Ln = arr.length; i < Ln; ++i) {
+        item = arr[i];
+        battle.paralyzed_hand[item[0]] = item[1];
+    }
+}
+
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:""};
@@ -100,6 +113,7 @@ function prepareBattle(raw_battle) {
     battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
     setParaActions(raw_battle.paralyze, raw_battle.charm);
     parseTargets(raw_battle.targets);
+    parseParalyzedHands(raw_battle.paralyzed_hand);
 
     var i, Ln;
     for (i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
@@ -135,7 +149,7 @@ function prepareBattle(raw_battle) {
     battle.player_name = battle.warlocks[0].name;
     battle.enemy_name = battle.warlocks.length > 1 ? battle.warlocks[1].name : "Nobody";
     for (i = 0, Ln = battle.actions.M.length; i < Ln; ++i) {
-        if (!battle.actions.M[i].target) {
+        if (!battle.actions.M[i].target  || (battle.actions.M[i].target === "Nobody")) {
             battle.actions.M[i].target = battle.enemy_name;
             battle.actions.M[i].old_target = battle.enemy_name;
         }

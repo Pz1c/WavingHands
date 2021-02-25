@@ -47,6 +47,8 @@ Item {
     signal action1
     signal action2
 
+    focus: true
+
     Keys.onPressed: {
         console.log("BaseWindow.KEY_PRESSED: " + event.key)
         if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {

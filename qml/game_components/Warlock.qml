@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "qrc:/qml/components"
+import "qrc:/js/small_gui_utils.js" as SG
 
 Item {
     id: rWarlock
@@ -353,11 +354,24 @@ Item {
 
     function prepareHands() {
         var hands_visible = l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed;
-        iiLeft.visible = hands_visible;
-        iiRight.visible = hands_visible;
-        if (hands_visible && !l_warlock.player) {
-           iiLeft.source = l_control_icon;
-           iiRight.source = l_control_icon;
+        var lh_visible = hands_visible || (l_warlock.paralyzed_hand === "LH");
+        var rh_visible = hands_visible || (l_warlock.paralyzed_hand === "RH");
+        var ng;
+        iiLeft.visible = lh_visible;
+        iiRight.visible = rh_visible;
+        if (!l_warlock.player) {
+            if (hands_visible) {
+               iiLeft.source = l_control_icon;
+               iiRight.source = l_control_icon;
+            } else if (lh_visible) {
+                ng = SG.getNextParalyzedGesture(l_warlock.lgL, mainWindow.gBattle.is_fc);
+                iiLeft.source = SG.getFullIconPathByGesture(ng);
+                iiLeft.color = "lightblue";
+            } else if (rh_visible) {
+                ng = SG.getNextParalyzedGesture(l_warlock.lgR, mainWindow.gBattle.is_fc);
+                iiRight.source = SG.getFullIconPathByGesture(ng);
+                iiRight.color = "lightblue";
+            }
         }
     }
 

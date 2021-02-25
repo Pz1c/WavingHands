@@ -272,6 +272,7 @@ private:
     QString _charmPersonList;
     QString _paralyzeList;
     QString _extraOrderInfo;
+    QString _paralyzedHands;
     bool _isDelay;
     bool _isPermanent;
     bool _isParaFDF;

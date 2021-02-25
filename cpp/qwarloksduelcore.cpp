@@ -908,6 +908,7 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
     _extraOrderInfo.clear();
+    _paralyzedHands.clear();
     int idx1 = 0, idx2, idx3, idx4;
     while((idx1 = Data.indexOf("<INPUT TYPE=HIDDEN NAME=", idx1)) != -1) {
         idx1 += 24;
@@ -922,8 +923,15 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
             _extraOrderInfo.append("&");
         }
         _extraOrderInfo.append(QString("%1=%2").arg(par_name, par_val));
+        if (par_name.indexOf("PARALYZE") == 0) {
+            if (!_paralyzedHands.isEmpty()) {
+                _paralyzedHands.append(",");
+            }
+            _paralyzedHands.append(QString("[%1,\"%2\"]").arg(par_name.mid(8), par_val));
+        }
     }
-    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn;
+    _paralyzedHands.append("]").prepend("[");
+    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn << _extraOrderInfo << _paralyzedHands;
 
     return _loadedBattleTurn != 0;
 }
@@ -1776,8 +1784,8 @@ QString QWarloksDuelCore::battleInfo() {
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":%12,\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17}")
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC));
+            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands);
 }

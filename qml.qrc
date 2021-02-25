@@ -84,5 +84,6 @@
         <file>qml/windows/wnd_orders.qml</file>
         <file>res/send_0_target.png</file>
         <file>res/send_1_target.png</file>
+        <file>js/small_gui_utils.js</file>
     </qresource>
 </RCC>

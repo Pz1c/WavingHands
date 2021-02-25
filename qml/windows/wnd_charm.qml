@@ -4,6 +4,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 import "qrc:/qml/components"
+import "qrc:/js/small_gui_utils.js" as SG
 
 BaseWindow {
     id: dMainItem
@@ -14,6 +15,7 @@ BaseWindow {
     control_height_prc: 0
 
     property bool isParalyze: false
+    property bool isFC: false
     property var arrHands: [{h:"LH",choose:1},{h:"RH",choose:0}]
     property var currHand: 0
     property var currGesture: "-"
@@ -22,9 +24,6 @@ BaseWindow {
     property var mapGesture: ({"C":iiGC,"D":iiGD,"F":iiGF,"S":iiGS,"P":iiGP,"W":iiGW,">":iiGSt,"-":iiGN})
     property var arrPossibleGesture: []
     property var lastGesture: ({"LH":"","RH":""})
-    property var paraCFMap: ({"C":"F","S":"D","W":"P"})
-    property var paraFCMap: ({"F":"C","S":"D","W":"P"})
-    property var paraMap: ({})
 
     // This rectangle is the actual popup
     Item {
@@ -302,10 +301,7 @@ BaseWindow {
         lvHandList.model = arrHands;
 
         if (isParalyze) {
-            var ng = paraMap[lastGesture[new_hand]];
-            if (!ng) {
-                ng = lastGesture[new_hand];
-            }
+            var ng = SG.getNextParalyzedGesture(lastGesture[new_hand], isFC);
             console.log("wnd_charm.setHand", ng, new_hand, JSON.stringify(arrHands[currHand]), JSON.stringify(paraMap), JSON.stringify(lastGesture))
             setGesture(ng);
         }
@@ -326,7 +322,7 @@ BaseWindow {
         title_text = mainWindow.gERROR.title;
         arrPossibleGesture = [];
         isParalyze = mainWindow.gERROR.is_paralyze;
-        paraMap = mainWindow.gBattle.is_fc ? paraFCMap : paraCFMap;
+        isFC = mainWindow.gBattle.is_fc;
         if (isParalyze) {
             lastGesture["LH"] = mainWindow.gERROR.lgL;
             lastGesture["RH"] = mainWindow.gERROR.lgR;
