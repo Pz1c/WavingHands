@@ -94,7 +94,8 @@
 class QSpell
 {
 public:
-    QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget = SPELL_DEF_TARGER_NOBODY, int Damage = 0, bool Active = true);
+    QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget = SPELL_DEF_TARGER_NOBODY,
+           int Damage = 0, bool Active = true, bool Basic = false);
     QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy = false);
 
     int spellID() const;
@@ -120,6 +121,7 @@ public:
 
     static bool sortAsc(const QSpell *s1, const QSpell *s2) ;
     static bool sortDesc(const QSpell *s1, const QSpell *s2);
+    static void setOrderType(int OrderType);
     int level() const;
 
     bool possibleCast() const;
@@ -129,6 +131,8 @@ public:
     void setActive(bool active);
 
     bool operator < (const QSpell &s) const;
+
+    static int orderType();
 
 protected:
 
@@ -148,6 +152,9 @@ private:
     int _alreadyCasted;
     int _defTarget;
     int _damage;
+    bool _basic;
+
+    static int _orderType;
 };
 
 #endif // QSPELL_H

@@ -1,6 +1,8 @@
 #include "qspell.h"
 
-QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget, int Damage, bool Active)
+int QSpell::_orderType = 0;
+
+QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget, int Damage, bool Active, bool Basic)
 {
     _spellID = SpellID;
     _gesture = Gesture;
@@ -16,6 +18,7 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
     _defTarget = DefTarget;
     _damage = Damage;
     _active = Active;
+    _basic = Basic;
 }
 
 int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast) {
@@ -41,6 +44,11 @@ int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, i
     }*/
     qDebug() << "QSpell::calcPriority result" << res;
     return static_cast<int>(res);
+}
+
+int QSpell::orderType()
+{
+    return _orderType;
 }
 
 bool QSpell::active() const
@@ -106,6 +114,7 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _hand = Hand;
     _defTarget = Spell->_defTarget;
     _damage = Spell->_damage;
+    _basic = Spell->_basic;
 }
 
 int QSpell::spellID() const
@@ -137,9 +146,9 @@ QString QSpell::nextGesture() const {
 
 QString QSpell::json() const {
     QString ng = nextGesture();
-    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14}").
+    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14,\"basic\":%15}").
             arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).
-            arg(ng.toUpper(), ng.compare(ng.toUpper()) == 0 ? "0" : "1", intToStr(_defTarget), _active ? "1" : "0", intToStr(_damage));
+            arg(ng.toUpper(), boolToIntS(ng.compare(ng.toUpper()) == 0), intToStr(_defTarget), boolToIntS(_active), intToStr(_damage), boolToStr(_basic));
 }
 
 QString QSpell::toString() const {
@@ -147,11 +156,17 @@ QString QSpell::toString() const {
 }
 
 bool QSpell::operator < (const QSpell &s) const {
+    //qDebug() << "QSpell::operator <" << this->_spellID << this->_name << s._spellID << s._name << this->_basic << s._basic;
     return QSpell::sortAsc(this, &s);
 }
 
 bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
-    if ((s1->_spellType == s2->_spellType) && (s1->_turnToCast == s2->_turnToCast)) {
+    //qDebug() << "QSpell::sortAsc" << s1->_spellID << s1->_name << s2->_spellID << s2->_name << s1->_basic << s2->_basic;
+    if ((_orderType == 1) && (s1->_basic != s2->_basic)) {
+        return !s1->_basic && s2->_basic;
+    }
+
+    if ((s1->_spellType == s2->_spellType) && (s1->_turnToCast == s2->_turnToCast) && (s1->_turnToCast != -1)) {
         return s1->_level < s2->_level;
     }
     if (s1->_priority != s2->_priority) {
@@ -174,3 +189,6 @@ bool QSpell::sortDesc(const QSpell *s1, const QSpell *s2) {
     return !sortAsc(s1, s2);
 }
 
+void QSpell::setOrderType(int OrderType) {
+    _orderType = OrderType;
+}

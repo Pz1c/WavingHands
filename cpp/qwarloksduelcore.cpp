@@ -1405,7 +1405,15 @@ QString QWarloksDuelCore::getSpellList(QString left, QString right, bool Enemy) 
     return SpellChecker.checkSpells(left, right, Enemy);
 }
 QString QWarloksDuelCore::getSpellBook() {
-    return SpellChecker.getSpellBook(_isParaFDF);
+    bool separate_spellbook = !_isAI && _reg_in_app && (_exp_lv < 1);
+    if (separate_spellbook) {
+        QSpell::setOrderType(1);
+    }
+    QString res = SpellChecker.getSpellBook(_isParaFDF, true, !_isAI);
+    if (separate_spellbook) {
+        QSpell::setOrderType(0);
+    }
+    return res;
 }
 
 void QWarloksDuelCore::setLogin(QString Login, QString Password) {

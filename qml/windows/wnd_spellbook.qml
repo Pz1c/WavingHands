@@ -59,7 +59,7 @@ BaseWindow {
                             anchors.leftMargin: 0.03 * parent.width
                             width: 0.40 * parent.width
                             //anchors.rightMargin: 0.05 * parent.width
-                            color: "snow"
+                            color: lvSpellList.model[index].basic ? "snow" : "darkgrey"
                             horizontalAlignment: Text.AlignLeft
                             text: lvSpellList.model[index].g
                         }
