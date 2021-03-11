@@ -197,7 +197,7 @@ QList<QSpell *> QWarlockSpellChecker::getStriktSpellsList(QString left, QString 
     return res;
 }
 
-QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
+QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool SeparateSpellbook) {
     // QString Left, QString Right, bool strikt, bool Enemy
     qDebug() << "QWarlockSpellChecker::getSpellsList" << warlock->separatedString();
     QString left = warlock->leftGestures().replace(" ", "");
@@ -206,7 +206,13 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock) {
     QString possible_right = warlock->possibleRightGestures();
     QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF());
     logSpellList(sl, "QWarlockSpellChecker::getSpellsList before");
+    if (SeparateSpellbook) {
+        QSpell::setOrderType(1);
+    }
     std::sort(sl.begin(), sl.end());
+    if (SeparateSpellbook) {
+        QSpell::setOrderType(0);
+    }
     logSpellList(sl, "QWarlockSpellChecker::getSpellsList after");
     return sl;
 }

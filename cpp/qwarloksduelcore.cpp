@@ -864,6 +864,7 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
     }
 
     QWarlock *enemy = nullptr;
+    bool separate_spellbook = !_isAI && _reg_in_app && (_exp_lv < 1);
     foreach(QWarlock *m, _Warlock) {
         m->setIsParaFDF(_isParaFDF);
         if (m->player()) {
@@ -871,7 +872,7 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
         } else {
             enemy = m;
         }
-        QList<QSpell *> sl = SpellChecker.getSpellsList(m);
+        QList<QSpell *> sl = SpellChecker.getSpellsList(m, separate_spellbook);
         m->setPossibleSpells(sl, m->player() ? enemy : nullptr, _Monsters);
     }
 

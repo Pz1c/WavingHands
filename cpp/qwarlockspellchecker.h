@@ -20,7 +20,7 @@ public:
     explicit QWarlockSpellChecker(QObject *parent = nullptr);
 
     QString checkSpells(QString Left, QString Right, bool Enemy);
-    QList<QSpell *> getSpellsList(QWarlock *warlock);
+    QList<QSpell *> getSpellsList(QWarlock *warlock, bool SeparateSpellbook = false);
     QList<QSpell *> getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left, QString possible_right, bool IsFDF);
     QList<QSpell *> getStriktSpellsList(QString left, QString right, bool Enemy);
     QList<QSpell *> Spells;
