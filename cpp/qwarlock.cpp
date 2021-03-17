@@ -275,7 +275,7 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
         }
     }
 
-    std::sort(_possibleSpells.begin(), _possibleSpells.end());
+    //std::sort(_possibleSpells.begin(), _possibleSpells.end());
 }
 
 void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QWarlock *enemy, const QList<QMonster *> &monsters)
@@ -286,7 +286,7 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QW
     _bestSpellR = nullptr;
     //logSpellList(possibleSpells, "QWarlock::setPossibleSpells before");
     setSpellPriority(enemy, monsters);
-    logSpellList(possibleSpells, "QWarlock::setPossibleSpells after");
+    //logSpellList(possibleSpells, "QWarlock::setPossibleSpells after");
     /*if (enemy) {
         setAntispell(enemy);
     }*/

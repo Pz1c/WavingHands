@@ -132,7 +132,7 @@ function processEscape() {
         } */
     } else {
         mdNoGesture.dialogType = 0;
-        mdNoGesture.text = Qt.dictionary.getStringByCode("ConfirmExit");
+        mdNoGesture.text = mainWindow.warlockDictionary.getStringByCode("ConfirmExit");
         mdNoGesture.visible = true;
     }
 }

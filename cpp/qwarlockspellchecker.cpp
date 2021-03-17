@@ -199,7 +199,7 @@ QList<QSpell *> QWarlockSpellChecker::getStriktSpellsList(QString left, QString 
 
 QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool SeparateSpellbook) {
     // QString Left, QString Right, bool strikt, bool Enemy
-    qDebug() << "QWarlockSpellChecker::getSpellsList" << warlock->separatedString();
+    qDebug() << "QWarlockSpellChecker::getSpellsList" << warlock->separatedString() << SeparateSpellbook;
     QString left = warlock->leftGestures().replace(" ", "");
     QString right = warlock->rightGestures().replace(" ", "");
     QString possible_left = warlock->possibleLeftGestures();
@@ -209,7 +209,11 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool Sepa
     if (SeparateSpellbook) {
         QSpell::setOrderType(1);
     }
-    std::sort(sl.begin(), sl.end());
+    struct {
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+    } customOrder;
+    std::sort(sl.begin(), sl.end(), customOrder);
+    //std::sort(sl.begin(), sl.end());
     if (SeparateSpellbook) {
         QSpell::setOrderType(0);
     }
@@ -220,7 +224,11 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool Sepa
 QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool Enemy) {
     qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right;
     QList<QSpell *> sl = getStriktSpellsList(Left.replace(" ", ""), Right.replace(" ", ""), Enemy);
-    std::sort(sl.begin(), sl.end());
+    struct {
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+    } customOrder;
+    std::sort(sl.begin(), sl.end(), customOrder);
+    //std::sort(sl.begin(), sl.end());
 
     QString res;
     foreach(QSpell *s, sl) {

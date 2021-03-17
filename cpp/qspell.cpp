@@ -161,28 +161,31 @@ bool QSpell::operator < (const QSpell &s) const {
 }
 
 bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
-    //qDebug() << "QSpell::sortAsc" << s1->_spellID << s1->_name << s2->_spellID << s2->_name << s1->_basic << s2->_basic;
-    if ((_orderType == 1) && (s1->_basic != s2->_basic)) {
-        return !s1->_basic && s2->_basic;
+    qDebug() << "QSpell::sortAsc" << _orderType << s1->json() << s2->json();
+    if ((_orderType == 1) && (s1->_basic != s2->_basic))  {
+        return s1->_basic < s2->_basic;
     }
 
-    if ((s1->_spellType == s2->_spellType) && (s1->_turnToCast == s2->_turnToCast) && (s1->_turnToCast != -1)) {
+    if ((s1->_spellType == s2->_spellType) && (s1->_turnToCast == s2->_turnToCast) && (s1->_turnToCast != -1) && (s1->_level != s2->_level)) {
         return s1->_level < s2->_level;
     }
     if (s1->_priority != s2->_priority) {
         return s1->_priority < s2->_priority;
     }
-    if (s1->_turnToCast != s2->_turnToCast) {
+    if ((s1->_turnToCast != s2->_turnToCast) && (s1->_turnToCast != -1) && (s2->_turnToCast != -1)) {
         return s1->_turnToCast > s2->_turnToCast;
     }
     if (s1->_level != s2->_level) {
         return s1->_level < s2->_level;
     }
-    if (s1->_spellID != s2->_spellID) {
-        return s1->_spellID < s2->_spellID;
+    if (s1->_hand != s2->_hand) {
+        return s1->_hand < s2->_hand;
     }
+    //if (s1->_spellID != s2->_spellID) {
+        return s1->_spellID < s2->_spellID;
+    //}
 
-    return s1->_hand < s2->_hand;
+    //return s1->_hand < s2->_hand;
 }
 
 bool QSpell::sortDesc(const QSpell *s1, const QSpell *s2) {

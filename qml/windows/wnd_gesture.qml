@@ -76,7 +76,7 @@ BaseWindow {
                             anchors.right: parent.right//rdbifInfo.left
                             anchors.rightMargin: 0.01 * parent.width
                             height: 0.8 * rdSpellItem.height
-                            color: "snow"
+                            color: lvSpellList.model[index].basic ? "snow" : "darkgrey"
                             fontSizeMode: Text.VerticalFit
                             horizontalAlignment: Text.AlignRight
                             text: lvSpellList.model[index].n

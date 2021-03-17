@@ -872,7 +872,7 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
         } else {
             enemy = m;
         }
-        QList<QSpell *> sl = SpellChecker.getSpellsList(m, separate_spellbook);
+        QList<QSpell *> sl = SpellChecker.getSpellsList(m, separate_spellbook && m->player());
         m->setPossibleSpells(sl, m->player() ? enemy : nullptr, _Monsters);
     }
 
@@ -1191,7 +1191,8 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
 
 bool QWarloksDuelCore::finishScan(QString &Data) {
     parsePlayerInfo(Data);
-    if (_isAI) {
+    getChallengeList();
+    /*if (_isAI) {
         _challengeList = "[]";
         if (_ready_in_battles.count() == 0) {
             _isLogined = false;
@@ -1202,7 +1203,7 @@ bool QWarloksDuelCore::finishScan(QString &Data) {
         }
     } else {
         getChallengeList();
-    }
+    }*/
     return true;
 }
 
