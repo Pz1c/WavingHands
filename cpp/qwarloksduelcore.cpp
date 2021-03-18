@@ -42,6 +42,14 @@ QWarloksDuelCore::~QWarloksDuelCore() {
     saveParameters(true, true, true, true, true);
 }
 
+void QWarloksDuelCore::aiCreateNewChallenge() {
+    if (_waiting_in_battles.count() + _ready_in_battles.count() < 5) {
+        createNewChallenge(true, false, true, true, 2, 2, "Training Battle with AI Player, NO BOT allowed");
+    } else {
+        aiLogin();
+    }
+}
+
 void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description) { Q_UNUSED(Fast);
     setIsLoading(true);
 
@@ -235,6 +243,20 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
     return true;
 }
 
+void QWarloksDuelCore::aiLogin() {
+    qDebug() << "QWarloksDuelCore::aiLogin" << _isAI << _ready_in_battles.count() << _lstAI.count() << _botIdx;
+    if (!_isAI) {
+        return;
+    }
+    if (_ready_in_battles.count() == 0) {
+        _isLogined = false;
+        if (++_botIdx >= _lstAI.count()) {
+            _botIdx = 0;
+        }
+        _login = _lstAI.at(_botIdx);
+    }
+}
+
 void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl) {
     qDebug() << "finishChallengeList" << StatusCode << NewUrl;
     QString list = QWarlockUtils::parseChallengesList(Data);
@@ -243,7 +265,9 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
         qDebug() << list;
         emit challengeListChanged();
 
-        prepareSpellHtmlList();
+        //prepareSpellHtmlList();
+    } else if (_isAI) {
+        aiLogin();
     }
 }
 
@@ -432,6 +456,14 @@ void QWarloksDuelCore::getTopList() {
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
     connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+}
+
+void QWarloksDuelCore::aiAcceptChallenge(int battle_id) {
+    if (_waiting_in_battles.count() + _ready_in_battles.count() < 5) {
+        acceptChallenge(battle_id, false);
+    } else {
+        aiLogin();
+    }
 }
 
 void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card) {

@@ -5,6 +5,7 @@ import QtQuick.Controls 2.15
 
 import "qrc:/qml/components"
 import "qrc:/js/battle_utils.js" as BU
+import "qrc:/js/ai_utils.js" as AI
 
 BaseWindow {
     id: battleItem
@@ -298,6 +299,9 @@ BaseWindow {
         title_text = "Battle #" + mainWindow.gBattle.id;
         BU.applyBattle();
         battleChanged();
+        if (mainWindow.gameCore.isAI) {
+
+        }
     }
 
     Component.onCompleted: {

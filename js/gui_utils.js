@@ -27,7 +27,29 @@ function loadBattleList(filter) {
 }
 
 function loadChallengeList() {
-    G_CHALLENGE_LIST = JSON.parse(core.challengeList);
+    var str = core.challengeList;
+    console.log("loadChallengeList", core.isAI, str);
+    G_CHALLENGE_LIST = JSON.parse(str);
+    if (!core.isAI) {
+        return;
+    }
+    var cli, bot_cnt = 0;
+    for(var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
+        cli = G_CHALLENGE_LIST[i];
+        if (cli.for_bot) {
+            console.log("loadChallengeList", "accept", JSON.stringify(cli));
+            core.aiAcceptChallenge(cli.id);
+            return;
+        } else if (cli.with_bot) {
+            ++bot_cnt;
+            console.log("loadChallengeList", "++bot_cnt", JSON.stringify(cli));
+        }
+    }
+    if (bot_cnt < 1) {
+        core.aiCreateNewChallenge();
+    } else {
+        core.aiLogin();
+    }
 }
 
 function autoLogin(idx) {
@@ -76,6 +98,10 @@ function startGameWithPlayer() {
     var best_idx = -1, battle, bb;
     for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
         battle = G_CHALLENGE_LIST[i];
+        if (!battle.active) {
+            continue;
+        }
+
         if ((battle.friendly === 1) && (battle.need === 1)) {
             core.acceptChallenge(battle.battle_id, false);
             return;
@@ -118,7 +144,7 @@ function joinBattleDialogResult(accept) {
 function startGameWithBot() {
     console.log("startGameWithBot", JSON.stringify(G_CHALLENGE_LIST));
     for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
-        if (G_CHALLENGE_LIST[i].with_bot) {
+        if (G_CHALLENGE_LIST[i].active && G_CHALLENGE_LIST[i].with_bot) {
             core.acceptChallenge(G_CHALLENGE_LIST[i].battle_id, false);
             return;
         }

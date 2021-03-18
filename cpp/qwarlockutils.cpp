@@ -349,7 +349,7 @@ QString QWarlockUtils::parseChallengeDescription(QString &Data) {
 }
 
 QString QWarlockUtils::parseChallengePart3(QString &Data) {
-    int idx1 = Data.indexOf(";num=");
+    int idx1 = Data.indexOf("num=");
     idx1 += 5;
     int idx2 = Data.indexOf("\"", idx1);
     return Data.mid(idx1, idx2 - idx1);
@@ -358,9 +358,7 @@ QString QWarlockUtils::parseChallengePart3(QString &Data) {
 QString QWarlockUtils::parseChallenge(QString &Data) {
     //qDebug() << "parseChallenge";
     QString res;
-    if (Data.indexOf(">Accept</A>") == -1) {
-        return res;
-    }
+    bool is_active = Data.indexOf(">Accept</A>") != -1;
     QString search1 = "<TD";
     QString search2 = "</TD>";
     QStringList tmp;
@@ -420,9 +418,9 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
     qDebug() << "for_bot" << level << total_count << description << for_bot;
     res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8,\"level_color\":\"%9\""
-                  ",\"friendly\":%10,\"with_bot\":%11,\"need\":%12}")
+                  ",\"friendly\":%10,\"with_bot\":%11,\"need\":%12,\"active\":%13}")
             .arg(logins, intToStr(fast), level, intToStr(parafc), intToStr(maladroit), description, battle_id, boolToStr(for_bot), level_color)
-            .arg(intToStr(friendly), boolToStr(with_bot), intToStr(need_more));
+            .arg(intToStr(friendly), boolToStr(with_bot), intToStr(need_more), boolToStr(is_active));
     //qDebug() << res;
     return res;
 }

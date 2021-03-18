@@ -156,17 +156,20 @@ public slots:
     void getChallengeList(bool Silent = false);
     void getTopList();
     void acceptChallenge(int battle_id, bool from_card = false);
+    void aiAcceptChallenge(int battle_id);
     void rejectChallenge(int battle_id);
     void deleteMsg(QString msg_from);
     void forceSurrender(int battle_id, int turn);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
     void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description);
+    void aiCreateNewChallenge();
     void regNewUser(QString Login, QString Email);
     void getBattle(int battle_id, int battle_type);
     void getWarlockInfo(const QString &Login);
     void sendMessage(const QString &Msg);
     void autoLogin(int Idx);
+    void aiLogin();
 
     void slotReadyRead();
     void slotError(QNetworkReply::NetworkError error);
