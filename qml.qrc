@@ -84,5 +84,6 @@
         <file>qml/windows/wnd_orders.qml</file>
         <file>js/small_gui_utils.js</file>
         <file>qml/windows/wnd_spellbook.qml</file>
+        <file>js/old_ai_utils.js</file>
     </qresource>
 </RCC>

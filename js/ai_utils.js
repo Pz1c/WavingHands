@@ -129,500 +129,32 @@ var arr_spells = [
 /* 47*/ {active:true,gesture:"FDFD",name:"Paralysis",type:SPELL_TYPE_CONFUSION,priority:5,level:0,danger:12}
 ];
 
-function checkSpell(spell, all_ids, all_types, all_hands, not_ids_empty, search_types, search_ids, not_ids, turn_from, turn_to, hands) {
-    if (!all_types && (search_types.indexOf(spell.st) === -1)) {
-        return false;
+function getBotMsgByTurn(turn_num) {
+    switch(turn_num) {
+    case 1: return "Hi, warlock, I am a golem created for your training, try to beat me. Every letter represents a hand gesture. A set of gestures like DPP is a spell (Amnesia).";
+    case 2: return "Here are some more useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it. But P/P with both hands will make you surrender.";
+    case 3: return "Enchantments like DPP (Amnesia), DSF (Maladroit), SWD (Fear) disrupt your enemy. When two are cast at the same Warlock they cancel out.";
+    case 4: return "Check your spell book to learn more spells...";
+    case 5: return "Summon a goblin (SFW) to fight for you. Cast it on yourself, and don't forget to set it's target. Stab ('>') is a simple way to hit a goblin. Shield ('P') and Protection (WWP) to defend against it.";
+    case 6: return "Inflict direct damage with Cause light or heavy wounds (WFP, WPFD), and heal up (DFW, DFPW)";
+    case 7: return "There are two ways to counter a spell (WPP, WWS). Cast them at yourself to prevent spells and monsters from hitting you. Cast at an opponent to prevent him from summoning a monster.";
+    case 8: return "You're doing good! Keep up. When you get a bit more training you can start playing against other players and friends.";
+    case 9: return "Games with other players are played in turns. You can play up-to 3 games at the same time for free, and you're given up to 3 days to play each turn.";
+    case 10: return "When you start playing against real players, you'll be seeing a lot of these spells: Charm Person (PSDF) to force a gesture (or a no gesture '-'), and Charm Monster (PSDD) to take control of a monster, and change it's target";
+    case 11: return "You will also see players concealing their movements with Invisibility (PPws - notice the lower caps means you should w and s and both hands together)";
+    case 12: return "Players will summon stronger monsters in addition to Goblins (SFW) - like Ogre (PSFW), Troll (FPSFW) and Giant (WFPSFW) - noticed the pattern ?";
+    case 13: return "The most powerful spell around? That's Finger of Death (PWPFSSSD) to instantly kill an opponent. It can't be countered, but it can be mirrored (cw)";
+    case 14: return "Playing with friends can be a lot more fun. Send them an invite. You can set up a private game to play together.";
+    case 15: return "Every time you win, you can go up the ladder board. When you win against powerful warlocks your elo score will go up too to reflect your skill.";
+    case 16: return "In melee games many 3-6 players play at the same time, often using Fire and Ice Elementals (cWSSW, cSWWS), Storms (SWWc, WSSc) and Protections (WWFP, SSFP)";
+    case 17: return "Want to learn more? checkout the full rules (https://games.ravenblack.net/rules) and join our Facebook community (https://fb.com/WarlocksDuel/)";
+    default: return "";
     }
-    if (!all_ids && (search_ids.indexOf(spell.id) === -1)) {
-        return false;
-    }
-    if (!not_ids_empty && (not_ids.indexOf(spell.id) !== -1)) {
-        return false;
-    }
-    if (!all_hands && (hands.indexOf(spell.h) === -1)) {
-        return false;
-    }
-    if ((spell.t < turn_from) || (spell.t > turn_to)) {
-        return false;
-    }
-    return true;
-}
-
-function findSpell(spell_list, param) {
-    var search_types = param.search_types, search_ids = param.search_ids, not_ids = param.not_ids, turn_from = param.turn_from, turn_to = param.turn_to, hands = param.hands;
-    var all_ids = search_ids.length === 0;
-    var all_types = search_types.length === 0;
-    var all_hands = hands.length === 2;
-    var not_ids_empty = not_ids.length === 0;
-    for (var i = 0, Ln = spell_list.length; i < Ln; ++i) {
-        console.log("findSpell", JSON.stringify(spell_list[i]), JSON.stringify(param));
-        if (!spell_list[i].active) {
-            continue;
-        }
-
-        if (checkSpell(spell_list[i], all_ids, all_types, all_hands, not_ids_empty, search_types, search_ids, not_ids, turn_from, turn_to, hands)) {
-            console.log("FIND");
-            return spell_list[i];
-        }
-    }
-    return false;
-}
-
-function getGestureBySpell(spell, idx) {
-    console.log("getGestureBySpell", JSON.stringify(spell), idx);
-    if (!idx || !spell) {
-        idx = 0;
-    }
-    if (!spell.g || (spell.g.length < spell.a + idx)) {
-        return ' ';
-    }
-
-    return spell.g.substr(spell.a + idx, 1);
-}
-
-function setGestureBySpell(warlock, spell) {
-    /*if (!spell.g) {
-        return;
-    }*/
-    if (spell.h === WARLOCK_HAND_LEFT) {
-        Qt.ai.spellL = spell;
-        console.log("set Qt.ai.spellL", JSON.stringify(spell));
-    } else {
-        Qt.ai.spellR = spell;
-        console.log("set Qt.ai.spellR", JSON.stringify(spell));
-    }
-
-    var gesture = getGestureBySpell(spell);
-    if (!gesture) {
-        return;
-    }
-
-    Qt.mainWindow.changeGesture(gesture, spell.h === WARLOCK_HAND_LEFT);
-}
-
-function getAntispellFilter(enemy_spell) {
-    switch(enemy_spell.st) {
-    case SPELL_TYPE_SUMMON_MONSTER: return {search_types:[SPELL_TYPE_CHARM_MONSTER, SPELL_TYPE_MAGIC_SHIELD], search_ids:[], not_ids:[SPELL_MAGIC_MIRROR], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
-    case SPELL_TYPE_POISON: return {search_types:[SPELL_TYPE_MAGIC_SHIELD, SPELL_TYPE_REMOVE_ENCHANTMENT], search_ids:[], not_ids:[], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
-    case SPELL_TYPE_CONFUSION: return {search_types:[SPELL_TYPE_MAGIC_SHIELD], search_ids:[], not_ids:[], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
-    case SPELL_TYPE_DAMAGE:
-        if (enemy_spell.id !== SPELL_MAGIC_MISSILE) {
-            return {search_types:[SPELL_TYPE_MAGIC_SHIELD], search_ids:[], not_ids:[], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
-        }
-        break;
-    case SPELL_TYPE_SHIELD:
-        break;
-    case SPELL_TYPE_MAGIC_SHIELD:
-        break;
-    case SPELL_TYPE_MASSIVE: return {search_types:[SPELL_TYPE_MAGIC_SHIELD], search_ids:[], not_ids:[], turn_from:enemy_spell.t, turn_to:enemy_spell.t};
-    case SPELL_TYPE_HASTLE:
-        break;
-    case SPELL_TYPE_CHARM_MONSTER:
-        break;
-    case SPELL_TYPE_CURE:
-        break;
-    case SPELL_TYPE_SPEC:
-        break;
-    case SPELL_TYPE_DEATH:  return {search_types:[], search_ids:[SPELL_ANTI_SPELL, SPELL_CHARM_PERSON, SPELL_AMNESIA, SPELL_CONFUSION, SPELL_PARALYSIS], not_ids:[], turn_from:0, turn_to:enemy_spell.t - 1};
-    case SPELL_TYPE_RESIST:
-    break;
-    case SPELL_TYPE_ELEMENTAL: return {search_types:[], search_ids:[enemy_spell.l === 0 ? SPELL_RESIST_COLD : SPELL_RESIST_HEAT], not_ids:[], turn_from:0, turn_to:enemy_spell.t};
-    case SPELL_TYPE_REMOVE_ENCHANTMENT:
-    break;
-    case SPELL_TYPE_STAB:
-    break;
-    }
-    return false;
-}
-
-function getAntispellByFilter(self, filter) {
-    var anti_spell = findSpell([self.bsL, self.bsR], filter);
-    if (!anti_spell) {
-        anti_spell = findSpell(self.spells, filter);
-    }
-    return anti_spell;
-}
-
-function destroyEnemySpell(self, enemy_spell) {
-    var arr_hands = [];
-    if (self.gL === '') {
-        arr_hands.push(WARLOCK_HAND_LEFT);
-    }
-    if (self.gR === '') {
-        arr_hands.push(WARLOCK_HAND_RIGHT);
-    }
-
-    console.log("destroyEnemySpell", arr_hands, JSON.stringify(enemy_spell));
-
-    if (arr_hands.length === 0) {
-        return false;
-    }
-
-    var anti_spell, need_search = false;
-    var anti_spell_param = {search_types:[SPELL_TYPE_CONFUSION], search_ids:[], not_ids:[], turn_from:0, turn_to:enemy_spell.t - 1};
-    anti_spell_param.hands = arr_hands;
-    anti_spell = getAntispellByFilter(self, anti_spell_param);
-    if (!anti_spell) {
-        anti_spell_param = getAntispellFilter(enemy_spell)
-        if (!anti_spell_param) {
-            return ;
-        }
-        anti_spell_param.hands = arr_hands;
-        anti_spell = getAntispellByFilter(self, anti_spell_param);
-    }
-
-    console.log("destroyEnemySpell", JSON.stringify(enemy_spell), JSON.stringify(anti_spell));
-
-    if (anti_spell) {
-        anti_spell.anti_spell = true;
-        if (anti_spell.h === WARLOCK_HAND_LEFT) {
-            self.bsL = anti_spell;
-        } else {
-            self.bsR = anti_spell;
-        }
-    }
-}
-
-function compareSpells(spell_left, spell_right) {
-    if (spell_left.ng === 'X') {
-        return WARLOCK_HAND_RIGHT;
-    }
-
-    if (spell_right.ng === 'X') {
-        return WARLOCK_HAND_LEFT;
-    }
-
-    if (spell_right.st === spell_left.st) {
-        return spell_left.p > spell_right.p ? WARLOCK_HAND_LEFT : WARLOCK_HAND_RIGHT;
-    }
-
-    if (spell_left.anti_spell && !spell_right.anti_spell) {
-        return WARLOCK_HAND_LEFT;
-    }
-    if (!spell_left.anti_spell && spell_right.anti_spell) {
-        return WARLOCK_HAND_RIGHT;
-    }
-    return spell_left.p > spell_right.p ? WARLOCK_HAND_LEFT : WARLOCK_HAND_RIGHT;
-}
-
-function isSpellsNormal(self) {
-    var bad_hand = compareSpells(self.bsL, self.bsR) === WARLOCK_HAND_LEFT ? WARLOCK_HAND_RIGHT : WARLOCK_HAND_LEFT;
-    var need_change = false;
-    console.log("isSpellsNormal", JSON.stringify(self.bsL), JSON.stringify(self.bsR), bad_hand);
-
-    if (!need_change) {
-        if ((self.bsL.ng === 'X') || (self.bsR.ng === 'X')) {
-            console.log("isSpellsNormal", "spell not set for hand");
-            need_change = true;
-        }
-    }
-
-    if (!need_change) {
-        if ((self.bsL.st === self.bsR.st) && (self.bsL.t === self.bsR.t)) {
-            console.log("isSpellsNormal", "same type in same turn");
-            need_change = true;
-        }
-    }
-
-    if (!need_change) {
-        if (((self.bsL.ng === 'C') || (self.bsR.ng === 'C')) && (self.bsL.t !== self.bsR.t)) {
-            console.log("isSpellsNormal", "half clap");
-            need_change = true;
-        }
-    }
-
-    if (!need_change) {
-        if (bad_hand === WARLOCK_HAND_RIGHT) {
-            if ((self.bsL.th === 1) && (self.bsL.ng !== self.bsR.ng)) {
-                console.log("isSpellsNormal", "wrong two hand gesture");
-                need_change = true;
-            }
-        } else {
-            if ((self.bsR.th === 1) && (self.bsR.ng !== self.bsL.ng)) {
-                console.log("isSpellsNormal", "wrong two hand gesture");
-                need_change = true;
-            }
-        }
-    }
-
-    if (!need_change) {
-        for (var i = 0, Ln = Math.min(self.bsL.g.length, self.bsR.g.length); i < Ln; ++i) {
-            var gli = getGestureBySpell(self.bsL, i), gri = getGestureBySpell(self.bsR, i);
-            if ((gli === 'P') && (gri === 'P')) {
-                console.log("isSpellsNormal", "try surrender");
-                need_change = true;
-                break;
-            }
-            if (((gli.toUpperCase() !== gli) || (gri.toUpperCase() !== gri)) && (gli.toUpperCase() !== gri.toUpperCase()))  {
-                console.log("isSpellsNormal", "two handed spell");
-                need_change = true;
-                break;
-            }
-        }
-    }
-
-    if (need_change) {
-        if (bad_hand === WARLOCK_HAND_LEFT) {
-            self.bsL.change = true;
-        } else {
-            self.bsR.change = true;
-        }
-    }
-
-    return !need_change;
 }
 
 function copyObject(from, to) {
     for(var key in from) {
         to[key] = from[key];
-    }
-}
-
-function setNextSpell(self) {
-    var hand_left = !!self.bsL.change;
-    var arr_not_ids, hand_id, priority, next_gesture = '';
-    if (hand_left) {
-        if (self.LnotIds.indexOf(self.bsL.id) === -1) {
-            self.LnotIds.push(self.bsL.id);
-        }
-        arr_not_ids = self.LnotIds;
-        priority = self.bsL.p;
-        hand_id = self.bsL.h;
-        if ((self.maladroit > 0) || (self.bsR.th === 1)) {
-            next_gesture = self.bsR.ng;
-        }
-    } else {
-        if (self.RnotIds.indexOf(self.bsR.id) === -1) {
-            self.RnotIds.push(self.bsR.id);
-        }
-        arr_not_ids = self.RnotIds;
-        priority = self.bsR.p;
-        hand_id = self.bsR.h;
-        if ((self.maladroit > 0) || (self.bsL.th === 1)) {
-            next_gesture = self.bsL.ng;
-        }
-    }
-    console.log("setNextSpell", hand_left, arr_not_ids, priority, hand_id);
-    for (var i = 0, Ln = self.spells.length; i < Ln; ++i) {
-        console.log("check spell", JSON.stringify(self.spells[i]));
-        if (self.spells[i].h !== hand_id) {
-            console.log("wrong hand", self.spells[i].h, hand_id);
-            continue;
-        }
-        if (arr_not_ids.indexOf(self.spells[i].id) !== -1) {
-            console.log("banned id", self.spells[i].id, arr_not_ids);
-            continue;
-        }
-        if ((next_gesture !== '') && (self.spells[i].ng !== next_gesture)) {
-            console.log("wrong gesture", self.spells[i].ng, next_gesture);
-            continue;
-        }
-
-        /*if (priority > self.spells[i].p) {
-            console.log("wrong priority", self.spells[i].p, priority);
-            continue;
-        }*/
-        if (hand_left) {
-            console.log("setNextSpell", JSON.stringify(self.bsL), JSON.stringify(self.spells[i]));
-            copyObject(self.spells[i], self.bsL);
-            self.bsR.change = false;
-            console.log("setNextSpell", JSON.stringify(self.bsL));
-        } else {
-            console.log("setNextSpell", JSON.stringify(self.bsR), JSON.stringify(self.spells[i]));
-            copyObject(self.spells[i], self.bsR);
-            self.bsR.change = false;
-            //self.bsR = self.spells[i];
-            console.log("setNextSpell", JSON.stringify(self.bsR));
-        }
-        break;
-    }
-}
-
-function setMonsterTargetByName(monster_name, target) {
-    console.log("setMonsterTargetByName", monster_name, target);
-    for(var i = 0, Ln = mtMonsterObj.length; i < Ln; ++i) {
-        console.log("setMonsterTargetByName", mtMonsterObj[i].mt_id, mtMonsterObj[i].mt_label);
-        if (mtMonsterObj[i].mt_label === monster_name) {
-            mtMonsterObj[i].setTarget(target);
-            return;
-        }
-    }
-}
-
-function getMonsterDangerBySpellID(spell_id) {
-    switch(spell_id) {
-    case SPELL_SUMMON_GIANT: return 4;
-    case SPELL_SUMMON_TROLL: return 3;
-    case SPELL_SUMMON_OGRE: return 2;
-    case SPELL_SUMMON_GOBLIN: return 1;
-    case SPELL_SUMMON_FIRE_ELEMENTAL: return battle.self.fireproof > 0 ? 0 : 3;
-    case SPELL_SUMMON_ICE_ELEMENTAL: return battle.self.coldproof > 0 ? 0 : 3;
-    default: return 0;
-    }
-}
-
-function getMonsterHPBySpellID(spell_id) {
-    switch(spell_id) {
-    case SPELL_SUMMON_GIANT: return 4;
-    case SPELL_SUMMON_TROLL: return 3;
-    case SPELL_SUMMON_OGRE: return 2;
-    case SPELL_SUMMON_GOBLIN: return 1;
-    case SPELL_SUMMON_FIRE_ELEMENTAL:
-    case SPELL_SUMMON_ICE_ELEMENTAL: return 3;
-    default: return 0;
-    }
-}
-
-function getMonsterTypeBySpellID(spell_id) {
-    switch(spell_id) {
-    case SPELL_SUMMON_FIRE_ELEMENTAL:
-    case SPELL_SUMMON_ICE_ELEMENTAL: return "e";
-    default: return "m";
-    }
-}
-
-function compareMonster(a,b) {
-  if (a.danger < b.danger) return +1;
-  if (a.danger > b.danger) return -1;
-  return 0;
-}
-
-var targets = [];
-function prepareTargetsArray() {
-    console.log("prepareTargetsArray");
-    targets = [];
-    if (battle.enemy.summon_left > 0) {
-        targets.push({type:getMonsterTypeBySpellID(battle.enemy.summon_left),name:"LH:"+battle.enemy.name,danger:getMonsterDangerBySpellID(battle.enemy.summon_left),hp:getMonsterHPBySpellID(battle.enemy.summon_left),under_attack:0});
-    }
-    if (battle.enemy.summon_right > 0) {
-        targets.push({type:getMonsterTypeBySpellID(battle.enemy.summon_left),name:"RH:"+battle.enemy.name,danger:getMonsterDangerBySpellID(battle.enemy.summon_right),hp:getMonsterHPBySpellID(battle.enemy.summon_right),under_attack:0});
-    }
-    for(var i = 0, Ln = battle.monsters.length; i < Ln; ++i) {
-        var mob = battle.monsters[i];
-        if (!mob.under_control) {
-            targets.push({type:"m",name:mob.name,danger:mob.strength,hp:mob.hp,under_attack:0});
-        }
-    }
-    targets.push({type:"w",name:battle.enemy.name,danger:-1,under_attack:0,hp:battle.enemy.hp});
-    targets.push({type:"s",name:battle.self.name,danger:-2,under_attack:0,hp:battle.self.hp});
-    console.log("prepareTargets", JSON.stringify(targets));
-    targets.sort(compareMonster);
-    console.log("prepareTargets", JSON.stringify(targets));
-}
-
-function getBestTarget(attack, type, is_monster) {
-    if (!type) {
-        type = "all";
-    }
-    console.log("getBestTarget", attack, type, JSON.stringify(targets));
-
-    var target_idx = -1, i, Ln, trg;
-    for (i = 0, Ln = targets.length; i < Ln; ++i) {
-        trg = targets[i];
-        if ((type !== "all") && (trg.type !== type)) {
-            continue;
-        }
-        if (is_monster && (trg.type === "s")) {
-            continue;
-        }
-        if (trg.hp - trg.under_attack <= 0) {
-            continue;
-        }
-        console.log("check 1", trg.hp, trg.under_attack, attack, trg.hp - trg.under_attack - attack);
-        if (trg.hp - trg.under_attack - attack === 0) {
-            target_idx = i;
-            break;
-        }
-    }
-    if (target_idx === -1) {
-        for (i = 0, Ln = targets.length; i < Ln; ++i) {
-            trg = targets[i];
-            if ((type !== "all") && (trg.type !== type)) {
-                continue;
-            }
-            if (trg.hp - trg.under_attack <= 0) {
-                continue;
-            }
-            if (is_monster && (trg.type === "s")) {
-                continue;
-            }
-            console.log("check 2", trg.hp, trg.under_attack, attack, trg.hp - trg.under_attack - attack);
-            if (trg.hp - trg.under_attack - attack < 0) {
-                target_idx = i;
-                break;
-            }
-        }
-    }
-    if (target_idx === -1) {
-        for (i = 0, Ln = targets.length; i < Ln; ++i) {
-            trg = targets[i];
-            if ((type !== "all") && (trg.type !== type)) {
-                continue;
-            }
-            if (trg.hp - trg.under_attack <= 0) {
-                continue;
-            }
-            if (trg.hp - trg.under_attack > 0) {
-                target_idx = i;
-                break;
-            }
-            if (is_monster && (trg.type === "s")) {
-                continue;
-            }
-        }
-    }
-    if ((target_idx === -1) && (type !== "all")) {
-        target_idx = 0;
-    }
-
-    return target_idx;
-}
-
-function setTargetsForMonsters(do_charm_monster) {
-    console.log("setTargetsForMonsters", do_charm_monster);
-    var i, Ln, mob;
-
-    if (battle.self.summon_left > 0) {
-        battle.monsters.push({under_control:1,name:"LH:"+battle.self.name,danger:getMonsterDangerBySpellID(battle.self.summon_left)});
-    }
-    if (battle.self.summon_right > 0) {
-        battle.monsters.push({under_control:1,name:"RH:"+battle.self.name,danger:getMonsterDangerBySpellID(battle.self.summon_right)});
-    }
-
-    for(i = 0, Ln = battle.monsters.length; i < Ln; ++i) {
-        mob = battle.monsters[i];
-        console.log("setTargetsForMonsters", JSON.stringify(mob));
-        if (do_charm_monster || mob.under_control) {
-            var target_idx = getBestTarget(mob.strength, "all", true);
-            targets[target_idx].under_attack += mob.strength;
-            setMonsterTargetByName(mob.name, targets[target_idx].name);
-        } else if (!mob.under_control) {
-            setMonsterTargetByName(mob.name, battle.enemy.name);
-        }
-    }
-}
-
-function setTargetForCharmed() {
-    console.log("setTargetForCharmed", cpPersonObj.length);
-    for (var i = 0, Ln = cpPersonObj.length; i < Ln; ++i) {
-        console.log("setTargetForCharmed", cpPersonObj[i].pc_target_name, battle.self.name, battle.enemy.bsL.p, battle.enemy.bsR.p);
-        if (cpPersonObj[i].pc_target_name === battle.self.name) {
-            cpPersonObj[i].setHandGesture("LH", battle.self.gL);
-        } else {
-            cpPersonObj[i].setHandGesture(battle.enemy.bsL.p > battle.enemy.bsR.p ? "LH" : "RH", "-");
-        }
-    }
-}
-
-function setTargetForParalyzed() {
-    console.log("setTargetForParalyzed", pParalyzeObj.length);
-    for (var i = 0, Ln = pParalyzeObj.length; i < Ln; ++i) {
-        console.log("setTargetForParalyzed", pParalyzeObj[i].pc_target_name, battle.self.name, battle.enemy.bsL.p, battle.enemy.bsR.p);
-        if (pParalyzeObj[i].pc_target_name === battle.self.name) {
-            pParalyzeObj[i].setHand(battle.self.bsL.p > battle.self.bsR.p ? "RH" : "LH");
-        } else {
-            pParalyzeObj[i].setHand(battle.enemy.bsL.p > battle.enemy.bsR.p ? "LH" : "RH");
-        }
     }
 }
 
@@ -742,63 +274,37 @@ function setTargetsForSpells() {
     setTargetForChoosenSpell(true);
 }
 
-function getBotMsgByTurn(turn_num) {
-    switch(turn_num) {
-    case 1: return "Hi, warlock, I am a golem created for your training, try to beat me. Every letter represents a hand gesture. A set of gestures like DPP is a spell (Amnesia).";
-    case 2: return "Here are some more useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it. But P/P with both hands will make you surrender.";
-    case 3: return "Enchantments like DPP (Amnesia), DSF (Maladroit), SWD (Fear) disrupt your enemy. When two are cast at the same Warlock they cancel out.";
-    case 4: return "Check your spell book to learn more spells...";
-    case 5: return "Summon a goblin (SFW) to fight for you. Cast it on yourself, and don't forget to set it's target. Stab ('>') is a simple way to hit a goblin. Shield ('P') and Protection (WWP) to defend against it.";
-    case 6: return "Inflict direct damage with Cause light or heavy wounds (WFP, WPFD), and heal up (DFW, DFPW)";
-    case 7: return "There are two ways to counter a spell (WPP, WWS). Cast them at yourself to prevent spells and monsters from hitting you. Cast at an opponent to prevent him from summoning a monster.";
-    case 8: return "You're doing good! Keep up. When you get a bit more training you can start playing against other players and friends.";
-    case 9: return "Games with other players are played in turns. You can play up-to 3 games at the same time for free, and you're given up to 3 days to play each turn.";
-    case 10: return "When you start playing against real players, you'll be seeing a lot of these spells: Charm Person (PSDF) to force a gesture (or a no gesture '-'), and Charm Monster (PSDD) to take control of a monster, and change it's target";
-    case 11: return "You will also see players concealing their movements with Invisibility (PPws - notice the lower caps means you should w and s and both hands together)";
-    case 12: return "Players will summon stronger monsters in addition to Goblins (SFW) - like Ogre (PSFW), Troll (FPSFW) and Giant (WFPSFW) - noticed the pattern ?";
-    case 13: return "The most powerful spell around? That's Finger of Death (PWPFSSSD) to instantly kill an opponent. It can't be countered, but it can be mirrored (cw)";
-    case 14: return "Playing with friends can be a lot more fun. Send them an invite. You can set up a private game to play together.";
-    case 15: return "Every time you win, you can go up the ladder board. When you win against powerful warlocks your elo score will go up too to reflect your skill.";
-    case 16: return "In melee games many 3-6 players play at the same time, often using Fire and Ice Elementals (cWSSW, cSWWS), Storms (SWWc, WSSc) and Protections (WWFP, SSFP)";
-    case 17: return "Want to learn more? checkout the full rules (https://games.ravenblack.net/rules) and join our Facebook community (https://fb.com/WarlocksDuel/)";
-    default: return "";
-    }
-}
+/*
+    // L left  obj
+    // R Right obj
+    // C Chat  text
+    // D Delay int 0 - none, 1 left, 2 right, -1 unavailable
+    // P Permanent int 0 - none, 1 left, 2 right, -1 unavailable
+    // F Fire int 0, 1, -1
+    // M monsters arr of obj
+    // CP - paralyze arr of obj by id
+    // CC - paralyze arr of obj by id
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
 
-function selectSpell() {
-    Qt.ai.spellL = 0;
-    Qt.ai.spellR = 0;
-}
+*/
 
-function processBattle(isAI) {
+function processBattle(battle, isAI) {
     try {
         Qt.ai = {};
         arr_spells = JSON.parse(Qt.core.getSpellBook());
         console.log("processBattle", isAI, JSON.stringify(arr_spells));
+        console.log("processBattle", JSON.stringify(battle));
 
         prepareBattleWarlock();
-        selectSpell();
-        selectGesture();
-        var do_charm_monster = (battle.self.bsL.id === SPELL_CHARM_MONSTER) || (battle.self.bsR.id === SPELL_CHARM_MONSTER);
-        prepareTargetsArray();
-        setTargetsForSpells();
-        setTargetsForMonsters(do_charm_monster);
-        setTargetForCharmed();
-        setTargetForParalyzed();
         console.log("processBattle", "complete", JSON.stringify(battle));
     } catch(error) {
         console.error(error);
     }
-    //tSendOrderTimer.start();
+
     if (isAI) {
-        teChatMsg.text = getBotMsgByTurn(battle.turn_num);
-        sendOrderEx();
+        battle.actions.C = getBotMsgByTurn(battle.turn_num);
     } else {
         console.log("processBattle", "not AI");
     }
-    //spellDecision(battle);
-    //checkSpellCast(battle);
-    //printBattle(battle, false);
-    //return battle;
-    //*/
+
 }

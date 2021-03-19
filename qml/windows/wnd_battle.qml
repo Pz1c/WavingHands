@@ -299,8 +299,9 @@ BaseWindow {
         title_text = "Battle #" + mainWindow.gBattle.id;
         BU.applyBattle();
         battleChanged();
+        AI.processBattle(mainWindow.gBattle, mainWindow.gameCore.isAI);
         if (mainWindow.gameCore.isAI) {
-
+            sendOrders();
         }
     }
 
