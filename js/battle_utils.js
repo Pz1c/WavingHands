@@ -124,8 +124,10 @@ function prepareBattle(raw_battle) {
             battle.monsters[m.owner] = [];
         }
 
+        m.damage = getMonsterDamageByName(m.name);
         battle.monsters[m.owner].push(m);
-        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.target,old_target:m.target,under_control:true,owner:m.owner,name:m.name,status:m.status});
+        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.target,old_target:m.target,under_control:true,owner:m.owner,name:m.name,
+                                  status:m.status,d:m.damage,hp:m.hp});
     }
 
     for (i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {

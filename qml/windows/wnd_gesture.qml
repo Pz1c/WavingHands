@@ -80,6 +80,15 @@ BaseWindow {
                             fontSizeMode: Text.VerticalFit
                             horizontalAlignment: Text.AlignRight
                             text: lvSpellList.model[index].n
+
+                            onClicked: {
+                                console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
+                                if(lvSpellList.model[index].gp !== "?") {
+                                    mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                } else {
+                                    maSpell.clicked();
+                                }
+                            }
                         }
 
                         /*IconInfo {

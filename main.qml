@@ -159,6 +159,7 @@ ApplicationWindow {
         color: "#000000"
         opacity: 0.6
         z:1000
+        visible: false
 
         BusyIndicator {
             id: aiLoading
@@ -580,12 +581,21 @@ ApplicationWindow {
 
     function showNewUserMenu() {
         logEvent("registration_started");
-        WNDU.showNewUserMenu();
+        //WNDU.showNewUserMenu();
+        WNDU.showRegisterFlow();
     }
 
     function showSpellDetails(spell_code) {
         logEvent("spell_details", {code:spell_code});
-        showErrorWnd({text:warlockDictionary.getStringByCode(spell_code + "_desc"),type:1,title:warlockDictionary.getStringByCode(spell_code)});
+        var short_desc_code = spell_code + "_short_desc";
+        var short_desc = warlockDictionary.getStringByCode(spell_code + "_short_desc");
+        var msg_txt = "";
+        if (short_desc !== short_desc_code) {
+            msg_txt = short_desc + "<br>Details:<br>";
+        }
+        msg_txt += warlockDictionary.getStringByCode(spell_code + "_desc");
+
+        showErrorWnd({text:msg_txt,type:1,title:warlockDictionary.getStringByCode(spell_code)});
     }
 
     function showGesture(isLeft, possible_gestures) {

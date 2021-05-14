@@ -19,12 +19,6 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
-#ifdef Q_OS_ANDROID
-    /*QAndroidJniObject::callStaticMethod<void>("net/is/games/MyService",
-                                                  "startMyService",
-                                                  "(Landroid/content/Context;)V",
-                                                  QtAndroid::androidActivity().object());*/
-#endif
     return app.exec();
 
     // http://stackoverflow.com/questions/9029040/how-to-run-an-android-app-in-background

@@ -158,120 +158,152 @@ function copyObject(from, to) {
     }
 }
 
+function prepareWarlock(container, spell_list, clean) {
+    container.gL = '';
+    container.gR = '';
+    container.LnotIds = [];
+    container.RnotIds = [];
+    container.spellbook = [];
+    for (var i = 0, Ln = spells.length; i < Ln; ++i) {
+        container.spellbook[i] = {t:99,idx:-1};
+    }
+
+    var new_spell = [], ls;
+    for (var s = 0, LnS = spell_list.length; s < LnS; ++s) {
+        ls = spell_list[s];
+        if (clean && ls.active && (ls.t < ls.g.length)) {
+            new_spell.push(ls);
+        } else {
+            if (ls.t < container.spellbook[ls.id].t) {
+                container.spellbook[ls.id].t = ls.t;
+                container.spellbook[ls.id].idx = s;
+            }
+        }
+    }
+    if (clean) {
+        container.spells = new_spell;
+    }
+}
+
 function prepareBattleWarlock() {
     console.log("prepareBattleWarlock");
-    var enemy;
+    var s, LnS, ls;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].player) {
-            battle.self = battle.warlocks[i];
-            battle.self.gL = '';
-            battle.self.gR = '';
-            battle.self.LnotIds = [];
-            battle.self.RnotIds = [];
+            ai.self = battle.warlocks[i];
+            prepareWarlock(ai.self, battle.warlocks[i].spells, false);
+        } else if ((battle.warlocks[i].active) && !ai.enemy) {
+            ai.enemy = battle.warlocks[i];
+            prepareWarlock(ai.enemy, ai.enemy.spells, true);
+        }
+    }
+
+    console.log("processBattle", "enemy", JSON.stringify(ai.enemy));
+    console.log("processBattle", "self", JSON.stringify(ai.self));
+    if (!ai.self.bsL.g) {
+        ai.self.bsL = {id:-1,name:"",g:"XXX",t:1000,st:100,p:-100,h:1,l:100,a:3,ng:"X",th:0};
+    }
+    if (!ai.self.bsR.g) {
+        ai.self.bsL = {id:-1,name:"",g:"XXX",t:1000,st:100,p:-100,h:2,l:100,a:3,ng:"X",th:0};
+    }
+}
+
+function calculateHP(al) {
+    if (ai.self.hp <= 10) {
+        al.heal += 1;
+    } else if (ai.self.hp <= 5) {
+        al.heal += 2;
+    }
+}
+
+function getDamageByName(monster_name) {
+    var hand = (monster_name.indexOf("LH:") !== -1 ? WARLOCK_HAND_LEFT : WARLOCK_HAND_RIGHT), s;
+    for (var i = 0, Ln = battle.enemy.spells.length; i < Ln; ++i) {
+        s = battle.enemy.spells[i];
+        if ((s.hand !== hand) || (s.id < 0) || (s.t !== 1)) {
+            continue;
+        }
+        if (spells[s.id].type !== SPELL_TYPE_SUMMON_MONSTER) {
+            continue;
+        }
+
+        return spells[s.id].dmg;
+    }
+    return 0;
+}
+
+function calculateMonster(al) {
+    var ep = 0, sp = 0, m;
+    for(var i = 0, Ln = battle.actions.M.length; i < Ln; ++i) {
+        m = battle.actions.M[i];
+        if (m.d === -1) {
+            if (m.under_control) {
+                continue;
+            } else {
+                m.d = getDamageByName(d.name);
+            }
+        }
+
+        if (m.under_control) {
+          ep += m.d;
         } else {
-            if (!enemy) {
-                enemy = battle.warlocks[i];
+          sp += m.d;
+        }
+    }
+    al.monster = sp - ep;
+    if (al.monster <= 0) {
+        return;
+    }
+    if (battle.self.shield > 1) { // SPELL_PROTECTION
+        al.monster -= battle.self.shield;
+    }
+    if (battle.self.invisibility > 0) {
+        al.monster -= battle.self.invisibility;
+    }
+}
+
+function calculateSpell(al) {
+    for (var i = 0, Ln = battle.enemy.spells.length; i < Ln; ++i) {
+        s = battle.enemy.spells[i];
+
+        if ((s.id === SPELL_FINGER_OF_DEATH) && (s.t <= 5)) {
+            al.confuse_enemy += 7 - s.t;
+            continue;
+        }
+
+        if ((spells[s.id].type === SPELL_TYPE_SUMMON_MONSTER) && (spells[s.id].l >= 2) && (spells[s.id].t <= 2)) {
+            al.confuse_enemy += spells[s.id].l;
+            continue;
+        }
+
+        if (spells[s.id].type === SPELL_TYPE_CONFUSION) {
+            al.confuse += (spells[s.id].length - s.t - 1);
+            if ((s.t === 1) && ((s.id === SPELL_PARALYSIS) || (s.id === SPELL_PARALYSIS_FDF) || (s.id === SPELL_PARALYSIS_FDFD))) {
+                al.confuse += 3;
             }
-            if (battle.warlocks[i].active) {
-                battle.enemy = battle.warlocks[i];
-            }
+            continue;
         }
-    }
-    if (!battle.enemy) {
-        battle.enemy = enemy;
-    }
 
-    delete battle.warlocks;
-    console.log("processBattle", "enemy", JSON.stringify(battle.enemy));
-    console.log("processBattle", "self", JSON.stringify(battle.self));
-    if (!battle.self.bsL.g) {
-        battle.self.bsL = {id:-1,name:"",g:"XXX",t:1000,st:100,p:-100,h:1,l:100,a:3,ng:"X",th:0};
-    }
-    if (!battle.self.bsR.g) {
-        battle.self.bsL = {id:-1,name:"",g:"XXX",t:1000,st:100,p:-100,h:2,l:100,a:3,ng:"X",th:0};
+        if ((battle.self.fireproof > 0) && ((s.id === SPELL_FIRE_STORM) || (s.id === SPELL_SUMMON_FIRE_ELEMENTAL) || (s.id === SPELL_FIREBALL))) {
+
+        }
+
+        if (s.id === SPELL_FIRE_STORM) {
+
+            continue;
+        }
+
+
+
     }
 }
 
-function selectGesture() {
-    var left_processed = battle.enemy.bsL.p > battle.enemy.bsR.p;
-    if (left_processed) {
-        destroyEnemySpell(battle.self, battle.enemy.bsL);
-        console.log("destroyEnemySpell", "L", JSON.stringify(battle.enemy.bsL), JSON.stringify(battle.self.bsL), JSON.stringify(battle.self.bsR));
-    }
-    destroyEnemySpell(battle.self, battle.enemy.bsR);
-    console.log("destroyEnemySpell", "R", JSON.stringify(battle.enemy.bsR), JSON.stringify(battle.self.bsL), JSON.stringify(battle.self.bsR));
-    if (!left_processed) {
-        destroyEnemySpell(battle.self, battle.enemy.bsL);
-        console.log("destroyEnemySpell", "L", JSON.stringify(battle.enemy.bsL), JSON.stringify(battle.self.bsL), JSON.stringify(battle.self.bsR));
-    }
-
-    var idx = 0;
-    while(!isSpellsNormal(battle.self)) {
-        setNextSpell(battle.self);
-        if (++idx > 50) {
-            break;
-        }
-    }
-
-    var left_first = battle.self.bsL.p < battle.self.bsR.p;/*!(battle.self.bsL.anti_spell && !battle.self.bsR.anti_spell) &&
-             ((!battle.self.bsL.anti_spell && battle.self.bsR.anti_spell) ||
-              (battle.self.bsL.p < battle.self.bsR.p));*/
-    console.log("setGestureBySpell", left_first, battle.self.bsL, battle.self.bsR);
-    setGestureBySpell(battle.self, left_first ? battle.self.bsL : battle.self.bsR);
-    setGestureBySpell(battle.self, left_first ? battle.self.bsR : battle.self.bsL);
-}
-
-function getSpellByName(spell_name) {
-    for(var i = 0, Ln = arr_spells.length; i < Ln; ++i) {
-        if (arr_spells[i].n === spell_name) {
-            return arr_spells[i];
-        }
-    }
-}
-
-function setTargetForChoosenSpell(is_right) {
-    var current_spell_name = is_right ? cbRHS.model[cbRHS.currentIndex] : cbLHS.model[cbLHS.currentIndex];
-    console.log("setTargetForChoosenSpell", is_right, current_spell_name);
-    if (!current_spell_name) {
-        return ;
-    }
-
-    var current_spell = getSpellByName(current_spell_name);
-    console.log("setTargetForChoosenSpell", current_spell_name, JSON.stringify(current_spell));
-    if (!current_spell) {
-        return ;
-    }
-
-    var target_idx = -1, attack = 0;
-    do {
-        if (current_spell.st === SPELL_TYPE_DAMAGE) {
-            target_idx = getBestTarget(current_spell.dmg);
-            attack = current_spell.dmg;
-            break;
-        }
-        if (current_spell.st === SPELL_TYPE_CHARM_MONSTER) {
-            target_idx = getBestTarget(4, "m");
-            attack = 4;
-            if (target_idx === -1) {
-                target_idx = getBestTarget(0, "s");
-                attack = 0;
-            }
-            break;
-        }
-    }while(0);
-
-    if (target_idx !== -1) {
-        targets[target_idx].under_attack += attack;
-        setTargetForSpell(is_right, targets[target_idx].name);
-    }
-}
-
-function setTargetsForSpells() {
-    console.log("setTargetsForSpells")
-    getPossibleSpell(false, battle.self.bsL.t === 1 ? battle.self.bsL.n : "");
-    getPossibleSpell(true, battle.self.bsR.t === 1 ? battle.self.bsR.n : "");
-    setTargetForChoosenSpell(false);
-    setTargetForChoosenSpell(true);
+function calculateDanger() {
+    var al = {heal:0,monster:0,confuse:0,damage:0,confuse_enemy:1};
+    //calculateHP(al);
+    //calculateMonster();
+    console.log("AI.calculateDanger", JSON.stringify(al));
+    ai.action_list = al;
 }
 
 /*
@@ -288,15 +320,18 @@ function setTargetsForSpells() {
 
 */
 
-function processBattle(battle, isAI) {
-    try {
-        Qt.ai = {};
-        arr_spells = JSON.parse(Qt.core.getSpellBook());
-        console.log("processBattle", isAI, JSON.stringify(arr_spells));
-        console.log("processBattle", JSON.stringify(battle));
+var ai, battle;
 
+function processBattle(Battle, isAI) {
+    try {
+        ai = {};
+        battle = Battle;
+        arr_spells = JSON.parse(mainWindow.gameCore.getSpellBook());
+        //console.log("processBattle", isAI, JSON.stringify(arr_spells));
+        console.log("processBattle", JSON.stringify(battle));
         prepareBattleWarlock();
-        console.log("processBattle", "complete", JSON.stringify(battle));
+        calculateDanger();
+        console.log("processBattle", "complete", JSON.stringify(ai));
     } catch(error) {
         console.error(error);
     }

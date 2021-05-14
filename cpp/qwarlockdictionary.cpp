@@ -166,6 +166,25 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("FDF", "Параліч", "Паралич", "Paralysis");
     fillDictionary("FDFD", "Параліч", "Паралич", "Paralysis");
 
+    // spell book short desc
+    fillDictionary("P_short_desc", "", "", "Shield (Defend against monsters and stabs)");
+    fillDictionary("WWP_short_desc", "", "", "Protection (Defend against monsters and stabs for 3 turns)");
+    fillDictionary("SD_short_desc", "", "", "Magic missile (Do 1 damage)");
+    fillDictionary("WFP_short_desc", "", "", "Cause wounds (Do 2 damage)");
+    fillDictionary("WPFD_short_desc", "", "", "Cause wounds (Do 3 damage)");
+    fillDictionary("DFW_short_desc", "", "", "Cure (Heal 1 damage)");
+    fillDictionary("DFPW_short_desc", "", "", "Cure (Heal 2 damage)");
+    fillDictionary("SFW_short_desc", "", "", "Summon goblin (Monster with 1 hp, usually cast at yourself)");
+    fillDictionary("PSFW_short_desc", "", "", "Summon Ogre (Monster with 2 hp, usually cast at yourself).");
+    fillDictionary("DPP_short_desc", "", "", "Amnesia (Opponent repeats last turn gestures)");
+    fillDictionary("DSF_short_desc", "", "", "Maladroit (Opponent must do same gesture with both hands)");
+    fillDictionary("SWD_short_desc", "", "", "Fear (Opponent must do P or W or '>' or '-')");
+    fillDictionary("FFF_short_desc", "", "", "Paralysis (Choose opponent's hand. Its next turn will be based on last turn as follows: [F or C] --> C. [W or P] --> P. (S or D) --> D)");
+    fillDictionary("PSDF_short_desc", "", "", "Charm person (Choose opponent's next gesture, on one of the hands)");
+    fillDictionary("PSDD_short_desc", "", "", "Charm monster (Take control of a monster. Cast it at the monster, and choose a new target for that monster to attack)");
+    fillDictionary("WPP_short_desc", "", "", "Counter spell (Cast it at the target of the spell that you wish to counter, not at the caster. It also acts as shield against attacks)");
+    fillDictionary("WWS_short_desc", "", "", "Counter spell (Cast it at the target of the spell that you wish to counter, not at the caster. It also acts as shield against attacks)");
+
     // spell book desc
     fillDictionary("cDPW_desc",
                    "Це заклинання діє як комбінація Магічного Захисту і Зняття Чар, але його наслідки є універсальними, а не обмежується суб'єктом заклинання. Це закляття зупинить будьяке інше закляття викликане в той же хід (крім іншого Розсіяння Магії), і знімають всі чари з усіх, перш ніж вони будуть мати ефект - крім сліпоти і невидимості які не дадуть побачити жести Чаклуна в той же хід.  Крім того, всі монстри будуть знищені, хоча вони зможуть напасти на цей хід. Удар і Капітуляція вступлять в силу, так як вони не є магічними. Як і Магічний Захист, Розсіювання Магія також виступає в якості Щита для своєї цілі.",

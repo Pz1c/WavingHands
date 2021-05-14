@@ -41,6 +41,7 @@ Item {
     property int body_height_prc: 60
     property int title_height_prc: 10
     property int control_height_prc: 10
+    property string code: "base_wnd"
 
     signal cancel
     signal apply
@@ -49,7 +50,7 @@ Item {
 
     focus: true
 
-    Keys.onPressed: {
+    function onKeyPressed(event) {
         console.log("BaseWindow.KEY_PRESSED: " + event.key)
         if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {
             console.log("BaseWindow.BACK_KEY_PRESSED: " + event.key)
@@ -57,6 +58,8 @@ Item {
             mainWindow.processEscape();
         }
     }
+
+    Keys.onPressed: onKeyPressed
 
     Rectangle {
         id: rOver
@@ -238,6 +241,7 @@ Item {
     onWith_controlsChanged: {
         console.log("onWith_controlsChanged", with_controls, bwBody.height, iRoot.height);
         fixHeight();
+        console.log("onWith_controlsChanged", "finish");
     }
 
     function initFields() {

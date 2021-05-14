@@ -105,6 +105,22 @@ function getMonsterIconByName(name) {
     }
 }
 
+function getMonsterDamageByName(name) {
+    if (name.indexOf("Goblin") !== -1) {
+        return 1;
+    } else if (name.indexOf("Ogre") !== -1) {
+        return 2;
+    } else if (name.indexOf("Troll") !== -1) {
+        return 3;
+    } else if (name.indexOf("Giant") !== -1) {
+        return 4;
+    }else if (name.indexOf("Elemental") !== -1) {
+        return 3;
+    } else {
+        return -1;
+    }
+}
+
 function strToArr2D(str, sep1, sep2, skip_empty) {
     var res = [];
     var arr1 = str.split(sep1);

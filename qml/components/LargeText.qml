@@ -11,9 +11,12 @@ Item {
     property alias horizontalAlignment: tTitle.horizontalAlignment
     property alias verticalAlignment: tTitle.verticalAlignment
     property alias fontSizeMode: tTitle.fontSizeMode
+    property alias textFormat : tTitle.textFormat
     property alias font: tTitle.font
     property alias text: tTitle.text
     property alias wrapMode: tTitle.wrapMode
+
+    signal clicked
 
     Rectangle {
         id: ltBG
@@ -37,6 +40,12 @@ Item {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         //font.family: Qt.defaultFontFamily
+    }
+
+    MouseArea {
+        id: maLT
+        anchors.fill: parent
+        onClicked: ltRoot.clicked()
     }
 }
 

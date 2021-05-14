@@ -1,6 +1,7 @@
 var wnd_error = "wnd_error.qml";
 //var wnd_battle_result = "wnd_battle_result.qml";
 var wnd_new_user = "wnd_new_user.qml";
+var wnd_register = "wnd_register.qml";
 var wnd_login = "wnd_login.qml";
 //var wnd_main_menu = "wnd_main_menu.qml";
 var wnd_profile = "wnd_profile.qml";
@@ -88,7 +89,7 @@ function showWnd(wnd_name, close_current, close_all_stack, add_in_stack, only_cr
 }
 
 function finishedShowWnd(wnd_obj) {
-    console.log("finishedShowWnd", current_wnd_code, wnd_obj, arr_wnd_obj[current_wnd_code]);
+    console.log("finishedShowWnd", current_wnd_code, wnd_obj.code, wnd_obj, arr_wnd_obj[current_wnd_code]);
 
     if (!wnd_obj) {
         wnd_obj = arr_wnd_obj[current_wnd_code];
@@ -99,9 +100,10 @@ function finishedShowWnd(wnd_obj) {
     }
 
     if (wnd_obj.wnd.status === Component.Ready) {
+        console.log("before create object");
         wnd_obj.item = wnd_obj.wnd.createObject(mainWindow.mainContainer, {x: 0, y: 0, visible:!wnd_obj.only_create,z:++max_z_index,code:wnd_obj.code});
         //wnd_obj.item.code = wnd_obj.code;
-        console.log("create item", wnd_obj.code, wnd_obj.item.code);
+        console.log("create item", /*wnd_obj.code, wnd_obj.item.code*/);
         if (wnd_obj.add_in_stack) {
             console.log("arr_wnd_stack.push2", wnd_obj.code);
             arr_wnd_stack.push({item:wnd_obj.item,code:wnd_obj.code});
@@ -238,6 +240,10 @@ function showErrorWnd(error, chat) {
 
 function showNewUserMenu() {
     showWnd(wnd_new_user, 1, 0, 1);
+}
+
+function showRegisterFlow() {
+    showWnd(wnd_register, 1, 0, 1);
 }
 
 function showLogin() {

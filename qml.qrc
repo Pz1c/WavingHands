@@ -85,5 +85,17 @@
         <file>js/small_gui_utils.js</file>
         <file>qml/windows/wnd_spellbook.qml</file>
         <file>js/old_ai_utils.js</file>
+        <file>qml/windows/wnd_register.qml</file>
+        <file>res/bottom_glow.png</file>
+        <file>res/ahead_arrow.png</file>
+        <file>res/reg_img_01.png</file>
+        <file>res/reg_img_02.png</file>
+        <file>res/reg_img_03.png</file>
+        <file>res/reg_img_04.png</file>
+        <file>res/reg_ttl_01.png</file>
+        <file>res/reg_ttl_02.png</file>
+        <file>res/reg_ttl_03.png</file>
+        <file>res/reg_ttl_04.png</file>
+        <file>res/reg_ttl_05.png</file>
     </qresource>
 </RCC>
