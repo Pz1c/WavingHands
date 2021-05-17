@@ -57,6 +57,11 @@ Item {
             color: "black"
             echoMode: isPassword ? TextInput.Password : TextInput.Normal
             font.pixelSize: 0.4 * parent.height
+
+            background: Rectangle {
+                 color: transparent ? "transparent" : bg_color
+                 border.color: border_color
+             }
         }
     }
 

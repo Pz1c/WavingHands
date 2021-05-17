@@ -77,7 +77,7 @@ BaseWindow {
             anchors.top: parent.top
             width: 0.26 * parent.width
             height: 0.04 * parent.height
-            visible: svWelcome.currentIndex < svWelcome.count - 1
+            visible: svWelcome.currentIndex < 3//svWelcome.count - 1
 
             image: "qrc:/res/ahead_arrow.png"
             image_anchors.verticalCenter: bwiRight.verticalCenter
@@ -99,7 +99,10 @@ BaseWindow {
             z: 13
 
             onCurrentIndexChanged: {
-                console.log("svWelcome.onCurrentIndexChanged", svWelcome.currentIndex);
+                var new_idx = svWelcome.currentIndex;
+                console.log("svWelcome.onCurrentIndexChanged", new_idx);
+                bwiLeft.visible = new_idx > 0;
+                bwiRight.visible = new_idx < 3;
             }
 
             Item {
@@ -210,10 +213,12 @@ BaseWindow {
                     anchors.top: svsSingUpLink.bottom
                     //anchors.topMargin: 0.02 * parent.height
                     anchors.horizontalCenter: parent.horizontalCenter
-                    height: 0.10 * parent.height
+                    height: 0.09 * parent.height
                     width: parent.width
                     title: "Warlock's name"//dict.getStringByCode("WarlockName")
                     title_color: "#E7FFFF"
+                    border_color: "#E7FFFF"
+                    text_color: "#E7FFFF"
                     placeholderText: ""
                     regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
                 }
@@ -223,10 +228,12 @@ BaseWindow {
                     anchors.top: ltiLogin.bottom
                     //anchors.topMargin: 0.02 * parent.height
                     anchors.horizontalCenter: parent.horizontalCenter
-                    height: 0.10 * parent.height
+                    height: 0.09 * parent.height
                     width: parent.width
                     title: dict.getStringByCode("Email")
                     title_color: "#E7FFFF"
+                    border_color: "#E7FFFF"
+                    text_color: "#E7FFFF"
                     placeholderText: ""
                     regularExpression: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
                 }
@@ -236,10 +243,12 @@ BaseWindow {
                     anchors.top: ltiEmail.bottom
                     //anchors.topMargin: 0.02 * parent.height
                     anchors.horizontalCenter: parent.horizontalCenter
-                    height: 0.10 * parent.height
+                    height: 0.09 * parent.height
                     width: parent.width
                     title: dict.getStringByCode("Password")
                     title_color: "#E7FFFF"
+                    border_color: "#E7FFFF"
+                    text_color: "#E7FFFF"
                     isPassword: true
                     placeholderText: ""
                     regularExpression: /^.{4,10}$/
@@ -247,7 +256,7 @@ BaseWindow {
 
                 LargeText {
                     id: tConfirmation
-                    height: 0.09 * parent.height
+                    height: 0.07 * parent.height
                     width: 0.9 * parent.width
                     anchors.top: ltiPass.bottom
                     //anchors.topMargin: 0.02 * parent.height
@@ -255,6 +264,27 @@ BaseWindow {
                     horizontalAlignment: Text.AlignLeft
                     text: dict.getStringByCode("Iam13")
                     color: "#E7FFFF"
+                }
+
+                BtnWithIcon {
+                    id: bwiSingUp
+                    z: 15
+                    anchors.top: tConfirmation.bottom
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0.05 * parent.width
+                    width: 0.50 * parent.width
+                    height: 0.09 * parent.height
+
+                    image: "qrc:/res/send_1.png"
+                    //image_anchors.verticalCenter: bwiSingUp.verticalCenter
+                    image_anchors.right: bwiSingUp.right
+                    icon_width: 0.1 * parent.width
+                    icon_height: 0.04 * parent.height
+                    text_width: 0.2 * parent.width
+                    text_height: 0.08 * parent.height
+
+                    text: "Submit"
+                    text_color: "#E7FFFF"
                 }
 
                 Image {
