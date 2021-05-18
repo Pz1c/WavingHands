@@ -101,8 +101,8 @@ BaseWindow {
             onCurrentIndexChanged: {
                 var new_idx = svWelcome.currentIndex;
                 console.log("svWelcome.onCurrentIndexChanged", new_idx);
-                bwiLeft.visible = new_idx > 0;
                 bwiRight.visible = new_idx < 3;
+                bwiLeft.visible = bwiRight.visible && (new_idx > 0);
             }
 
             Item {
@@ -254,16 +254,35 @@ BaseWindow {
                     regularExpression: /^.{4,10}$/
                 }
 
+                RCheckBox {
+                    id: cbConfirmation
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0.05 * parent.width
+                    anchors.verticalCenter: tConfirmation.verticalCenter
+                    checked: false
+                    height: 0.05 * parent.width
+                    width: 0.05 * parent.width
+                    border.color: "#E7FFFF"
+                    border.width: 4
+                    innerBorder.width: 2
+                    fill_color_checked: "#E7FFFF"
+                    fill_color_unchecked: "black"
+                }
+
                 LargeText {
                     id: tConfirmation
                     height: 0.07 * parent.height
-                    width: 0.9 * parent.width
+                    width: 0.8 * parent.width
                     anchors.top: ltiPass.bottom
+                    anchors.left: cbConfirmation.right
                     //anchors.topMargin: 0.02 * parent.height
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    //anchors.horizontalCenter: parent.horizontalCenter
                     horizontalAlignment: Text.AlignLeft
                     text: dict.getStringByCode("Iam13")
                     color: "#E7FFFF"
+                    onClicked: {
+                        cbConfirmation.checked = !cbConfirmation.checked
+                    }
                 }
 
                 BtnWithIcon {
@@ -275,16 +294,16 @@ BaseWindow {
                     width: 0.50 * parent.width
                     height: 0.09 * parent.height
 
-                    image: "qrc:/res/send_1.png"
+                    image: cbConfirmation.checked ? "qrc:/res/send_1.png" : "qrc:/res/send_0.png"
                     //image_anchors.verticalCenter: bwiSingUp.verticalCenter
                     image_anchors.right: bwiSingUp.right
                     icon_width: 0.1 * parent.width
-                    icon_height: 0.04 * parent.height
+                    icon_height: 0.06 * parent.height
                     text_width: 0.2 * parent.width
                     text_height: 0.08 * parent.height
 
                     text: "Submit"
-                    text_color: "#E7FFFF"
+                    text_color: cbConfirmation.checked ? "#E7FFFF" : "#5E5C5E"
                 }
 
                 Image {
@@ -331,6 +350,57 @@ BaseWindow {
                     }
                 }
 
+                LabeledTextInput {
+                    id: ltiLLogin
+                    anchors.top: svsLoginLink.bottom
+                    //anchors.topMargin: 0.02 * parent.height
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    height: 0.09 * parent.height
+                    width: parent.width
+                    title: "Warlock's name"//dict.getStringByCode("WarlockName")
+                    title_color: "#E7FFFF"
+                    border_color: "#E7FFFF"
+                    text_color: "#E7FFFF"
+                    placeholderText: ""
+                    regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
+                }
+
+                LabeledTextInput {
+                    id: ltiLPass
+                    anchors.top: ltiLLogin.bottom
+                    //anchors.topMargin: 0.02 * parent.height
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    height: 0.09 * parent.height
+                    width: parent.width
+                    title: dict.getStringByCode("Password")
+                    title_color: "#E7FFFF"
+                    border_color: "#E7FFFF"
+                    text_color: "#E7FFFF"
+                    isPassword: true
+                    placeholderText: ""
+                    regularExpression: /^.{4,10}$/
+                }
+
+                BtnWithIcon {
+                    id: bwiLogIn
+                    z: 15
+                    anchors.top: ltiLPass.bottom
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0.05 * parent.width
+                    width: 0.50 * parent.width
+                    height: 0.09 * parent.height
+
+                    image: "qrc:/res/send_1.png"
+                    image_anchors.right: bwiLogIn.right
+                    icon_width: 0.1 * parent.width
+                    icon_height: 0.06 * parent.height
+                    text_width: 0.2 * parent.width
+                    text_height: 0.08 * parent.height
+
+                    text: "Submit"
+                    text_color: "#E7FFFF"
+                }
+
                 Image {
                     id: svsLoginBottom
                     source: "qrc:/res/reg_img_04.png"
@@ -340,22 +410,6 @@ BaseWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
             }
-
-            Item {
-                LabeledTextInput {
-                    id: ltiLLogin
-                    anchors.top: parent.top
-                    anchors.topMargin: 0.02 * parent.height
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    height: 0.40 * parent.height
-                    width: parent.width
-                    title: dict.getStringByCode("Login")
-                    placeholderText: "Merlin"
-                    regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
-                }
-            }
-
-
         }
 
         PageIndicator {
@@ -401,8 +455,11 @@ BaseWindow {
 
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
-        console.log("wnd_new_user.onCompleted", svWelcome.z, content_item.z);
-        ltiLogin.setFontSize(0.18 * svWelcome.height);
-        ltiEmail.setFontSize(0.18 * svWelcome.height);
+        console.log("wnd_register.onCompleted", svWelcome.z, content_item.z, svWelcome.height, ltiLLogin.height);
+        ltiLogin.setFontSize();
+        ltiEmail.setFontSize();
+        ltiPass.setFontSize();
+        ltiLLogin.setFontSize();
+        ltiLPass.setFontSize();
     }
 }

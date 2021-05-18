@@ -245,7 +245,7 @@ Item {
     }
 
     function initFields() {
-        console.log("BaseWindow.qml.initFields", bwBody.height, iRoot.height);
+        console.log("BaseWindow.qml.initFields", bwBody.height, iRoot.height, iRoot.x, iRoot.y, x, y);
         fixHeight();
     }
 

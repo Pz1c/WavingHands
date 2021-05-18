@@ -174,58 +174,6 @@ ApplicationWindow {
         }
     }
 
-    header: ToolBar {
-            id: tbTop
-            //anchors.fill: parent
-
-            Rectangle {
-                anchors.fill: parent
-                color: "#210430"
-
-                ToolButton {
-                    id: tbProfile
-                    //text: qsTr("‹")
-                    height: tbTop.height
-                    width: tbTop.height
-                    anchors.left: parent.left
-
-                    onClicked: {
-                        WNDU.showSpellbook();
-                    }
-                    background: Image {
-                        anchors.fill: parent
-                        source: "res/chat.png"
-                    }
-                }
-
-                LargeText {
-                    id: lPlayerTitle
-                    text: "Hi, " + core.login
-                    horizontalAlignment: Qt.AlignHCenter
-                    verticalAlignment: Qt.AlignVCenter
-                    fontSizeMode: Text.VerticalFit
-                    color: "#FEE2D6"
-
-                    anchors.left: tbProfile.right
-                    anchors.right: tbMenu.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                }
-
-                ToolButton {
-                    id: tbMenu
-                    height: tbTop.height
-                    width: tbTop.height
-                    anchors.right: parent.right
-                    onClicked: dMenu.open()
-                    background: Image {
-                        anchors.fill: parent
-                        source: "res/menu.png"
-                    }
-                }
-        }
-    }
-
     Drawer {
         id: dMenu
         width: 0.66 * mainWindow.width
@@ -296,9 +244,63 @@ ApplicationWindow {
         z: -1
     }
 
+    Rectangle {
+            id: tbTop
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 0.1 * parent.height
+            color: "#210430"
+
+            ToolButton {
+                id: tbProfile
+                //text: qsTr("‹")
+                height: tbTop.height
+                width: tbTop.height
+                anchors.left: parent.left
+
+                onClicked: {
+                    WNDU.showSpellbook();
+                }
+                background: Image {
+                    anchors.fill: parent
+                    source: "res/chat.png"
+                }
+            }
+
+            LargeText {
+                id: lPlayerTitle
+                text: "Hi, " + core.login
+                horizontalAlignment: Qt.AlignHCenter
+                verticalAlignment: Qt.AlignVCenter
+                fontSizeMode: Text.VerticalFit
+                color: "#FEE2D6"
+
+                anchors.left: tbProfile.right
+                anchors.right: tbMenu.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+            }
+
+            ToolButton {
+                id: tbMenu
+                height: tbTop.height
+                width: tbTop.height
+                anchors.right: parent.right
+                onClicked: dMenu.open()
+                background: Image {
+                    anchors.fill: parent
+                    source: "res/menu.png"
+                }
+            }
+    }
+
     Item {
         id: rBody
-        anchors.fill: parent
+        anchors.top: tbTop.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
         //color: "#210430"
 
         BtnBig {
