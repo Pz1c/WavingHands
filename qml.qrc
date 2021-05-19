@@ -98,5 +98,6 @@
         <file>res/reg_ttl_04.png</file>
         <file>res/reg_ttl_05.png</file>
         <file>qml/components/RCheckBox.qml</file>
+        <file>res/target_nobody.png</file>
     </qresource>
 </RCC>

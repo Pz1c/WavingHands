@@ -96,9 +96,9 @@ void QWarloksDuelCore::sendMessage(const QString &Msg) {
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
 }
 
-void QWarloksDuelCore::regNewUser(QString Login, QString Email) {
+void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, const QString &Pass) {
     _login = Login;
-    _password = QGameUtils::rand(10);
+    _password = Pass.isEmpty() ? QGameUtils::rand(10) : Pass;
     setIsLoading(true);
 
     QNetworkRequest request;
@@ -776,7 +776,12 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
 
     if (_loadedBattleType != 1) {
-        qDebug() << "battle is not ready end there";
+        qDebug() << "battle is not ready end there" << _loadedBattleType;
+        int idx = _finishedBattle.indexOf("Your orders are in for this turn");
+        if (idx != -1) {
+            _finishedBattle = _finishedBattle.mid(idx, _finishedBattle.length() - idx);
+        }
+
         emit finishedBattleChanged();
         return false;
     }

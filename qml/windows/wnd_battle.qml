@@ -67,16 +67,6 @@ BaseWindow {
                color: "#FEE2D6"
                border_visible: false
                radius: 10
-
-               MouseArea {
-                   id: maAll
-                   anchors.fill: parent
-                   onClicked: {
-                        if (operationMode >= 1) {
-                            iconClick({action:"hp",warlock_name:"Nobody"});
-                        }
-                   }
-               }
             }
 
             BtnBig {
@@ -137,6 +127,42 @@ BaseWindow {
 
                 onClicked: {
                     mainWindow.showBattleChat();
+                }
+            }
+
+            IconInfo {
+                id: iiNobody
+                source: "qrc:/res/target_nobody.png";
+                text: ""
+                height: 0.9 * parent.height
+                width: height
+                anchors.top: parent.top
+                anchors.topMargin: 0.05 * parent.height
+                anchors.right: iiDefault.left
+                visible: false
+
+                onClicked: {
+                    if (operationMode >= 1) {
+                        iconClick({action:"hp",warlock_name:"Nobody"});
+                    }
+                }
+            }
+
+            IconInfo {
+                id: iiDefault
+                source: "qrc:/res/send_1.png";
+                text: ""
+                height: 0.9 * parent.height
+                width: height
+                anchors.top: parent.top
+                anchors.topMargin: 0.05 * parent.height
+                anchors.right: parent.right
+                visible: false
+
+                onClicked: {
+                    if (operationMode >= 1) {
+                        iconClick({action:"hp",warlock_name:"Default"});
+                    }
                 }
             }
         }
@@ -236,11 +262,13 @@ BaseWindow {
         for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
             iWarlocks.children[i].targetingOnOff(Enable, IsSpell);
         }
-        ltAll.text = Enable ? "Nobody" : "All";
-        ltAll.border_visible = Enable;
+        //ltAll.text = Enable ? "Nobody" : "All";
+        //ltAll.border_visible = Enable;
+        iiNobody.visible = Enable;
+        iiDefault.visible = Enable;
         iiElemental.border.width = Enable ? 3 : 0;
-        iiChat.active = !Enable;
-        iiChat.opacity = Enable ? 0.3 : 1;
+        iiChat.visible = !Enable;
+        //iiChat.opacity = Enable ? 0.3 : 1;
     }
 
     function battleChanged() {

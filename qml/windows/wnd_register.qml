@@ -263,7 +263,7 @@ BaseWindow {
                     height: 0.05 * parent.width
                     width: 0.05 * parent.width
                     border.color: "#E7FFFF"
-                    border.width: 4
+                    border.width: 3
                     innerBorder.width: 2
                     fill_color_checked: "#E7FFFF"
                     fill_color_unchecked: "black"
@@ -304,6 +304,43 @@ BaseWindow {
 
                     text: "Submit"
                     text_color: cbConfirmation.checked ? "#E7FFFF" : "#5E5C5E"
+
+                    onClicked: {
+                        var err_cnt = 0;
+                        if ((ltiLogin.text.length < 2) || (ltiLogin.text.length > 10)) {
+                            ltiLogin.border_color = "red";
+                            ++err_cnt;
+                        } else {
+                            ltiLogin.border_color = "#E7FFFF";
+                        }
+
+                        if ((ltiEmail.text.indexOf("@") === -1) || (ltiEmail.text.indexOf(".") === -1)|| (ltiEmail.text.length < 6)) {
+                            ltiEmail.border_color = "red";
+                            ++err_cnt;
+                        } else {
+                            ltiEmail.border_color = "#E7FFFF";
+                        }
+
+                        if ((ltiPass.text.length < 4)|| (ltiPass.text.length > 10)) {
+                            ltiPass.border_color = "red";
+                            ++err_cnt;
+                        } else {
+                            ltiPass.border_color = "#E7FFFF";
+                        }
+
+                        if (!cbConfirmation.checked) {
+                            cbConfirmation.border.color = "red"
+                            tConfirmation.color = "red"
+                            ++err_cnt;
+                        } else {
+                            cbConfirmation.border.color = "#E7FFFF";
+                            tConfirmation.color = "#E7FFFF";
+                        }
+
+                        if (err_cnt === 0) {
+                            mainWindow.gameCore.regNewUser(ltiLogin.text, ltiEmail.text, ltiPass.text);
+                        }
+                    }
                 }
 
                 Image {
@@ -332,7 +369,7 @@ BaseWindow {
                 LargeText {
                     id: svsLoginLink
                     color: "#E7FFFF"
-                    text: "Don't have an account? <u><font color=\"#A8F4F4\">Sing Up</font></u>"
+                    text: "Don't have an account? <u><font color=\"#A8F4F4\">Sign Up</font></u>"
 
                     //textFormat: Text.RichText
                     height: 0.05 * dMainItem.height
@@ -399,6 +436,27 @@ BaseWindow {
 
                     text: "Submit"
                     text_color: "#E7FFFF"
+
+                    onClicked: {
+                        var err_cnt = 0;
+                        if ((ltiLLogin.text.length < 2) || (ltiLLogin.text.length > 10)) {
+                            ltiLLogin.border_color = "red";
+                            ++err_cnt;
+                        } else {
+                            ltiLLogin.border_color = "#E7FFFF";
+                        }
+
+                        if ((ltiLPass.text.length < 4)|| (ltiLPass.text.length > 10)) {
+                            ltiLPass.border_color = "red";
+                            ++err_cnt;
+                        } else {
+                            ltiLPass.border_color = "#E7FFFF";
+                        }
+
+                        if (err_cnt === 0) {
+                            mainWindow.gameCore.setLogin(ltiLLogin.text, ltiLPass.text);
+                        }
+                    }
                 }
 
                 Image {
@@ -425,32 +483,6 @@ BaseWindow {
 
     onCancel: {
         mainWindow.processEscape();
-    }
-
-    onApply: {
-        var err_cnt = 0;
-        if ((ltiLogin.text.length < 2) || (ltiLogin.text.length > 10)) {
-            ltiLogin.border_color = "red";
-            ++err_cnt;
-        } else {
-            ltiLogin.border_color = "black";
-        }
-
-        if ((ltiEmail.text.indexOf("@") === -1) || (ltiEmail.text.indexOf(".") === -1)|| (ltiEmail.text.length < 6)) {
-            ltiEmail.border_color = "red";
-            ++err_cnt;
-        } else {
-            ltiEmail.border_color = "black";
-        }
-
-        if (err_cnt === 0) {
-            mainWindow.gameCore.regNewUser(ltiLogin.text, ltiEmail.text);
-        }
-    }
-
-    onAction1: {
-        console.log("wnd_new_user.onAction1");
-        mainWindow.getLoginFromUser(true);
     }
 
     Component.onCompleted: {

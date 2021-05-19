@@ -105,7 +105,6 @@ public:
     bool allowedAccept();
     QString warlockInfo();
     QString accountMenu();
-    QString getOnlineUrl(int battle_id = 0);
     QString battleList();
 
 
@@ -152,6 +151,7 @@ signals:
 
 public slots:
 
+    QString getOnlineUrl(int battle_id = 0);
     void scanState(bool Silent = false);
     void getChallengeList(bool Silent = false);
     void getTopList();
@@ -164,7 +164,7 @@ public slots:
     void setLogin(QString Login, QString Password);
     void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description);
     void aiCreateNewChallenge();
-    void regNewUser(QString Login, QString Email);
+    void regNewUser(const QString &Login, const QString &Email, const QString &Pass = "");
     void getBattle(int battle_id, int battle_type);
     void getWarlockInfo(const QString &Login);
     void sendMessage(const QString &Msg);

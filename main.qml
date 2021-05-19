@@ -249,7 +249,7 @@ ApplicationWindow {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 0.1 * parent.height
+            height: 0.05 * parent.height
             color: "#210430"
 
             ToolButton {
@@ -567,6 +567,7 @@ ApplicationWindow {
         var bit = core.loadedBattleID;
         logEvent("showFinishedBattle", {battle_id:core.loadedBattleID});
         showErrorWnd({text:core.finishedBattle,type:2,title:"Battle #" + bit});
+        core.scanState(1);
     }
 
     function showReadyBattle() {
@@ -596,7 +597,6 @@ ApplicationWindow {
             msg_txt = short_desc + "<br>Details:<br>";
         }
         msg_txt += warlockDictionary.getStringByCode(spell_code + "_desc");
-
         showErrorWnd({text:msg_txt,type:1,title:warlockDictionary.getStringByCode(spell_code)});
     }
 
