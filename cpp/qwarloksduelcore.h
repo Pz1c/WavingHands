@@ -226,6 +226,8 @@ protected:
     void generateBattleList();
     int parseBattleDescription(QString &Data);
 
+    QString getBattleHint(int battle_id, int battle_turn);
+
 private:
     // user login
     bool _isLogined;
@@ -246,8 +248,10 @@ private:
     int _ladder;
     int _melee;
     int _elo;
-    bool _reg_in_app;
     int _exp_lv;
+    int _hint1;
+    bool _show_hint;
+    bool _reg_in_app;
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
@@ -255,6 +259,7 @@ private:
     QString _finishedBattle;
     QMap<int, QString> _challenge;
     QMap<int, QString> _battleDesc;
+    QMap<int, int> _battleHint;
     QStringList _msg;
     QList<QValueName> _accounts;
 

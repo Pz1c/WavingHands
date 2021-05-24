@@ -116,6 +116,41 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("LoginAs", "", "", "Login as ...");
     fillDictionary("SpellbookTitle", "", "", "Spellbook");
 
+    fillDictionary("hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
+    fillDictionary("hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");
+    fillDictionary("hint_1_3", "", "", "...But P/P with both hands means surrender. (marked as lowercase 'p' in your spellbook)");
+    fillDictionary("hint_1_4", "", "", "Enchantments like DPP (Amnesia), DSF (Maladroit), SWD (Fear) disrupt your enemy");
+    fillDictionary("hint_1_5", "", "", "When two are cast at the same Warlock they cancel out.");
+    fillDictionary("hint_1_6", "", "", "Check your spellbook to learn more spells...");
+    fillDictionary("hint_1_7", "", "", "You can do similarly more tutorials later on one per game like these:");
+    fillDictionary("hint_2_1", "", "", "Summon a goblin (SFW) to fight for you. Cast it at yourself, and then set its target.");
+    fillDictionary("hint_2_2", "", "", "Stab ('>') is a simple way to hit a goblin. Shield ('P') and Protection (WWP) to defend.");
+    fillDictionary("hint_3_1", "", "", "Inflict direct damage with Cause light or heavy wounds (WFP, WPFD)");
+    fillDictionary("hint_3_2", "", "", "Heal up with Cure (DFW, DFPW)");
+    fillDictionary("hint_4_1", "", "", "There are two ways to counter a spell (WPP, WWS).");
+    fillDictionary("hint_4_2", "", "", "Cast them at yourself to prevent spells and monsters from hitting you.");
+    fillDictionary("hint_4_3", "", "", "Cast at an opponent to prevent him from summoning a monster.");
+    fillDictionary("hint_5_1", "", "", "You're doing great! Keep up.");
+    fillDictionary("hint_5_2", "", "", "After you get a bit more training you can start playing against other players and friends.");
+    fillDictionary("hint_5_3", "", "", "Games with other players are played in turns.");
+    fillDictionary("hint_5_4", "", "", "You can play up-to 3 games at the same time for free");
+    fillDictionary("hint_5_5", "", "", "You've got up to 3 days to play each turn.");
+    fillDictionary("hint_6_1", "", "", "When playing against real players, you'll be seeing a lot of these spells...");
+    fillDictionary("hint_6_2", "", "", "...Charm Person (PSDF) to force a gesture");
+    fillDictionary("hint_6_3", "", "", "Charm Monster (PSDD) to take control of a monster, and change its target");
+    fillDictionary("hint_6_4", "", "", "Conceal movements with Invisibility (PPws) - lower caps means w/s with both hands");
+    fillDictionary("hint_7_1", "", "", "Summon stronger monsters in addition to Goblins (SFW)...");
+    fillDictionary("hint_7_2", "", "", "like Ogre (PSFW), Troll (FPSFW) and Giant (WFPSFW) - notice the pattern ?");
+    fillDictionary("hint_8_1", "", "", "The most powerful spell around? That's Finger of Death (PWPFSSSD).");
+    fillDictionary("hint_8_2", "", "", "...It can't be countered, but it can be mirrored (cw)");
+    fillDictionary("hint_9_1", "", "", "Playing with friends can be a lot more fun. Send them an invite.");
+    fillDictionary("hint_9_2", "", "", "You can also set up a private game to play together.");
+    fillDictionary("hint_9_3", "", "", "Every time you win against a powerful warlocks your score will go up to reflect your skill.");
+    fillDictionary("hint_10_1", "", "", "In melee games 3-6 players play at the same time");
+    fillDictionary("hint_10_2", "", "", "Common spells are Fire and Ice Elementals (cWSSW, cSWWS) and Storms (SWWc, WSSc)");
+    fillDictionary("hint_10_3", "", "", "Resistance will protect you (WWFP, SSFP)");
+    fillDictionary("hint_10_4", "", "", "Checkout the full rules at (https://games.ravenblack.net/rules)");
+
     // spell book name
     fillDictionary("cDPW", "Розсіяти магію", "Развеять магию", "Dispel Magic");
     fillDictionary("cSWWS", "Прикликати Крижаного Елементаля", "Призвать Ледяного Елементаля", "Summon Ice Elemental");

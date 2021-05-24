@@ -14,8 +14,10 @@ Item {
     property alias regularExpression: revValidator.regularExpression
     property alias title: ltiTitle.text
     property alias title_color: ltiTitle.color
-    property alias placeholderText: tiMain.placeholderText
-    property alias placeholderTextColor: tiMain.placeholderTextColor
+    //property alias placeholderText: tiMain.placeholderText
+    //property alias placeholderTextColor: tiMain.placeholderTextColor
+    property string placeholderText: ""
+    property string placeholderTextColor: ""
     property alias horizontalAlignment: ltiTitle.horizontalAlignment
     property alias verticalAlignment: ltiTitle.verticalAlignment
     property string bg_color: "snow"
@@ -47,28 +49,30 @@ Item {
         color: transparent ? "transparent" : bg_color
         border.color: border_color
 
-        TextField {
+        //TextField {
+        TextInput {
             id: tiMain
-            anchors.fill: parent
-            //height: 0.95 * parent.height
-            //width: 0.95 * parent.width
+            anchors.centerIn: parent
+            height: 0.95 * parent.height
+            width: 0.95 * parent.width
             inputMethodHints: Qt.ImhNoPredictiveText
             validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
             color: "black"
             echoMode: isPassword ? TextInput.Password : TextInput.Normal
-            font.pixelSize: 0.4 * parent.height
+            //font.pointSize: 20
+            font.pixelSize: 0.3 * parent.height
 
-            background: Rectangle {
-                 color: transparent ? "transparent" : bg_color
-                 border.color: border_color
-             }
+            /*background: Rectangle {
+             color: transparent ? "transparent" : bg_color
+             border.color: border_color
+            }*/
         }
     }
 
     function setFontSize(real_height) {
         console.log("LabeledTextInput.setFontSize", lbiMain.height, tiMain.height, real_height, tiMain.font.pixelSize);
         var h = real_height ? real_height : lbiMain.height;
-        tiMain.font.pixelSize = 0.36 * h;
+        tiMain.font.pixelSize = 0.3 * h;
         console.log("LabeledTextInput.setFontSize after", tiMain.font.pixelSize);
     }
 

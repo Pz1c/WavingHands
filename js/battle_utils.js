@@ -90,7 +90,7 @@ function parseParalyzedHands(arr) {
 
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
-        monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num};
+        monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint};
     // L left  obj
     // R Right obj
     // C Chat  text
@@ -225,10 +225,18 @@ function prepareChat() {
     iiChat.text = with_msg ? battle.chat : "";
 }
 
+function prepareHint() {
+    if (battle.hint && battle.hint.length > 0) {
+        ltHint.text = battle.hint;
+        ltHint.visible = true;
+    }
+}
+
 function prepareGUI() {
     prepareElemental();
     prepareWarlocks();
     prepareChat();
+    prepareHint();
 }
 
 function applyBattle() {

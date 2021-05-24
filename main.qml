@@ -25,15 +25,6 @@ ApplicationWindow {
     width: 507
     height: 900
 
-    Keys.onPressed: {
-        console.log("loader.KEY_PRESSED: " + event.key)
-        if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {
-            console.log("loader.BACK_KEY_PRESSED: " + event.key)
-            event.accepted = true;
-            WNDU.processEscape();
-        }
-    }
-
     Dialog {
         id: mdNoGesture
         title: warlockDictionary.getStringByCode("AreYouSure")
@@ -120,6 +111,8 @@ ApplicationWindow {
         Component.onCompleted: {
             console.log("Core.completed");
             if (core.login === '') {
+                tbTop.visible = false;
+                rBody.visible = false;
                 showNewUserMenu();
             } else {
                 core.scanState();
@@ -151,6 +144,10 @@ ApplicationWindow {
         id: iWndContainer
         anchors.fill: parent
         z: 500
+        focus: true
+
+        Keys.onBackPressed: WNDU.processEscape();
+        Keys.onEscapePressed: WNDU.processEscape();
     }
 
     Rectangle {
@@ -237,11 +234,20 @@ ApplicationWindow {
         }
     }
 
-    Image {
+    Rectangle {
         id: iBG
-        source: "res/background.png"
         anchors.fill: parent
         z: -1
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#544653" }
+            GradientStop { position: 1.0; color: "#210430" }
+        }
+
+        Image {
+            id: iBGimg
+            source: "res/stars_bg.png"
+            anchors.fill: parent
+        }
     }
 
     Rectangle {
@@ -264,7 +270,7 @@ ApplicationWindow {
                 }
                 background: Image {
                     anchors.fill: parent
-                    source: "res/chat.png"
+                    source: "res/spellbook.png"
                 }
             }
 
@@ -528,9 +534,11 @@ ApplicationWindow {
         WNDU.showProfileWindow();
     }
 
+    property int startRegisterFlowIndex: 0
     function getLoginFromUser(real_login) {
         if (real_login) {
-            WNDU.showLogin();
+            startRegisterFlowIndex = 4;
+            WNDU.showRegisterFlow();
         } else {
             showNewUserMenu();
         }

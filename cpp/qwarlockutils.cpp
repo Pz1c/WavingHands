@@ -349,14 +349,15 @@ QString QWarlockUtils::parseChallengeDescription(QString &Data) {
 }
 
 QString QWarlockUtils::parseChallengePart3(QString &Data) {
-    int idx1 = Data.indexOf("num=");
-    idx1 += 5;
+    QString marker1 = "num=";
+    int idx1 = Data.indexOf(marker1);
+    idx1 += marker1.length();
     int idx2 = Data.indexOf("\"", idx1);
     return Data.mid(idx1, idx2 - idx1);
 }
 
 QString QWarlockUtils::parseChallenge(QString &Data) {
-    //qDebug() << "parseChallenge";
+    qDebug() << "parseChallenge" << Data;
     QString res;
     bool is_active = Data.indexOf(">Accept</A>") != -1;
     QString search1 = "<TD";
@@ -421,7 +422,7 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
                   ",\"friendly\":%10,\"with_bot\":%11,\"need\":%12,\"active\":%13}")
             .arg(logins, intToStr(fast), level, intToStr(parafc), intToStr(maladroit), description, battle_id, boolToStr(for_bot), level_color)
             .arg(intToStr(friendly), boolToStr(with_bot), intToStr(need_more), boolToStr(is_active));
-    //qDebug() << res;
+    qDebug() << res;
     return res;
 }
 

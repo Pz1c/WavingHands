@@ -15,6 +15,10 @@ BaseWindow {
     bg_visible: false
 
     function changeIndex(diff) {
+        if (diff === 0) {
+            return;
+        }
+
         var curr_idx = svWelcome.currentIndex;
         var n_diff = diff > 0 ? 1 : -1;
         var new_idx = curr_idx + n_diff;
@@ -25,6 +29,8 @@ BaseWindow {
             new_idx = 0;
         }
         console.log("changeIndex", diff, n_diff, curr_idx, new_idx);
+
+
         svWelcome.setCurrentIndex(new_idx);
     }
 
@@ -97,12 +103,16 @@ BaseWindow {
             anchors.fill: parent
             currentIndex: 0
             z: 13
+            interactive: true
 
             onCurrentIndexChanged: {
                 var new_idx = svWelcome.currentIndex;
                 console.log("svWelcome.onCurrentIndexChanged", new_idx);
                 bwiRight.visible = new_idx < 3;
                 bwiLeft.visible = bwiRight.visible && (new_idx > 0);
+                if (new_idx > 2) {
+                    svWelcome.interactive = false;
+                }
             }
 
             Item {
@@ -254,7 +264,7 @@ BaseWindow {
                     regularExpression: /^.{4,10}$/
                 }
 
-                RCheckBox {
+                CheckBox {
                     id: cbConfirmation
                     anchors.left: parent.left
                     anchors.leftMargin: 0.05 * parent.width
@@ -262,11 +272,11 @@ BaseWindow {
                     checked: false
                     height: 0.05 * parent.width
                     width: 0.05 * parent.width
-                    border.color: "#E7FFFF"
-                    border.width: 3
-                    innerBorder.width: 2
-                    fill_color_checked: "#E7FFFF"
-                    fill_color_unchecked: "black"
+                    //border.color: "#E7FFFF"
+                    //border.width: 3
+                    //innerBorder.width: 2
+                    //fill_color_checked: "#E7FFFF"
+                    //fill_color_unchecked: "black"
                 }
 
                 LargeText {
@@ -329,11 +339,11 @@ BaseWindow {
                         }
 
                         if (!cbConfirmation.checked) {
-                            cbConfirmation.border.color = "red"
+                            //cbConfirmation.border.color = "red"
                             tConfirmation.color = "red"
                             ++err_cnt;
                         } else {
-                            cbConfirmation.border.color = "#E7FFFF";
+                            //cbConfirmation.border.color = "#E7FFFF";
                             tConfirmation.color = "#E7FFFF";
                         }
 
@@ -488,6 +498,10 @@ BaseWindow {
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
         console.log("wnd_register.onCompleted", svWelcome.z, content_item.z, svWelcome.height, ltiLLogin.height);
+        changeIndex(mainWindow.startRegisterFlowIndex);
+        if (mainWindow.startRegisterFlowIndex !== 0) {
+            mainWindow.startRegisterFlowIndex = 0;
+        }
         ltiLogin.setFontSize();
         ltiEmail.setFontSize();
         ltiPass.setFontSize();

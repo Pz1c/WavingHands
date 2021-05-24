@@ -165,6 +165,24 @@ BaseWindow {
                     }
                 }
             }
+
+            LargeText {
+                id: ltHint
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 0.6 * parent.width
+                visible: false
+                text: "test hint 01"
+                color: "snow"
+                bg_color: "blue"
+                bg_visible: true
+                wrapMode: Text.Wrap
+
+                onClicked: {
+                    visible = false;
+                }
+            }
         }
     }
 

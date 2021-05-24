@@ -181,6 +181,10 @@ function isLoadingChanged() {
     var is_loading = core.isLoading;
     console.log("isLoadingChanged", is_loading);
     rLoading.visible = is_loading === 1;
+    if (!rLoading.visible && !tbTop.visible) {
+        tbTop.visible = true;
+        rBody.visible = true;
+    }
 }
 
 function linkActivated(link) {

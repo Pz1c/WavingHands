@@ -111,9 +111,9 @@ void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, co
     postData.append("&referrer=Galbarad&email=");
     postData.append(QUrl::toPercentEncoding(Email));
 
-    postData.append("&showemail=8&icq=&aim=&website=&blurb=I+am+using+Android+application+%22"
-                    "Warlock+duel%22+too+play%0D%0A+https%3A%2F%2Fplay.google.com%2Fstore%2F"
-                    "apps%2Fdetails%3Fid%3Dnet.is.games.WarlockDuel+&preferfast=4&me13=1&update=1");
+    //postData.append("&showemail=8");
+    postData.append("&icq=&aim=&website=&blurb=I+am+using+Android+application+%22"
+                    "Warlock+duel%22+too+play+net.is.games.WarlockDuel&preferfast=4&me13=1&update=1");
 
 
     qDebug() << postData;
@@ -405,6 +405,7 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         _allowedAccept = false;
         _allowedAdd = false;
         _reg_in_app = true;
+        _show_hint = true;
         emit registerNewUserChanged();
         saveParameters(false, false, true);
         return true;
@@ -1186,7 +1187,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
     }  else */ {
         setTimeState(true);
     }
-    qDebug() << old_read <<  _ready_in_battles << old_wait << _waiting_in_battles;
+    qDebug() << old_read <<  _ready_in_battles << old_wait << _waiting_in_battles << new_fb_id;
     bool changed = _ready_in_battles.size() > 0;
     if (!changed) {
         foreach(int bid, _ready_in_battles) {
@@ -1577,6 +1578,8 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("ladder", _ladder);
     settings->setValue("melee", _melee);
     settings->setValue("elo", _elo);
+    settings->setValue("hint1", _hint1);
+    settings->setValue("show_hint", _show_hint);
 
     settings->beginWriteArray("bd");
     QMap<int, QString>::iterator bdi;
@@ -1585,6 +1588,16 @@ void QWarloksDuelCore::saveGameParameters() {
         settings->setArrayIndex(i);
         settings->setValue("id", bdi.key());
         settings->setValue("d", bdi.value());
+    }
+    settings->endArray();
+
+    settings->beginWriteArray("bh");
+    QMap<int, int>::iterator bhi;
+    i = 0;
+    for (bhi = _battleHint.begin(); bhi != _battleHint.end(); ++bhi, ++i) {
+        settings->setArrayIndex(i);
+        settings->setValue("id", bhi.key());
+        settings->setValue("h",  bhi.value());
     }
     settings->endArray();
 }
@@ -1602,6 +1615,8 @@ void QWarloksDuelCore::loadGameParameters() {
     _elo = settings->value("elo", "1500").toInt();
     _allowedAdd = settings->value("allowed_add", "true").toBool();
     _allowedAccept = settings->value("allowed_accept", "true").toBool();
+    _hint1 = settings->value("hint1", "0").toInt();
+    _show_hint = settings->value("show_hint", "false").toBool();
     accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());
     QStringList fbl = settings->value("finished_battles", "").toString().split(",");
     foreach(QString fb, fbl) {
@@ -1619,6 +1634,12 @@ void QWarloksDuelCore::loadGameParameters() {
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
         _battleDesc[settings->value("id").toInt()] = settings->value("d").toString();
+    }
+    settings->endArray();
+    size = settings->beginReadArray("bh");
+    for (int i = 0; i < size; ++i) {
+        settings->setArrayIndex(i);
+        _battleHint[settings->value("id").toInt()] = settings->value("h").toInt();
     }
     settings->endArray();
 }
@@ -1723,19 +1744,9 @@ QString QWarloksDuelCore::playerInfo() {
                         "<tr><td>%10:</td> <td>%11</td></tr>\n"
                         "<tr><td>%12:</td> <td>%13</td></tr>"
                         "</table>")
-            .arg(_login)
-            .arg(GameDictionary->getStringByCode("Played"))
-            .arg(QString::number(_played))
-            .arg(GameDictionary->getStringByCode("Won"))
-            .arg(QString::number(_won))
-            .arg(GameDictionary->getStringByCode("Died"))
-            .arg(QString::number(_died))
-            .arg(GameDictionary->getStringByCode("LadderScore"))
-            .arg(QString::number(_ladder))
-            .arg(GameDictionary->getStringByCode("MeleeScore"))
-            .arg(QString::number(_melee))
-            .arg(GameDictionary->getStringByCode("Elo"))
-            .arg(QString::number(_elo))
+            .arg(_login, GameDictionary->getStringByCode("Played"), QString::number(_played), GameDictionary->getStringByCode("Won"), QString::number(_won),
+                 GameDictionary->getStringByCode("Died"), QString::number(_died), GameDictionary->getStringByCode("LadderScore"), QString::number(_ladder))
+            .arg(GameDictionary->getStringByCode("MeleeScore"), QString::number(_melee), GameDictionary->getStringByCode("Elo"), QString::number(_elo))
             ).append("</html>");
     return res;
 }
@@ -1823,16 +1834,40 @@ QString QWarloksDuelCore::battleList() {
     return _battleList;
 }
 
+QString QWarloksDuelCore::getBattleHint(int battle_id, int battle_turn) {
+    QString hint, hint_code;
+    if (_battleHint.contains(battle_id)) {
+        hint_code = QString("hint_%1_%2").arg(intToStr(_battleHint[battle_id]), intToStr(battle_turn));
+        hint = GameDictionary->getStringByCode(hint_code);
+        return hint.compare(hint_code) == 0 ? "" : hint;
+    } else if (!_show_hint) {
+        return "";
+    }
+
+    while(true) {
+        hint_code = QString("hint_%1_1").arg(intToStr(++_hint1));
+        hint = GameDictionary->getStringByCode(hint_code);
+        if (hint.compare(hint_code) == 0) {
+            _show_hint = false;
+            return "";
+        } else {
+            _battleHint[battle_id] = _hint1;
+            return hint;
+        }
+    }
+}
+
 QString QWarloksDuelCore::battleInfo() {
     QString tmp_trg;
     foreach(QValueName target, _Targets) {
         tmp_trg.append(QString("%1;%2#").arg(target.first, target.second));
     }
+    QString hint = getBattleHint(_loadedBattleID, _loadedBattleTurn);
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":%12,\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18}")
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":\"%19\"}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands);
+            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint);
 }
