@@ -37,6 +37,7 @@ Item {
     property alias title_width: rTitle.width
     property alias body_width: bwBody.width
     property alias body_height: bwBody.height
+    property alias overRect: rBg
     property int body_width_prc: 95
     property int body_height_prc: 60
     property int title_height_prc: 10
@@ -136,14 +137,19 @@ Item {
         z: 10
     }
 
-    Image {
-        id: iTopBg
+    Rectangle {
+        id: rBg
         anchors.top: rTitle.top
         anchors.bottom: bwControl.bottom
         anchors.left: bwControl.left
         anchors.right: bwControl.right
-        source: "qrc:/res/background.png"
         z: 9
+
+        Image {
+            id: iTopBg
+            anchors.fill: parent
+            source: "qrc:/res/background.png"
+        }
     }
 
     Item {
@@ -153,7 +159,7 @@ Item {
         height: control_height_prc / 100 * parent.height
         width: bwBody.width
         //color: "snow"
-        z: 10
+        z: 20
         visible: false
 
         BtnBig {

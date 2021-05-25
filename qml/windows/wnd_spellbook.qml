@@ -13,6 +13,12 @@ BaseWindow {
     body_height_prc: 60
     control_height_prc: 5
     title_text: dict.getStringByCode("SpellbookTitle")
+    bg_visible: true
+    bg_source: "qrc:/res/stars_bg.png"
+    overRect.gradient: Gradient {
+        GradientStop { position: 0.0; color: "#210430" }
+        GradientStop { position: 1.0; color: "#0654C0" }
+    }
 
     property var arrSpell: []
 
@@ -30,6 +36,7 @@ BaseWindow {
             anchors.bottom: parent.bottom
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            z:13
 
             ListView {
                 id: lvSpellList

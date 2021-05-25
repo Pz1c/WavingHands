@@ -225,10 +225,11 @@ ApplicationWindow {
             model: []
 
             onCurrentIndexChanged: {
-                console.log("cbLoginAs.onAccepted", currentIndex, currentValue, core.login);
-                if ((currentIndex > 0) && (currentValue !== core.login)) {
+                var curr_login = core.login;
+                console.log("cbLoginAs.onAccepted", currentIndex, currentValue, cbLoginAs.model[currentIndex], curr_login);
+                if ((currentIndex > 0) && (cbLoginAs.model[currentIndex] !== curr_login)) {
                     dMenu.close();
-                    core.autoLogin(currentIndex - 1)
+                    core.autoLogin(currentIndex - 1);
                 }
             }
         }
