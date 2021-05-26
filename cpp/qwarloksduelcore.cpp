@@ -335,7 +335,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     }
 
     QString url = NewUrl.toString().toLower();
-    qDebug() << "login sucessfull redirect to " << url;
+    qDebug() << "finishOrderSubmit sucessfull redirect to " << url;
     if (url.indexOf("http://") == -1) {
         url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
     }
@@ -1133,7 +1133,7 @@ void QWarloksDuelCore::generateBattleList() {
     emit battleListChanged();
 }
 
-void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
+void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     qDebug() << "QWarloksDuelCore::parsePlayerInfo";
     QList<int> old_read(_ready_in_battles), old_wait(_waiting_in_battles);
     _challenge.clear();
@@ -1221,15 +1221,17 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
             }
         }
     }
-    if (changed) {
+    if (changed || ForceBattleList) {
         generateBattleList();
     }
     saveParameters();
 }
 
-bool QWarloksDuelCore::finishScan(QString &Data) {
-    parsePlayerInfo(Data);
-    getChallengeList();
+bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
+    parsePlayerInfo(Data, ForceBattleList);
+    if (!ForceBattleList) {
+        getChallengeList();
+    }
     /*if (_isAI) {
         _challengeList = "[]";
         if (_ready_in_battles.count() == 0) {
@@ -1350,7 +1352,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         if (url.indexOf(".html") != -1) {
             finishScanWarlock(data);
         } else {
-            finishScan(data);
+            finishScan(data, url.indexOf("mess=Orders") != -1);
         }
         return true;
     }

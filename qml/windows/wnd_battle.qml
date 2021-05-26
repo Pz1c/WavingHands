@@ -170,8 +170,8 @@ BaseWindow {
                 id: ltHint
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 0.6 * parent.width
+                anchors.left: iiElemental.right
+                width: parent.width - 2 * 0.95 * parent.height
                 visible: false
                 text: "test hint 01"
                 color: "snow"
@@ -270,11 +270,17 @@ BaseWindow {
         mainWindow.showErrorWnd({type:msg_type,text:msg_text,title:msg_title,data:data});
     }
 
-    function setTargetingOnOff(Enable, IsSpell) {
+    function setTargetingOnOff(Enable, IsSpell, Title) {
         if (!Enable) {
             battleChanged();
+            ltHint.visible = false;
         } else {
             bbSendOrders.visible = false;
+            if (Title) {
+                ltHint.visible = true;
+                ltHint.width = bfAll.width - 3 * 0.95 * bfAll.height;
+                ltHint.text = "Select target for " + Title + (IsSpell ? " spell" : "");
+            }
         }
 
         for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
@@ -316,9 +322,9 @@ BaseWindow {
         BU.setCharm(hand, gesture);
     }
 
-    function prepareToTargeting(is_spell) {
-        setTargetingOnOff(true, is_spell);
+    function prepareToTargeting(is_spell, title) {
         operationMode = is_spell ? 1 : 2;
+        setTargetingOnOff(true, is_spell, title);
         permanency = 0;
         delay = 0;
     }

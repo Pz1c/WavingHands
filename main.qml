@@ -22,8 +22,8 @@ import "qrc:/qml"
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 507
-    height: 900
+    width: 600
+    height: 1068
 
     Dialog {
         id: mdNoGesture
@@ -341,6 +341,7 @@ ApplicationWindow {
             text_color: "#A8F4F4"
             text: warlockDictionary.getStringByCode("NewGameWithPlayer")
             transparent: true
+            font.underline: true
             border.width: 0
             visible: core.allowedAdd || true
 
@@ -700,7 +701,7 @@ ApplicationWindow {
 
         WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit);
         if (need_target) {
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true);
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, spell.n);
         }
         WNDU.processEscape();
     }
@@ -715,11 +716,11 @@ ApplicationWindow {
             return;
         }
 
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true);
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, gBattle.actions[gBattle.currentHand].n);
     }
 
-    function chooseMonsterTarget() {
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false);
+    function chooseMonsterTarget(title) {
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false, title);
         WNDU.processEscape();
     }
 
