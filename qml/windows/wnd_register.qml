@@ -14,22 +14,25 @@ BaseWindow {
     control_height_prc: 0
     bg_visible: false
 
-    function changeIndex(diff) {
+    function changeIndex(diff, diff_is_new_idx) {
         if (diff === 0) {
             return;
         }
-
-        var curr_idx = svWelcome.currentIndex;
-        var n_diff = diff > 0 ? 1 : -1;
-        var new_idx = curr_idx + n_diff;
-        if (new_idx <= 0) {
-            new_idx = svWelcome.count - 1;
+        var new_idx;
+        if (diff_is_new_idx) {
+            new_idx = diff;
+        } else {
+            var curr_idx = svWelcome.currentIndex;
+            var n_diff = diff > 0 ? 1 : -1;
+            new_idx = curr_idx + n_diff;
+            if (new_idx <= 0) {
+                new_idx = svWelcome.count - 1;
+            }
+            if (new_idx >= svWelcome.count) {
+                new_idx = 0;
+            }
+            console.log("changeIndex", diff, n_diff, curr_idx, new_idx);
         }
-        if (new_idx >= svWelcome.count) {
-            new_idx = 0;
-        }
-        console.log("changeIndex", diff, n_diff, curr_idx, new_idx);
-
 
         svWelcome.setCurrentIndex(new_idx);
     }
@@ -245,7 +248,8 @@ BaseWindow {
                     border_color: "#E7FFFF"
                     text_color: "#E7FFFF"
                     placeholderText: ""
-                    regularExpression: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+                    //regularExpression: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
+                    regularExpression: /^.{6,100}$/
                 }
 
                 LabeledTextInput {
@@ -264,7 +268,7 @@ BaseWindow {
                     regularExpression: /^.{4,10}$/
                 }
 
-                CheckBox {
+                RCheckBox {
                     id: cbConfirmation
                     anchors.left: parent.left
                     anchors.leftMargin: 0.05 * parent.width
@@ -285,6 +289,7 @@ BaseWindow {
                     width: 0.8 * parent.width
                     anchors.top: ltiPass.bottom
                     anchors.left: cbConfirmation.right
+                    anchors.leftMargin: 0.01 * parent.width
                     //anchors.topMargin: 0.02 * parent.height
                     //anchors.horizontalCenter: parent.horizontalCenter
                     horizontalAlignment: Text.AlignLeft
@@ -498,7 +503,7 @@ BaseWindow {
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
         console.log("wnd_register.onCompleted", svWelcome.z, content_item.z, svWelcome.height, ltiLLogin.height);
-        changeIndex(mainWindow.startRegisterFlowIndex);
+        changeIndex(mainWindow.startRegisterFlowIndex, true);
         if (mainWindow.startRegisterFlowIndex !== 0) {
             mainWindow.startRegisterFlowIndex = 0;
         }

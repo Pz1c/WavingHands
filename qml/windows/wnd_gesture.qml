@@ -81,14 +81,14 @@ BaseWindow {
                             horizontalAlignment: Text.AlignRight
                             text: lvSpellList.model[index].n
 
-                            onClicked: {
+                            /*onClicked: {
                                 console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
                                 if(lvSpellList.model[index].gp !== "?") {
                                     mainWindow.showSpellDetails(lvSpellList.model[index].g);
                                 } else {
                                     maSpell.clicked();
                                 }
-                            }
+                            }*/
                         }
 
                         /*IconInfo {
@@ -117,7 +117,9 @@ BaseWindow {
                             anchors.fill: parent
                             onClicked: {
                                 console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpell[index]));
-                                if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
+                                if ((currGesture === "") && (lvSpellList.model[index].gp !== "?")) {
+                                    mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                } else if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
                                     arrSpell[index].choose = 1;
                                     arrSpell[index].need_target = true;
                                     arrSpell[mainWindow.gBattle.spellIdx].choose = 0;

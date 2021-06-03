@@ -5,13 +5,25 @@
 #endif
 #include <QtQml>
 #include <QDebug>
+#include <QFontDatabase>
 #include "cpp/qwarloksduelcore.h"
 #include "cpp/qwarlockdictionary.h"
 
 int main(int argc, char *argv[])
 {
     //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
     QGuiApplication app(argc, argv);
+
+    qint32 fontId = QFontDatabase::addApplicationFont(":/res/AgencyFB.ttf");
+    qDebug() << "fontId" << fontId;
+    if (fontId != -1) {
+        QStringList fontList = QFontDatabase::applicationFontFamilies(fontId);
+        if (fontList.size() > 0) {
+            QString family = fontList.at(0);
+            QGuiApplication::setFont(QFont(family));
+        }
+    }
 
     QWarlockDictionary::getInstance();
     qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");

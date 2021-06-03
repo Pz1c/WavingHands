@@ -226,6 +226,7 @@ protected:
     void generateBattleList();
     int parseBattleDescription(QString &Data);
 
+    QString getHintArray(int hint_id);
     QString getBattleHint(int battle_id, int battle_turn);
 
 private:

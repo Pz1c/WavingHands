@@ -227,9 +227,9 @@ function prepareChat() {
 
 function prepareHint() {
     if (battle.hint && battle.hint.length > 0) {
-        ltHint.text = battle.hint;
-        ltHint.visible = true;
-        ltHint.width = width = bfAll.width - 2 * 0.95 * bfAll.height;
+        ltTutorial.tutorialData = battle.hint;
+        ltTutorial.text = battle.hint[0];
+        ltTutorial.visible = true;
     }
 }
 

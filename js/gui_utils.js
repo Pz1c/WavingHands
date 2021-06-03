@@ -10,6 +10,7 @@ var G_ACCOUNT_LIST = [];
 function newUserRegistered() {
     var l_login = core.login;
     closeChild();
+    lPlayerTitle.text = "Hi, " + l_login;
     showTipMessage(warlockDictionary.getStringByCode("JustRegistered").replace("#login#", l_login), true);
     logEvent("registration_finished", {login: l_login});
 }
@@ -98,7 +99,7 @@ function startGameWithPlayer() {
     var best_idx = -1, battle, bb;
     for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
         battle = G_CHALLENGE_LIST[i];
-        if (!battle.active) {
+        if (!battle.active || (battle.total_count > 2)) {
             continue;
         }
 

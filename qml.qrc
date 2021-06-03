@@ -101,5 +101,6 @@
         <file>res/target_nobody.png</file>
         <file>res/spellbook.png</file>
         <file>res/stars_bg.png</file>
+        <file>res/AgencyFB.ttf</file>
     </qresource>
 </RCC>

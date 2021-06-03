@@ -64,9 +64,9 @@ BaseWindow {
                width: 0.3 * parent.width
                bg_visible: true
                bg_color: "#544653"
+               bg_radius: 10
                color: "#FEE2D6"
                border_visible: false
-               radius: 10
             }
 
             BtnBig {
@@ -171,16 +171,45 @@ BaseWindow {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.left: iiElemental.right
-                width: parent.width - 2 * 0.95 * parent.height
+                anchors.right: iiNobody.left
                 visible: false
                 text: "test hint 01"
                 color: "snow"
                 bg_color: "blue"
                 bg_visible: true
+                bg_radius: 5
+                border_visible: false
                 wrapMode: Text.Wrap
 
                 onClicked: {
                     visible = false;
+                }
+            }
+
+
+            LargeText {
+                id: ltTutorial
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: iiElemental.right
+                anchors.right: iiChat.left
+                visible: false
+                text: "test hint 01"
+                color: "snow"
+                bg_color: "blue"
+                bg_visible: true
+                bg_radius: 5
+                border_visible: false
+                wrapMode: Text.Wrap
+                property var tutorialData: ([])
+                property int tutorialDataIdx: 0
+
+                onClicked: {
+                    if (++tutorialDataIdx >= tutorialData.length) {
+                        visible = false;
+                    } else {
+                        ltTutorial.text = tutorialData[tutorialDataIdx];
+                    }
                 }
             }
         }
@@ -278,7 +307,6 @@ BaseWindow {
             bbSendOrders.visible = false;
             if (Title) {
                 ltHint.visible = true;
-                ltHint.width = bfAll.width - 3 * 0.95 * bfAll.height;
                 ltHint.text = "Select target for " + Title + (IsSpell ? " spell" : "");
             }
         }

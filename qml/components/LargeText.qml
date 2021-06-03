@@ -5,6 +5,7 @@ Item {
     id: ltRoot
     property alias bg_visible: ltBG.visible
     property alias bg_color: ltBG.color
+    property alias bg_radius: ltBG.radius
     property alias radius: ltBG.radius
     property bool  border_visible: true
     property alias color: tTitle.color
@@ -15,6 +16,7 @@ Item {
     property alias font: tTitle.font
     property alias text: tTitle.text
     property alias wrapMode: tTitle.wrapMode
+    //property alias pixelSize: tTitle.font.pixelSize
 
     signal clicked
 

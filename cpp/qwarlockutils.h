@@ -41,6 +41,7 @@ public:
     static QString parseChallengePart1(QString &Data);
     static QString parseChallengeDescription(QString &Data);
     static QString parseChallengePart3(QString &Data);
+    static QString getFinishedBattleDescription(const QString &Data, const QString &Login);
     static int strValueToInt(QString val);
     static void appendSeparatedList(QString &list, const QString &data, const QString &separator = ",");
 };

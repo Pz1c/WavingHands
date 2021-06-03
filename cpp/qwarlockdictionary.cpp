@@ -91,11 +91,11 @@ void QWarlockDictionary::fillGameDictionary() {
                                      "Приветствую нового волшебника! Пожалуйста, подождите скоро начнется ваш первый тренировочный бой. <br> В бою вы будете составлять заклинания делая жесты вашими руками. Всего есть 6 жестов W, S, D, P, C, F <br> За один раунд боя вы можете сделать 1 жест левой и 1 жест правой рукой. В следующем раунде вы продолжите цепочку женстей для создания заклинания левой и правой рукой. Например, в первом раунде вы сделали жест левой рукой S и правой D, в следующем раунде делая левой рукой жест D вы завершают заклятие Магической стрелы (SD), а правой можете продолжить построение заклятие Запутанность (DSF) делая жест S. Полный список заклинаний есть в книге заклинаний.",
                                      "Hey #login#, let's fight!<br>Check your spell book, and learn how to cast spells.<br>Just pick a gesture for each of your hands.<br>Gestures are letters W, S, D, P, C, F<br>Letters add up to words (like DPP), and words are spells (like Amnesia).<br>Let's go!");
     fillDictionary("NewGame", "Нова гра", "Новая игра", "New Game");
-    fillDictionary("TrainingGame", "", "", "Start training");
-    fillDictionary("NewGameWithBot", "Грати з ботом", "Играть с ботом", "Play against Bot");
-    fillDictionary("NewGameWithPlayer", "Грати з людиною", "Играть с человеком", "Play against warlock");
-    fillDictionary("ActiveGameTitle", "", "", "Your Games");
-    fillDictionary("FinishedGameTitle", "", "", "Finished Games");
+    fillDictionary("TrainingGame", "", "", "Start Training");
+    fillDictionary("NewGameWithBot", "Грати з ботом", "Играть с ботом", "Start Training");
+    fillDictionary("NewGameWithPlayer", "Грати з людиною", "Играть с человеком", "Warlock vs. Warlock");
+    fillDictionary("ActiveGameTitle", "", "", "Your Games:");
+    fillDictionary("FinishedGameTitle", "", "", "Finished Games:");
     fillDictionary("MonsterSetTarget", "", "", "Choose target");
     fillDictionary("MonsterOwnerTitle", "", "", "Owner");
     fillDictionary("MonsterTargetTitle", "", "", "Target");
@@ -122,7 +122,6 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("hint_1_4", "", "", "Enchantments like DPP (Amnesia), DSF (Maladroit), SWD (Fear) disrupt your enemy");
     fillDictionary("hint_1_5", "", "", "When two are cast at the same Warlock they cancel out.");
     fillDictionary("hint_1_6", "", "", "Check your spellbook to learn more spells...");
-    fillDictionary("hint_1_7", "", "", "You can do similarly more tutorials later on one per game like these:");
     fillDictionary("hint_2_1", "", "", "Summon a goblin (SFW) to fight for you. Cast it at yourself, and then set its target.");
     fillDictionary("hint_2_2", "", "", "Stab ('>') is a simple way to hit a goblin. Shield ('P') and Protection (WWP) to defend.");
     fillDictionary("hint_3_1", "", "", "Inflict direct damage with Cause light or heavy wounds (WFP, WPFD)");
