@@ -13,10 +13,10 @@ BaseWindow {
     with_controls: false
     //with_apply: false
     body_width_prc: 100
-    body_height_prc: 95
-    title_height_prc: 5
+    body_height_prc: 100
+    title_height_prc: 0
     control_height_prc: 0
-    with_action1: true
+    with_action1: false
     action1_text: "Chat"
     bg_source: "qrc:/res/background_battle.png"
 
@@ -390,6 +390,7 @@ BaseWindow {
     }
 
     Component.onCompleted: {
+        console.log("battle window", x, y);
         mainWindow.storeWnd(battleItem);
         initBattleFields();
     }

@@ -898,7 +898,7 @@ ApplicationWindow {
     }
 
     function creationFinished() {
-        //console.log(Screen.pixelDensity);
+        console.log("iWndContainer x y", iWndContainer.x, iWndContainer.y);
         calculateRatio();
         logEvent("gameFieldReady", {ratio_o:ratioObject, ratio_f: ratioFont});
         //GUI.prepareNewGameBtn(1500);

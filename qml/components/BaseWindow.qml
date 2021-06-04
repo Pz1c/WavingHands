@@ -87,6 +87,7 @@ Item {
         //anchors.right: parent.right
         //height: 0.05 * parent.height
         //color: "snow"
+        visible: title_height_prc > 0
         z: 10
 
         Rectangle {
