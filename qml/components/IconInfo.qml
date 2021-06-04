@@ -16,6 +16,8 @@ Rectangle {
     property alias source: iIcon.source
     property alias iconVisible: iIcon.visible
     property alias textVisible: btnText.visible
+    //property alias paddingLeft: anchors.leftMargin
+    //property alias paddingRignt: anchors.rightMargin
 
     property var l_data: ({})
 

@@ -53,15 +53,15 @@ BaseWindow {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 0.1 * parent.height
+            height: 90 * mainWindow.ratioObject
 
             LargeText {
                id: ltAll
                text: "All"
                anchors.top: parent.top
                anchors.horizontalCenter: parent.horizontalCenter
-               height: 0.5 * parent.height
-               width: 0.3 * parent.width
+               height: 36 * mainWindow.ratioObject
+               width: 246 * mainWindow.ratioObject
                bg_visible: true
                bg_color: "#544653"
                bg_radius: 10
@@ -99,11 +99,12 @@ BaseWindow {
                 id: iiElemental
                 source: "qrc:/res/elemental_fire.png";
                 text: "3"
-                height: 0.9 * parent.height
+                height: 78 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.05 * parent.height
+                anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
+                anchors.leftMargin: 6 * mainWindow.ratioObject
 
                 onClicked: {
                     iconClick(iiElemental.l_data)
@@ -119,11 +120,12 @@ BaseWindow {
                 source: "qrc:/res/chat.png";
                 text: ""
                 text_color: "red"
-                height: 0.9 * parent.height
+                height: 78 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.05 * parent.height
+                anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: parent.right
+                anchors.rightMargin: 6 * mainWindow.ratioObject
 
                 onClicked: {
                     mainWindow.showBattleChat();
@@ -134,11 +136,12 @@ BaseWindow {
                 id: iiNobody
                 source: "qrc:/res/target_nobody.png";
                 text: ""
-                height: 0.9 * parent.height
+                height: 78 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.05 * parent.height
+                anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: iiDefault.left
+                anchors.rightMargin: 6 * mainWindow.ratioObject
                 visible: false
 
                 onClicked: {
@@ -152,11 +155,12 @@ BaseWindow {
                 id: iiDefault
                 source: "qrc:/res/send_1.png";
                 text: ""
-                height: 0.9 * parent.height
+                height: 78 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.05 * parent.height
+                anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: parent.right
+                anchors.rightMargin: 6 * mainWindow.ratioObject
                 visible: false
 
                 onClicked: {

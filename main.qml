@@ -22,8 +22,9 @@ import "qrc:/qml"
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 600
-    height: 1068
+    width: 506//600
+    height: 900//1068
+    flags: Qt.FramelessWindowHint|Qt.Window
 
     property real ratioObject: 1
     property real ratioFont: 1
@@ -332,7 +333,7 @@ ApplicationWindow {
                 }
                 background: Image {
                     anchors.fill: parent
-                    source: "res/trophy.png"
+                    source: "res/spellbook.png"
                 }
             }
     }
