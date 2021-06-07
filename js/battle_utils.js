@@ -7,7 +7,7 @@ Qt.include("battle_gui_utils.js");
 
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
-    w.print_g = preparePrintGestures(w.L, w.R);
+    w.print_g = preparePrintGestures(w.L, w.R, w.smcL, w.smcR);
     w.id = battle.targetsMap[w.name];
     w.paralyzed_hand = battle.paralyzed_hand[w.id];
     if (!w.paralyzed_hand) {

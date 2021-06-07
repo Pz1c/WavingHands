@@ -117,11 +117,16 @@ QString QWarlock::separatedString() {
     qDebug() << "QWarlock::separatedString" << _name << _bestSpellL << _bestSpellR << _possibleSpells;
     bool charmL = false;
     bool charmR = false;
-    int summon_left = SPELL_ID_MAX, summon_right = SPELL_ID_MAX;
+    int summon_left = SPELL_ID_MAX, summon_right = SPELL_ID_MAX, spell_max_pass_left = 0, spell_max_pass_right = 0;
     QString res;
     foreach(QSpell *s, _possibleSpells) {
         if (!res.isEmpty()) {
             res.append(",");
+        }
+        if (s->hand() == WARLOCK_HAND_LEFT) {
+            spell_max_pass_left = qMax(spell_max_pass_left, s->alreadyCasted());
+        } else {
+            spell_max_pass_right = qMax(spell_max_pass_right, s->alreadyCasted());
         }
         if (s->turnToCast() == 1) {
             if (s->spellType() == SPELL_TYPE_SUMMON_MONSTER) {
@@ -163,14 +168,14 @@ QString QWarlock::separatedString() {
                    "\"confused\":%11,\"charmed\":%12,\"paralized\":%13,\"shield\":%14,\"coldproof\":%15,\"fireproof\":%16,\"poison\":%17,\"desease\":%18,"
                    "\"amnesia\":%19,\"maladroit\":%20,\"summon_left\":%21,\"summon_right\":%22,\"active\":%23,\"mshield\":%24,\"delay\":%25,\"time_stop\":%26,"
                    "\"haste\":%27,\"permanency\":%28,\"blindness\":%29,\"invisibility\":%30,\"plg\":\"%31\",\"prg\":\"%32\",\"charm_left\":%33,\"charm_right\":%34,"
-                   "\"lgL\":\"%35\",\"lgR\":\"%36\"}").
+                   "\"lgL\":\"%35\",\"lgR\":\"%36\",\"smcL\":%37,\"smcR\":%38}").
             arg(_name, _status, _leftGestures, _rightGestures, res, boolToStr(_player), sbsL, sbsR, intToStr(_hp)).
             arg(intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield),
                 intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_desease)).
             arg(intToStr(_amnesia), intToStr(_maladroit), intToStr(summon_left), intToStr(summon_right), _active ? "1" : "0").
             arg(intToStr(_mshield), intToStr(_delay), intToStr(_time_stop), intToStr(_haste), intToStr(_permanency), intToStr(_blindness), intToStr(_invisibility),
                 _possibleLeftGestures, _possibleRightGestures, boolToStr(charmL), boolToStr(charmR)).
-            arg(_leftGestures.trimmed().right(1), _rightGestures.trimmed().right(1));
+            arg(_leftGestures.trimmed().right(1), _rightGestures.trimmed().right(1), intToStr(spell_max_pass_left), intToStr(spell_max_pass_right));
 }
 
 bool QWarlock::player() const

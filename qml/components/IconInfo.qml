@@ -10,12 +10,16 @@ Rectangle {
     property bool checked: false
     property bool blink: false
     property bool disbleBlinkAfterClick: true
+    property bool borderOnPress: true
+    property int borderOnPressWidth: 3
     property alias text_color: btnText.color
     property alias text: btnText.text
     property alias fontSizeMode: btnText.fontSizeMode
     property alias source: iIcon.source
     property alias iconVisible: iIcon.visible
     property alias textVisible: btnText.visible
+    property alias iconHeight: iIcon.height
+    property alias iconWidth: iIcon.width
     //property alias paddingLeft: anchors.leftMargin
     //property alias paddingRignt: anchors.rightMargin
 
@@ -84,6 +88,21 @@ Rectangle {
                 button.clicked(l_data);
             }
         }
+
+        property real borderBeforePress: 0;
+        onPressed: {
+            if (borderOnPress) {
+                borderBeforePress = border.width;
+                border.width = borderOnPressWidth;
+            }
+        }
+
+        onReleased: {
+            if (borderOnPress) {
+                border.width = borderBeforePress;
+            }
+        }
+
         /*onDoubleClicked: {
             if (active) {
                 animate(2);

@@ -32,7 +32,7 @@ Item {
 
     IconInfo {
         id: iiHP
-        source: "qrc:/res/heart.png";
+        source: "qrc:/res/heart_small.png";
         text: l_warlock.hp
         height: 78 * l_ratio
         width: height
@@ -134,15 +134,17 @@ Item {
                     textVisible: false
                     height: 108 * l_ratio
                     width: 78 * l_ratio
+                    iconHeight: 64 * l_ratio
+                    iconWidth: 64 * l_ratio
                     anchors.bottom: iiHR.top
                     anchors.bottomMargin: 18 * l_ratio
                     anchors.left: parent.left
                     active: false
-                    radius: 30
+                    radius: 20
                     gradient: Gradient {
-                            GradientStop { position: 0.0;  color: "#756F79" }
-                            GradientStop { position: 0.15; color: "#544653" }
-                            GradientStop { position: 1.0;  color: "#544653" }
+                            GradientStop { position: 0.0;  color: lwGestures.model[index].la ? "#E7FFFF" : "#756F79" }
+                            GradientStop { position: lwGestures.model[index].la ? 0.25 : 0.15; color: lwGestures.model[index].la ? "#E7FFFF" : "#544653" }
+                            GradientStop { position: 1.0;  color: lwGestures.model[index].la ? "#FEE2D6" : "#544653" }
                         }
                 }
 
@@ -153,16 +155,18 @@ Item {
                     textVisible: false
                     height: 108 * l_ratio
                     width: 78 * l_ratio
+                    iconHeight: 64 * l_ratio
+                    iconWidth: 64 * l_ratio
                     anchors.bottom: parent.bottom
                     //anchors.bottomMargin: 0.05 * rWarlock.height
                     anchors.left: parent.left
                     active: false
-                    radius: 30
+                    radius: 20
                     gradient: Gradient {
-                            GradientStop { position: 0.0;  color: "#756F79" }
-                            GradientStop { position: 0.15; color: "#544653" }
-                            GradientStop { position: 1.0;  color: "#544653" }
-                        }
+                        GradientStop { position: 0.0;  color: lwGestures.model[index].ra ? "#E7FFFF" : "#756F79" }
+                        GradientStop { position: lwGestures.model[index].ra ? 0.25 : 0.15; color: lwGestures.model[index].ra ? "#E7FFFF" : "#544653" }
+                        GradientStop { position: 1.0;  color: lwGestures.model[index].ra ? "#FEE2D6" : "#544653" }
+                    }
                 }
             }
         }
@@ -174,11 +178,13 @@ Item {
         text: ""
         height: 120 * l_ratio
         width: 90 * l_ratio
+        iconHeight: 84 * l_ratio
+        iconWidth: 84 * l_ratio
         anchors.bottom: iiRight.top
         anchors.bottomMargin: 18 * l_ratio
         anchors.right: parent.right
         visible: false
-        radius: 30
+        radius: 20
 
         onClicked: {
             if (l_warlock.player) {
@@ -205,11 +211,13 @@ Item {
         text: ""
         height: iiLeft.height
         width: iiLeft.width
+        iconHeight: 84 * l_ratio
+        iconWidth: 84 * l_ratio
         anchors.bottom: rBottomLine.top
         anchors.bottomMargin: 16 * l_ratio
         anchors.right: parent.right
         visible: false
-        radius: 30
+        radius: 20
 
         onClicked: {
             if (l_warlock.player) {
@@ -249,16 +257,16 @@ Item {
         iiLeft.opacity = opacity;
         iiRight.opacity = opacity;
         //iiHP.active = Enable;
-        iiHP.border.width = border_width;
+        //iiHP.border.width = border_width;
         if (iiBanked.visible) {
             iiBanked.opacity = opacity;
         }
         var item, i, Ln;
-        for (i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
+        /*for (i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
             item = iMonsters.children[i];
             item.border.width = border_width;
             //item.active = Enable;
-        }
+        }*/
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
             if (IsSpell && l_warlock.player && ((item.l_data.action === "permanency") || (item.l_data.action === "delay"))) {
@@ -343,7 +351,7 @@ Item {
             }
 
             var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value],
-                                                        source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox});
+                                                        source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox, radius: 20});
             if (sprite === null) {
                 console.log("prepareDynamic Error creating object");
                 continue;

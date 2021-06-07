@@ -599,7 +599,7 @@ ApplicationWindow {
     property int startRegisterFlowIndex: 0
     function getLoginFromUser(real_login) {
         if (real_login) {
-            startRegisterFlowIndex = 4;
+            startRegisterFlowIndex = 1; // login
             WNDU.showRegisterFlow();
         } else {
             showNewUserMenu();

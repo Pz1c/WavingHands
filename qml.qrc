@@ -102,5 +102,10 @@
         <file>res/spellbook.png</file>
         <file>res/stars_bg.png</file>
         <file>res/AgencyFB.ttf</file>
+        <file>res/reg_img_05.png</file>
+        <file>res/reg_img_06.png</file>
+        <file>res/reg_ttl_06.png</file>
+        <file>res/reg_ttl_07.png</file>
+        <file>res/heart_small.png</file>
     </qresource>
 </RCC>

@@ -110,11 +110,13 @@ BaseWindow {
 
             onCurrentIndexChanged: {
                 var new_idx = svWelcome.currentIndex;
+                var items_count = svWelcome.count;
                 console.log("svWelcome.onCurrentIndexChanged", new_idx);
-                bwiRight.visible = new_idx < 3;
+                bwiRight.visible = new_idx < items_count - 2;
                 bwiLeft.visible = bwiRight.visible && (new_idx > 0);
-                if (new_idx > 2) {
-                    svWelcome.interactive = false;
+                bwiRight.text = (new_idx === items_count - 3) ? "Got It!" : "Next";
+                if (!bwiRight.visible) {
+                    //svWelcome.interactive = false;
                 }
             }
 
@@ -180,6 +182,52 @@ BaseWindow {
                 Image {
                     id: svs3Bottom
                     source: "qrc:/res/reg_img_03.png"
+                    width: 0.8 * parent.width
+                    height: 1.4 * width
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+
+            Item {
+                id: svScreen04
+
+                Image {
+                    id: svs4Title
+                    source: "qrc:/res/reg_ttl_06.png"
+                    width: 0.8 * parent.width
+                    height: 0.5 * width
+                    anchors.top: parent.top
+                    anchors.topMargin: 0.1 * mainItem.height
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Image {
+                    id: svs4Bottom
+                    source: "qrc:/res/reg_img_05.png"
+                    width: 0.8 * parent.width
+                    height: 1.4 * width
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+
+            Item {
+                id: svScreen05
+
+                Image {
+                    id: svs5Title
+                    source: "qrc:/res/reg_ttl_07.png"
+                    width: 0.8 * parent.width
+                    height: 0.5 * width
+                    anchors.top: parent.top
+                    anchors.topMargin: 0.1 * mainItem.height
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Image {
+                    id: svs5Bottom
+                    source: "qrc:/res/reg_img_06.png"
                     width: 0.8 * parent.width
                     height: 1.4 * width
                     anchors.bottom: parent.bottom
@@ -503,10 +551,12 @@ BaseWindow {
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
         console.log("wnd_register.onCompleted", svWelcome.z, content_item.z, svWelcome.height, ltiLLogin.height);
-        changeIndex(mainWindow.startRegisterFlowIndex, true);
+        var idx = 0;
         if (mainWindow.startRegisterFlowIndex !== 0) {
+            idx = svWelcome.count - mainWindow.startRegisterFlowIndex;
             mainWindow.startRegisterFlowIndex = 0;
         }
+        changeIndex(idx, true);
         ltiLogin.setFontSize();
         ltiEmail.setFontSize();
         ltiPass.setFontSize();

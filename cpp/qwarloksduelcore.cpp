@@ -835,7 +835,7 @@ bool QWarloksDuelCore::prepareWarlockHtml() {
     qDebug() << "QWarloksDuelCore::prepareWarlockHtml";
     _WarlockHtml.clear();
     foreach(QWarlock *m, _Warlock) {
-        bool Player = m->name().toLower().compare(_login.toLower()) == 0;
+        bool Player = m->name().compare(_login, Qt::CaseInsensitive) == 0;
         //QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false, !Player);
         if (Player) {
             _leftGestures = m->leftGestures();

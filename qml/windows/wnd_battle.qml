@@ -67,6 +67,7 @@ BaseWindow {
                bg_radius: 10
                color: "#FEE2D6"
                border_visible: false
+               visible: false
             }
 
             BtnBig {
@@ -105,6 +106,7 @@ BaseWindow {
                 anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: 6 * mainWindow.ratioObject
+                radius: 20
 
                 onClicked: {
                     iconClick(iiElemental.l_data)
@@ -126,6 +128,7 @@ BaseWindow {
                 anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: parent.right
                 anchors.rightMargin: 6 * mainWindow.ratioObject
+                radius: 20
 
                 onClicked: {
                     mainWindow.showBattleChat();
@@ -143,6 +146,7 @@ BaseWindow {
                 anchors.right: iiDefault.left
                 anchors.rightMargin: 6 * mainWindow.ratioObject
                 visible: false
+                radius: 20
 
                 onClicked: {
                     if (operationMode >= 1) {
@@ -162,6 +166,7 @@ BaseWindow {
                 anchors.right: parent.right
                 anchors.rightMargin: 6 * mainWindow.ratioObject
                 visible: false
+                radius: 20
 
                 onClicked: {
                     if (operationMode >= 1) {
@@ -185,8 +190,18 @@ BaseWindow {
                 border_visible: false
                 wrapMode: Text.Wrap
 
+                PropertyAnimation {
+                    id: paHint
+                    running: false
+                    target: ltHint
+                    property: 'visible'
+                    to: false
+                    duration: 2000 // turns to false after 5000 ms
+                }
+
                 onClicked: {
                     visible = false;
+                    paHint.stop();
                 }
             }
 
@@ -312,6 +327,7 @@ BaseWindow {
             if (Title) {
                 ltHint.visible = true;
                 ltHint.text = "Select target for " + Title + (IsSpell ? " spell" : "");
+                paHint.start();
             }
         }
 
@@ -322,7 +338,7 @@ BaseWindow {
         //ltAll.border_visible = Enable;
         iiNobody.visible = Enable;
         iiDefault.visible = Enable;
-        iiElemental.border.width = Enable ? 3 : 0;
+        //iiElemental.border.width = Enable ? 3 : 0;
         iiChat.visible = !Enable;
         //iiChat.opacity = Enable ? 0.3 : 1;
     }
