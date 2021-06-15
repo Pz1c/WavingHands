@@ -467,15 +467,19 @@ ApplicationWindow {
                                     text: lvActiveBattle.model[index].d
                                 }
 
-                                Image {
+                                Rectangle {
                                     id: rdbifIcon
-                                    source: "res/circle.png"//"res/circle.png" : "res/wait.png"
                                     width: 24 * ratioObject
                                     height: 24 * ratioObject
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.right: rdbiLink.right
                                     anchors.rightMargin: 36 * ratioObject
                                     visible: lvActiveBattle.model[index].s === 1
+                                    radius: width / 2
+                                    gradient: Gradient {
+                                        GradientStop { position: 0.0; color: "#9DFFD3" }
+                                        GradientStop { position: 1.0; color: "#9CDFFF" }
+                                    }
                                 }
 
                                 LargeText {
@@ -700,11 +704,15 @@ ApplicationWindow {
 
         console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture);
         gBattle["ng" + gBattle.currentHand] = new_gesture;
-        var res = [], arr_cast_now = [{gp:"?",n:"Default",choose:1,t:1,cast_type:1}], arr_cast_later = [], arr_cast_other = [];
+        var res = [], arr_cast_now = [], arr_cast_later = [], arr_cast_other = [];
         console.log("mainWindow.getSpellList", gBattle.L, gBattle.R, gBattle.ngL, gBattle.ngR);
         //var str = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
         //console.log("mainWindow.getSpellList", str);
         var arr = gBattle.warlocks[0].spells, s, idx;
+        /*if (new_gesture !== '') {
+            console.log("mainWindow.getSpellList", JSON.stringify(arr));
+        }*/
+
         for (var i = 0, Ln = arr.length; i < Ln; ++i) {
             s = arr[i];
             s.choose = 0;
@@ -713,17 +721,18 @@ ApplicationWindow {
             }
 
             if (new_gesture !== '') {
-                if (s.t === 1) {
-                    if (s.ng === new_gesture) {
+                if (s.ng === new_gesture) {
+                    console.log("mainWindow.getSpellList iteration", i, new_gesture, JSON.stringify(s));
+                    if (s.t === 1) {
                         s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
                         s.cast_type = 1;
                         arr_cast_now.push(s);
-                    } /*else {
+                    } else {
                         idx = s.g.length - s.t + 1;
                         s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
                         s.cast_type = 2;
                         arr_cast_later.push(s);
-                    }*/
+                    }
                 }
             } else {
                 /*if (s.ng === new_gesture) {
@@ -746,8 +755,13 @@ ApplicationWindow {
             }
         }
         //arr_cast_now.push();
-        gBattle.spellIdx = 0;
-        return arr_cast_now.concat(arr_cast_later).concat(arr_cast_other);
+        if (new_gesture !== '') {
+            gBattle.spellIdx = arr_cast_now.length;
+            var def_spell = gBattle.spellIdx > 0 ? {gp:"?",n:"Default",choose:1,t:1,cast_type:1} : {gp:"None",n:"",choose:0,t:1,cast_type:0};
+            return [arr_cast_now.concat([def_spell]), arr_cast_later];
+        } else {
+            return arr_cast_other;
+        }
     }
 
     function setGesture(gesture, spell, need_target) {

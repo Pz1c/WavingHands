@@ -11,10 +11,6 @@ import ua.sp.warlockdictionary 1.0
 Item {
     id: iRoot
     anchors.fill: parent
-    //anchors.top: parent.top
-    //anchors.bottom: parent.bottom
-    //anchors.right: parent.right
-    //anchors.left: parent.left
     z: 0
 
     property double height_koeff: iRoot.height / 800
@@ -22,6 +18,7 @@ Item {
     property alias title_text: ltTitle.text
     property alias title_color: ltTitle.color
     property alias content_item: bwBody
+    property alias content_parent: bwBody.parent
     property alias bg_visible: iTopBg.visible
     property alias bg_source: iTopBg.source
     property alias with_controls: bwControl.visible
@@ -38,6 +35,10 @@ Item {
     property alias body_width: bwBody.width
     property alias body_height: bwBody.height
     property alias overRect: rBg
+    property alias bodyAnchors: bwBody.anchors
+    property alias titleAnchors: rTitle.anchors
+    property alias controlAnchors: bwControl.anchors
+    property alias overOpacity: rOver.opacity
     property int body_width_prc: 95
     property int body_height_prc: 60
     property int title_height_prc: 10
@@ -140,10 +141,10 @@ Item {
 
     Rectangle {
         id: rBg
-        anchors.top: rTitle.top
-        anchors.bottom: bwControl.bottom
-        anchors.left: bwControl.left
-        anchors.right: bwControl.right
+        anchors.top: bwBody.top
+        anchors.bottom: bwBody.bottom
+        anchors.left: bwBody.left
+        anchors.right: bwBody.right
         z: 9
 
         Image {
