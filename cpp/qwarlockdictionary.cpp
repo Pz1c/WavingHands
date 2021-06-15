@@ -201,23 +201,23 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("FDFD", "Параліч", "Паралич", "Paralysis");
 
     // spell book short desc
-    fillDictionary("P_short_desc", "", "", "Shield (Defend against monsters and stabs)");
-    fillDictionary("WWP_short_desc", "", "", "Protection (Defend against monsters and stabs for 3 turns)");
-    fillDictionary("SD_short_desc", "", "", "Magic missile (Do 1 damage)");
-    fillDictionary("WFP_short_desc", "", "", "Cause wounds (Do 2 damage)");
-    fillDictionary("WPFD_short_desc", "", "", "Cause wounds (Do 3 damage)");
-    fillDictionary("DFW_short_desc", "", "", "Cure (Heal 1 damage)");
-    fillDictionary("DFPW_short_desc", "", "", "Cure (Heal 2 damage)");
-    fillDictionary("SFW_short_desc", "", "", "Summon goblin (Monster with 1 hp, usually cast at yourself)");
-    fillDictionary("PSFW_short_desc", "", "", "Summon Ogre (Monster with 2 hp, usually cast at yourself).");
-    fillDictionary("DPP_short_desc", "", "", "Amnesia (Opponent repeats last turn gestures)");
-    fillDictionary("DSF_short_desc", "", "", "Maladroit (Opponent must do same gesture with both hands)");
-    fillDictionary("SWD_short_desc", "", "", "Fear (Opponent must do P or W or '>' or '-')");
-    fillDictionary("FFF_short_desc", "", "", "Paralysis (Choose opponent's hand. Its next turn will be based on last turn as follows: [F or C] --> C. [W or P] --> P. (S or D) --> D)");
-    fillDictionary("PSDF_short_desc", "", "", "Charm person (Choose opponent's next gesture, on one of the hands)");
-    fillDictionary("PSDD_short_desc", "", "", "Charm monster (Take control of a monster. Cast it at the monster, and choose a new target for that monster to attack)");
-    fillDictionary("WPP_short_desc", "", "", "Counter spell (Cast it at the target of the spell that you wish to counter, not at the caster. It also acts as shield against attacks)");
-    fillDictionary("WWS_short_desc", "", "", "Counter spell (Cast it at the target of the spell that you wish to counter, not at the caster. It also acts as shield against attacks)");
+    fillDictionary("P_short_desc", "", "", "Defend against monsters and stabs");
+    fillDictionary("WWP_short_desc", "", "", "Defend against monsters and stabs for 3 turns");
+    fillDictionary("SD_short_desc", "", "", "Do 1 damage");
+    fillDictionary("WFP_short_desc", "", "", "Do 2 damage");
+    fillDictionary("WPFD_short_desc", "", "", "Do 3 damage");
+    fillDictionary("DFW_short_desc", "", "", "Heal 1 damage");
+    fillDictionary("DFPW_short_desc", "", "", "Heal 2 damage");
+    fillDictionary("SFW_short_desc", "", "", "Monster with 1 hp, usually cast at yourself");
+    fillDictionary("PSFW_short_desc", "", "", "Monster with 2 hp, usually cast at yourself");
+    fillDictionary("DPP_short_desc", "", "", "Opponent repeats last turn gestures");
+    fillDictionary("DSF_short_desc", "", "", "Opponent must do same gesture with both hands");
+    fillDictionary("SWD_short_desc", "", "", "Opponent must do P or W or '>' or '-'");
+    fillDictionary("FFF_short_desc", "", "", "Choose opponent's hand. Its next turn will be based on last turn as follows: [F or C] --> C. [W or P] --> P. (S or D) --> D");
+    fillDictionary("PSDF_short_desc", "", "", "Choose opponent's next gesture, on one of the hands");
+    fillDictionary("PSDD_short_desc", "", "", "Take control of a monster. Cast it at the monster, and choose a new target for that monster to attack");
+    fillDictionary("WPP_short_desc", "", "", "Cast it at the target of the spell that you wish to counter, not at the caster. It also acts as shield against attacks");
+    fillDictionary("WWS_short_desc", "", "", "Cast it at the target of the spell that you wish to counter, not at the caster. It also acts as shield against attacks");
 
     // spell book desc
     fillDictionary("cDPW_desc",
