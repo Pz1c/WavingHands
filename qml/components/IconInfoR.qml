@@ -10,6 +10,8 @@ Rectangle {
     property alias fontSizeMode: btnText.fontSizeMode
     property alias source: iIcon.source
     property alias iconVisible: iIcon.visible
+    property alias iconHeight: iIcon.height
+    property alias iconWidth: iIcon.width
     property alias textVisible: btnText.visible
 
     signal clicked
@@ -22,7 +24,9 @@ Rectangle {
 
     Image {
         id: iIcon
-        anchors.fill: parent;
+        anchors.centerIn: parent
+        height: parent.height
+        width: parent.width
     }
 
     LargeText {

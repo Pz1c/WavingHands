@@ -134,6 +134,8 @@ public:
 
     static int orderType();
 
+    int alreadyCasted() const;
+
 protected:
 
     int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast);

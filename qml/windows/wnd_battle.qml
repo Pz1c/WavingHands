@@ -13,10 +13,10 @@ BaseWindow {
     with_controls: false
     //with_apply: false
     body_width_prc: 100
-    body_height_prc: 95
-    title_height_prc: 5
+    body_height_prc: 100
+    title_height_prc: 0
     control_height_prc: 0
-    with_action1: true
+    with_action1: false
     action1_text: "Chat"
     bg_source: "qrc:/res/background_battle.png"
 
@@ -53,20 +53,21 @@ BaseWindow {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 0.1 * parent.height
+            height: 90 * mainWindow.ratioObject
 
             LargeText {
                id: ltAll
                text: "All"
                anchors.top: parent.top
                anchors.horizontalCenter: parent.horizontalCenter
-               height: 0.5 * parent.height
-               width: 0.3 * parent.width
+               height: 36 * mainWindow.ratioObject
+               width: 246 * mainWindow.ratioObject
                bg_visible: true
                bg_color: "#544653"
+               bg_radius: 10
                color: "#FEE2D6"
                border_visible: false
-               radius: 10
+               visible: false
             }
 
             BtnBig {
@@ -99,11 +100,13 @@ BaseWindow {
                 id: iiElemental
                 source: "qrc:/res/elemental_fire.png";
                 text: "3"
-                height: 0.9 * parent.height
+                height: 78 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.05 * parent.height
+                anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
+                anchors.leftMargin: 6 * mainWindow.ratioObject
+                radius: 20
 
                 onClicked: {
                     iconClick(iiElemental.l_data)
@@ -119,11 +122,13 @@ BaseWindow {
                 source: "qrc:/res/chat.png";
                 text: ""
                 text_color: "red"
-                height: 0.9 * parent.height
+                height: 78 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.05 * parent.height
+                anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: parent.right
+                anchors.rightMargin: 6 * mainWindow.ratioObject
+                radius: 20
 
                 onClicked: {
                     mainWindow.showBattleChat();
@@ -134,12 +139,14 @@ BaseWindow {
                 id: iiNobody
                 source: "qrc:/res/target_nobody.png";
                 text: ""
-                height: 0.9 * parent.height
+                height: 78 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.05 * parent.height
+                anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: iiDefault.left
+                anchors.rightMargin: 6 * mainWindow.ratioObject
                 visible: false
+                radius: 20
 
                 onClicked: {
                     if (operationMode >= 1) {
@@ -152,12 +159,14 @@ BaseWindow {
                 id: iiDefault
                 source: "qrc:/res/send_1.png";
                 text: ""
-                height: 0.9 * parent.height
+                height: 78 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 0.05 * parent.height
+                anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: parent.right
+                anchors.rightMargin: 6 * mainWindow.ratioObject
                 visible: false
+                radius: 20
 
                 onClicked: {
                     if (operationMode >= 1) {
@@ -170,17 +179,56 @@ BaseWindow {
                 id: ltHint
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 0.6 * parent.width
+                anchors.left: iiElemental.right
+                anchors.right: iiNobody.left
                 visible: false
                 text: "test hint 01"
                 color: "snow"
                 bg_color: "blue"
                 bg_visible: true
+                bg_radius: 5
+                border_visible: false
                 wrapMode: Text.Wrap
+
+                PropertyAnimation {
+                    id: paHint
+                    running: false
+                    target: ltHint
+                    property: 'visible'
+                    to: false
+                    duration: 2000 // turns to false after 5000 ms
+                }
 
                 onClicked: {
                     visible = false;
+                    paHint.stop();
+                }
+            }
+
+
+            LargeText {
+                id: ltTutorial
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: iiElemental.right
+                anchors.right: iiChat.left
+                visible: false
+                text: "test hint 01"
+                color: "snow"
+                bg_color: "blue"
+                bg_visible: true
+                bg_radius: 5
+                border_visible: false
+                wrapMode: Text.Wrap
+                property var tutorialData: ([])
+                property int tutorialDataIdx: 0
+
+                onClicked: {
+                    if (++tutorialDataIdx >= tutorialData.length) {
+                        visible = false;
+                    } else {
+                        ltTutorial.text = tutorialData[tutorialDataIdx];
+                    }
                 }
             }
         }
@@ -270,11 +318,17 @@ BaseWindow {
         mainWindow.showErrorWnd({type:msg_type,text:msg_text,title:msg_title,data:data});
     }
 
-    function setTargetingOnOff(Enable, IsSpell) {
+    function setTargetingOnOff(Enable, IsSpell, Title) {
         if (!Enable) {
             battleChanged();
+            ltHint.visible = false;
         } else {
             bbSendOrders.visible = false;
+            if (Title) {
+                ltHint.visible = true;
+                ltHint.text = "Select target for " + Title + (IsSpell ? " spell" : "");
+                paHint.start();
+            }
         }
 
         for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
@@ -284,7 +338,7 @@ BaseWindow {
         //ltAll.border_visible = Enable;
         iiNobody.visible = Enable;
         iiDefault.visible = Enable;
-        iiElemental.border.width = Enable ? 3 : 0;
+        //iiElemental.border.width = Enable ? 3 : 0;
         iiChat.visible = !Enable;
         //iiChat.opacity = Enable ? 0.3 : 1;
     }
@@ -316,9 +370,9 @@ BaseWindow {
         BU.setCharm(hand, gesture);
     }
 
-    function prepareToTargeting(is_spell) {
-        setTargetingOnOff(true, is_spell);
+    function prepareToTargeting(is_spell, title) {
         operationMode = is_spell ? 1 : 2;
+        setTargetingOnOff(true, is_spell, title);
         permanency = 0;
         delay = 0;
     }
@@ -352,6 +406,7 @@ BaseWindow {
     }
 
     Component.onCompleted: {
+        console.log("battle window", x, y);
         mainWindow.storeWnd(battleItem);
         initBattleFields();
     }

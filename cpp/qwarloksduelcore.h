@@ -193,7 +193,7 @@ protected:
     bool finishOrderSubmit(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishAccept(QString &Data, int StatusCode, QUrl NewUrl);
-    bool finishScan(QString &Data);
+    bool finishScan(QString &Data, bool ForceBattleList = false);
     bool finishScanWarlock(QString &Data);
     bool finishGetFinishedBattle(QString &Data);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
@@ -207,7 +207,7 @@ protected:
     bool parseSpecReadyBattleValues(QString &Data);
 
     bool parseReadyBattle(QString &Data);
-    void parsePlayerInfo(QString &Data);
+    void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
     void parseChallendge(QString &Data);
     void parseMessages(QString &Data);
 
@@ -226,6 +226,7 @@ protected:
     void generateBattleList();
     int parseBattleDescription(QString &Data);
 
+    QString getHintArray(int hint_id);
     QString getBattleHint(int battle_id, int battle_turn);
 
 private:

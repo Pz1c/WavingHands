@@ -76,7 +76,7 @@ BaseWindow {
     }
 
     onApply: {
-        mainWindow.chooseMonsterTarget();
+        mainWindow.chooseMonsterTarget(title_text);
     }
 
     function showWnd() {

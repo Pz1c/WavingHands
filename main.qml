@@ -1,7 +1,3 @@
-//import QtQuick 2.2
-//import QtQuick.Window 2.1
-//import QtQuick.Controls 1.1
-
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.12
@@ -22,8 +18,12 @@ import "qrc:/qml"
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 507
-    height: 900
+    width: 506//600
+    height: 900//1068
+    flags: Qt.FramelessWindowHint|Qt.Window
+
+    property real ratioObject: 1
+    property real ratioFont: 1
 
     Dialog {
         id: mdNoGesture
@@ -175,7 +175,22 @@ ApplicationWindow {
         id: dMenu
         width: 0.66 * mainWindow.width
         height: mainWindow.height
-        edge: Qt.RightEdge
+        edge: Qt.LeftEdge
+
+        Rectangle {
+            id: dMenuBG
+            anchors.fill: parent
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "#544653" }
+                GradientStop { position: 1.0; color: "#210430" }
+            }
+
+            Image {
+                id: iBGimg
+                source: "res/stars_bg.png"
+                anchors.fill: parent
+            }
+        }
 
         BtnBig {
             id: bbMenuRefresh
@@ -193,6 +208,25 @@ ApplicationWindow {
                 console.log("try refresh state");
                 dMenu.close();
                 core.scanState(0);
+            }
+        }
+
+        BtnBig {
+            id: bbSpellbook
+            text_color: "#A8F4F4"
+            text: warlockDictionary.getStringByCode("Spellbook")
+            transparent: true
+            border.width: 0
+            height: 0.1 * parent.height
+            anchors.top: bbMenuRefresh.bottom
+            anchors.topMargin: 0.01 * parent.height
+            anchors.left: parent.left
+            anchors.right: parent.right
+
+            onClicked: {
+                console.log("try refresh state");
+                dMenu.close();
+                WNDU.showSpellbook();
             }
         }
 
@@ -225,29 +259,21 @@ ApplicationWindow {
             model: []
 
             onCurrentIndexChanged: {
-                console.log("cbLoginAs.onAccepted", currentIndex, currentValue, core.login);
-                if ((currentIndex > 0) && (currentValue !== core.login)) {
+                var curr_login = core.login;
+                console.log("cbLoginAs.onAccepted", currentIndex, currentValue, cbLoginAs.model[currentIndex], curr_login);
+                if ((currentIndex > 0) && (cbLoginAs.model[currentIndex] !== curr_login)) {
                     dMenu.close();
-                    core.autoLogin(currentIndex - 1)
+                    core.autoLogin(currentIndex - 1);
                 }
             }
         }
     }
 
-    Rectangle {
+    Image {
         id: iBG
+        source: "res/background.png"
         anchors.fill: parent
         z: -1
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#544653" }
-            GradientStop { position: 1.0; color: "#210430" }
-        }
-
-        Image {
-            id: iBGimg
-            source: "res/stars_bg.png"
-            anchors.fill: parent
-        }
     }
 
     Rectangle {
@@ -255,22 +281,22 @@ ApplicationWindow {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 0.05 * parent.height
+            height: 84 * ratioObject
             color: "#210430"
 
             ToolButton {
-                id: tbProfile
-                //text: qsTr("‹")
-                height: tbTop.height
-                width: tbTop.height
+                id: tbMenu
                 anchors.left: parent.left
+                anchors.leftMargin: 18 * ratioObject
+                anchors.top: parent.top
+                anchors.topMargin: 18 * ratioObject
+                height: 48 * ratioObject
+                width: 48 * ratioObject
 
-                onClicked: {
-                    WNDU.showSpellbook();
-                }
+                onClicked: dMenu.open()
                 background: Image {
                     anchors.fill: parent
-                    source: "res/spellbook.png"
+                    source: "res/menu.png"
                 }
             }
 
@@ -281,22 +307,29 @@ ApplicationWindow {
                 verticalAlignment: Qt.AlignVCenter
                 fontSizeMode: Text.VerticalFit
                 color: "#FEE2D6"
+                font.pixelSize: 28 * ratioFont
 
-                anchors.left: tbProfile.right
-                anchors.right: tbMenu.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
+                anchors.left: tbMenu.right
+                anchors.right: tbProfile.left
+                height: 48 * ratioObject
+                anchors.verticalCenter: parent.verticalCenter
             }
 
             ToolButton {
-                id: tbMenu
-                height: tbTop.height
-                width: tbTop.height
+                id: tbProfile
                 anchors.right: parent.right
-                onClicked: dMenu.open()
+                anchors.rightMargin: 18 * ratioObject
+                anchors.top: parent.top
+                anchors.topMargin: 18 * ratioObject
+                height: 48 * ratioObject
+                width: 48 * ratioObject
+
+                onClicked: {
+                    //WNDU.showSpellbook();
+                }
                 background: Image {
                     anchors.fill: parent
-                    source: "res/menu.png"
+                    source: "res/spellbook.png"
                 }
             }
     }
@@ -318,15 +351,15 @@ ApplicationWindow {
             radius: 30
 
             gradient: Gradient {
-                GradientStop { position: 0.0; color: "#FEE2D6" }
-                GradientStop { position: 0.5; color: "#551470" }
-                GradientStop { position: 1.0; color: "#FEE2D6" }
+                GradientStop { position: 0.0 ; color: "#905B93" }
+                GradientStop { position: 0.75; color: "#551470" }
+                GradientStop { position: 1.0 ; color: "#551470" }
             }
 
-            width: 0.5 * parent.width
-            height: 0.1 * parent.height
+            width: 366 * ratioObject
+            height: 96 * ratioObject
             anchors.top: parent.top
-            anchors.topMargin: 0.03 * parent.height
+            anchors.topMargin: 144 * ratioObject
             anchors.horizontalCenter: parent.horizontalCenter
 
             onClicked: {
@@ -340,13 +373,16 @@ ApplicationWindow {
             text_color: "#A8F4F4"
             text: warlockDictionary.getStringByCode("NewGameWithPlayer")
             transparent: true
+            font.underline: true
             border.width: 0
             visible: core.allowedAdd || true
 
             width: 0.5 * parent.width
-            height: 0.05 * parent.height
+            height: 48 * ratioObject
+            font.pixelSize: 28 * ratioFont
+
             anchors.top: bbNewGame.bottom
-            anchors.topMargin: 0.01 * parent.height
+            anchors.topMargin: 24 * ratioObject
             anchors.horizontalCenter: parent.horizontalCenter
 
             onClicked: {
@@ -358,12 +394,12 @@ ApplicationWindow {
         ScrollView {
             id: iBattleList
             anchors.top: bbNewBotGame.bottom
-            anchors.topMargin: 0.01 * parent.height
+            anchors.topMargin: 130 * ratioObject
             anchors.bottom: parent.bottom
             anchors.left: parent.left
-            //anchors.leftMargin: 0.05 * mainWindow.width
+            anchors.leftMargin: 24 * ratioObject
             anchors.right: parent.right
-            //anchors.rightMargin: 0.05 * mainWindow.width
+            anchors.rightMargin: 10 * ratioObject
             visible: core.allowedAdd || true
             contentHeight: iMainScrollBody.height
 
@@ -379,69 +415,90 @@ ApplicationWindow {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 0.05 * mainWindow.height
+                    height: 48 * ratioObject
+                    font.pixelSize: 28 * ratioFont
                     horizontalAlignment: Text.AlignLeft
                     fontSizeMode: Text.VerticalFit
                     color: "#2DA0A5"
                     text: warlockDictionary.getStringByCode("ActiveGameTitle")
                 }
 
-
                 ListView {
                     id: lvActiveBattle
                     model: GUI.loadBattleList(1)
                     anchors.top: ltActiveBattle.bottom
-                    anchors.topMargin: 0.01 * mainWindow.height
-                    width: 0.9 * mainWindow.width
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    height: model.length * 0.08 * mainWindow.height
+                    anchors.topMargin: 6 * ratioObject
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    //width: 0.9 * mainWindow.width
+                    //anchors.horizontalCenter: parent.horizontalCenter
+                    height: model.length * 96 * ratioObject
+
                     delegate: Item {
                             id: idRoot
                             width: lvActiveBattle.width
-                            height: 0.08 * mainWindow.height
+                            height: 96 * ratioObject
                             Rectangle {
-                            id: rdBattleItem
-                            color: "#544653"
-                            radius: 30
-                            anchors.fill: parent
-                            anchors.topMargin: 0.01 * mainWindow.height
-                            anchors.bottomMargin: 0.01 * mainWindow.height
-                            /*anchors.leftMargin: 0.02 * mainWindow.width
-                            anchors.rightMargin: 0.02 * mainWindow.width*/
-
-                            LargeText {
-                                id: rdbiText
-                                anchors.top: rdBattleItem.top
-                                anchors.bottom: rdBattleItem.bottom
-                                anchors.left: rdBattleItem.left
-                                anchors.leftMargin: 0.03 * parent.width
-                                anchors.right: rdbifIcon.left
-                                //width: 0.90 * parent.width - parent.height
-                                //anchors.rightMargin: 0.05 * parent.width
-                                color: "#FEE2D6"
-                                horizontalAlignment: Text.AlignLeft
-
-                                text: lvActiveBattle.model[index].d
-                            }
-
-                            Image {
-                                id: rdbifIcon
-                                source: lvActiveBattle.model[index].s === 1 ? "res/circle.png" : "res/wait.png"
-                                width: 0.5 * parent.height
-                                height: 0.5 * parent.height
-                                anchors.verticalCenter: parent.verticalCenter
+                                id: rdBattleItem
+                                color: "#544653"
+                                radius: 30
+                                anchors.top: parent.top
+                                anchors.left: parent.left
                                 anchors.right: parent.right
-                                anchors.rightMargin: 0.03 * parent.width
-                            }
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 12 * ratioObject
 
-                            MouseArea {
-                                id: maActiveBattle
-                                anchors.fill: parent
-                                onClicked: {
-                                    console.log("getBattle", index, JSON.stringify(lvActiveBattle.model[index]));
-                                    core.getBattle(lvActiveBattle.model[index].id, lvActiveBattle.model[index].s);
+                                LargeText {
+                                    id: rdbiText
+                                    anchors.verticalCenter: rdBattleItem.verticalCenter
+                                    height: 48 * ratioObject
+                                    font.pixelSize: 28 * ratioFont
+                                    anchors.left: rdBattleItem.left
+                                    anchors.leftMargin: 36 * ratioObject
+                                    anchors.right: rdbifIcon.left
+                                    anchors.rightMargin: 5 * ratioObject
+                                    color: "#FEE2D6"
+                                    horizontalAlignment: Text.AlignLeft
+
+                                    text: lvActiveBattle.model[index].d
                                 }
-                            }
+
+                                Rectangle {
+                                    id: rdbifIcon
+                                    width: 24 * ratioObject
+                                    height: 24 * ratioObject
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.right: rdbiLink.right
+                                    anchors.rightMargin: 36 * ratioObject
+                                    visible: lvActiveBattle.model[index].s === 1
+                                    radius: width / 2
+                                    gradient: Gradient {
+                                        GradientStop { position: 0.0; color: "#9DFFD3" }
+                                        GradientStop { position: 1.0; color: "#9CDFFF" }
+                                    }
+                                }
+
+                                LargeText {
+                                    id: rdbiLink
+                                    anchors.verticalCenter: rdBattleItem.verticalCenter
+                                    height: 48 * ratioObject
+                                    width: 10 * ratioObject
+                                    font.pixelSize: 28 * ratioFont
+                                    anchors.right: rdBattleItem.right
+                                    anchors.rightMargin: 18 * ratioObject
+                                    color: "#FEE2D6"
+                                    horizontalAlignment: Text.AlignLeft
+                                    text: ">"
+                                }
+
+                                MouseArea {
+                                    id: maActiveBattle
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        console.log("getBattle", index, JSON.stringify(lvActiveBattle.model[index]));
+                                        core.getBattle(lvActiveBattle.model[index].id, lvActiveBattle.model[index].s);
+                                    }
+                                }
                         }
                     }
                 }
@@ -449,9 +506,11 @@ ApplicationWindow {
                 LargeText {
                     id: ltFinishedBattle
                     anchors.top: lvActiveBattle.bottom
+                    anchors.topMargin: 6 * ratioObject
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 0.05 * mainWindow.height
+                    height: 48 * ratioObject
+                    font.pixelSize: 28 * ratioFont
                     horizontalAlignment: Text.AlignLeft
                     fontSizeMode: Text.VerticalFit
                     color: "#2DA0A5"
@@ -462,31 +521,34 @@ ApplicationWindow {
                     id: lvFinishedBattle
                     model: GUI.loadBattleList(2)
                     anchors.top: ltFinishedBattle.bottom
-                    anchors.topMargin: 0.01 * mainWindow.height
+                    //anchors.topMargin: 0.01 * mainWindow.height
                     width: 0.9 * mainWindow.width
                     anchors.horizontalCenter: parent.horizontalCenter
-                    height: model.length * 0.08 * mainWindow.height
+                    height: model.length * 96 * ratioObject
                     delegate: Item {
                             id: idfRoot
                             width: lvFinishedBattle.width
-                            height: 0.08 * mainWindow.height
+                            height: 96 * ratioObject
                             Rectangle {
                             id: rdfBattleItem
                             radius: 30
                             color: "#544653"
-                            anchors.fill: parent
-                            anchors.topMargin: 0.01 * mainWindow.height
-                            anchors.bottomMargin: 0.01 * mainWindow.height
-                            /*anchors.leftMargin: 0.02 * mainWindow.width
-                            anchors.rightMargin: 0.02 * mainWindow.width*/
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 12 * ratioObject
 
                             LargeText {
                                 id: rdbifText
-                                anchors.top: rdfBattleItem.top
-                                anchors.bottom: rdfBattleItem.bottom
+                                anchors.verticalCenter: rdfBattleItem.verticalCenter
                                 anchors.left: rdfBattleItem.left
-                                anchors.leftMargin: 0.03 * parent.width
-                                width: 0.90 * parent.width - parent.height
+                                anchors.leftMargin: 36 * ratioObject
+                                anchors.right: rdbiIcon.left
+                                anchors.rightMargin: 18 * ratioObject
+                                height: 48 * ratioObject
+                                font.pixelSize: 28 * ratioFont
+
                                 color: "#10C9F5"
                                 fontSizeMode: Text.VerticalFit
                                 horizontalAlignment: Text.AlignLeft
@@ -496,12 +558,12 @@ ApplicationWindow {
 
                             Image {
                                 id: rdbiIcon
-                                source: lvFinishedBattle.model[index].d.indexOf(core.login) === -1 ? "res/RIP2.png" : "res/stars.png"
-                                width: 0.5 * parent.height
-                                height: 0.5 * parent.height
+                                source: lvFinishedBattle.model[index].d.indexOf("Won vs. ") === -1 ? "res/RIP2.png" : "res/stars.png"
+                                width: 24 * ratioObject
+                                height: 24 * ratioObject
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.right: parent.right
-                                anchors.rightMargin: 0.03 * parent.width
+                                anchors.rightMargin: 18 * ratioObject
                             }
 
                             MouseArea {
@@ -537,7 +599,7 @@ ApplicationWindow {
     property int startRegisterFlowIndex: 0
     function getLoginFromUser(real_login) {
         if (real_login) {
-            startRegisterFlowIndex = 4;
+            startRegisterFlowIndex = 1; // login
             WNDU.showRegisterFlow();
         } else {
             showNewUserMenu();
@@ -638,11 +700,15 @@ ApplicationWindow {
 
         console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture);
         gBattle["ng" + gBattle.currentHand] = new_gesture;
-        var res = [], arr_cast_now = [{gp:"?",n:"Default",choose:1,t:1,cast_type:1}], arr_cast_later = [], arr_cast_other = [];
+        var res = [], arr_cast_now = [], arr_cast_later = [], arr_cast_other = [];
         console.log("mainWindow.getSpellList", gBattle.L, gBattle.R, gBattle.ngL, gBattle.ngR);
         //var str = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
         //console.log("mainWindow.getSpellList", str);
         var arr = gBattle.warlocks[0].spells, s, idx;
+        /*if (new_gesture !== '') {
+            console.log("mainWindow.getSpellList", JSON.stringify(arr));
+        }*/
+
         for (var i = 0, Ln = arr.length; i < Ln; ++i) {
             s = arr[i];
             s.choose = 0;
@@ -651,17 +717,18 @@ ApplicationWindow {
             }
 
             if (new_gesture !== '') {
-                if (s.t === 1) {
-                    if (s.ng === new_gesture) {
-                        s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
+                if (s.ng === new_gesture) {
+                    console.log("mainWindow.getSpellList iteration", i, new_gesture, JSON.stringify(s));
+                    if (s.t === 1) {
+                        s.gp = '<font color="#10C9F5">'+s.g+'</font>';
                         s.cast_type = 1;
                         arr_cast_now.push(s);
-                    } /*else {
+                    } else {
                         idx = s.g.length - s.t + 1;
-                        s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                        s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
                         s.cast_type = 2;
                         arr_cast_later.push(s);
-                    }*/
+                    }
                 }
             } else {
                 /*if (s.ng === new_gesture) {
@@ -677,15 +744,20 @@ ApplicationWindow {
                     }
                 } else {*/
                     idx = s.g.length - s.t;
-                    s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                    s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
                     s.cast_type = 3;
                     arr_cast_other.push(s);
                 //}
             }
         }
         //arr_cast_now.push();
-        gBattle.spellIdx = 0;
-        return arr_cast_now.concat(arr_cast_later).concat(arr_cast_other);
+        if (new_gesture !== '') {
+            gBattle.spellIdx = arr_cast_now.length;
+            var def_spell = ((gBattle.spellIdx > 0) || gBattle.player_changed_mind) ? {gp:"?",n:"Default",choose:1,t:1,cast_type:1} : {gp:"None",n:"",choose:0,t:1,cast_type:0};
+            return [arr_cast_now.concat([def_spell]), arr_cast_later];
+        } else {
+            return arr_cast_other;
+        }
     }
 
     function setGesture(gesture, spell, need_target) {
@@ -699,7 +771,7 @@ ApplicationWindow {
 
         WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit);
         if (need_target) {
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true);
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, spell.n);
         }
         WNDU.processEscape();
     }
@@ -714,11 +786,11 @@ ApplicationWindow {
             return;
         }
 
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true);
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, gBattle.actions[gBattle.currentHand].n);
     }
 
-    function chooseMonsterTarget() {
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false);
+    function chooseMonsterTarget(title) {
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false, title);
         WNDU.processEscape();
     }
 
@@ -787,7 +859,7 @@ ApplicationWindow {
     }
 
     function changeTimerState() {
-        if (core.timerState === 1) {
+        if (core.timerState) {
             if (!tScanTimer.running) {
                 tScanTimer.start();
             }
@@ -815,9 +887,30 @@ ApplicationWindow {
         //analytics.logEvent(event_name, params);
     }
 
-    function creationFinished() {
+    function calculateRatio() {
+        var w, h, currOs = Qt.platform.os;
+        if ((currOs === "android") || (currOs === "ios") || (currOs === "blackberry") || (currOs === "winphone")) {
+            w = Screen.width;// .desktopAvailableWidth;
+            h = Screen.height;// .desktopAvailableHeight;
+        } else {
+            w = mainWindow.width;
+            h = mainWindow.height;
+        }
+        var dpi = Screen.pixelDensity;
+        var wh = Math.max(w, h);
+        var ww = Math.min(w, h);
+        var bh = 1068;//800;
+        var bw = 600;
+        var bdip = 3.74;
+        console.log(dpi, bdip, ww, wh, bw, bh);
+        ratioObject = Math.min(ww/bw, wh/bh);
+        ratioFont = Math.max(1, Math.min((wh*bdip)/(dpi*bh), (ww*bdip/(dpi*bw))));
+    }
 
-        logEvent("gameFieldReady");
+    function creationFinished() {
+        console.log("iWndContainer x y", iWndContainer.x, iWndContainer.y);
+        calculateRatio();
+        logEvent("gameFieldReady", {ratio_o:ratioObject, ratio_f: ratioFont});
         //GUI.prepareNewGameBtn(1500);
     }
 

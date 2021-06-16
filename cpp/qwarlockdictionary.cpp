@@ -91,11 +91,11 @@ void QWarlockDictionary::fillGameDictionary() {
                                      "Приветствую нового волшебника! Пожалуйста, подождите скоро начнется ваш первый тренировочный бой. <br> В бою вы будете составлять заклинания делая жесты вашими руками. Всего есть 6 жестов W, S, D, P, C, F <br> За один раунд боя вы можете сделать 1 жест левой и 1 жест правой рукой. В следующем раунде вы продолжите цепочку женстей для создания заклинания левой и правой рукой. Например, в первом раунде вы сделали жест левой рукой S и правой D, в следующем раунде делая левой рукой жест D вы завершают заклятие Магической стрелы (SD), а правой можете продолжить построение заклятие Запутанность (DSF) делая жест S. Полный список заклинаний есть в книге заклинаний.",
                                      "Hey #login#, let's fight!<br>Check your spell book, and learn how to cast spells.<br>Just pick a gesture for each of your hands.<br>Gestures are letters W, S, D, P, C, F<br>Letters add up to words (like DPP), and words are spells (like Amnesia).<br>Let's go!");
     fillDictionary("NewGame", "Нова гра", "Новая игра", "New Game");
-    fillDictionary("TrainingGame", "", "", "Start training");
-    fillDictionary("NewGameWithBot", "Грати з ботом", "Играть с ботом", "Play against Bot");
-    fillDictionary("NewGameWithPlayer", "Грати з людиною", "Играть с человеком", "Play against warlock");
-    fillDictionary("ActiveGameTitle", "", "", "Your Games");
-    fillDictionary("FinishedGameTitle", "", "", "Finished Games");
+    fillDictionary("TrainingGame", "", "", "Start Training");
+    fillDictionary("NewGameWithBot", "Грати з ботом", "Играть с ботом", "Start Training");
+    fillDictionary("NewGameWithPlayer", "Грати з людиною", "Играть с человеком", "Warlock vs. Warlock");
+    fillDictionary("ActiveGameTitle", "", "", "Your Games:");
+    fillDictionary("FinishedGameTitle", "", "", "Finished Games:");
     fillDictionary("MonsterSetTarget", "", "", "Choose target");
     fillDictionary("MonsterOwnerTitle", "", "", "Owner");
     fillDictionary("MonsterTargetTitle", "", "", "Target");
@@ -122,7 +122,6 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("hint_1_4", "", "", "Enchantments like DPP (Amnesia), DSF (Maladroit), SWD (Fear) disrupt your enemy");
     fillDictionary("hint_1_5", "", "", "When two are cast at the same Warlock they cancel out.");
     fillDictionary("hint_1_6", "", "", "Check your spellbook to learn more spells...");
-    fillDictionary("hint_1_7", "", "", "You can do similarly more tutorials later on one per game like these:");
     fillDictionary("hint_2_1", "", "", "Summon a goblin (SFW) to fight for you. Cast it at yourself, and then set its target.");
     fillDictionary("hint_2_2", "", "", "Stab ('>') is a simple way to hit a goblin. Shield ('P') and Protection (WWP) to defend.");
     fillDictionary("hint_3_1", "", "", "Inflict direct damage with Cause light or heavy wounds (WFP, WPFD)");
@@ -202,23 +201,51 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("FDFD", "Параліч", "Паралич", "Paralysis");
 
     // spell book short desc
-    fillDictionary("P_short_desc", "", "", "Shield (Defend against monsters and stabs)");
-    fillDictionary("WWP_short_desc", "", "", "Protection (Defend against monsters and stabs for 3 turns)");
-    fillDictionary("SD_short_desc", "", "", "Magic missile (Do 1 damage)");
-    fillDictionary("WFP_short_desc", "", "", "Cause wounds (Do 2 damage)");
-    fillDictionary("WPFD_short_desc", "", "", "Cause wounds (Do 3 damage)");
-    fillDictionary("DFW_short_desc", "", "", "Cure (Heal 1 damage)");
-    fillDictionary("DFPW_short_desc", "", "", "Cure (Heal 2 damage)");
-    fillDictionary("SFW_short_desc", "", "", "Summon goblin (Monster with 1 hp, usually cast at yourself)");
-    fillDictionary("PSFW_short_desc", "", "", "Summon Ogre (Monster with 2 hp, usually cast at yourself).");
-    fillDictionary("DPP_short_desc", "", "", "Amnesia (Opponent repeats last turn gestures)");
-    fillDictionary("DSF_short_desc", "", "", "Maladroit (Opponent must do same gesture with both hands)");
-    fillDictionary("SWD_short_desc", "", "", "Fear (Opponent must do P or W or '>' or '-')");
-    fillDictionary("FFF_short_desc", "", "", "Paralysis (Choose opponent's hand. Its next turn will be based on last turn as follows: [F or C] --> C. [W or P] --> P. (S or D) --> D)");
-    fillDictionary("PSDF_short_desc", "", "", "Charm person (Choose opponent's next gesture, on one of the hands)");
-    fillDictionary("PSDD_short_desc", "", "", "Charm monster (Take control of a monster. Cast it at the monster, and choose a new target for that monster to attack)");
-    fillDictionary("WPP_short_desc", "", "", "Counter spell (Cast it at the target of the spell that you wish to counter, not at the caster. It also acts as shield against attacks)");
-    fillDictionary("WWS_short_desc", "", "", "Counter spell (Cast it at the target of the spell that you wish to counter, not at the caster. It also acts as shield against attacks)");
+    fillDictionary("p_short_desc", "", "", "Surrender the game ('p' with both hands)");
+    fillDictionary("P_short_desc", "", "", "Defend against monsters and stabs");
+    fillDictionary("WWP_short_desc", "", "", "Defend against monsters and stabs for 3 turns");
+    fillDictionary(">_short_desc", "", "", "Do 1 damage");
+    fillDictionary("SD_short_desc", "", "", "Do 1 damage");
+    fillDictionary("WFP_short_desc", "", "", "Do 2 damage");
+    fillDictionary("WPFD_short_desc", "", "", "Do 3 damage");
+    fillDictionary("DFFDD_short_desc", "", "", "Do 5 damage");
+    fillDictionary("FSSDD_short_desc", "", "", "Do 5 damage");
+    fillDictionary("DFW_short_desc", "", "", "Heal 1 damage");
+    fillDictionary("DFPW_short_desc", "", "", "Heal 2 damage");
+    fillDictionary("SFW_short_desc", "", "", "Monster with 1 hp, usually cast at yourself");
+    fillDictionary("PSFW_short_desc", "", "", "Monster with 2 hp, usually cast at yourself");
+    fillDictionary("FPSFW_short_desc", "", "", "Monster with 3 hp, usually cast at yourself");
+    fillDictionary("WFPSFW_short_desc", "", "", "Monster with 4 hp, usually cast at yourself");
+    fillDictionary("DPP_short_desc", "", "", "Opponent repeats last turn gestures");
+    fillDictionary("DSF_short_desc", "", "", "Opponent must do same gesture with both hands");
+    fillDictionary("SWD_short_desc", "", "", "Opponent must do 'P' or 'W' or '>' or '-'");
+    fillDictionary("FFF_short_desc", "", "", "Choose opponent's hand. Its next turn will be based on last turn as follows: [F or C] --> C. [W or P] --> P. (S or D) --> D");
+    fillDictionary("PSDF_short_desc", "", "", "Choose opponent's hand, then decide his next gesture");
+    fillDictionary("PSDD_short_desc", "", "", "Take control of a monster. Cast it at the monster, and choose a new target for that monster to attack");
+    fillDictionary("WPP_short_desc", "", "", "Cast it at the target of the spell that you wish to counter (not at the caster). Also acts as a shield");
+    fillDictionary("WWS_short_desc", "", "", "Cast it at the target of the spell that you wish to counter (not at the caster). Also acts as a shield");
+    fillDictionary("cw_short_desc", "", "", "Reflect spell back to caster");
+    fillDictionary("cDPW_short_desc", "", "", "Counter all spells, Destroy all monsters and enchantments. Also acts as a shield");
+    fillDictionary("PDWP_short_desc", "", "", "Destroy an enchantment (Amensia, Fear, etc.) or a monster");
+    fillDictionary("PPws_short_desc", "", "", "You cannot be seen or targeted for 3 turns");
+    fillDictionary("DFWFd_short_desc", "", "", "Target cannot see or aim for 3 turns");
+    fillDictionary("DWFFd_short_desc", "", "", "Target cannot see or aim for 3 turns");
+    fillDictionary("SPFP_short_desc", "", "", "Break target's chain of gestures");
+    fillDictionary("SPFPSDW_short_desc", "", "", "You have 3 turns to cast an enchantment an make it permanent");
+    fillDictionary("DWSSSP_short_desc", "", "", "You have 3 turns to cast a spell, which will be banked for later");
+    fillDictionary("DSFFFc_short_desc", "", "", "Opponent will die in 6 turns unless removing the enchantment with DFPW, PDWP, cDPW");
+    fillDictionary("DWWFWD_short_desc", "", "", "Opponent will die in 6 turns unless removing the enchantment with PDWP, cDPW");
+    fillDictionary("PWPFSSSD_short_desc", "", "", "Opponent dies. This spell cannot be countered, but can be mirrored");
+    fillDictionary("PWPWWc_short_desc", "", "", "Play an extra turn for each of the next 3 turns");
+    fillDictionary("SPPc_short_desc", "", "", "Play an extra turn, ignoring enchantments");
+    fillDictionary("SPPFD_short_desc", "", "", "Play an extra turn, ignoring enchantments");
+    fillDictionary("cWSSW_short_desc", "", "", "Elemental with 3 hp, attacking everyone except those resistant to heat");
+    fillDictionary("cSWWS_short_desc", "", "", "Elemental with 3 hp, attacking everyone except those resistant to cold");
+    fillDictionary("WWFP_short_desc", "", "", "Enchantment to protect against or to destroy Fire Elemental, and protect against Fire Storm and Fireball");
+    fillDictionary("SSFP_short_desc", "", "", "Enchantment to protect against or to destroy Ice Elemental, and protect against Ice Storm");
+    fillDictionary("WSSc_short_desc", "", "", "Do 5 damage to all, except those resistant to cold");
+    fillDictionary("SWWc_short_desc", "", "", "Do 5 damage to all, except those resistant to heat");
+
 
     // spell book desc
     fillDictionary("cDPW_desc",

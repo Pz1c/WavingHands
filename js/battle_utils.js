@@ -1,13 +1,12 @@
 var battle = {};
 var cWarlockObject,cIconObject;
-const G_WARLOCK_HEIGHT_COEFF = 0.45;
-
+const G_WARLOCK_HEIGHT = 474;
 Qt.include("battle_gui_utils.js");
 
 
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
-    w.print_g = preparePrintGestures(w.L, w.R);
+    w.print_g = preparePrintGestures(w.L, w.R, w.smcL, w.smcR);
     w.id = battle.targetsMap[w.name];
     w.paralyzed_hand = battle.paralyzed_hand[w.id];
     if (!w.paralyzed_hand) {
@@ -139,6 +138,7 @@ function prepareBattle(raw_battle) {
         battle.warlocks.unshift(w);
     }
     battle.player_name = battle.warlocks[0].name;
+    battle.player_changed_mind = battle.warlocks[0].changed_mind;
     battle.enemy_name = battle.warlocks.length > 1 ? battle.warlocks[1].name : "Nobody";
     for (i = 0, Ln = battle.actions.M.length; i < Ln; ++i) {
         if (!battle.actions.M[i].target  || (battle.actions.M[i].target === "Nobody")) {
@@ -203,7 +203,7 @@ function finishPrepareWarlockList() {
         }
         var arr_m = battle.warlocks[i];
         arr_m.warlock_idx = i;
-        var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT_COEFF * battleWindow.height, width: battleWindow.width});
+        var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
         if (sprite === null) {
             console.log("Error creating object");
             continue;
@@ -227,8 +227,9 @@ function prepareChat() {
 
 function prepareHint() {
     if (battle.hint && battle.hint.length > 0) {
-        ltHint.text = battle.hint;
-        ltHint.visible = true;
+        ltTutorial.tutorialData = battle.hint;
+        ltTutorial.text = battle.hint[0];
+        ltTutorial.visible = true;
     }
 }
 

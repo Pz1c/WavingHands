@@ -24,12 +24,10 @@
         <file>qml/windows/wnd_profile.qml</file>
         <file>js/gui_utils.js</file>
         <file>res/background.png</file>
-        <file>res/circle.png</file>
         <file>res/menu.png</file>
         <file>res/RIP2.png</file>
         <file>res/stars.png</file>
         <file>res/trophy.png</file>
-        <file>res/wait.png</file>
         <file>qml/windows/wnd_battle.qml</file>
         <file>js/battle_utils.js</file>
         <file>qml/game_components/Warlock.qml</file>
@@ -101,5 +99,12 @@
         <file>res/target_nobody.png</file>
         <file>res/spellbook.png</file>
         <file>res/stars_bg.png</file>
+        <file>res/AgencyFB.ttf</file>
+        <file>res/reg_img_05.png</file>
+        <file>res/reg_img_06.png</file>
+        <file>res/reg_ttl_06.png</file>
+        <file>res/reg_ttl_07.png</file>
+        <file>res/heart_small.png</file>
+        <file>res/glow.png</file>
     </qresource>
 </RCC>

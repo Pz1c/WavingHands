@@ -9,6 +9,7 @@ Rectangle {
     property alias text_color: btnText.color
     property alias text: btnText.text
     property alias fontSizeMode: btnText.fontSizeMode
+    property alias font: btnText.font
     property string bg_color_active: "lightskyblue"
     property string bg_color_inactive: "lightgray"
     property string border_color_active: "royalblue"

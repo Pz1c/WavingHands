@@ -11,6 +11,7 @@ Item {
     property var l_paralyzeActionData: ({})
     property var l_charmActionData: ({})
     property string l_control_icon: ""
+    property real l_ratio: 1
 
     signal clicked(var data)
     signal doubleClicked(var data)
@@ -20,8 +21,8 @@ Item {
        text: l_warlock.name
        anchors.top: parent.top
        anchors.horizontalCenter: parent.horizontalCenter
-       height: 0.1 * parent.height
-       width: 0.3 * parent.width
+       height: 36 * l_ratio
+       width: 246 * l_ratio
        bg_visible: true
        bg_color: l_warlock.player ? "#210430" : "#544653"
        color: l_warlock.player ? "#A8F4F4" : "#FEE2D6"
@@ -31,13 +32,14 @@ Item {
 
     IconInfo {
         id: iiHP
-        source: "qrc:/res/heart.png";
+        source: "qrc:/res/heart_small.png";
         text: l_warlock.hp
-        height: 0.10 * parent.height
+        height: 78 * l_ratio
         width: height
         anchors.top: parent.top
-        //anchors.topMargin: 0.01 * parent.height
+        anchors.topMargin: 12 * l_ratio
         anchors.left: parent.left
+        anchors.leftMargin: 6 * l_ratio
         onClicked: {
             iconClick({action:"hp",value:text});
         }
@@ -51,11 +53,12 @@ Item {
         id: iiBanked
         source: "qrc:/res/banked_spell.png";
         text: ""
-        height: 0.10 * parent.height
+        height: 78 * l_ratio
         width: height
         anchors.top: parent.top
-        //anchors.topMargin: 0.01 * parent.height
+        anchors.topMargin: 12 * l_ratio
         anchors.right: parent.right
+        anchors.rightMargin: 6 * l_ratio
         visible: l_warlock.player && (l_warlock.banked_spell !== "")
         checkbox: true
         checked: false
@@ -74,10 +77,10 @@ Item {
     ScrollView {
         id: svMonsters
         anchors.top: iiHP.bottom
-        anchors.topMargin: 0.01 * parent.height
+        anchors.topMargin: 12 * l_ratio
         anchors.left: parent.left
         width: 0.5 * parent.width
-        height: 0.15 * parent.height
+        height: 78 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
@@ -90,10 +93,10 @@ Item {
     ScrollView {
         id: svCharm
         anchors.top: iiHP.bottom
-        anchors.topMargin: 0.01 * parent.height
+        anchors.topMargin: 12 * l_ratio
         anchors.right: parent.right
         width: 0.5 * parent.width
-        height: 0.15 * parent.height
+        height: 78 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
@@ -106,9 +109,11 @@ Item {
     ScrollView {
         id: svGestures
         anchors.bottom: rBottomLine.top
+        anchors.bottomMargin: 28 * l_ratio
         anchors.left: parent.left
         anchors.right: iiLeft.left
-        height: 0.73 * rWarlock.height
+        anchors.rightMargin: 48 * l_ratio
+        height: 234 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
@@ -120,22 +125,26 @@ Item {
             delegate: Item {
                 id: lwiGesture
                 height: svGestures.height
-                width: iiLeft.width
+                width: 90 * l_ratio
 
                 IconInfo {
                     id: iiHL
                     source: "qrc:/res/"+lwGestures.model[index].l+".png"
                     iconVisible: lwGestures.model[index].lv
                     textVisible: false
-                    height: 0.3 * rWarlock.height
-                    width: parent.width
+                    height: 108 * l_ratio
+                    width: 78 * l_ratio
+                    iconHeight: 64 * l_ratio
+                    iconWidth: 64 * l_ratio
                     anchors.bottom: iiHR.top
-                    anchors.bottomMargin: 0.01 * rWarlock.height
-                    anchors.right: parent.right
+                    anchors.bottomMargin: 18 * l_ratio
+                    anchors.left: parent.left
                     active: false
+                    radius: 20
                     gradient: Gradient {
-                            GradientStop { position: 0.0; color: "#E7FFFF" }
-                            GradientStop { position: 1.0; color: "#FEE2D6" }
+                            GradientStop { position: 0.0;  color: lwGestures.model[index].la ? "#E7FFFF" : "#756F79" }
+                            GradientStop { position: lwGestures.model[index].la ? 0.25 : 0.15; color: lwGestures.model[index].la ? "#E7FFFF" : "#544653" }
+                            GradientStop { position: 1.0;  color: lwGestures.model[index].la ? "#FEE2D6" : "#544653" }
                         }
                 }
 
@@ -144,16 +153,20 @@ Item {
                     source: "qrc:/res/"+lwGestures.model[index].r+".png"
                     iconVisible: lwGestures.model[index].rv
                     textVisible: false
-                    height: 0.3 * rWarlock.height
-                    width: parent.width
+                    height: 108 * l_ratio
+                    width: 78 * l_ratio
+                    iconHeight: 64 * l_ratio
+                    iconWidth: 64 * l_ratio
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 0.05 * rWarlock.height
-                    anchors.right: parent.right
+                    //anchors.bottomMargin: 0.05 * rWarlock.height
+                    anchors.left: parent.left
                     active: false
+                    radius: 20
                     gradient: Gradient {
-                            GradientStop { position: 0.0; color: "#E7FFFF" }
-                            GradientStop { position: 1.0; color: "#FEE2D6" }
-                        }
+                        GradientStop { position: 0.0;  color: lwGestures.model[index].ra ? "#E7FFFF" : "#756F79" }
+                        GradientStop { position: lwGestures.model[index].ra ? 0.25 : 0.15; color: lwGestures.model[index].ra ? "#E7FFFF" : "#544653" }
+                        GradientStop { position: 1.0;  color: lwGestures.model[index].ra ? "#FEE2D6" : "#544653" }
+                    }
                 }
             }
         }
@@ -163,12 +176,15 @@ Item {
         id: iiLeft
         source: l_warlock.player ? "qrc:/res/stars_light.png" : "qrc:/res/g_=.png";
         text: ""
-        height: 0.35 * parent.height
-        width: 0.7 * height
+        height: 120 * l_ratio
+        width: 90 * l_ratio
+        iconHeight: 84 * l_ratio
+        iconWidth: 84 * l_ratio
         anchors.bottom: iiRight.top
-        anchors.bottomMargin: 0.01 * parent.height
+        anchors.bottomMargin: 18 * l_ratio
         anchors.right: parent.right
         visible: false
+        radius: 20
 
         onClicked: {
             if (l_warlock.player) {
@@ -195,10 +211,14 @@ Item {
         text: ""
         height: iiLeft.height
         width: iiLeft.width
+        iconHeight: 84 * l_ratio
+        iconWidth: 84 * l_ratio
         anchors.bottom: rBottomLine.top
-        //anchors.bottomMargin: 0.02 * parent.height
+        anchors.bottomMargin: 16 * l_ratio
         anchors.right: parent.right
         visible: false
+        radius: 20
+
         onClicked: {
             if (l_warlock.player) {
                 mainWindow.showGesture(false, l_warlock.prg);
@@ -220,7 +240,7 @@ Item {
 
     Rectangle {
         id: rBottomLine
-        height: 0.03 * parent.height
+        height: 2 * l_ratio
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.left: parent.left
@@ -237,16 +257,16 @@ Item {
         iiLeft.opacity = opacity;
         iiRight.opacity = opacity;
         //iiHP.active = Enable;
-        iiHP.border.width = border_width;
+        //iiHP.border.width = border_width;
         if (iiBanked.visible) {
             iiBanked.opacity = opacity;
         }
         var item, i, Ln;
-        for (i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
+        /*for (i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
             item = iMonsters.children[i];
             item.border.width = border_width;
             //item.active = Enable;
-        }
+        }*/
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
             if (IsSpell && l_warlock.player && ((item.l_data.action === "permanency") || (item.l_data.action === "delay"))) {
@@ -330,7 +350,8 @@ Item {
                 }
             }
 
-            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value], source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox});
+            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value],
+                                                        source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox, radius: 20});
             if (sprite === null) {
                 console.log("prepareDynamic Error creating object");
                 continue;
@@ -339,8 +360,8 @@ Item {
             sprite.clicked.connect(rWarlock.iconClick);
             sprite.doubleClicked.connect(rWarlock.iconDoubleClick);
 
-            curr_x += incerment * sprite.width;
-            total_width += sprite.width;
+            curr_x += incerment * (sprite.width + 18 * l_ratio);
+            total_width += sprite.width + 18 * l_ratio;
         }
     }
 

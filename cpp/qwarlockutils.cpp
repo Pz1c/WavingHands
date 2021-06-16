@@ -419,9 +419,9 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
     qDebug() << "for_bot" << level << total_count << description << for_bot;
     res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8,\"level_color\":\"%9\""
-                  ",\"friendly\":%10,\"with_bot\":%11,\"need\":%12,\"active\":%13}")
+                  ",\"friendly\":%10,\"with_bot\":%11,\"need\":%12,\"active\":%13,\"total_count\":%14}")
             .arg(logins, intToStr(fast), level, intToStr(parafc), intToStr(maladroit), description, battle_id, boolToStr(for_bot), level_color)
-            .arg(intToStr(friendly), boolToStr(with_bot), intToStr(need_more), boolToStr(is_active));
+            .arg(intToStr(friendly), boolToStr(with_bot), intToStr(need_more), boolToStr(is_active), intToStr(total_count));
     qDebug() << res;
     return res;
 }
@@ -530,4 +530,50 @@ int QWarlockUtils::strValueToInt(QString val) {
     } else {
         return val.toInt();
     }
+}
+
+QString QWarlockUtils::getFinishedBattleDescription(const QString &Data, const QString &Login) {
+    QString res, winner, enemy, tmp;
+    int idx1 = 0, idx2, idx3, count = 0, dead = 0, surrender = 0;
+    idx1 = Data.indexOf(" is victorious!");
+    if (idx1 != -1) {
+        idx2 = idx1 - 13; // max login length is 10
+        idx2 = Data.indexOf("<B>", idx2);
+        idx2 += 3;
+        winner = Data.mid(idx2, idx1 - idx2);
+    }
+
+    while((idx1 = Data.indexOf("<TD CLASS=lightbg WIDTH=\"50%\"><a href=\"/player/", idx1)) != -1) {
+        ++count;
+        idx1 += 47;
+        idx2 = Data.indexOf(".html", idx1);
+        tmp = Data.mid(idx1, idx2  - idx1);
+        if (enemy.isEmpty() && (tmp.compare(Login, Qt::CaseInsensitive) != 0)) {
+            enemy = tmp;
+        }
+        idx1 = Data.indexOf("</TD></TR>", idx2);
+        idx3 = Data.indexOf("Dead.", idx2);
+        if ((idx3 != -1) && (idx3 < idx2)) {
+            ++dead;
+        } else {
+            idx3 = Data.indexOf("Surrendered.", idx2);
+            if ((idx3 != -1) && (idx3 < idx2)) {
+                ++surrender;
+            } else if (winner.isEmpty()) {
+                winner = tmp;
+            }
+        }
+    }
+    if (!winner.isEmpty()) {
+        if (winner.compare(Login, Qt::CaseInsensitive) == 0) {
+            res = "Won vs. ";
+        } else {
+            res = "Lost vs. ";
+        }
+    } else {
+        res = "Draw vs. ";
+    }
+    res.append(enemy);
+
+    return res;
 }

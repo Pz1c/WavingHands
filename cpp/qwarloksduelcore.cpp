@@ -335,7 +335,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     }
 
     QString url = NewUrl.toString().toLower();
-    qDebug() << "login sucessfull redirect to " << url;
+    qDebug() << "finishOrderSubmit sucessfull redirect to " << url;
     if (url.indexOf("http://") == -1) {
         url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
     }
@@ -688,10 +688,11 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
             new_desc = new_desc.mid(0, 10);
             new_desc.append("...");
         }
-    } else if ((_loadedBattleType == 2) && (curr_desc.indexOf("!") == -1)) {
+    } else if ((_loadedBattleType == 2) && (curr_desc.indexOf(" vs. ") == -1)) {
         // finished
         res = 2;
-        new_desc = "No one win";
+        new_desc = QWarlockUtils::getFinishedBattleDescription(Data, _login);
+        /*new_desc = "No one win";
         int idx = Data.indexOf(" is victorious!");
         if (idx != -1) {
             int idx2 = idx - 13; // max login length is 10
@@ -699,7 +700,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
             idx2 += 3;
             new_desc = Data.mid(idx2, idx - idx2);
             new_desc.append(" win!");
-        }
+        }*/
 
     }
     if (!new_desc.isEmpty() && (new_desc.compare(curr_desc) != 0)) {
@@ -834,7 +835,7 @@ bool QWarloksDuelCore::prepareWarlockHtml() {
     qDebug() << "QWarloksDuelCore::prepareWarlockHtml";
     _WarlockHtml.clear();
     foreach(QWarlock *m, _Warlock) {
-        bool Player = m->name().toLower().compare(_login.toLower()) == 0;
+        bool Player = m->name().compare(_login, Qt::CaseInsensitive) == 0;
         //QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false, !Player);
         if (Player) {
             _leftGestures = m->leftGestures();
@@ -1133,7 +1134,7 @@ void QWarloksDuelCore::generateBattleList() {
     emit battleListChanged();
 }
 
-void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
+void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     qDebug() << "QWarloksDuelCore::parsePlayerInfo";
     QList<int> old_read(_ready_in_battles), old_wait(_waiting_in_battles);
     _challenge.clear();
@@ -1221,15 +1222,17 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data) {
             }
         }
     }
-    if (changed) {
+    if (changed || ForceBattleList) {
         generateBattleList();
     }
     saveParameters();
 }
 
-bool QWarloksDuelCore::finishScan(QString &Data) {
-    parsePlayerInfo(Data);
-    getChallengeList();
+bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
+    parsePlayerInfo(Data, ForceBattleList);
+    if (!ForceBattleList) {
+        getChallengeList();
+    }
     /*if (_isAI) {
         _challengeList = "[]";
         if (_ready_in_battles.count() == 0) {
@@ -1350,7 +1353,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         if (url.indexOf(".html") != -1) {
             finishScanWarlock(data);
         } else {
-            finishScan(data);
+            finishScan(data, url.indexOf("mess=Orders") != -1);
         }
         return true;
     }
@@ -1834,25 +1837,45 @@ QString QWarloksDuelCore::battleList() {
     return _battleList;
 }
 
+QString QWarloksDuelCore::getHintArray(int hint_id) {
+    QString res = "[", hint, hint_code;
+    bool first = true, search = true;
+    int hint_idx = 0;
+    while(search) {
+        hint_code = QString("hint_%1_%2").arg(intToStr(hint_id), intToStr(++hint_idx));
+        hint = GameDictionary->getStringByCode(hint_code);
+        if (hint.compare(hint_code) == 0) {
+            hint = "Got it!";
+            search = false;
+        }
+        res.append(QString("%1\"%2\"").arg(first ? "" : ",", hint));
+        if (first) {
+            first = false;
+        }
+    }
+    return res.append("]");
+}
+
 QString QWarloksDuelCore::getBattleHint(int battle_id, int battle_turn) {
     QString hint, hint_code;
     if (_battleHint.contains(battle_id)) {
-        hint_code = QString("hint_%1_%2").arg(intToStr(_battleHint[battle_id]), intToStr(battle_turn));
-        hint = GameDictionary->getStringByCode(hint_code);
-        return hint.compare(hint_code) == 0 ? "" : hint;
+        //hint_code = QString("hint_%1_%2").arg(intToStr(hint_id), intToStr(battle_turn));
+        //hint = GameDictionary->getStringByCode(hint_code);
+        return battle_turn != 1 ? "[]" : getHintArray(_battleHint[battle_id]);
     } else if (!_show_hint) {
-        return "";
+        return "[]";
     }
+
 
     while(true) {
         hint_code = QString("hint_%1_1").arg(intToStr(++_hint1));
         hint = GameDictionary->getStringByCode(hint_code);
         if (hint.compare(hint_code) == 0) {
             _show_hint = false;
-            return "";
+            return "[]";
         } else {
             _battleHint[battle_id] = _hint1;
-            return hint;
+            return getHintArray(_hint1);
         }
     }
 }
@@ -1866,7 +1889,7 @@ QString QWarloksDuelCore::battleInfo() {
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":%12,\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":\"%19\"}")
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint);

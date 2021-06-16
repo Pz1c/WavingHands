@@ -78,14 +78,14 @@ function getIconByGesture(G) {
     return G.toLowerCase();
 }
 
-function preparePrintGestures(GL, GR) {
+function preparePrintGestures(GL, GR, mscL, mscR) {
     var res = [], item, ll, lr;
     //GL = GL.toLowerCase();
     //GR = GR.toLowerCase();
     for(var i = 1, Ln = GL.length; i < Ln; ++i) {
         ll = getIconByGesture(GL.substr(i, 1));
         lr = getIconByGesture(GR.substr(i, 1));
-        item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== ' ', rv: lr !== ' '};
+        item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== ' ', rv: lr !== ' ', la: i >= Ln - mscL, ra: i >= Ln - mscR};
         res.push(item);
     }
     return res;

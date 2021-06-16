@@ -5,24 +5,23 @@ Rectangle {
 
     signal clicked
     property bool checked: false
-    property alias innerBorder: rInner.border
-    property alias innerRadius: rInner.radius
-    property string fill_color_checked: "black"
-    property string fill_color_unchecked: "white"
+    //property alias innerBorder: rInner.border
+    //property alias innerRadius: rInner.radius
+    //property string fill_color_checked: "#E7FFFF"
+    //property string fill_color_unchecked: "black"
 
-    border.color: "lightgrey"
+    border.color: "#E7FFFF"
     border.width: 3
     radius: 5
+    color: "black"
 
-    Rectangle {
+    LargeText {
         id: rInner
-        border.color: "black"
-        border.width: 2
-        radius: 5
-        anchors.centerIn: parent
-        width: parent.width - radius - parent.radius
-        height: parent.height - radius - parent.radius
-        color: checked ? fill_color_checked : fill_color_unchecked
+        color: rCB.border.color
+        anchors.fill: parent
+        text: checked ? "V" : ""
+        bg_visible: true
+        bg_color: rCB.color
     }
 
     MouseArea {
