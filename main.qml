@@ -724,12 +724,12 @@ ApplicationWindow {
                 if (s.ng === new_gesture) {
                     console.log("mainWindow.getSpellList iteration", i, new_gesture, JSON.stringify(s));
                     if (s.t === 1) {
-                        s.gp = '<font color="#A8F4F4">'+s.g+'</font>';
+                        s.gp = '<font color="#10C9F5">'+s.g+'</font>';
                         s.cast_type = 1;
                         arr_cast_now.push(s);
                     } else {
                         idx = s.g.length - s.t + 1;
-                        s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                        s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
                         s.cast_type = 2;
                         arr_cast_later.push(s);
                     }
@@ -748,7 +748,7 @@ ApplicationWindow {
                     }
                 } else {*/
                     idx = s.g.length - s.t;
-                    s.gp = '<font color="#A8F4F4">'+s.g.substr(0, idx)+'</font><font color="#E7FFFF">'+s.g.substr(idx)+'</font>';
+                    s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
                     s.cast_type = 3;
                     arr_cast_other.push(s);
                 //}
@@ -757,7 +757,7 @@ ApplicationWindow {
         //arr_cast_now.push();
         if (new_gesture !== '') {
             gBattle.spellIdx = arr_cast_now.length;
-            var def_spell = gBattle.spellIdx > 0 ? {gp:"?",n:"Default",choose:1,t:1,cast_type:1} : {gp:"None",n:"",choose:0,t:1,cast_type:0};
+            var def_spell = ((gBattle.spellIdx > 0) || gBattle.player_changed_mind) ? {gp:"?",n:"Default",choose:1,t:1,cast_type:1} : {gp:"None",n:"",choose:0,t:1,cast_type:0};
             return [arr_cast_now.concat([def_spell]), arr_cast_later];
         } else {
             return arr_cast_other;

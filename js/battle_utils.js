@@ -139,6 +139,7 @@ function prepareBattle(raw_battle) {
         battle.warlocks.unshift(w);
     }
     battle.player_name = battle.warlocks[0].name;
+    battle.player_changed_mind = battle.warlocks[0].changed_mind;
     battle.enemy_name = battle.warlocks.length > 1 ? battle.warlocks[1].name : "Nobody";
     for (i = 0, Ln = battle.actions.M.length; i < Ln; ++i) {
         if (!battle.actions.M[i].target  || (battle.actions.M[i].target === "Nobody")) {

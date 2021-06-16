@@ -74,7 +74,7 @@ BaseWindow {
                 anchors.top:  parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: 40 * mainWindow.ratioObject + lvSpellList.height
+                height: (40 + lvSpellList.model.length * 78) * mainWindow.ratioObject
 
                 visible: true
 
@@ -82,9 +82,10 @@ BaseWindow {
                     id: ltSpellbook
                     anchors.top: parent.top
                     anchors.left: parent.left
+                    anchors.leftMargin: 13 * mainWindow.ratioObject
                     height: 40 * mainWindow.ratioObject
                     width: parent.width
-                    color: "#6495ed"
+                    color: "#0654C0"
                     horizontalAlignment: Text.AlignLeft
                     text: "Spellbook"
                 }
@@ -184,9 +185,10 @@ BaseWindow {
                     id: ltCast
                     anchors.top: parent.top
                     anchors.left: parent.left
+                    anchors.leftMargin: 13 * mainWindow.ratioObject
                     height: 40 * mainWindow.ratioObject
                     width: parent.width
-                    color: "#6495ed"
+                    color: "#0654C0"
                     horizontalAlignment: Text.AlignLeft
                     text: "Completed Spells"
                 }
@@ -252,12 +254,14 @@ BaseWindow {
                                             lvCast.model = arrSpell;
                                         } else if (arrSpell[index].cast_type === 2) {
                                             mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
+                                        } else if (arrSpell[index].cast_type === 0) {
+                                            mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, false);
                                         }
                                     }
 
                                     onPressAndHold: {
                                         console.log("spell info", index, JSON.stringify(lvCast.model[index]));
-                                        if(lvCast.model[index].gp !== "?") {
+                                        if((lvCast.model[index].gp !== "?") && (lvCast.model[index].gp !== "None")) {
                                             mainWindow.showSpellDetails(lvSpellList.model[index].g);
                                         } else {
 
@@ -273,10 +277,11 @@ BaseWindow {
                     anchors.top: lvCast.bottom
                     anchors.topMargin: 60 * mainWindow.ratioObject
                     anchors.left: parent.left
+                    anchors.leftMargin: 13 * mainWindow.ratioObject
                     height: 40 * mainWindow.ratioObject
                     width: parent.width
                     horizontalAlignment: Text.AlignLeft
-                    color: "#6495ed"
+                    color: "#0654C0"
                     text: "Incomplete Spells"
                 }
 
@@ -728,6 +733,7 @@ BaseWindow {
                 arrSpellFull = mainWindow.getSpellList("");
                 lvSpellList.model = arrSpellFull;
             }
+            svError.contentHeight = iSpellBook.height;
             iCast.visible = false;
             iSpellBook.visible = true;
             return;
@@ -738,6 +744,7 @@ BaseWindow {
         }
         lvCast.model = arrSpell;
         lvCastNext.model = arrSpellLater;
+        svError.contentHeight = iCast.height;
         iSpellBook.visible = false;
         iCast.visible = true;
     }
