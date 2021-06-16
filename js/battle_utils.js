@@ -1,7 +1,6 @@
 var battle = {};
 var cWarlockObject,cIconObject;
 const G_WARLOCK_HEIGHT = 474;
-
 Qt.include("battle_gui_utils.js");
 
 

@@ -163,6 +163,7 @@ QString QWarlock::separatedString() {
         sbsR = _bestSpellR->json();
         qDebug() << "sbsR" << sbsR;
     }
+    
     QString changed_mind = (_charmed > 0) || (_confused > 0) || (_paralized > 0) ? "1" : "0";
 
     return QString("{\"name\":\"%1\",\"status\":\"%2\",\"L\":\"%3\",\"R\":\"%4\",\"spells\":%5,\"player\":%6,\"bsL\":%7,\"bsR\":%8,\"hp\":%9,\"scared\":%10,"
