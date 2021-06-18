@@ -114,6 +114,7 @@ function finishedShowWnd(wnd_obj) {
     } else {
         console.log("Unknown status", wnd_obj.wnd.status);
     }
+    mainWindow.keyListener.focus = true;
 }
 //*/
 
@@ -160,7 +161,7 @@ function closeChild() {
             }
         }
     }
-    //Qt.loader.forceActiveFocus();
+    mainWindow.keyListener.forceActiveFocus();
 }
 
 function storeWnd(wnd) {

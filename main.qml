@@ -137,6 +137,7 @@ ApplicationWindow {
     property string tipTxt;
     //property bool allowCloseTip: false;
     property bool is_game_in_progress: false
+    property alias keyListener: iWndContainer
 
     color: "#551470"
 

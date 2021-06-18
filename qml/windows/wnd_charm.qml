@@ -17,8 +17,8 @@ BaseWindow {
     property bool isParalyze: false
     property bool isFC: false
     property var arrHands: [{h:"LH",choose:1},{h:"RH",choose:0}]
-    property var currHand: 0
-    property var currGesture: "-"
+    property int currHand: 0
+    property string currGesture: "-"
     property var arrGesture: [iiGC,iiGD,iiGF,iiGS,iiGP,iiGW,iiGSt,iiGN]
     property var arrGestureVal: ["C","D","F","S","P","W",">","-"]
     property var mapGesture: ({"C":iiGC,"D":iiGD,"F":iiGF,"S":iiGS,"P":iiGP,"W":iiGW,">":iiGSt,"-":iiGN})
