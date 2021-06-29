@@ -83,7 +83,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("Messages", "Повідомлення", "Сообщения", "Messages");
     fillDictionary("SpellList", "Список доступних заклять", "Список доступніх заклинаний", "Spell list");
     fillDictionary("Accounts", "Акаунти", "Акаунты", "Accounts");
-    fillDictionary("Iam13", "Мені виповнилось 13", "Мне исполнилось 13", "I guarantee that I am at least 13");
+    fillDictionary("Iam13", "Мені виповнилось 13", "Мне исполнилось 13", "I am 13+ years old");
     fillDictionary("ConfirmExit", "Закрити гру?", "Закрыть игру?", "Leave game?");
     fillDictionary("WndErrorTitle", "Помилка!", "Ошибка!", "Error!");
     fillDictionary("WaitTrainingBattle", "Ви зможете створювати дуелі, після завершення тренувального бою, почекайте будь ласка", "Вы сможете создавать дуэли, после завершения тренировочного боя, подождите пожалуйста", "You will be able to create duels, after the end of a training battle, please wait");

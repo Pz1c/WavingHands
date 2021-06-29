@@ -13,6 +13,7 @@ var wnd_monster = "wnd_monster.qml";
 var wnd_charm = "wnd_charm.qml";
 var wnd_orders = "wnd_orders.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
+var wnd_spell = "wnd_spell.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -230,6 +231,9 @@ function showErrorWnd(error, chat) {
         break;
     case 4:
         wnd_name = wnd_monster;
+        break;
+    case 7:
+        wnd_name = wnd_spell;
         break;
     default:
         wnd_name = wnd_error;

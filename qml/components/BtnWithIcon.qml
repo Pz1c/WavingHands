@@ -11,6 +11,7 @@ Rectangle {
     property alias text_color: btnText.color
     property alias text: btnText.text
     property alias fontSizeMode: btnText.fontSizeMode
+    property alias fontPixelSize: btnText.font.pixelSize
     property alias mouseEnabled: maItem.enabled
     property alias text_width: btnText.width
     property alias icon_width: btnIcon.width

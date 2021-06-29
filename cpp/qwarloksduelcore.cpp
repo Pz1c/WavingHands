@@ -1845,10 +1845,10 @@ QString QWarloksDuelCore::getHintArray(int hint_id) {
         hint_code = QString("hint_%1_%2").arg(intToStr(hint_id), intToStr(++hint_idx));
         hint = GameDictionary->getStringByCode(hint_code);
         if (hint.compare(hint_code) == 0) {
-            hint = "Got it!";
             search = false;
+        } else {
+            res.append(QString("%1\"%2\"").arg(first ? "" : ",", hint));
         }
-        res.append(QString("%1\"%2\"").arg(first ? "" : ",", hint));
         if (first) {
             first = false;
         }

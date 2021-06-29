@@ -106,5 +106,7 @@
         <file>res/reg_ttl_07.png</file>
         <file>res/heart_small.png</file>
         <file>res/glow.png</file>
+        <file>qml/components/InfoWindow.qml</file>
+        <file>qml/windows/wnd_spell.qml</file>
     </qresource>
 </RCC>
