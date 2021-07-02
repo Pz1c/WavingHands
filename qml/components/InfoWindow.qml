@@ -16,10 +16,12 @@ Item {
     signal cancel;
 
     property var dict: WarlockDictionary
+    property var l_data: ({})
     property string code: "info_wnd"
     property string title_text: ""
     property string title_color: ""
     property alias content_item: bwBody
+    property alias icon: iiIcon
 
     function onKeyPressed(event) {
         console.log("InfoWindow.KEY_PRESSED: " + event.key)
@@ -79,11 +81,26 @@ Item {
             text_width: 50 * mainWindow.ratioObject
             text_color: "#FEE2D6"
             text: "Back"
-            fontPixelSize: 30 * mainWindow.ratioFont
+            fontPixelSize: 28 * mainWindow.ratioFont
 
             onClicked: {
                 iRoot.cancel();
             }
+        }
+
+        IconInfo {
+            id: iiIcon
+            z: 15
+            source: "qrc:/res/elemental_fire.png"
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.rightMargin: 24 * mainWindow.ratioObject
+            height: 50 * mainWindow.ratioObject
+            width: 50 * mainWindow.ratioObject
+            active: false
+            animationEnabled: false
+            borderOnPress: false
+            visible: false
         }
     }
 

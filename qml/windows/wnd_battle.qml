@@ -334,15 +334,16 @@ BaseWindow {
 
         switch(data.action) {
         case "hp":
+            msg_type = 4;
             msg_title = "Warlock's hit point"
             msg_text = data.value + " damage to death";
             break;
         case "m":
+            msg_type = 4;
             msg_title = "Monster"
             msg_text = data.name;
             if (data.owner !== "Nobody") {
                 msg_text += " (owner by "+data.owner+")";
-                msg_type = 4;
                 console.log("get target", JSON.stringify(mainWindow.gBattle.actions), mainWindow.gBattle.actions.M[data.action_idx].target);
                 data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
                 mainWindow.gBattle.currentMonsterIdx = data.action_idx;

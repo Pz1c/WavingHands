@@ -116,6 +116,10 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
     fillDictionary("LoginAs", "", "", "Login as ...");
     fillDictionary("SpellbookTitle", "", "", "Spellbook");
+    fillDictionary("Warlock", "", "", "Warlock");
+    fillDictionary("RH_summon", "", "", "Right Hand Monster");
+    fillDictionary("LH_summon", "", "", "Left Hand Monster");
+    fillDictionary("WH_summon", "", "", "Monster that warlock may be summoning");
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");

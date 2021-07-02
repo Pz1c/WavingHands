@@ -230,7 +230,8 @@ function showErrorWnd(error, chat) {
         wnd_name = wnd_chat;
         break;
     case 4:
-        wnd_name = wnd_monster;
+        //wnd_name = wnd_monster;
+        wnd_name = wnd_spell;
         break;
     case 7:
         wnd_name = wnd_spell;
