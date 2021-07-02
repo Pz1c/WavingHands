@@ -9,7 +9,6 @@ var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_battle = "wnd_battle.qml";
 var wnd_chat = "wnd_chat.qml";
 var wnd_gesture = "wnd_gesture.qml";
-var wnd_monster = "wnd_monster.qml";
 var wnd_charm = "wnd_charm.qml";
 var wnd_orders = "wnd_orders.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
@@ -230,7 +229,6 @@ function showErrorWnd(error, chat) {
         wnd_name = wnd_chat;
         break;
     case 4:
-        //wnd_name = wnd_monster;
         wnd_name = wnd_spell;
         break;
     case 7:

@@ -147,7 +147,7 @@ InfoWindow {
             } else {
               ltTitle.text = l_data.name;
               ltShortDesc.text = dict.getStringByCode("Warlock");
-              details = "Life: " + l_data.value + "<br>Power: "+BGU.getMonsterDamageByName(l_data.name)+"<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
+              details = "Life: " + l_data.hp + "<br>Power: "+l_data.strength+"<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
             }
             ltError.text = details;
             bbAction.visible = l_data.under_control;
