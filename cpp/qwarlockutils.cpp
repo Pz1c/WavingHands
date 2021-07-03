@@ -344,7 +344,7 @@ QString QWarlockUtils::parseChallengeDescription(QString &Data) {
         ++idx1;
         res.append(Data.mid(idx1, Data.length() - idx1));
     }
-    res = res.replace("\r", "").replace("\n","<br>").replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive).trimmed();
+    res = res.replace('"', "&quot;").replace("\r", "").replace("\n","<br>").replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive).trimmed();
     return res;
 }
 

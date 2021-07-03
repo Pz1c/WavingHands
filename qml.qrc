@@ -77,7 +77,6 @@
         <file>res/blindness.png</file>
         <file>res/invisibility.png</file>
         <file>js/game_constant.js</file>
-        <file>qml/windows/wnd_monster.qml</file>
         <file>qml/windows/wnd_charm.qml</file>
         <file>qml/windows/wnd_orders.qml</file>
         <file>js/small_gui_utils.js</file>
@@ -106,5 +105,7 @@
         <file>res/reg_ttl_07.png</file>
         <file>res/heart_small.png</file>
         <file>res/glow.png</file>
+        <file>qml/components/InfoWindow.qml</file>
+        <file>qml/windows/wnd_spell.qml</file>
     </qresource>
 </RCC>

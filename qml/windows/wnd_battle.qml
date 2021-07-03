@@ -140,17 +140,20 @@ BaseWindow {
                 source: "qrc:/res/target_nobody.png";
                 text: ""
                 height: 78 * mainWindow.ratioObject
+                iconHeight: 60 * mainWindow.ratioObject
+                iconWidth: 60 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
                 anchors.topMargin: 12 * mainWindow.ratioObject
-                anchors.right: iiDefault.left
-                anchors.rightMargin: 6 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: ((iiElemental.visible ? 84: 0) + 6) * mainWindow.ratioObject
                 visible: false
                 radius: 20
+                l_data: ({action:"hp",warlock_name:"Nobody"})
 
                 onClicked: {
                     if (operationMode >= 1) {
-                        iconClick({action:"hp",warlock_name:"Nobody"});
+                        iconClick(l_data);
                     }
                 }
             }
@@ -160,17 +163,20 @@ BaseWindow {
                 source: "qrc:/res/send_1.png";
                 text: ""
                 height: 78 * mainWindow.ratioObject
+                iconHeight: 60 * mainWindow.ratioObject
+                iconWidth: 60 * mainWindow.ratioObject
                 width: height
                 anchors.top: parent.top
-                anchors.topMargin: 12 * mainWindow.ratioObject
+                anchors.topMargin: 15 * mainWindow.ratioObject
                 anchors.right: parent.right
-                anchors.rightMargin: 6 * mainWindow.ratioObject
+                anchors.rightMargin: 12 * mainWindow.ratioObject
                 visible: false
                 radius: 20
+                l_data: ({action:"hp",warlock_name:"Default"})
 
                 onClicked: {
                     if (operationMode >= 1) {
-                        iconClick({action:"hp",warlock_name:"Default"});
+                        iconClick(l_data);
                     }
                 }
             }
@@ -180,7 +186,7 @@ BaseWindow {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.left: iiElemental.right
-                anchors.right: iiNobody.left
+                anchors.right: iiDefault.left
                 visible: false
                 text: "test hint 01"
                 color: "snow"
@@ -196,7 +202,7 @@ BaseWindow {
                     target: ltHint
                     property: 'visible'
                     to: false
-                    duration: 2000 // turns to false after 5000 ms
+                    duration: 2000 // turns to false after 2000 ms
                 }
 
                 onClicked: {
@@ -206,28 +212,77 @@ BaseWindow {
             }
 
 
-            LargeText {
+            Rectangle {
                 id: ltTutorial
                 anchors.top: parent.top
+                anchors.topMargin: 6 * mainWindow.ratioObject
                 anchors.bottom: parent.bottom
-                anchors.left: iiElemental.right
-                anchors.right: iiChat.left
+                anchors.bottomMargin: 18 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: 24 * mainWindow.ratioObject
+                anchors.right: parent.right
+                anchors.rightMargin: 24 * mainWindow.ratioObject
                 visible: false
-                text: "test hint 01"
-                color: "snow"
-                bg_color: "blue"
-                bg_visible: true
-                bg_radius: 5
-                border_visible: false
-                wrapMode: Text.Wrap
+                color: "#FEE2D6"
+                radius: 5 * mainWindow.ratioObject
                 property var tutorialData: ([])
                 property int tutorialDataIdx: 0
+                property alias text: ltTTT.text
 
-                onClicked: {
-                    if (++tutorialDataIdx >= tutorialData.length) {
-                        visible = false;
-                    } else {
-                        ltTutorial.text = tutorialData[tutorialDataIdx];
+                LargeText {
+                    id: ltTTTPrev
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: 18 * mainWindow.ratioObject
+                    width: 30 * mainWindow.ratioObject
+                    height: 0.80 * parent.height
+                    fontSizeMode: Text.VerticalFit
+                    text: "<"
+                    color: "#210430"
+                    visible: ltTutorial.tutorialDataIdx > 0
+                    onClicked: {
+                        if (--ltTutorial.tutorialDataIdx < 0) {
+                            ltTutorial.tutorialDataIdx = 0;
+                        }
+                        ltTTT.text = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
+                    }
+                }
+
+                LargeText {
+                    id: ltTTT
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.left: ltTTTPrev.right
+                    anchors.leftMargin: 6 * mainWindow.ratioObject
+                    anchors.right: ltTTTNext.left
+                    anchors.rightMargin: 6 * mainWindow.ratioObject
+
+                    text: "test hint 01"
+                    color: "#210430"
+                    wrapMode: Text.Wrap
+
+                    onClicked: {
+                        if (++ltTutorial.tutorialDataIdx >= ltTutorial.tutorialData.length) {
+                            ltTutorial.visible = false;
+                        } else {
+                            ltTTT.text = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
+                        }
+                    }
+                }
+
+                LargeText {
+                    id: ltTTTNext
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
+                    anchors.rightMargin: 18 * mainWindow.ratioObject
+                    width: 30 * mainWindow.ratioObject
+                    height: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 0.80 * parent.height : 0.50 * parent.height
+                    fontSizeMode: Text.VerticalFit
+                    font.underline: !(ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1)
+                    text: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? ">" : "got it!"
+                    color: "#210430"
+                    onClicked: {
+                        ltTTT.clicked();
                     }
                 }
             }
@@ -279,15 +334,16 @@ BaseWindow {
 
         switch(data.action) {
         case "hp":
+            msg_type = 4;
             msg_title = "Warlock's hit point"
             msg_text = data.value + " damage to death";
             break;
         case "m":
+            msg_type = 4;
             msg_title = "Monster"
             msg_text = data.name;
             if (data.owner !== "Nobody") {
                 msg_text += " (owner by "+data.owner+")";
-                msg_type = 4;
                 console.log("get target", JSON.stringify(mainWindow.gBattle.actions), mainWindow.gBattle.actions.M[data.action_idx].target);
                 data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
                 mainWindow.gBattle.currentMonsterIdx = data.action_idx;

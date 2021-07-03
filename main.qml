@@ -137,6 +137,7 @@ ApplicationWindow {
     property string tipTxt;
     //property bool allowCloseTip: false;
     property bool is_game_in_progress: false
+    property alias keyListener: iWndContainer
 
     color: "#551470"
 
@@ -325,7 +326,7 @@ ApplicationWindow {
                 width: 48 * ratioObject
 
                 onClicked: {
-                    //WNDU.showSpellbook();
+                    WNDU.showSpellbook();
                 }
                 background: Image {
                     anchors.fill: parent
@@ -660,14 +661,15 @@ ApplicationWindow {
 
     function showSpellDetails(spell_code) {
         logEvent("spell_details", {code:spell_code});
-        var short_desc_code = spell_code + "_short_desc";
-        var short_desc = warlockDictionary.getStringByCode(spell_code + "_short_desc");
-        var msg_txt = "";
-        if (short_desc !== short_desc_code) {
-            msg_txt = short_desc + "<br>Details:<br>";
-        }
-        msg_txt += warlockDictionary.getStringByCode(spell_code + "_desc");
-        showErrorWnd({text:msg_txt,type:1,title:warlockDictionary.getStringByCode(spell_code)});
+        //var short_desc_code = spell_code + "_short_desc";
+        //var short_desc = warlockDictionary.getStringByCode(spell_code + "_short_desc");
+        //var msg_txt = "";
+        //if (short_desc !== short_desc_code) {
+        //    msg_txt = short_desc + "<br>Details:<br>";
+        //}
+        //msg_txt += warlockDictionary.getStringByCode(spell_code + "_desc");
+
+        showErrorWnd({type:7,spell:spell_code});
     }
 
     function showGesture(isLeft, possible_gestures) {

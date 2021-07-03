@@ -9,10 +9,10 @@ var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_battle = "wnd_battle.qml";
 var wnd_chat = "wnd_chat.qml";
 var wnd_gesture = "wnd_gesture.qml";
-var wnd_monster = "wnd_monster.qml";
 var wnd_charm = "wnd_charm.qml";
 var wnd_orders = "wnd_orders.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
+var wnd_spell = "wnd_spell.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -114,6 +114,7 @@ function finishedShowWnd(wnd_obj) {
     } else {
         console.log("Unknown status", wnd_obj.wnd.status);
     }
+    mainWindow.keyListener.focus = true;
 }
 //*/
 
@@ -160,7 +161,7 @@ function closeChild() {
             }
         }
     }
-    //Qt.loader.forceActiveFocus();
+    mainWindow.keyListener.forceActiveFocus();
 }
 
 function storeWnd(wnd) {
@@ -228,7 +229,10 @@ function showErrorWnd(error, chat) {
         wnd_name = wnd_chat;
         break;
     case 4:
-        wnd_name = wnd_monster;
+        wnd_name = wnd_spell;
+        break;
+    case 7:
+        wnd_name = wnd_spell;
         break;
     default:
         wnd_name = wnd_error;

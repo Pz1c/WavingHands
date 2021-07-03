@@ -36,8 +36,8 @@ Rectangle {
     Image {
         id: iIcon
         anchors.centerIn: button;
-        height: 0.9 * button.height
-        width: 0.9 * button.height
+        height: 1
+        width: 1
     }
 
     LargeText {
@@ -133,11 +133,11 @@ Rectangle {
     }
 
     function onFinishCreation() {
-        console.log("IconInfo.onFinishCreation", JSON.stringify(l_data));
-        //if (l_data.action)
-        /*if (blink) {
-            saClick.start();
-        }*/
+        console.log("IconInfo.onFinishCreation", JSON.stringify(l_data), iIcon.height, button.height);
+        if (iIcon.height === 1) {
+            iIcon.height = 0.9 * button.height;
+            iIcon.width = 0.9 * button.height;
+        }
     }
 
     Component.onCompleted: onFinishCreation();
