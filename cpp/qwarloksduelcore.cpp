@@ -706,6 +706,9 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
     if (!new_desc.isEmpty() && (new_desc.compare(curr_desc) != 0)) {
         _battleDesc[_loadedBattleID] = new_desc;
     }
+    if (_battleState[_loadedBattleID] < 2) {
+        _battleState[_loadedBattleID] = res;
+    }
     qDebug() << res << curr_desc << new_desc;
     return res;
 }
@@ -719,9 +722,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         if (_finished_battles.indexOf(_loadedBattleID) != -1) {
             _finished_battles.removeAt(_finished_battles.indexOf(_loadedBattleID));
         }
-        if (_shown_battles.indexOf(intToStr(_loadedBattleID)) != -1) {
+        /*if (_shown_battles.indexOf(intToStr(_loadedBattleID)) != -1) {
             _shown_battles.removeAt(_shown_battles.indexOf(intToStr(_loadedBattleID)));
-        }
+        }*/
         _finishedBattle = "Sorry, but you battle already deleted from game server and we not store it on archive server";
         emit finishedBattleChanged();
         return false;
@@ -1087,6 +1090,7 @@ void QWarloksDuelCore::generateBattleList() {
         } else {
             _battleList.append(",");
         }
+        //d = QWarlockUtils::getBattleShortTitle(_battleDesc[bid], _battleState[bid], bid);
         if (_battleDesc.contains(bid)) {
             d = _battleDesc[bid];
         } else {
@@ -1100,34 +1104,36 @@ void QWarloksDuelCore::generateBattleList() {
         } else {
             _battleList.append(",");
         }
-        if (_battleDesc.contains(bid)) {
+        d = QWarlockUtils::getBattleShortTitle(_battleDesc[bid], _battleState[bid], bid);
+        /*if (_battleDesc.contains(bid)) {
             d = _battleDesc[bid];
         } else {
             d = QString("Wait #%1").arg(intToStr(bid));
-        }
+        }*/
         _battleList.append(QString("{\"id\":%1,\"s\":0,\"d\":\"%2\"}").arg(intToStr(bid), d));
     }
     _battleList.append("],[");
-    QList<int> fb(_finished_battles);
-    int id;
+    //QList<int> fb(_finished_battles);
+    /*int id;
     foreach(QString sb, _shown_battles) {
         id = sb.toInt();
         if (fb.indexOf(id) == -1) {
             fb.append(id);
         }
-    }
+    }*/
     first = true;
-    foreach(int bid, fb) {
+    foreach(int bid, _finished_battles) {
         if (first) {
             first = false;
         } else {
             _battleList.append(",");
         }
-        if (_battleDesc.contains(bid)) {
+        d = QWarlockUtils::getBattleShortTitle(_battleDesc[bid], _battleState[bid], bid);
+        /*if (_battleDesc.contains(bid)) {
             d = _battleDesc[bid];
         } else {
             d = QString("Finished #%1").arg(intToStr(bid));
-        }
+        }*/
         _battleList.append(QString("{\"id\":%1,\"s\":2,\"d\":\"%2\"}").arg(intToStr(bid), d));
     }
     _battleList.append("]]");
@@ -1160,7 +1166,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         _allowedAdd = true;
         emit allowedAcceptChanged();
     }
-    int new_fb_id = 0;
+    /*int new_fb_id = 0;
     if (!_isAI && (_ready_in_battles.count() == 0) && (_finished_battles.count() > 0)) {
         QString sbid;
         foreach(int fbid, _finished_battles) {
@@ -1171,11 +1177,11 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
                 break;
             }
         }
-    }
+    }*/
     qDebug() << "ready: " << _ready_in_battles;
     qDebug() << "waiting: " << _waiting_in_battles;
     qDebug() << "finished: " << _finished_battles;
-    qDebug() << "shown: " << _shown_battles;
+    //qDebug() << "shown: " << _shown_battles;
     emit playerInfoChanged();
     if (_ready_in_battles.count() > 0) {
         setTimeState(false);
@@ -1188,16 +1194,17 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     }  else */ {
         setTimeState(true);
     }
-    qDebug() << old_read <<  _ready_in_battles << old_wait << _waiting_in_battles << new_fb_id;
+    qDebug() << old_read <<  _ready_in_battles << old_wait << _waiting_in_battles;// << new_fb_id;
     bool changed = _ready_in_battles.size() > 0;
-    if (!changed) {
+    //if (!changed) {
         foreach(int bid, _ready_in_battles) {
-            if (old_read.indexOf(bid) == -1) {
+            _battleState[bid] = 1;
+            if (!changed && (old_read.indexOf(bid) == -1)) {
                 changed = true;
-                break;
+                //break;
             }
         }
-    }
+    //}
     if (!changed) {
         foreach(int bid, old_read) {
             if (_ready_in_battles.indexOf(bid) == -1) {
@@ -1206,14 +1213,17 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             }
         }
     }
-    if (!changed) {
+    //if (!changed) {
         foreach(int bid, _waiting_in_battles) {
-            if (old_wait.indexOf(bid) == -1) {
+            if (_battleState[bid] == 1) {
+                _battleState[bid] = 0;
+            }
+            if (!changed && (old_wait.indexOf(bid) == -1)) {
                 changed = true;
-                break;
+                //break;
             }
         }
-    }
+    //}
     if (!changed) {
         foreach(int bid, old_wait) {
             if (_waiting_in_battles.indexOf(bid) == -1) {
@@ -1222,6 +1232,12 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             }
         }
     }
+    foreach(int bid, _finished_battles) {
+        if (_battleState[bid] < 2) {
+            _battleState[bid] = 2;
+        }
+    }
+
     if (changed || ForceBattleList) {
         generateBattleList();
     }
@@ -1574,7 +1590,7 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("allowed_accept", _allowedAccept);
     settings->setValue("accounts", accountToString());
     settings->setValue("finished_battles", finishedBattles());
-    settings->setValue("shown_battles", _shown_battles);
+    //settings->setValue("shown_battles", _shown_battles);
     settings->setValue("played", _played);
     settings->setValue("won", _won);
     settings->setValue("died", _died);
@@ -1603,6 +1619,15 @@ void QWarloksDuelCore::saveGameParameters() {
         settings->setValue("h",  bhi.value());
     }
     settings->endArray();
+
+    settings->beginWriteArray("bs");
+    i = 0;
+    for (bhi = _battleState.begin(); bhi != _battleState.end(); ++bhi, ++i) {
+        settings->setArrayIndex(i);
+        settings->setValue("id", bhi.key());
+        settings->setValue("s",  bhi.value());
+    }
+    settings->endArray();
 }
 
 void QWarloksDuelCore::loadGameParameters() {
@@ -1629,20 +1654,28 @@ void QWarloksDuelCore::loadGameParameters() {
         }
         _finished_battles.append(fbid);
     }
-    _shown_battles = settings->value("shown_battles", "").toStringList();
+    /*_shown_battles = settings->value("shown_battles", "").toStringList();
     if ((_shown_battles.isEmpty() || ((_shown_battles.size() == 1) && (_shown_battles.at(0).isEmpty()))) && !fbl.isEmpty()) {
         _shown_battles.append(fbl);
-    }
+    }*/
     int size = settings->beginReadArray("bd");
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
         _battleDesc[settings->value("id").toInt()] = settings->value("d").toString();
     }
     settings->endArray();
+
     size = settings->beginReadArray("bh");
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
         _battleHint[settings->value("id").toInt()] = settings->value("h").toInt();
+    }
+    settings->endArray();
+
+    size = settings->beginReadArray("bs");
+    for (int i = 0; i < size; ++i) {
+        settings->setArrayIndex(i);
+        _battleState[settings->value("id").toInt()] = settings->value("s").toInt();
     }
     settings->endArray();
 }

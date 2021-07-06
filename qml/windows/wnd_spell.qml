@@ -130,9 +130,9 @@ InfoWindow {
             return;
         }
         var spell_code = mainWindow.gERROR.spell;
-        l_data = mainWindow.gERROR.data
+        l_data = spell_code ? {} : mainWindow.gERROR.data;
         bbAction.visible = false;
-        if (l_data) {
+        if (l_data && l_data.action) {
           if (l_data.action === 'm') {
             icon.source = "qrc:/res/" + l_data.icon + ".png";
             icon.visible = true;
