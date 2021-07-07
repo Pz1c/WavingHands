@@ -167,9 +167,16 @@ bool QSpell::operator < (const QSpell &s) const {
 
 bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
     qDebug() << "QSpell::sortAsc" << _orderType << s1->json() << s2->json();
-    if ((_orderType == 1) && (s1->_basic != s2->_basic))  {
-        return s1->_basic < s2->_basic;
+
+    if (_orderType == 1) {
+        if (s1->_alreadyCasted != s2->_alreadyCasted) {
+            return s1->_alreadyCasted < s2->_alreadyCasted;
+        }
+        if (s1->_name.compare(s2->_name) != 0) {
+            return s2->_name.compare(s1->_name);
+        }
     }
+
 
     if ((s1->_spellType == s2->_spellType) && (s1->_turnToCast == s2->_turnToCast) && (s1->_turnToCast != -1) && (s1->_level != s2->_level)) {
         return s1->_level < s2->_level;

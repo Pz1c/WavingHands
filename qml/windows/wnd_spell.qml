@@ -103,7 +103,9 @@ InfoWindow {
 
                 onClicked: {
                     console.log("chooseMonsterTarget", JSON.stringify(l_data));
-                    if (l_data.under_control) {
+                    if (l_data.action === "force") {
+                        mainWindow.gameCore.forceSurrender(l_data.id, l_data.fst);
+                    } else if (l_data.under_control) {
                         mainWindow.chooseMonsterTarget(ltTitle.text);
                     }
                 }
@@ -126,14 +128,28 @@ InfoWindow {
 
     function initErrFields() {
         console.log("wnd_spell.initFields", JSON.stringify(mainWindow.gERROR));
-        if (!mainWindow.gERROR || (!mainWindow.gERROR.spell && !mainWindow.gERROR.data)) {
+        if (!mainWindow.gERROR || (!mainWindow.gERROR.spell && !mainWindow.gERROR.data && (mainWindow.gERROR.type !== 8))) {
             return;
         }
         var spell_code = mainWindow.gERROR.spell;
-        l_data = spell_code ? {} : mainWindow.gERROR.data;
+        if (mainWindow.gERROR.type === 8) {
+            l_data = mainWindow.gERROR;
+        } else {
+            l_data = spell_code ? {} : mainWindow.gERROR.data;
+        }
         bbAction.visible = false;
-        if (l_data && l_data.action) {
-          if (l_data.action === 'm') {
+        if (l_data && (l_data.action || (l_data.type && (l_data.type === 8)))) {
+          if (l_data.type && (l_data.type === 8)) {
+            icon.visible = false;
+            ltTitle.text = "Orders Submited";
+            ltShortDesc.text = "Your orders are in for this turn";
+            ltError.text = l_data.d;
+            bbAction.text = "Force Turn"//dict.getStringByCode("MonsterSetTarget");
+            if (l_data.fst > 0) {
+                bbAction.visible = true;
+                l_data.action = "force";
+            }
+          } else if (l_data.action === 'm') {
             icon.source = "qrc:/res/" + l_data.icon + ".png";
             icon.visible = true;
             icon.text = l_data.hp;
@@ -150,6 +166,7 @@ InfoWindow {
               details = "Life: " + l_data.hp + "<br>Power: "+l_data.strength+"<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
             }
             ltError.text = details;
+            bbAction.text = dict.getStringByCode("MonsterSetTarget");
             bbAction.visible = l_data.under_control;
           } else if (l_data.action === 'hp') {
             icon.source = "qrc:/res/heart_small.png";

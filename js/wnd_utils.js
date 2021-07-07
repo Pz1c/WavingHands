@@ -232,6 +232,7 @@ function showErrorWnd(error, chat) {
         wnd_name = wnd_spell;
         break;
     case 7:
+    case 8:
         wnd_name = wnd_spell;
         break;
     default:

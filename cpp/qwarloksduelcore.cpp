@@ -772,9 +772,10 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             .replace("BLOCKQUOTE", "p").replace("WIDTH=\"100%\"", "").replace("WIDTH=\"50%\"", "");
 
     int Pos = 0;
+    QString ForceSurrenderTurn = "0";
     if (Data.indexOf("<INPUT TYPE=SUBMIT VALUE=\"Force Surrender Attempt\">") != -1) {
-        QString turn = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=force VALUE=1>", "<INPUT TYPE=HIDDEN NAME=turn VALUE=\"", "\"", Pos);
-        _finishedBattle.append(QString("<br><p align=center><a href=\"/force_surrender/%1/%2\">Force Surrender Attempt</a></p><br>").arg(QString::number(_loadedBattleID), turn));
+        ForceSurrenderTurn = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=force VALUE=1>", "<INPUT TYPE=HIDDEN NAME=turn VALUE=\"", "\"", Pos);
+        //_finishedBattle.append(QString("<br><p align=center><a href=\"/force_surrender/%1/%2\">Force Surrender Attempt</a></p><br>").arg(QString::number(_loadedBattleID), turn));
     }
 
     butifyTurnMessage(_finishedBattle, _loadedBattleType == 1);
@@ -782,9 +783,12 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
     if (_loadedBattleType != 1) {
         qDebug() << "battle is not ready end there" << _loadedBattleType;
-        int idx = _finishedBattle.indexOf("Your orders are in for this turn");
+        int idx = _finishedBattle.indexOf("Your orders are in for this turn.");
         if (idx != -1) {
-            _finishedBattle = _finishedBattle.mid(idx, _finishedBattle.length() - idx);
+            idx += 33;
+            _finishedBattle = _finishedBattle.mid(idx, _finishedBattle.length() - idx).replace("<FONT COLOR=\"#AAAAAA\">", "").replace("</FONT>", "")
+                    .replace("<BR><BR>", "").replace("\n", " ");
+            _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":%2,\"id\":%3}").arg(_finishedBattle, ForceSurrenderTurn, intToStr(_loadedBattleID));
         }
 
         emit finishedBattleChanged();
@@ -906,7 +910,7 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
     }
 
     QWarlock *enemy = nullptr;
-    bool separate_spellbook = !_isAI && _reg_in_app && (_exp_lv < 1);
+    bool separate_spellbook = !_isAI;// && _reg_in_app && (_exp_lv < 1);
     foreach(QWarlock *m, _Warlock) {
         m->setIsParaFDF(_isParaFDF);
         if (m->player()) {
@@ -1098,20 +1102,29 @@ void QWarloksDuelCore::generateBattleList() {
         }
         _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\"}").arg(intToStr(bid), d));
     }
+    QString wait_str = "";
     foreach(int bid, _waiting_in_battles) {
-        if (first) {
-            first = false;
-        } else {
-            _battleList.append(",");
-        }
+
         d = QWarlockUtils::getBattleShortTitle(_battleDesc[bid], _battleState[bid], bid);
-        /*if (_battleDesc.contains(bid)) {
-            d = _battleDesc[bid];
+        if (_battleState[bid] == 0) {
+            if (first) {
+                first = false;
+            } else {
+                _battleList.append(",");
+            }
+            _battleList.append(QString("{\"id\":%1,\"s\":0,\"d\":\"%3\"}").arg(intToStr(bid), d));
         } else {
-            d = QString("Wait #%1").arg(intToStr(bid));
-        }*/
-        _battleList.append(QString("{\"id\":%1,\"s\":0,\"d\":\"%2\"}").arg(intToStr(bid), d));
+           if (!wait_str.isEmpty()) {
+               wait_str.append(",");
+           }
+           wait_str.append(QString("{\"id\":%1,\"s\":-1,\"d\":\"%3\"}").arg(intToStr(bid), d));
+        }
     }
+    if (!first) {
+        _battleList.append(",");
+    }
+    _battleList.append(wait_str);
+
     _battleList.append("],[");
     //QList<int> fb(_finished_battles);
     /*int id;
