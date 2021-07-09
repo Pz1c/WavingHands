@@ -256,11 +256,12 @@ private:
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
-    QStringList _shown_battles;
+    //QStringList _shown_battles;
     QString _finishedBattle;
     QMap<int, QString> _challenge;
     QMap<int, QString> _battleDesc;
     QMap<int, int> _battleHint;
+    QMap<int, int> _battleState; // -2 deleted, -1 not started, 0 wait, 1 ready, 2 finished
     QStringList _msg;
     QList<QValueName> _accounts;
 

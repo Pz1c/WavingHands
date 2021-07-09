@@ -577,3 +577,25 @@ QString QWarlockUtils::getFinishedBattleDescription(const QString &Data, const Q
 
     return res;
 }
+
+QString QWarlockUtils::getBattleShortTitle(const QString &Title, int State, int BattleID) {
+    if (Title.isEmpty()) {
+        switch(State) {
+        case -2: return QString("Battle #%1 deleted").arg(intToStr(BattleID));
+        case -1: return "Waiting to start...";//QString("#%1 waiting to start...").arg(intToStr(BattleID));
+        case 0: return QString("Waiting opponent #%1...").arg(intToStr(BattleID));
+        case 1: return QString("Battle #%1 is ready").arg(intToStr(BattleID));
+        case 2: return QString("Battle #%1 finished").arg(intToStr(BattleID));
+        default: return QString("Battle #%1 in %2 state").arg(intToStr(BattleID), intToStr(State));
+        }
+    } else {
+        switch(State) {
+        //case -2: return QString("Battle #%1 deleted").arg(intToStr(BattleID));
+        case -1: return "Waiting to start...";//QString("Not started, %1").arg(Title);
+        case 0: return QString("Waiting for %1...").arg(Title);
+        //case 1: return QString("Battle #%1 is ready").arg(Title);
+        //case 2: return QString("Battle #%1 finished").arg(Title);
+        default: return Title;
+        }
+    }
+}

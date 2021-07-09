@@ -204,6 +204,7 @@ ApplicationWindow {
             anchors.topMargin: 0.01 * parent.height
             anchors.left: parent.left
             anchors.right: parent.right
+            visible: false
 
             onClicked: {
                 console.log("try refresh state");
@@ -219,7 +220,7 @@ ApplicationWindow {
             transparent: true
             border.width: 0
             height: 0.1 * parent.height
-            anchors.top: bbMenuRefresh.bottom
+            anchors.top: parent.top
             anchors.topMargin: 0.01 * parent.height
             anchors.left: parent.left
             anchors.right: parent.right
@@ -415,13 +416,33 @@ ApplicationWindow {
                     id: ltActiveBattle
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.right: parent.right
+                    //anchors.right: parent.right
                     height: 48 * ratioObject
+                    width: 0.5 * parent.width
                     font.pixelSize: 28 * ratioFont
                     horizontalAlignment: Text.AlignLeft
                     fontSizeMode: Text.VerticalFit
                     color: "#2DA0A5"
                     text: warlockDictionary.getStringByCode("ActiveGameTitle")
+                }
+
+                LargeText {
+                    id: ltRefresh
+                    anchors.top: parent.top
+                    anchors.left: ltActiveBattle.right
+                    anchors.right: parent.right
+                    height: 48 * ratioObject
+                    font.pixelSize: 28 * ratioFont
+                    font.underline: true
+                    horizontalAlignment: Text.AlignRight
+                    fontSizeMode: Text.VerticalFit
+                    color: "#A8F4F4"
+                    text: warlockDictionary.getStringByCode("Refresh")
+
+                    onClicked: {
+                        console.log("try refresh state");
+                        core.scanState(0);
+                    }
                 }
 
                 ListView {
@@ -636,8 +657,19 @@ ApplicationWindow {
 
     function showFinishedBattle() {
         var bit = core.loadedBattleID;
+        var txt = core.finishedBattle;
         logEvent("showFinishedBattle", {battle_id:core.loadedBattleID});
-        showErrorWnd({text:core.finishedBattle,type:2,title:"Battle #" + bit});
+        console.log(txt);
+
+        if (txt.indexOf("{") === 0) {
+            var err = JSON.parse(txt);
+            if (!err.type) {
+                err.type = 7;
+            }
+            showErrorWnd(err);
+        } else {
+            showErrorWnd({text:txt,type:2,title:"Battle #" + bit});
+        }
         core.scanState(1);
     }
 

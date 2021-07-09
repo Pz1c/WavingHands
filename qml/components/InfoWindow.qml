@@ -22,6 +22,7 @@ Item {
     property string title_color: ""
     property alias content_item: bwBody
     property alias icon: iiIcon
+    property alias title: tTitle
 
     function onKeyPressed(event) {
         console.log("InfoWindow.KEY_PRESSED: " + event.key)
@@ -86,6 +87,19 @@ Item {
             onClicked: {
                 iRoot.cancel();
             }
+        }
+
+        Text {
+            id: tTitle
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: bwiExit.right
+            anchors.right: iiIcon.left
+            font.pixelSize: 41 * mainWindow.ratioFont
+            color: "#FEE2D6"
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: ""
+            visible: false
         }
 
         IconInfo {

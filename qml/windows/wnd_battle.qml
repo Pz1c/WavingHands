@@ -361,17 +361,19 @@ BaseWindow {
             msg_text = data.value + "<br>To get delayed spell cast Delay Effect DWSSSP<br>" + dict.getStringByCode("DWSSSP_desc");
             break;
         default: // spell
+            msg_type = 7
             spell_code = BU.icon_status_spell[data.action];
             if (spell_code) {
                 msg_title = dict.getStringByCode(spell_code);
                 msg_text  = dict.getStringByCode(spell_code + "_desc");
             } else {
-                msg_title = "Charm";
-                msg_text  = data.action;
+                spell_code = "PSDF";
+                msg_title  = "Charm";
+                msg_text   = data.action;
             }
             break;
         }
-        mainWindow.showErrorWnd({type:msg_type,text:msg_text,title:msg_title,data:data});
+        mainWindow.showErrorWnd({type:msg_type,text:msg_text,title:msg_title,data:data,spell:spell_code});
     }
 
     function setTargetingOnOff(Enable, IsSpell, Title) {
