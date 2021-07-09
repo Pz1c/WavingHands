@@ -333,7 +333,7 @@ BaseWindow {
 
                 LargeText {
                     id: tConfirmation
-                    height: 0.07 * parent.height
+                    height: 0.06 * parent.height
                     width: 0.8 * parent.width
                     anchors.top: ltiPass.bottom
                     anchors.left: cbConfirmation.right
@@ -342,7 +342,7 @@ BaseWindow {
                     //anchors.horizontalCenter: parent.horizontalCenter
                     horizontalAlignment: Text.AlignLeft
                     text: dict.getStringByCode("Iam13")
-                    text_color: "#FEE2D6"
+                    color: "#FEE2D6"
                     onClicked: {
                         cbConfirmation.checked = !cbConfirmation.checked
                     }
