@@ -1122,10 +1122,12 @@ void QWarloksDuelCore::generateBattleList() {
            wait_str.append(QString("{\"id\":%1,\"s\":-1,\"d\":\"%3\"}").arg(intToStr(bid), d));
         }
     }
-    if (!first) {
-        _battleList.append(",");
+    if (!wait_str.isEmpty()) {
+        if (!first) {
+            _battleList.append(",");
+        }
+        _battleList.append(wait_str);
     }
-    _battleList.append(wait_str);
 
     _battleList.append("],[");
     //QList<int> fb(_finished_battles);
