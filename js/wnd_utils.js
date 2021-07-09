@@ -3,7 +3,7 @@ var wnd_error = "wnd_error.qml";
 var wnd_new_user = "wnd_new_user.qml";
 var wnd_register = "wnd_register.qml";
 var wnd_login = "wnd_login.qml";
-//var wnd_main_menu = "wnd_main_menu.qml";
+var wnd_finished_battle = "wnd_finished_battle.qml";
 var wnd_profile = "wnd_profile.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_battle = "wnd_battle.qml";
@@ -233,6 +233,7 @@ function showErrorWnd(error, chat) {
         break;
     case 7:
     case 8:
+    case 9:
         wnd_name = wnd_spell;
         break;
     default:

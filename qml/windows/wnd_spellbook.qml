@@ -72,10 +72,10 @@ InfoWindow {
                         Text {
                             id: rdbiGesture
                             anchors.top: rdSpellItem.top
+                            anchors.topMargin: lvSpellList.model[index].t ? 10 * mainWindow.ratioObject : 0
                             anchors.bottom: rdSpellItem.bottom
                             anchors.left: rdSpellItem.left
                             anchors.leftMargin: 0.03 * parent.width
-                            width: 0.40 * parent.width
                             font.pixelSize: (lvSpellList.model[index].t ? 21 : 28) * mainWindow.ratioFont
                             color: lvSpellList.model[index].t ? "#10C9F5" : "#FEE2D6"
                             horizontalAlignment: Text.AlignLeft
@@ -85,8 +85,6 @@ InfoWindow {
                         Text {
                             id: rdbifTitle
                             anchors.verticalCenter: rdSpellItem.verticalCenter
-                            anchors.left: rdbiGesture.right
-                            anchors.leftMargin: 0.01 * parent.width
                             anchors.right: parent.right//rdbifInfo.left
                             anchors.rightMargin: 0.03 * parent.width
                             height: 0.8 * rdSpellItem.height

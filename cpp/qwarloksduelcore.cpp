@@ -787,8 +787,11 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         if (idx != -1) {
             idx += 33;
             _finishedBattle = _finishedBattle.mid(idx, _finishedBattle.length() - idx).replace("<FONT COLOR=\"#AAAAAA\">", "").replace("</FONT>", "")
-                    .replace("<BR><BR>", "").replace("\n", " ");
+                    .replace("<BR><BR>", "").replace("\n", " ").replace("RH:", "Right hand:").replace("LH:", "Left hand:");
             _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":%2,\"id\":%3}").arg(_finishedBattle, ForceSurrenderTurn, intToStr(_loadedBattleID));
+        } else if (_loadedBattleType == 2) {
+            _finishedBattle = _finishedBattle.replace('"', "''").replace("\n", " ");
+            _finishedBattle = QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\"}").arg(_finishedBattle, intToStr(_loadedBattleID), _battleDesc[_loadedBattleID]);
         }
 
         emit finishedBattleChanged();
