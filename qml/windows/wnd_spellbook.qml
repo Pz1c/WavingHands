@@ -126,6 +126,7 @@ InfoWindow {
 
     function initGFields() {
         console.log("wnd_spellbook.initGFields", arrSpell.length);
+
         if (arrSpell.length === 0) {
             arrSpell = arrSpellInit;
             for (var i = 0, Ln = arrSpell.length; i < Ln; ++i) {

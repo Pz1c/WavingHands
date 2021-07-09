@@ -793,7 +793,6 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             _finishedBattle = _finishedBattle.replace('"', "''").replace("\n", " ");
             _finishedBattle = QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\"}").arg(_finishedBattle, intToStr(_loadedBattleID), _battleDesc[_loadedBattleID]);
         }
-
         emit finishedBattleChanged();
         return false;
     }

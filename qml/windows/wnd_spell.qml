@@ -237,6 +237,7 @@ InfoWindow {
         if (!mainWindow.gERROR || (!mainWindow.gERROR.spell && !mainWindow.gERROR.data && (mainWindow.gERROR.type !== 8) && (mainWindow.gERROR.type !== 9))) {
             return;
         }
+
         var spell_code = mainWindow.gERROR.spell;
         if (mainWindow.gERROR.type >= 8) { // 8, 9
             l_data = mainWindow.gERROR;
