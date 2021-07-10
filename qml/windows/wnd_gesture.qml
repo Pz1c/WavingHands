@@ -722,9 +722,11 @@ BaseWindow {
             currGesture = new_gesture;
         }
         if (new_gesture === "-") {
+            mainWindow.gBattle.spellIdx = 0;
             arrSpell = [{gp:"?",n:"Default",t:1,choose:1}];
             arrSpellLater = [];
         } else if (new_gesture === ">") {
+            mainWindow.gBattle.spellIdx = 0;
             arrSpell = [{gp:">",n:"Stab",t:1,choose:1}];
             arrSpellLater = [];
         } else if (new_gesture === "") {

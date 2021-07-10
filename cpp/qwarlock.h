@@ -51,7 +51,7 @@ private:
     int _fireproof;
     int _hp;
     int _poison;
-    int _desease;
+    int _disease;
     int _amnesia;
     int _maladroit;
     bool _surrender;

@@ -1,7 +1,7 @@
 #include "qwarlock.h"
 
 QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player, bool isAI) :
-    _scared(0), _confused(0), _charmed(0), _paralized(0), _shield(0), _coldproof(0), _fireproof(0), _hp(0), _poison(0), _desease(0), _amnesia(0),
+    _scared(0), _confused(0), _charmed(0), _paralized(0), _shield(0), _coldproof(0), _fireproof(0), _hp(0), _poison(0), _disease(0), _amnesia(0),
     _maladroit(0), _bestSpellL(nullptr), _bestSpellR(nullptr)
 {
     _name = Name;
@@ -84,7 +84,7 @@ void QWarlock::parseStatus() {
     _coldproof = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Coldproof", "(", ")", pos, true));
     _fireproof = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Fireproof", "(", ")", pos, true));
     _poison = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Poison", "(", ")", pos, true));
-    _desease = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Desease", "(", ")", pos, true));
+    _disease = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Disease", "(", ")", pos, true));
     _amnesia = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Forgetful", "(", ")", pos, true));
     _maladroit = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Maladroit", "(", ")", pos, true));
     _mshield = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "MShield", "(", ")", pos, true));
@@ -167,13 +167,13 @@ QString QWarlock::separatedString() {
     QString changed_mind = (_charmed > 0) || (_confused > 0) || (_paralized > 0) ? "1" : "0";
 
     return QString("{\"name\":\"%1\",\"status\":\"%2\",\"L\":\"%3\",\"R\":\"%4\",\"spells\":%5,\"player\":%6,\"bsL\":%7,\"bsR\":%8,\"hp\":%9,\"scared\":%10,"
-                   "\"confused\":%11,\"charmed\":%12,\"paralized\":%13,\"shield\":%14,\"coldproof\":%15,\"fireproof\":%16,\"poison\":%17,\"desease\":%18,"
+                   "\"confused\":%11,\"charmed\":%12,\"paralized\":%13,\"shield\":%14,\"coldproof\":%15,\"fireproof\":%16,\"poison\":%17,\"disease\":%18,"
                    "\"amnesia\":%19,\"maladroit\":%20,\"summon_left\":%21,\"summon_right\":%22,\"active\":%23,\"mshield\":%24,\"delay\":%25,\"time_stop\":%26,"
                    "\"haste\":%27,\"permanency\":%28,\"blindness\":%29,\"invisibility\":%30,\"plg\":\"%31\",\"prg\":\"%32\",\"charm_left\":%33,\"charm_right\":%34,"
                    "\"lgL\":\"%35\",\"lgR\":\"%36\",\"smcL\":%37,\"smcR\":%38,\"changed_mind\":%39}").
             arg(_name, _status, _leftGestures, _rightGestures, res, boolToStr(_player), sbsL, sbsR, intToStr(_hp)).
             arg(intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield),
-                intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_desease)).
+                intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_disease)).
             arg(intToStr(_amnesia), intToStr(_maladroit), intToStr(summon_left), intToStr(summon_right), _active ? "1" : "0").
             arg(intToStr(_mshield), intToStr(_delay), intToStr(_time_stop), intToStr(_haste), intToStr(_permanency), intToStr(_blindness), intToStr(_invisibility),
                 _possibleLeftGestures, _possibleRightGestures, boolToStr(charmL), boolToStr(charmR)).
@@ -246,7 +246,7 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
             }
             break;
         case SPELL_CURE_HEAVY_WOUNDS:
-            if (_desease >= spell->turnToCast()) {
+            if (_disease >= spell->turnToCast()) {
                 spell->changePriority(5);
             }
             break;
@@ -262,13 +262,13 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
 
         switch(spell->spellID()) {
         case SPELL_CURE_HEAVY_WOUNDS:
-            if ((_desease > 0) && (_desease >= spell->turnToCast())) {
+            if ((_disease > 0) && (_disease >= spell->turnToCast())) {
                 spell->changePriority(5);
             }
             break;
         case SPELL_REMOVE_ENCHANTMENT:
         case SPELL_DISPEL_MAGIC:
-            if ((qMin(_desease, _poison) > 0) && (qMin(_desease, _poison) >= spell->turnToCast())) {
+            if ((qMin(_disease, _poison) > 0) && (qMin(_disease, _poison) >= spell->turnToCast())) {
                 spell->changePriority(5);
             }
             break;

@@ -263,7 +263,7 @@ InfoWindow {
             ltTitle.text = "Orders Submited";
             ltShortDesc.text = "Your orders are in for this turn";
             ltError.text = l_data.d;
-            bbAction.text = "Force Turn"//dict.getStringByCode("MonsterSetTarget");
+            bbAction.text = "Force Turn";//dict.getStringByCode("MonsterSetTarget");
             if (l_data.fst > 0) {
                 bbAction.visible = true;
                 l_data.action = "force";

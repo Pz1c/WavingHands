@@ -187,7 +187,7 @@ function prepareWarlock(container, spell_list, clean) {
 
 function prepareBattleWarlock() {
     console.log("prepareBattleWarlock");
-    var s, LnS, ls;
+    /*var s, LnS, ls;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].player) {
             ai.self = battle.warlocks[i];
@@ -205,7 +205,7 @@ function prepareBattleWarlock() {
     }
     if (!ai.self.bsR.g) {
         ai.self.bsL = {id:-1,name:"",g:"XXX",t:1000,st:100,p:-100,h:2,l:100,a:3,ng:"X",th:0};
-    }
+    }*/
 }
 
 function calculateHP(al) {

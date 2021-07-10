@@ -172,9 +172,10 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
         if (s1->_alreadyCasted != s2->_alreadyCasted) {
             return s1->_alreadyCasted < s2->_alreadyCasted;
         }
-        if (s1->_name.compare(s2->_name) != 0) {
+        //return s1->_spellID < s2->_spellID;
+        /*if (s1->_name.compare(s2->_name) != 0) {
             return s2->_name.compare(s1->_name);
-        }
+        }*/
     }
 
 

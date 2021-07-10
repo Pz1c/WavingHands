@@ -302,7 +302,7 @@ BaseWindow {
 
         if (isParalyze) {
             var ng = SG.getNextParalyzedGesture(lastGesture[new_hand], isFC);
-            console.log("wnd_charm.setHand", ng, new_hand, JSON.stringify(arrHands[currHand]), JSON.stringify(paraMap), JSON.stringify(lastGesture))
+            console.log("wnd_charm.setHand", ng, new_hand, JSON.stringify(arrHands[currHand]), JSON.stringify(lastGesture))
             setGesture(ng);
         }
     }

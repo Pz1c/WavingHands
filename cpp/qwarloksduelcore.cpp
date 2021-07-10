@@ -775,6 +775,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     QString ForceSurrenderTurn = "0";
     if (Data.indexOf("<INPUT TYPE=SUBMIT VALUE=\"Force Surrender Attempt\">") != -1) {
         ForceSurrenderTurn = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=force VALUE=1>", "<INPUT TYPE=HIDDEN NAME=turn VALUE=\"", "\"", Pos);
+        _finishedBattle = _finishedBattle.mid(0, _finishedBattle.indexOf("<FORM ACTION=") - 1);
         //_finishedBattle.append(QString("<br><p align=center><a href=\"/force_surrender/%1/%2\">Force Surrender Attempt</a></p><br>").arg(QString::number(_loadedBattleID), turn));
     }
 

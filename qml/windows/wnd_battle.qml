@@ -106,7 +106,7 @@ BaseWindow {
                 anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: 6 * mainWindow.ratioObject
-                radius: 20
+                radius: 10
 
                 onClicked: {
                     iconClick(iiElemental.l_data)
@@ -128,7 +128,7 @@ BaseWindow {
                 anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: parent.right
                 anchors.rightMargin: 6 * mainWindow.ratioObject
-                radius: 20
+                radius: 10
 
                 onClicked: {
                     mainWindow.showBattleChat();
@@ -148,7 +148,7 @@ BaseWindow {
                 anchors.left: parent.left
                 anchors.leftMargin: ((iiElemental.visible ? 84: 0) + 6) * mainWindow.ratioObject
                 visible: false
-                radius: 20
+                radius: 10
                 l_data: ({action:"hp",warlock_name:"Nobody"})
 
                 onClicked: {
@@ -171,7 +171,7 @@ BaseWindow {
                 anchors.right: parent.right
                 anchors.rightMargin: 12 * mainWindow.ratioObject
                 visible: false
-                radius: 20
+                radius: 10
                 l_data: ({action:"hp",warlock_name:"Default"})
 
                 onClicked: {
@@ -189,10 +189,10 @@ BaseWindow {
                 anchors.right: iiDefault.left
                 visible: false
                 text: "test hint 01"
-                color: "snow"
-                bg_color: "blue"
+                color: "#210430"
+                bg_color: "#FEE2D6"
                 bg_visible: true
-                bg_radius: 5
+                bg_radius: 10
                 border_visible: false
                 wrapMode: Text.Wrap
 
@@ -202,7 +202,7 @@ BaseWindow {
                     target: ltHint
                     property: 'visible'
                     to: false
-                    duration: 2000 // turns to false after 2000 ms
+                    duration: 1500 // turns to false after 2000 ms
                 }
 
                 onClicked: {
@@ -224,7 +224,7 @@ BaseWindow {
                 anchors.rightMargin: 24 * mainWindow.ratioObject
                 visible: false
                 color: "#FEE2D6"
-                radius: 5 * mainWindow.ratioObject
+                radius: 10
                 property var tutorialData: ([])
                 property int tutorialDataIdx: 0
                 property alias text: ltTTT.text

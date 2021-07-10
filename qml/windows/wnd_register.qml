@@ -342,7 +342,8 @@ BaseWindow {
                     //anchors.horizontalCenter: parent.horizontalCenter
                     horizontalAlignment: Text.AlignLeft
                     text: dict.getStringByCode("Iam13")
-                    color: "#FEE2D6"
+                    font.pixelSize: 28 * mainWindow.ratioFont
+                    color: "#E7FFFF"
                     onClicked: {
                         cbConfirmation.checked = !cbConfirmation.checked
                     }

@@ -380,8 +380,9 @@ ApplicationWindow {
             visible: core.allowedAdd || true
 
             width: 0.5 * parent.width
-            height: 48 * ratioObject
+            height: 60 * ratioObject
             font.pixelSize: 28 * ratioFont
+            fontSizeMode: Text.VerticalFit
 
             anchors.top: bbNewGame.bottom
             anchors.topMargin: 24 * ratioObject
@@ -630,8 +631,8 @@ ApplicationWindow {
 
     function showTipMessage(TipTxt, allowClose) {
         console.log("Tip: ", TipTxt, allowClose);
-        allowCloseTip = allowClose ? true : false;
-        showErrorWnd({text:TipTxt,type:1});
+        //allowCloseTip = allowClose ? true : false;
+        //showErrorWnd({text:TipTxt,type:1});
     }
 
     function showErrorWnd(data) {
