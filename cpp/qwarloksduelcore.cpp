@@ -605,12 +605,12 @@ void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
 }
 
 int QWarloksDuelCore::parseBattleDescription(QString &Data) {
-    qDebug() << "parseBattleDescription" << _loadedBattleID << _loadedBattleType;
+    int idx_action = Data.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=");
+    qDebug() << "parseBattleDescription" << _loadedBattleID << _loadedBattleType << idx_action;
     if ((_loadedBattleType == 2) && (Data.indexOf(QString("Battle %1 does not exist.").arg(intToStr(_loadedBattleID))) != -1)) {
         return -2;
     }
 
-    int idx_action = Data.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=");
     if ((_loadedBattleType == 0) && (idx_action != -1)) {
         _loadedBattleType = 1;
     } else if ((_loadedBattleType == 1) && (idx_action == -1)) {
@@ -715,8 +715,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
 
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
-
-    int state = parseBattleDescription(Data);
+    int old_state = _loadedBattleType, state = parseBattleDescription(Data);
     if (state == -2) { // finished but deleted
         _battleDesc.remove(_loadedBattleID);
         if (_finished_battles.indexOf(_loadedBattleID) != -1) {
@@ -731,6 +730,12 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     } else if (state == -1) { // unstarted
         _finishedBattle = "Battle not start yet:<br>" + _battleDesc[_loadedBattleID];
         emit finishedBattleChanged();
+        return false;
+    }
+
+    if ((old_state == 1) && (_loadedBattleType == 2)) {
+        // to get full history, but not only last turn
+        getBattle(_loadedBattleID, _loadedBattleType);
         return false;
     }
 
@@ -791,8 +796,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
                     .replace("<BR><BR>", "").replace("\n", " ").replace("RH:", "Right hand:").replace("LH:", "Left hand:");
             _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":%2,\"id\":%3}").arg(_finishedBattle, ForceSurrenderTurn, intToStr(_loadedBattleID));
         } else if (_loadedBattleType == 2) {
-            _finishedBattle = _finishedBattle.replace('"', "''").replace("\n", " ");
-            _finishedBattle = QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\"}").arg(_finishedBattle, intToStr(_loadedBattleID), _battleDesc[_loadedBattleID]);
+            _finishedBattle = _finishedBattle/*.replace('"', "''")*/.replace("\n", " ");
+            _finishedBattle = QWarlockUtils::parseBattleHistory(_finishedBattle, _battleDesc[_loadedBattleID], _loadedBattleID);
+                    //QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\"}").arg(_finishedBattle, intToStr(_loadedBattleID), _battleDesc[_loadedBattleID]);
         }
         emit finishedBattleChanged();
         return false;

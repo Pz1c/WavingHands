@@ -337,7 +337,7 @@ BaseWindow {
                     width: 0.8 * parent.width
                     anchors.top: ltiPass.bottom
                     anchors.left: cbConfirmation.right
-                    anchors.leftMargin: 0.01 * parent.width
+                    anchors.leftMargin: 0.03 * parent.width
                     //anchors.topMargin: 0.02 * parent.height
                     //anchors.horizontalCenter: parent.horizontalCenter
                     horizontalAlignment: Text.AlignLeft

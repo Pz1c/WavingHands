@@ -193,7 +193,7 @@ InfoWindow {
         var marr = replaceAll(/*replaceAll(*/replaceAll(txt, "''", '"')/*, "<FONT COLOR=", "<FONTCOLOR=")*/, "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 ><TR>", "<U>Turn").split("<U>Turn"), turn_txt, idx1;
         //console.log(JSON.stringify(marr));
         //ltShortDesc.text = "Turn " + marr[0].replace('<U>', '').replace('</U>', '').trim();
-        var first = true, second = true, result = "", line;
+        var first = true, result = "", line;
         for (var i = 0, Ln = marr.length; i < Ln; ++i) {
             line = marr[i].trim();
             if (!line || (line === "")) {
@@ -216,11 +216,6 @@ InfoWindow {
             idx1 = line.indexOf("</U>");
             if (idx1 === -1) {
                 continue;
-            }
-            if (second) {
-                second = false;
-            } else {
-                //result += "<br>";
             }
             curr_turn = line.substr(0, idx1) * 1;
             result += "<font color=\"#10C9F5\">Turn " + curr_turn + ":</font><br>";
@@ -255,10 +250,9 @@ InfoWindow {
             ltDesc.visible = false;
             svMain.anchors.topMargin = 0;
             ltTitle.text = l_data.t;
-            ltError.text = processFinishedBattleText(l_data.d);
-            if (last_line != "") {
-                ltShortDesc.text = last_line + "<br>" + red_desc;
-            }
+            ltShortDesc.text = l_data.st ? l_data.st : "";
+            ltError.text = replaceAll(l_data.d, "''", '"'); //processFinishedBattleText(l_data.d);
+            //if (last_line != "") { ltShortDesc.text = last_line + "<br>" + red_desc; }
           } else if (l_data.type && (l_data.type === 8)) {
             ltTitle.text = "Orders Submited";
             ltShortDesc.text = "Your orders are in for this turn";
@@ -295,7 +289,7 @@ InfoWindow {
             ltShortDesc.text = dict.getStringByCode("Warlock");
             ltError.text = "Life: " + l_data.value;
           }
-          //ltError.font.pixelSize = 28 * mainWindow.ratioFont;
+          ltError.font.pixelSize = 28 * mainWindow.ratioFont;
         } else if (spell_code) {
             var spell_icon = BGU.map_spell_to_icon[spell_code];
             if (spell_icon) {
@@ -307,7 +301,7 @@ InfoWindow {
 
             ltTitle.text = dict.getStringByCode(spell_code);
             ltShortDesc.text = dict.getStringByCode(spell_code + "_short_desc");
-            //ltError.font.pixelSize = 21 * mainWindow.ratioFont;
+            ltError.font.pixelSize = 21 * mainWindow.ratioFont;
             ltError.text = dict.getStringByCode(spell_code + "_desc");
         }
 

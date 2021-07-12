@@ -83,7 +83,10 @@ BaseWindow {
         title_text = mainWindow.gERROR.title;
         if (mainWindow.gERROR.msg && (mainWindow.gERROR.msg.length > 0)) {
             ltiMsg.text = mainWindow.gERROR.msg;
+        } else {
+            ltiMsg.text = "";
         }
+
         mainWindow.gERROR = {};
     }
 

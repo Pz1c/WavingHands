@@ -599,3 +599,103 @@ QString QWarlockUtils::getBattleShortTitle(const QString &Title, int State, int 
         }
     }
 }
+
+QString QWarlockUtils::parseBattleTurn(QString &turn_text, QString &title, bool first_turn, bool last_turn) {
+    QString result, line, def_color = "#FEE2D6", current_color = def_color, sub_line, ssln, sssline, last_line, red_desc;
+    int idx1;
+    QStringList lst = turn_text.split("<FONT "), sslines, ssslines;
+    for (int i = 0, Ln = lst.length(); i < Ln; ++i) {
+        line = lst.at(i).trimmed();
+        //console.log("wnd_spell.processTurnMessage", "main", line, i, Ln, curr_turn, last_turn);
+        if (line.isEmpty()) {
+            continue;
+        }
+        idx1 = line.indexOf("COLOR=\"");
+        if (idx1 != -1) {
+            idx1 += 16;
+            current_color = line.mid(idx1 - 9, 7);
+        } else {
+            idx1 = 0;
+            current_color = def_color;
+        }
+        sub_line = line.mid(idx1);
+        //console.log("wnd_spell.processTurnMessage", "sub", current_color, sub_line);
+        sslines = sub_line.split("</FONT>");
+        for(int j = 0, LnJ = sslines.length(); j < LnJ; ++j) {
+            ssln = sslines.at(j).trimmed();
+            if (ssln.isEmpty()) {
+                continue;
+            }
+            ssslines = ssln.split("<BR>");
+            for(int k = 0, LnK = ssslines.length(); k < LnK; ++k) {
+                sssline = ssslines.at(k).trimmed();
+                if (sssline.isEmpty()) {
+                    continue;
+                }
+                if ((current_color.compare("#CCCCCC") != 0) || first_turn) {
+                    result.append("<font color=''");
+                    result.append(current_color);
+                    result.append("''>");
+                    result.append(sssline.replace('"', "&quot;"));
+                    result.append("</font><br>");
+                } else {
+                    continue;
+                }
+                if (last_turn) {
+                    last_line = sssline;
+                }
+                if (last_turn && (current_color.compare("#FF6666") == 0)) {
+                    red_desc.append(sssline);
+                    red_desc.append("<br>");
+                }
+            }
+            current_color = def_color;
+        }
+    }
+    if (last_turn && !last_line.isEmpty()) {
+        title = last_line;
+        if (!red_desc.isEmpty()) {
+            title.append("<br>").append(red_desc);
+        }
+    }
+    return result;
+}
+
+QString QWarlockUtils::parseBattleHistory(QString &history, QString &title, int &battle_id) {
+    bool first = true;
+    QString l_title, turn_txt;
+    QString d, line1;
+    QStringList lst1 = history.replace("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 ><TR>", "<U>Turn").split("<U>Turn");
+    int i = lst1.size(), idx1, last_turn, curr_turn;
+    foreach(const QString &s1, lst1) {
+        --i;
+        line1 = s1.trimmed();
+        if (line1.isEmpty()) {
+            continue;
+        }
+        if (first) {
+            last_turn = line1.mid(0, line1.indexOf(" ")).trimmed().toInt();
+
+            first = false;
+            continue;
+        }
+        if ((i == 0) && (line1.indexOf("monoturn") != -1)) {
+            continue;
+        }
+
+        idx1 = line1.indexOf("</U>");
+        if (idx1 == -1) {
+            continue;
+        }
+
+        curr_turn = line1.mid(0, idx1).toInt();
+        d.append("<font color=''#10C9F5''>Turn ");
+        d.append(intToStr(curr_turn));
+        d.append(":</font><br>");
+        idx1 += 4;
+        turn_txt = line1.mid(idx1);
+        d.append(parseBattleTurn(turn_txt, l_title, curr_turn == 0, curr_turn == last_turn));
+    }
+
+    return QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\"}").arg(d, intToStr(battle_id), title, l_title);
+}
