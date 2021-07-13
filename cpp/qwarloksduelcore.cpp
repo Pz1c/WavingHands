@@ -736,6 +736,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     if ((old_state == 1) && (_loadedBattleType == 2)) {
         // to get full history, but not only last turn
         getBattle(_loadedBattleID, _loadedBattleType);
+        scanState(true);
         return false;
     }
 

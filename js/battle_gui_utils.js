@@ -5,7 +5,8 @@ var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paral
                          "amnesia":"DPP","maladroit":"DSF","mshield":"WWS","delay":"DWSSSP","time_stop":"SPPc","haste":"PWPWWc","permanency":"SPFPSDW","blindness":"DWFFd","invisibility":"PPws"};
 var map_spell_to_icon = {"SWD":"scared","DSF":"confused","PSDF":"charmed","FFF":"paralized","WWP":"shield","SSFP":"coldproof","WWFP":"fireproof","DWWFWD":"poison","DSFFFc":"disease",
             "DPP":"amnesia","DSF":"maladroit","WWS":"mshield","WPP":"mshield","DWSSSP":"delay","SPPc":"time_stop","PWPWWc":"haste","SPFPSDW":"permanency","DWFFd":"blindness","DFWFd":"blindness",
-            "PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice","WFPSFW":"giant","FPSFW":"troll","PSFW":"ogre","SFW":"goblin"};
+            "PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice","WFPSFW":"giant","FPSFW":"troll","PSFW":"ogre","SFW":"goblin",
+            "P":"shield","SPPc":"haste","SPPFD":"haste"};
 var C_SPELL_DISPEL_MAGIC = 0;
 var C_SPELL_SUMMON_ICE_ELEMENTAL = 1;
 var C_SPELL_SUMMON_FIRE_ELEMENTAL = 2;

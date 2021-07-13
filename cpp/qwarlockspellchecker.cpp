@@ -83,7 +83,11 @@ bool QWarlockSpellChecker::checkStriktSpell(QString left, QString right, QString
 int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString spell, QString possible_left, QString possible_right) {
     int Ln = spell.length() - 1, GLn = left.length() < right.length() ? left.length() : right.length();
     if (Ln == 0) {
-        return 0;
+        if ((spell.length() == 1) && ((possible_left.indexOf(spell.toUpper()) != -1) || (spell.compare(">") == 0))) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
     QString work_spell = spell.left(Ln);
     qDebug() << "checkSpellPosible " << spell << " work spell " << work_spell << " left " << left << " right" << right << "possible_left" << possible_left << "possible_right" << possible_right;

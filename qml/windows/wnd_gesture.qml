@@ -68,6 +68,8 @@ BaseWindow {
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
+            contentWidth: -1
+
             Item {
                 id: iSpellBook
                 anchors.top:  parent.top
@@ -132,7 +134,7 @@ BaseWindow {
                                     anchors.rightMargin: 12 * mainWindow.ratioObject
                                     height: 50 * mainWindow.ratioObject
                                     width: 0.55 * parent.width
-                                    color: lvSpellList.model[index].basic ? "snow" : "darkgrey"
+                                    color: "snow"//lvSpellList.model[index].basic ? "snow" : "darkgrey"
                                     fontSizeMode: Text.VerticalFit
                                     horizontalAlignment: Text.AlignRight
                                     text: lvSpellList.model[index].n

@@ -195,6 +195,7 @@ BaseWindow {
                 bg_radius: 10
                 border_visible: false
                 wrapMode: Text.Wrap
+                font.pixelSize: 21 * mainWindow.ratioFont
 
                 PropertyAnimation {
                     id: paHint
@@ -202,7 +203,7 @@ BaseWindow {
                     target: ltHint
                     property: 'visible'
                     to: false
-                    duration: 1500 // turns to false after 2000 ms
+                    duration: 1500 // turns to false after 1.5s
                 }
 
                 onClicked: {
@@ -240,6 +241,7 @@ BaseWindow {
                     text: "<"
                     color: "#210430"
                     visible: ltTutorial.tutorialDataIdx > 0
+                    font.pixelSize: 21 * mainWindow.ratioFont
                     onClicked: {
                         if (--ltTutorial.tutorialDataIdx < 0) {
                             ltTutorial.tutorialDataIdx = 0;
@@ -257,6 +259,7 @@ BaseWindow {
                     anchors.right: ltTTTNext.left
                     anchors.rightMargin: 6 * mainWindow.ratioObject
 
+                    font.pixelSize: 21 * mainWindow.ratioFont
                     text: "test hint 01"
                     color: "#210430"
                     wrapMode: Text.Wrap
@@ -281,6 +284,7 @@ BaseWindow {
                     font.underline: !(ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1)
                     text: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? ">" : "got it!"
                     color: "#210430"
+                    font.pixelSize: 21 * mainWindow.ratioFont
                     onClicked: {
                         ltTTT.clicked();
                     }

@@ -158,6 +158,9 @@ function startGame(actionIdx) {
          case 'player': return startGameWithPlayer();
          case 'bot': return startGameWithBot();
     }
+    timerCounter = 10;
+    tScanTimer.interval = 5000;
+    //core.scanState(true);
 }
 
 function prepareLoginMenu(menu_str) {

@@ -538,6 +538,7 @@ ApplicationWindow {
                     fontSizeMode: Text.VerticalFit
                     color: "#2DA0A5"
                     text: warlockDictionary.getStringByCode("FinishedGameTitle")
+                    visible: lvFinishedBattle.model.length > 0
                 }
 
                 ListView {
@@ -894,6 +895,7 @@ ApplicationWindow {
     }
 
     function changeTimerState() {
+        timerCounter = 0;
         if (core.timerState) {
             if (!tScanTimer.running) {
                 tScanTimer.start();

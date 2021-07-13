@@ -185,6 +185,7 @@ Item {
         anchors.right: parent.right
         visible: false
         radius: 20
+        active: true
 
         onClicked: {
             if (l_warlock.player) {
@@ -218,6 +219,7 @@ Item {
         anchors.right: parent.right
         visible: false
         radius: 20
+        active: true
 
         onClicked: {
             if (l_warlock.player) {
@@ -256,6 +258,8 @@ Item {
         lwGestures.opacity = opacity;
         iiLeft.opacity = opacity;
         iiRight.opacity = opacity;
+        iiLeft.active = !Enable;
+        iiRight.active = !Enable;
         //iiHP.active = Enable;
         //iiHP.border.width = border_width;
         if (iiBanked.visible) {
