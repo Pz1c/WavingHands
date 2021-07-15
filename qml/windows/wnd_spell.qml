@@ -85,21 +85,23 @@ InfoWindow {
                 }
             }
 
+            Gradient {
+                id: gDef
+                GradientStop { position: 0.0 ; color: "#905B93" }
+                GradientStop { position: 0.75; color: "#551470" }
+                GradientStop { position: 1.0 ; color: "#551470" }
+            }
+
             BtnBig {
                 id: bbAction
                 text_color: "#ABF4F4"
                 text: dict.getStringByCode("MonsterSetTarget")
-                bg_color_active: "#551470"
-                border_color_active: "#551470"
+                border.width: 0
                 radius: 30
                 visible: false
                 z: 30
 
-                gradient: Gradient {
-                    GradientStop { position: 0.0 ; color: "#905B93" }
-                    GradientStop { position: 0.75; color: "#551470" }
-                    GradientStop { position: 1.0 ; color: "#551470" }
-                }
+                gradient: gDef
 
                 width: 366 * ratioObject
                 height: 96 * ratioObject
@@ -110,7 +112,12 @@ InfoWindow {
 
                 onClicked: {
                     console.log("chooseMonsterTarget", JSON.stringify(l_data));
-                    if (l_data.action === "force") {
+                    if (l_data.action === "leave") {
+                        mainWindow.gameCore.leaveBattle(l_data.id);
+                        mainWindow.processEscape();
+                    } else if (l_data.action === "reg_info") {
+                        Qt.openUrlExternally("https://games.ravenblack.net/rules/0/register.html");
+                    } else if (l_data.action === "force") {
                         mainWindow.gameCore.forceSurrender(l_data.id, l_data.fst);
                     } else if (l_data.under_control) {
                         mainWindow.chooseMonsterTarget(ltTitle.text);
@@ -137,99 +144,9 @@ InfoWindow {
       return str.replace(new RegExp(find, 'g'), replace);
     }
 
-    property string last_line: "";
-    property string red_desc: "";
-    property int last_turn: 0;
-    property int curr_turn: 0;
-
-    function processTurnMessage(turn_msg) {
-        var result = "", lines = turn_msg.split("<FONT "), line, sub_line, sslines, ssln, ssslines, sssline, def_color = "#FEE2D6", current_color = def_color, idx1, idx2;
-        for (var i = 0, Ln = lines.length; i < Ln; ++i) {
-            //line = replaceAll(lines[i], "</FONT>", "").trim();
-            line = lines[i].trim();
-            console.log("wnd_spell.processTurnMessage", "main", line, i, Ln, curr_turn, last_turn);
-            if (!line || (line === "")) {
-                continue;
-            }
-            idx1 = line.indexOf('COLOR="');
-            if (idx1 !== -1) {
-                idx1 += 16;
-                current_color = line.substr(idx1 - 9, 7);
-            } else {
-                idx1 = 0;
-                current_color = def_color;
-            }
-            sub_line = line.substr(idx1);
-            console.log("wnd_spell.processTurnMessage", "sub", current_color, sub_line);
-            sslines = sub_line.split("</FONT>");
-            for(var j = 0, LnJ = sslines.length; j < LnJ; ++j) {
-                ssln = sslines[j].trim();
-                if (!ssln || (ssln === "")) {
-                    continue;
-                }
-                ssslines = ssln.split("<BR>");
-                for(var k = 0, LnK = ssslines.length; k < LnK; ++k) {
-                    sssline = ssslines[k].trim();
-                    if (!sssline || (sssline === "")) {
-                        continue;
-                    }
-                    if ((current_color !== "#CCCCCC") || (curr_turn === 0)) {
-                        result += '<font color="'+current_color+'">'+sssline+'</font><br>';
-                    } else {
-                        continue;
-                    }
-                    last_line = sssline;
-                    if ((curr_turn === last_turn) && (current_color === "#FF6666")) {
-                        red_desc += sssline + "<br>";
-                    }
-                }
-                current_color = def_color
-            }
-        }
-        return result;
-    }
-
-    function processFinishedBattleText(txt) {
-        var marr = replaceAll(/*replaceAll(*/replaceAll(txt, "''", '"')/*, "<FONT COLOR=", "<FONTCOLOR=")*/, "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 ><TR>", "<U>Turn").split("<U>Turn"), turn_txt, idx1;
-        //console.log(JSON.stringify(marr));
-        //ltShortDesc.text = "Turn " + marr[0].replace('<U>', '').replace('</U>', '').trim();
-        var first = true, result = "", line;
-        for (var i = 0, Ln = marr.length; i < Ln; ++i) {
-            line = marr[i].trim();
-            if (!line || (line === "")) {
-                continue;
-            }
-            console.log("processFinishedBattleText", "line", line, first, second);
-
-            if (first) {
-                last_turn = line.substr(0, line.indexOf(" ")) * 1;
-                //ltTitle.text = marr[i];//.substr(0, marr[i].indexOf(" ") - 1);
-                ltShortDesc.text = "Turn " + line.replace('<U>', '').replace('</U>', '').trim();
-                first = false;
-                continue;
-            }
-
-            if ((i === Ln - 1) && (line.indexOf("monoturn") !== -1)) {
-                continue;
-            }
-
-            idx1 = line.indexOf("</U>");
-            if (idx1 === -1) {
-                continue;
-            }
-            curr_turn = line.substr(0, idx1) * 1;
-            result += "<font color=\"#10C9F5\">Turn " + curr_turn + ":</font><br>";
-            idx1 += 4;
-            turn_txt = line.substr(idx1);
-            console.log("wnd_spell.processFinishedBattleText", turn_txt);
-            result += processTurnMessage(turn_txt);
-        }
-        return result;
-    }
-
     function initErrFields() {
         console.log("wnd_spell.initFields", JSON.stringify(mainWindow.gERROR));
-        if (!mainWindow.gERROR || (!mainWindow.gERROR.spell && !mainWindow.gERROR.data && (mainWindow.gERROR.type !== 8) && (mainWindow.gERROR.type !== 9))) {
+        if (!mainWindow.gERROR || (!mainWindow.gERROR.spell && !mainWindow.gERROR.data && !(mainWindow.gERROR.type >= 7))) {
             return;
         }
 
@@ -241,18 +158,50 @@ InfoWindow {
         }
         ltDesc.visible = true;
         bbAction.visible = false;
+        bbAction.transparent = false;
+        bbAction.gradient = gDef;
+        bbAction.font.underline = false;
         svMain.anchors.topMargin = 20 * mainWindow.ratioObject;
         if (l_data && (l_data.action || (l_data.type && (l_data.type >= 8)))) {
           icon.visible = false;
-          if (l_data.type && (l_data.type === 9)) {
-            last_line = "";
-            red_desc  = "";
-            ltDesc.visible = false;
-            svMain.anchors.topMargin = 0;
-            ltTitle.text = l_data.t;
-            ltShortDesc.text = l_data.st ? l_data.st : "";
-            ltError.text = replaceAll(l_data.d, "''", '"'); //processFinishedBattleText(l_data.d);
-            //if (last_line != "") { ltShortDesc.text = last_line + "<br>" + red_desc; }
+          if (l_data.type && (l_data.type === 12)) {
+            l_data.action = "leave";
+            ltTitle.text = dict.getStringByCode('DefNotStartTitle');
+            ltShortDesc.text = dict.getStringByCode('DefNotStartSTitle');
+            ltError.text = "";
+            if (l_data.d) {
+                var tarr = l_data.d.split(" ");
+                if (!tarr[0] || (tarr[0] === '')) {
+                    ltError.text = "No one other wizard in circle<br>";
+                } else {
+                    ltError.text = "Other wizards in circle: " + tarr[0].replace(",", ", ") + "<br>";
+                }
+                var tarr2 = tarr[1].split("/");
+                ltError.text += "Wait for another " + (tarr2[1] * 1 - tarr2[0] * 1) + " wizards<br><br>";
+            }
+            ltError.text += dict.getStringByCode('DefNotStartDesc');
+            bbAction.text = "Leave";
+            bbAction.visible = true;
+          } else if (l_data.type && (l_data.type === 11)) {
+              ltTitle.text = dict.getStringByCode('DefErrTitle');
+              ltShortDesc.text = dict.getStringByCode('JoinBattleError');
+              ltError.text = l_data.d ? replaceAll(l_data.d, "''", '"') : "Unknown error";
+          } else if (l_data.type && (l_data.type === 10)) {
+              l_data.action = "reg_info";
+              ltTitle.text = dict.getStringByCode('DefErrTitle');
+              ltShortDesc.text = dict.getStringByCode('BattleCreateError');
+              ltError.text = dict.getStringByCode('BattleCreateErrorDetails');
+              bbAction.gradient = undefined;
+              bbAction.font.underline = true;
+              bbAction.text = dict.getStringByCode('LearnMore');
+              bbAction.transparent = true;
+              bbAction.visible = true;
+          } else if (l_data.type && (l_data.type === 9)) {
+              ltDesc.visible = false;
+              svMain.anchors.topMargin = 0;
+              ltTitle.text = l_data.t;
+              ltShortDesc.text = l_data.st ? l_data.st : "";
+              ltError.text = replaceAll(l_data.d, "''", '"');
           } else if (l_data.type && (l_data.type === 8)) {
             ltTitle.text = "Orders Submited";
             ltShortDesc.text = "Your orders are in for this turn";

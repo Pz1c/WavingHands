@@ -170,6 +170,7 @@ public slots:
     void sendMessage(const QString &Msg);
     void autoLogin(int Idx);
     void aiLogin();
+    void leaveBattle(int battle_id);
 
     void slotReadyRead();
     void slotError(QNetworkReply::NetworkError error);
@@ -205,6 +206,10 @@ protected:
     bool prepareMonsterHtml();
     bool prepareWarlockHtml();
     bool parseSpecReadyBattleValues(QString &Data);
+    void setPossibleSpell(const QString &Data);
+    void calcBattleDecision();
+    qreal evaluateBattleTurn(QWarlock *player, const QString &LG, const QString &RG, int curr_deep, int max_deep);
+    qreal evaluateCurrentTurn(QWarlock *warlock, const QString &LG, const QString &RG, int deep);
 
     bool parseReadyBattle(QString &Data);
     void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
@@ -296,6 +301,8 @@ private:
     QString _warlockInfo;
     QString _warlockId;
     QString _chat;
+    QWarlock *_enemy;
+    QWarlock *_player;
 
     // management
     bool _isTimerActive;

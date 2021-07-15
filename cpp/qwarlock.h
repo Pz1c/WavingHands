@@ -15,6 +15,7 @@ class QWarlock
 {
 public:
     QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player, bool isAI = false);
+    QWarlock(QWarlock *CopyFrom);
     ~QWarlock();
 
     QString name();
@@ -27,13 +28,21 @@ public:
     void setPossibleSpells(const QList<QSpell *> &possibleSpells, const QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
 
-
     QString possibleLeftGestures() const;
     QString possibleRightGestures() const;
     void setPossibleGestures(QString left, QString right);
+    void emulateTurn(const QString &left, const QString &right);
 
     bool isParaFDF() const;
     void setIsParaFDF(bool isParaFDF);
+    void setParalyzedHand(int Hand);
+
+    bool isParaFC() const;
+    void setIsParaFC(bool newIsParaFC);
+
+    int maladroit() const;
+
+    const QList<QSpell *> &possibleSpells() const;
 
 protected:
     void breakEnemySpell(QSpell *spell);
@@ -41,6 +50,7 @@ protected:
     void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void parseStatus();
     void checkPossibleGesture();
+
 private:
     int _scared;
     int _confused;
@@ -77,6 +87,7 @@ private:
     QSpell *_bestSpellL;
     QSpell *_bestSpellR;
     bool _isParaFDF;
+    bool _isParaFC;
 
 };
 

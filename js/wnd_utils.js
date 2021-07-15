@@ -211,16 +211,16 @@ function showSpellbookWindow() {
 }
 
 function showErrorWnd(error, chat) {
-    mainWindow.gERROR = error;
-    if (!mainWindow.gERROR.type) {
-        mainWindow.gERROR.type = 0;
+    if (!error.type) {
+        error.type = 0;
     }
-    if (!mainWindow.gERROR.id) {
-        mainWindow.gERROR.id = -1;
+    if (!error.id) {
+        error.id = -1;
     }
     if (error.close_current !== 1) {
         error.close_current = 0;
     }
+    mainWindow.gERROR = error;
 
     var wnd_name;
     switch(error.type) {
@@ -230,16 +230,15 @@ function showErrorWnd(error, chat) {
     case 4:
         wnd_name = wnd_spell;
         break;
-    case 7:
-    case 8:
-    case 9:
-        wnd_name = wnd_spell;
-        break;
     default:
-        wnd_name = wnd_error;
+        if (error.type >= 7) {
+            wnd_name = wnd_spell;
+        } else {
+            wnd_name = wnd_error;
+        }
         break;
     }
-
+    console.log(JSON.stringify(error));
     showWnd(wnd_name, error.close_current, 0, 1);
 }
 

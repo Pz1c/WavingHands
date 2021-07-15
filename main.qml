@@ -641,9 +641,14 @@ ApplicationWindow {
     }
 
     function showErrorMessage() {
-        console.log("Error: ", core.errorMsg)
+        var err_msg = core.errorMsg;
+        console.log("Error: ", err_msg);
         if (!core.isAI) {
-            showErrorWnd({text:core.errorMsg});
+            if (err_msg.indexOf("{") === -1) {
+                showErrorWnd({text:err_msg});
+            } else {
+                showErrorWnd(JSON.parse(err_msg));
+            }
         }
     }
 
@@ -660,7 +665,7 @@ ApplicationWindow {
     function showFinishedBattle() {
         var bit = core.loadedBattleID;
         var txt = core.finishedBattle;
-        logEvent("showFinishedBattle", {battle_id:core.loadedBattleID});
+        logEvent("showFinishedBattle", {battle_id:bit});
         console.log(txt);
 
         if (txt.indexOf("{") === 0) {

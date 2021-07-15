@@ -14,6 +14,38 @@ QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString R
     checkPossibleGesture();
 }
 
+QWarlock::QWarlock(QWarlock *CopyFrom) {
+    _name = CopyFrom->_name;
+    _status = CopyFrom->_status;
+    _leftGestures = CopyFrom->_leftGestures;
+    _rightGestures = CopyFrom->_rightGestures;
+    _player = CopyFrom->_player;
+    _AI = CopyFrom->_AI;
+    _possibleLeftGestures = CopyFrom->_possibleLeftGestures;
+    _possibleRightGestures = CopyFrom->_possibleRightGestures;
+    _surrender = CopyFrom->_surrender;
+    _hp = CopyFrom->_hp;
+    _active = CopyFrom->_active;
+    _scared = CopyFrom->_scared;
+    _confused = CopyFrom->_confused;
+    _charmed = CopyFrom->_charmed;
+    _paralized = CopyFrom->_paralized;
+    _shield = CopyFrom->_shield;
+    _coldproof = CopyFrom->_coldproof;
+    _fireproof = CopyFrom->_fireproof;
+    _poison = CopyFrom->_poison;
+    _disease = CopyFrom->_disease;
+    _amnesia = CopyFrom->_amnesia;
+    _maladroit = CopyFrom->_maladroit;
+    _mshield = CopyFrom->_mshield;
+    _delay = CopyFrom->_delay;
+    _time_stop = CopyFrom->_time_stop;
+    _haste = CopyFrom->_haste;
+    _permanency = CopyFrom->_permanency;
+    _blindness = CopyFrom->_blindness;
+    _invisibility = CopyFrom->_invisibility;
+}
+
 QWarlock::~QWarlock() {
     if (_possibleSpells.isEmpty()) {
         return;
@@ -49,6 +81,32 @@ bool QWarlock::isParaFDF() const
 void QWarlock::setIsParaFDF(bool isParaFDF)
 {
     _isParaFDF = isParaFDF;
+}
+
+void QWarlock::setParalyzedHand(int Hand) {
+    QString lastGesture;
+    switch(Hand) {
+    case WARLOCK_HAND_LEFT:
+        lastGesture = _leftGestures.right(1);
+        if (_isParaFC && gestureParaFCMap.contains(lastGesture)) {
+            _possibleLeftGestures = gestureParaFCMap[lastGesture];
+        } else if (!_isParaFC && gestureParaCFMap.contains(lastGesture)) {
+            _possibleLeftGestures = gestureParaCFMap[lastGesture];
+        } else {
+            _possibleLeftGestures = lastGesture;
+        }
+        break;
+    case WARLOCK_HAND_RIGHT:
+        lastGesture = _rightGestures.right(1);
+        if (_isParaFC && gestureParaFCMap.contains(lastGesture)) {
+            _possibleRightGestures = gestureParaFCMap[lastGesture];
+        } else if (!_isParaFC && gestureParaCFMap.contains(lastGesture)) {
+            _possibleRightGestures = gestureParaCFMap[lastGesture];
+        } else {
+            _possibleRightGestures = lastGesture;
+        }
+        break;
+    }
 }
 
 QString QWarlock::possibleRightGestures() const
@@ -110,6 +168,26 @@ void QWarlock::checkPossibleGesture() {
         _possibleLeftGestures = "W,S,D,P,C,F";
         _possibleRightGestures = "W,S,D,P,C,F";
     }
+}
+
+const QList<QSpell *> &QWarlock::possibleSpells() const
+{
+    return _possibleSpells;
+}
+
+int QWarlock::maladroit() const
+{
+    return _maladroit;
+}
+
+bool QWarlock::isParaFC() const
+{
+    return _isParaFC;
+}
+
+void QWarlock::setIsParaFC(bool newIsParaFC)
+{
+    _isParaFC = newIsParaFC;
 }
 
 QString QWarlock::separatedString() {
@@ -291,6 +369,7 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QW
     _possibleSpells = possibleSpells;
     _bestSpellL = nullptr;
     _bestSpellR = nullptr;
+
     //logSpellList(possibleSpells, "QWarlock::setPossibleSpells before");
     setSpellPriority(enemy, monsters);
     //logSpellList(possibleSpells, "QWarlock::setPossibleSpells after");
@@ -305,8 +384,7 @@ void QWarlock::checkSpells() {
     logSpellList(_possibleSpells, "QWarlock::checkSpells");
 
     if (_maladroit > 0) {
-        QStringList pg;
-        pg << "W" << "S" << "D" << "C" << "F";
+        QStringList pg {"W", "S",  "D",  "C", "F"};
         int max_priority = SPELL_PRIORITY_ZERO, curr_priority = 0;
         QString best_gesture;
         foreach(QString G, pg) {
@@ -368,4 +446,26 @@ void QWarlock::checkSpells() {
         }
     }
     qDebug() << "QWarlock::checkSpells" << _bestSpellL << _bestSpellR;
+}
+
+void QWarlock::emulateTurn(const QString &left, const QString &right) {
+    _leftGestures.append(left);
+    _rightGestures.append(right);
+    if (_scared > 0) --_scared;
+    if (_confused > 0) --_confused;
+    if (_charmed > 0) --_charmed;
+    if (_paralized > 0) --_paralized;
+    if (_shield > 0) --_shield;
+    if (_poison > 0) --_poison;
+    if (_disease > 0) --_disease;
+    if (_amnesia > 0) --_amnesia;
+    if (_maladroit > 0) --_maladroit;
+    if (_mshield > 0) --_mshield;
+    if (_delay > 0) --_delay;
+    if (_time_stop > 0) --_time_stop;
+    if (_haste > 0) --_haste;
+    if (_permanency > 0) --_permanency;
+    if (_blindness > 0) --_blindness;
+    if (_invisibility > 0) --_invisibility;
+    checkPossibleGesture();
 }
