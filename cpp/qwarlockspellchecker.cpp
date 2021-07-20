@@ -1,4 +1,13 @@
 #include "qwarlockspellchecker.h"
+#include "qwarlock.h"
+
+QWarlockSpellChecker* QWarlockSpellChecker::self = nullptr;
+QWarlockSpellChecker *QWarlockSpellChecker::getInstance() {
+    if (!self) {
+        self = new QWarlockSpellChecker();
+    }
+    return self;
+}
 
 QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     QObject(parent)

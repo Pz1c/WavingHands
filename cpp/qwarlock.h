@@ -44,9 +44,11 @@ public:
 
     const QList<QSpell *> &possibleSpells() const;
 
+    void setIsMaladroit(bool newIsMaladroit);
+
 protected:
     void breakEnemySpell(QSpell *spell);
-    void setAntispell(QWarlock *enemy);
+    void setAntispell(const QWarlock *enemy);
     void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void parseStatus();
     void checkPossibleGesture();
@@ -88,6 +90,7 @@ private:
     QSpell *_bestSpellR;
     bool _isParaFDF;
     bool _isParaFC;
+    bool _isMaladroit;
 
 };
 

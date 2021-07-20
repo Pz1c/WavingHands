@@ -116,7 +116,7 @@
 #define SPELL_DEF_TARGER_ENEMY_MONSTER 3
 #define SPELL_DEF_TARGER_SELF_MONSTER 4
 
-static QStringList _possibleGestures {"W", "S", "D", "C", "F", "P"};
+static QStringList POSSIBLE_GESTURES {"W", "S", "D", "C", "F", "P", ">"};
 static QMap<QString, QString> gestureParaCFMap{{"C","F"},{"S","D"},{"W","P"}};
 static QMap<QString, QString> gestureParaFCMap{{"F","C"},{"S","D"},{"W","P"}};
 static QStringList _lstAI = QStringList({"CONSTRUCT", "EARTHGOLEM", "IRONGOLEM"});

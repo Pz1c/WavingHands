@@ -18,6 +18,7 @@
 #include "qwarlockspellchecker.h"
 #include "qwarlockdictionary.h"
 #include "qgameconstant.h"
+#include "qwarlock.h"
 
 
 class QWarloksDuelCore : public QGameCore
@@ -208,8 +209,6 @@ protected:
     bool parseSpecReadyBattleValues(QString &Data);
     void setPossibleSpell(const QString &Data);
     void calcBattleDecision();
-    qreal evaluateBattleTurn(QWarlock *player, const QString &LG, const QString &RG, int curr_deep, int max_deep);
-    qreal evaluateCurrentTurn(QWarlock *warlock, const QString &LG, const QString &RG, int deep);
 
     bool parseReadyBattle(QString &Data);
     void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
@@ -292,6 +291,7 @@ private:
     bool _isPermanent;
     bool _isParaFDF;
     bool _isParaFC;
+    bool _isMaladroit;
     QString _fire;
     QString _challengeList;
     QString _battleList;
@@ -308,7 +308,7 @@ private:
     bool _isTimerActive;
 
     // Spell checker
-    QWarlockSpellChecker SpellChecker;
+    QWarlockSpellChecker *SpellChecker;
 
 };
 

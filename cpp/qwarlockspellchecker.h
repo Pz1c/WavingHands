@@ -9,15 +9,14 @@
 
 #include "qwarlockutils.h"
 #include "qspell.h"
-#include "qwarlock.h"
 
-
+class QWarlock;
 
 class QWarlockSpellChecker : public QObject
 {
     Q_OBJECT
 public:
-    explicit QWarlockSpellChecker(QObject *parent = nullptr);
+    static QWarlockSpellChecker *getInstance();
 
     QString checkSpells(QString Left, QString Right, bool Enemy);
     QList<QSpell *> getSpellsList(QWarlock *warlock, bool SeparateSpellbook = false);
@@ -34,6 +33,10 @@ protected:
     int checkSpellPosible(QString left, QString right, QString spell, QString possible_left, QString possible_right);
     bool checkSpellChar(QChar left, QChar right, QChar spell);
     void checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spell, QString left, QString right, int Hand, bool Enemy, QString possible_left, QString possible_right);
+
+private:
+    explicit QWarlockSpellChecker(QObject *parent = nullptr);
+    static QWarlockSpellChecker *self;
 };
 
 #endif // QWARLOCKSPELLCHECKER_H

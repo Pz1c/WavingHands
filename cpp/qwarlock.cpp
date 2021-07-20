@@ -1,4 +1,5 @@
 #include "qwarlock.h"
+#include "qwarlockspellchecker.h"
 
 QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player, bool isAI) :
     _scared(0), _confused(0), _charmed(0), _paralized(0), _shield(0), _coldproof(0), _fireproof(0), _hp(0), _poison(0), _disease(0), _amnesia(0),
@@ -170,6 +171,11 @@ void QWarlock::checkPossibleGesture() {
     }
 }
 
+void QWarlock::setIsMaladroit(bool newIsMaladroit)
+{
+    _isMaladroit = newIsMaladroit;
+}
+
 const QList<QSpell *> &QWarlock::possibleSpells() const
 {
     return _possibleSpells;
@@ -267,7 +273,7 @@ void QWarlock::breakEnemySpell(QSpell *spell) {
     qDebug() << spell->json();
 }
 
-void QWarlock::setAntispell(QWarlock *enemy) {
+void QWarlock::setAntispell(const QWarlock *enemy) {
     QSpell *esL = enemy->_bestSpellL;
     QSpell *esR = enemy->_bestSpellR;
     bool left_first = esL && (!esR || (esL->priority() > esR->priority()));
@@ -284,12 +290,18 @@ void QWarlock::setAntispell(QWarlock *enemy) {
 
 void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters) {
     int _coldproof_in = 999, _fireproof_in = 999;
-    int under_attack = 0, paralysis_left = 3, paralysis_right = 3;
+    int under_attack = 0, paralysis_left = 3, paralysis_right = 3, monster_cnt_friend = 0, monster_cnt_enemy = 0;
     foreach(QMonster *m,  monsters) {
+        if (m->is_owner(_name)) {
+            ++monster_cnt_friend;
+        } else {
+            ++monster_cnt_enemy;
+        }
         if (m->is_under_attack(_name)) {
             under_attack += m->getStrength();
         }
     }
+
     foreach(QSpell *spell, _possibleSpells) {
         //spell->setPriority(0);
         switch(spell->spellID()) {
@@ -369,13 +381,47 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QW
     _possibleSpells = possibleSpells;
     _bestSpellL = nullptr;
     _bestSpellR = nullptr;
+    if (!enemy) {
+        return;
+    }
+
+    int em_cnt = 0, fm_cnt = 0, total_m_strength = 0;
+    foreach(QMonster *m, monsters) {
+        if (m->is_owner(_name)) {
+            ++em_cnt;
+            total_m_strength += m->getStrength();
+        } else {
+            ++fm_cnt;
+            total_m_strength -= m->getStrength();
+        }
+    }
+
+    QMap<int, int> MySpellDelivery;
+    QMap<int, int> EnemySpellDelivery;
+    for(int i = 0; i < SPELL_ID_MAX; ++i) {
+        MySpellDelivery[i] = 999;
+        EnemySpellDelivery[i] = 999;
+    }
+
+    foreach(QSpell *spell, enemy->_possibleSpells) {
+        EnemySpellDelivery[spell->spellID()] = qMin(EnemySpellDelivery[spell->spellID()], spell->turnToCast());
+    }
+
+    for(int i = 0; i < SPELL_ID_MAX; ++i) {
+        if (EnemySpellDelivery[i] > QWarlockSpellChecker::getInstance()->Spells.at(i)->turnToCast()) {
+            continue;
+        }
+    }
+
+
+
 
     //logSpellList(possibleSpells, "QWarlock::setPossibleSpells before");
     setSpellPriority(enemy, monsters);
     //logSpellList(possibleSpells, "QWarlock::setPossibleSpells after");
-    /*if (enemy) {
+    if (enemy) {
         setAntispell(enemy);
-    }*/
+    }
     checkSpells();
 }
 

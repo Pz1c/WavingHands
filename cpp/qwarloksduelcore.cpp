@@ -7,6 +7,8 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     setOrganization();
     init();
     GameDictionary->setCurrentLang("en");
+    SpellChecker = QWarlockSpellChecker::getInstance();
+
 
     //_lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
     _isLogined = false;
@@ -25,6 +27,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _isParaFDF = false;
     _isParaFC = false;
     _isTimerActive = false;
+    _isMaladroit = false;
 
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
@@ -39,9 +42,7 @@ void QWarloksDuelCore::setOrganization() {
 }
 
 QWarloksDuelCore::~QWarloksDuelCore() {
-    if (_player) {
-        delete _player;
-    }
+
     saveParameters(true, true, true, true, true);
 }
 
@@ -769,6 +770,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
     _isParaFDF = Data.indexOf("(ParaFDF)") != -1;
     _isParaFC = Data.indexOf("(ParaFC)") != -1;
+    _isMaladroit = Data.indexOf("(Maladroit)") != -1;
     QString point1 = "<A TARGET=_blank HREF=\"/rules/1/quickref.html\">Spell Reference</A></DIV>";
     QString point2 = _loadedBattleType != 1 ? "</BODY>" : "<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=";
     int idx1 = Data.indexOf(point1);
@@ -868,121 +870,38 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 }
 
 void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
-    if (_player) {
-        delete _player;
-        _player = nullptr;
-    }
+    _player = nullptr;
     _enemy = nullptr;
     foreach(QWarlock *w, _Warlock) {
         if (w->player()) {
-            _player = new QWarlock(w);
+            _player = w;
         } else if (!_enemy) {
             _enemy = w;
         }
         w->setIsParaFDF(_isParaFDF);
         w->setIsParaFC(_isParaFC);
+        w->setIsMaladroit(_isMaladroit);
         if (Data.indexOf(QString("%1's left hand is paralysed.").arg(w->name())) != -1) {
             w->setParalyzedHand(WARLOCK_HAND_LEFT);
         }
         if (Data.indexOf(QString("%1's right hand is paralysed.").arg(w->name())) != -1) {
             w->setParalyzedHand(WARLOCK_HAND_RIGHT);
         }
-        w->setPossibleSpells(SpellChecker.getSpellsList(w, false), w->player() ? _enemy : nullptr, _Monsters);
     }
-}
-
-qreal QWarloksDuelCore::evaluateCurrentTurn(QWarlock *warlock, const QString &LG, const QString &RG, int deep) {
-    qreal res = 0;
-
-    QMap<int, int> monsterCnt {{-4, 0}, {-3, 0}, {-2, 0}, {-1, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}};
-    QMap<int, int> monsterHp {{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}};
-    foreach(QMonster *m, _Monsters) {
-        if (m->is_owner(warlock->name())) {
-            ++monsterCnt[m->getStrength()];
-        } else {
-            ++monsterCnt[-m->getStrength()];
-            ++monsterCnt[m->getHp()];
-        }
+    if (!_player || !_enemy) {
+        return;
     }
 
-    QMap<int, int> EnemyTimeToCast;
-    for (int i = 0; i < SPELL_ID_MAX; ++i) {
-        EnemyTimeToCast[i] = 999;
-    }
-
-    foreach(QSpell *s, _enemy->possibleSpells()) {
-        if (s->turnToCast() - deep < 1) {
-            continue;
-        }
-        //if (s->spellID() == SPELL_ICE_STORM)
-        EnemyTimeToCast[s->spellID()] = qMin(s->turnToCast() - deep, EnemyTimeToCast[s->spellID()]);
-    }
-
-    QList<QSpell *> possibleSpells = SpellChecker.getSpellsList(warlock, false);
-    foreach(QSpell *s, possibleSpells) {
-        qDebug() << "QWarloksDuelCore::evaluateCurrentTurn" << s->json();
-        if (!s->possibleCast()) {
-            continue;
-        }
-        if (s->turnToCast() == 1) {
-
-        } else if (s->turnToCast() == 2) {
-
-        } else if (s->turnToCast() == 3) {
-
-        } else {
-
-        }
-    }
-    return res;
-}
-
-qreal QWarloksDuelCore::evaluateBattleTurn(QWarlock *player, const QString &LG, const QString &RG, int curr_deep, int max_deep) {
-    if (curr_deep > max_deep) {
-        return 0;
-    }
-    qreal res = evaluateCurrentTurn(player, LG, RG, curr_deep);
-    qreal max = 0, curr;
-    int bestL = 0, bestR = 0;
-    if (curr_deep < max_deep) {
-        QWarlock *wp = new QWarlock(player);
-        wp->emulateTurn(LG, RG);
-        for (int idxL = 0; idxL < 6; ++idxL) {
-            for (int idxR = 0; idxR < 6; ++idxR) {
-               if ((wp->possibleLeftGestures().indexOf(_possibleGestures.at(idxL)) == -1) || (wp->possibleRightGestures().indexOf(_possibleGestures.at(idxR)) == -1) ||
-                    ((wp->maladroit() > 0) && (idxL != idxR))) {
-                   continue;
-               }
-               curr = evaluateBattleTurn(wp, _possibleGestures.at(idxL), _possibleGestures.at(idxR), curr_deep + 1, max_deep);
-               qDebug() << "evaluateBattleTurn" << _possibleGestures.at(idxL) << _possibleGestures.at(idxR) << curr << max;
-               if (curr > max) {
-                   bestL = idxL;
-                   bestR = idxR;
-                   max = curr;
-               }
-            }
-        }
-        delete wp;
-    }
-
-    if (LG.isEmpty()) {
-        return bestL * 10 + bestR;
-    } else {
-        return res + max / 2;
-    }
+    // AI that calculate best gestures hidden there
+    _enemy->setPossibleSpells(SpellChecker->getSpellsList(_enemy, false), _player, _Monsters);
+    _player->setPossibleSpells(SpellChecker->getSpellsList(_player, false), _enemy, _Monsters);
 }
 
 void QWarloksDuelCore::calcBattleDecision() {
     if (!_player || !_enemy) {
         return;
     }
-    //_enemy->setPossibleSpells(SpellChecker.getSpellsList(_enemy, false), _player, _Monsters);
-    //_player->setPossibleSpells(SpellChecker.getSpellsList(_player, false), _enemy, _Monsters);
-     int bestL, bestR;
-     int best = evaluateBattleTurn(_player, "", "", 0, 5);
-     bestL = best / 10;
-     bestR = best % 10;
-     qDebug() << "calcBattleDecision" << _possibleGestures.at(bestL) << _possibleGestures.at(bestR);
+
 
 }
 
@@ -1629,14 +1548,14 @@ void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {
 }
 
 QString QWarloksDuelCore::getSpellList(QString left, QString right, bool Enemy) {
-    return SpellChecker.checkSpells(left, right, Enemy);
+    return SpellChecker->checkSpells(left, right, Enemy);
 }
 QString QWarloksDuelCore::getSpellBook() {
     bool separate_spellbook = !_isAI && _reg_in_app && (_exp_lv < 1);
     if (separate_spellbook) {
         QSpell::setOrderType(1);
     }
-    QString res = SpellChecker.getSpellBook(_isParaFDF, true, !_isAI);
+    QString res = SpellChecker->getSpellBook(_isParaFDF, true, !_isAI);
     if (separate_spellbook) {
         QSpell::setOrderType(0);
     }
@@ -1673,7 +1592,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
         return;
     }
 
-    QList<QSpell *> sl = SpellChecker.getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER, _possibleLeftGestures.indexOf("As Right") != -1 ? _possibleRightGestures : _possibleLeftGestures, _possibleRightGestures, _isParaFDF);
+    QList<QSpell *> sl = SpellChecker->getPosibleSpellsList(_leftGestures, _rightGestures, WARLOCK_PLAYER, _possibleLeftGestures.indexOf("As Right") != -1 ? _possibleRightGestures : _possibleLeftGestures, _possibleRightGestures, _isParaFDF);
     if (sl.count() == 0) {
         _spellListHtml.clear();
         if (emit_signal) {
@@ -1686,7 +1605,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
     _spellListHtml = "[";
 
     bool found;
-    foreach(QSpell *spell, SpellChecker.Spells) {
+    foreach(QSpell *spell, SpellChecker->Spells) {
         qDebug() << "spell" << spell->gesture();
         if (!spell->active()) {
             continue;
@@ -1736,7 +1655,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
 QString QWarloksDuelCore::defaultSpellListHtml() {
     QString res = "[";
     bool first = true;
-    foreach(QSpell *spell, SpellChecker.Spells) {
+    foreach(QSpell *spell, SpellChecker->Spells) {
         if (first) {
             first = false;
         } else {
