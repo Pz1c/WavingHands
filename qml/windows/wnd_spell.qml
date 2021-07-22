@@ -172,12 +172,12 @@ InfoWindow {
             if (l_data.d) {
                 var tarr = l_data.d.split(" ");
                 if (!tarr[0] || (tarr[0] === '')) {
-                    ltError.text = "No one other wizard in circle<br>";
+                    ltError.text = "No one other warlock in then circle<br>";
                 } else {
-                    ltError.text = "Other wizards in circle: " + tarr[0].replace(",", ", ") + "<br>";
+                    ltError.text = "Warlocks waiting in the circle: " + tarr[0].replace(",", ", ") + "<br>";
                 }
                 var tarr2 = tarr[1].split("/");
-                ltError.text += "Wait for another " + (tarr2[1] * 1 - tarr2[0] * 1) + " wizards<br><br>";
+                ltError.text += "Waiting for: " + (tarr2[1] * 1 - tarr2[0] * 1) + " warlocks<br><br>";
             }
             ltError.text += dict.getStringByCode('DefNotStartDesc');
             bbAction.text = "Leave";

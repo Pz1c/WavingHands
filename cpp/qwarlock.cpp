@@ -375,7 +375,7 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
     //std::sort(_possibleSpells.begin(), _possibleSpells.end());
 }
 
-void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QWarlock *enemy, const QList<QMonster *> &monsters)
+void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock *enemy, const QList<QMonster *> &monsters)
 {
     qDebug() << "QWarlock::setPossibleSpells";
     _possibleSpells = possibleSpells;
@@ -396,20 +396,51 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QW
         }
     }
 
-    QMap<int, int> MySpellDelivery;
-    QMap<int, int> EnemySpellDelivery;
+    QMap<int, QSpell *> EnemySpellDelivery, SelfSpellDelivery;
     for(int i = 0; i < SPELL_ID_MAX; ++i) {
-        MySpellDelivery[i] = 999;
-        EnemySpellDelivery[i] = 999;
+        EnemySpellDelivery[i] = nullptr;
+        SelfSpellDelivery[i] = nullptr;
+    }
+
+    foreach(QSpell *spell, _possibleSpells) {
+        if (!SelfSpellDelivery[spell->spellID()] || (SelfSpellDelivery[spell->spellID()]->turnToCast() > spell->turnToCast())) {
+            SelfSpellDelivery[spell->spellID()] = spell;
+        }
     }
 
     foreach(QSpell *spell, enemy->_possibleSpells) {
-        EnemySpellDelivery[spell->spellID()] = qMin(EnemySpellDelivery[spell->spellID()], spell->turnToCast());
+        if (!EnemySpellDelivery[spell->spellID()] || (EnemySpellDelivery[spell->spellID()]->turnToCast() > spell->turnToCast())) {
+            EnemySpellDelivery[spell->spellID()] = spell;
+        }
     }
 
+    QMap<QString, qreal> LeftHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 1}};
+    QMap<QString, qreal> RightHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 1}};
+    QSpell *css; // current self spell
+    qreal price;
     for(int i = 0; i < SPELL_ID_MAX; ++i) {
-        if (EnemySpellDelivery[i] > QWarlockSpellChecker::getInstance()->Spells.at(i)->turnToCast()) {
+        css = SelfSpellDelivery[i];
+        if (!css || !css->active()) {
             continue;
+        }
+        price = qMax(1, css->damage())/css->turnToCast();
+        if (css->hand() == WARLOCK_HAND_LEFT) {
+            LeftHand[css->nextGesture()] += price;
+        } else {
+            RightHand[css->nextGesture()] += price;
+        }
+    }
+    qDebug() << "QWarlock::setPossibleSpells" << LeftHand << RightHand;
+
+    QSpell *ces; // current enemy spell
+    for(int i = 0; i < SPELL_ID_MAX; ++i) {
+        ces = EnemySpellDelivery[i];
+        if ((ces->turnToCast() >= ces->length()) || (ces->length() == 1) || !ces->active()) {
+            continue;
+        }
+
+        if (ces->turnToCast() == 1) {
+
         }
     }
 
@@ -417,12 +448,12 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, const QW
 
 
     //logSpellList(possibleSpells, "QWarlock::setPossibleSpells before");
-    setSpellPriority(enemy, monsters);
+    //setSpellPriority(enemy, monsters);
     //logSpellList(possibleSpells, "QWarlock::setPossibleSpells after");
-    if (enemy) {
-        setAntispell(enemy);
-    }
-    checkSpells();
+    //if (enemy) {
+    //    setAntispell(enemy);
+    //}
+    //checkSpells();
 }
 
 void QWarlock::checkSpells() {

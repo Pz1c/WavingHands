@@ -125,7 +125,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("JoinBattleError", "", "", "Can't join battle");
     fillDictionary("BattleCreateErrorDetails", "", "", "You may only play 3 games at any given time.<br><br>Note: This open source project was build based on Ravenblack Games services (whicj are not affiliated with this android app)<br><br>You may register with Ravenblack Games to increase the number of concurrent games to 20.");
     fillDictionary("LearnMore", "", "", "Learn More");
-    fillDictionary("DefNotStartTitle", "", "", "Waiting for Start...");
+    fillDictionary("DefNotStartTitle", "", "", "Waiting to Start...");
     fillDictionary("DefNotStartSTitle", "", "", "The battle has not yet begun.");
     fillDictionary("DefNotStartDesc", "", "", "Training games may take a few minutes to start. In games against other warlocks it may take a few hours until another warlock joins your game.");
 

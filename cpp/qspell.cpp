@@ -46,9 +46,18 @@ int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, i
     return static_cast<int>(res);
 }
 
+int QSpell::damage() const
+{
+    return _damage;
+}
+
 int QSpell::alreadyCasted() const
 {
     return _alreadyCasted;
+}
+
+int QSpell::length() const {
+    return _gesture.length();
 }
 
 int QSpell::orderType()

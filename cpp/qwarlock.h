@@ -25,7 +25,7 @@ public:
     QString separatedString();
     bool player() const;
 
-    void setPossibleSpells(const QList<QSpell *> &possibleSpells, const QWarlock *enemy, const QList<QMonster *> &monsters);
+    void setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
 
     QString possibleLeftGestures() const;

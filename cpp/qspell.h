@@ -55,6 +55,8 @@ public:
 
     int alreadyCasted() const;
 
+    int length() const;
+
 protected:
 
     int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast);
