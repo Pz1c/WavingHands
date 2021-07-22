@@ -269,25 +269,7 @@ bool QWarlock::player() const
     return _player;
 }
 
-void QWarlock::breakEnemySpell(QSpell *spell) {
-    qDebug() << spell->json();
-}
-
-void QWarlock::setAntispell(const QWarlock *enemy) {
-    QSpell *esL = enemy->_bestSpellL;
-    QSpell *esR = enemy->_bestSpellR;
-    bool left_first = esL && (!esR || (esL->priority() > esR->priority()));
-    if (left_first && esL) {
-        breakEnemySpell(esL);
-    }
-    if (esR) {
-        breakEnemySpell(esR);
-    }
-    if (!left_first && esL) {
-        breakEnemySpell(esL);
-    }
-}
-
+/*
 void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters) {
     int _coldproof_in = 999, _fireproof_in = 999;
     int under_attack = 0, paralysis_left = 3, paralysis_right = 3, monster_cnt_friend = 0, monster_cnt_enemy = 0;
@@ -373,6 +355,56 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
     }
 
     //std::sort(_possibleSpells.begin(), _possibleSpells.end());
+}*/
+
+QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const {
+    if (CastTo > CastFrom) return nullptr;
+
+    foreach(QSpell *s, sl) {
+        if ((s->turnToCast() < CastFrom) || (s->turnToCast() > CastTo)) {
+            continue;
+        }
+        if ((s->spellType() != SpellType) && (SpellType != -1)) {
+            continue;
+        }
+        if ((notID.length() > 0) && (notID.indexOf(s->spellID()) != -1)) {
+            continue;
+        }
+        if ((byID.length() > 0) && (byID.indexOf(s->spellID()) == -1)) {
+            continue;
+        }
+
+        return s;
+    }
+    return nullptr;
+}
+
+QSpell *QWarlock::getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const {
+    QSpell *res = getSpellByFilter(sl, 1, s->turnToCast() - 1, SPELL_TYPE_CONFUSION, QList<int>(), QList<int>());
+    if (res) return res;
+
+    if ((s->spellType() == SPELL_TYPE_CONFUSION) && (s->spellID() != SPELL_ANTI_SPELL)) {
+        res = getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_CONFUSION, QList<int>({SPELL_ANTI_SPELL}), QList<int>());
+        if (res) return res;
+    }
+
+    if (s->spellType() == SPELL_TYPE_SUMMON_MONSTER) {
+        res = getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), -1, QList<int>(), QList<int>({SPELL_COUNTER_SPELL1, SPELL_COUNTER_SPELL2, SPELL_CHARM_MONSTER}));
+        if (res) return res;
+    }
+
+
+    return getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_MAGIC_SHIELD, QList<int>(), QList<int>());
+}
+
+void QWarlock::setPriceForMap(QMap<QString, qreal> &L, QMap<QString, qreal> &R, const QString &NG, qreal price) {
+    QString U = NG.toUpper();
+    if (U.compare(NG) != 0) {
+        L[U] += price/2;
+        R[U] += price/2;
+    } else {
+        L[U] += price;
+    }
 }
 
 void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock *enemy, const QList<QMonster *> &monsters)
@@ -385,7 +417,7 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock
         return;
     }
 
-    int em_cnt = 0, fm_cnt = 0, total_m_strength = 0;
+    /*int em_cnt = 0, fm_cnt = 0, total_m_strength = 0;
     foreach(QMonster *m, monsters) {
         if (m->is_owner(_name)) {
             ++em_cnt;
@@ -394,56 +426,41 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock
             ++fm_cnt;
             total_m_strength -= m->getStrength();
         }
-    }
+    }*/
 
-    QMap<int, QSpell *> EnemySpellDelivery, SelfSpellDelivery;
-    for(int i = 0; i < SPELL_ID_MAX; ++i) {
-        EnemySpellDelivery[i] = nullptr;
-        SelfSpellDelivery[i] = nullptr;
-    }
-
-    foreach(QSpell *spell, _possibleSpells) {
-        if (!SelfSpellDelivery[spell->spellID()] || (SelfSpellDelivery[spell->spellID()]->turnToCast() > spell->turnToCast())) {
-            SelfSpellDelivery[spell->spellID()] = spell;
-        }
-    }
-
-    foreach(QSpell *spell, enemy->_possibleSpells) {
-        if (!EnemySpellDelivery[spell->spellID()] || (EnemySpellDelivery[spell->spellID()]->turnToCast() > spell->turnToCast())) {
-            EnemySpellDelivery[spell->spellID()] = spell;
-        }
-    }
-
-    QMap<QString, qreal> LeftHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 1}};
-    QMap<QString, qreal> RightHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 1}};
-    QSpell *css; // current self spell
+    QMap<QString, qreal> LeftHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
+    QMap<QString, qreal> RightHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
     qreal price;
-    for(int i = 0; i < SPELL_ID_MAX; ++i) {
-        css = SelfSpellDelivery[i];
+    foreach(QSpell *css, _possibleSpells) {
         if (!css || !css->active()) {
             continue;
         }
-        price = qMax(1, css->damage())/css->turnToCast();
+        price = static_cast<qreal>(qMax(1, css->damage()))/css->turnToCast();
         if (css->hand() == WARLOCK_HAND_LEFT) {
-            LeftHand[css->nextGesture()] += price;
+            setPriceForMap(LeftHand, RightHand, css->nextGesture(), price);
         } else {
-            RightHand[css->nextGesture()] += price;
+            setPriceForMap(RightHand, LeftHand, css->nextGesture(), price);
         }
     }
     qDebug() << "QWarlock::setPossibleSpells" << LeftHand << RightHand;
 
-    QSpell *ces; // current enemy spell
-    for(int i = 0; i < SPELL_ID_MAX; ++i) {
-        ces = EnemySpellDelivery[i];
+    foreach(QSpell *ces, enemy->_possibleSpells) {
         if ((ces->turnToCast() >= ces->length()) || (ces->length() == 1) || !ces->active()) {
             continue;
         }
 
-        if (ces->turnToCast() == 1) {
-
-        }
+        //if (ces->turnToCast() == 1) {
+            QSpell *as = getAntiSpell(_possibleSpells, ces);
+            if (as) {
+                if (as->hand() == WARLOCK_HAND_LEFT) {
+                    setPriceForMap(LeftHand, RightHand, as->nextGesture(), 3/ces->turnToCast());
+                } else {
+                    setPriceForMap(RightHand, LeftHand, as->nextGesture(), 3/ces->turnToCast());
+                }
+            }
+        //}
     }
-
+    qDebug() << "QWarlock::setPossibleSpells" << LeftHand << RightHand;
 
 
 

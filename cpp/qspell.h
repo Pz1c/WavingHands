@@ -57,6 +57,8 @@ public:
 
     int length() const;
 
+    int damage() const;
+
 protected:
 
     int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast);

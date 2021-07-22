@@ -40,7 +40,7 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(25,"PWPFSSSD","Finger of Death", SPELL_TYPE_DAMAGE,11,0,20, SPELL_DEF_TARGER_ENEMY, 20, true, false));
     Spells.append(new QSpell(26,"PWPWWc","Haste", SPELL_TYPE_HASTLE,12,0,10, SPELL_DEF_TARGER_SELF, 0, true, false));
     Spells.append(new QSpell(27,"SD","Magic Missile", SPELL_TYPE_DAMAGE,10,0,10, SPELL_DEF_TARGER_ENEMY, 1, true, true));
-    Spells.append(new QSpell(28,"SPFP","Anti-spell", SPELL_TYPE_CONFUSION,13,0,14, SPELL_DEF_TARGER_ENEMY, 0, true, false));
+    Spells.append(new QSpell(SPELL_ANTI_SPELL,"SPFP","Anti-spell", SPELL_TYPE_CONFUSION,13,0,14, SPELL_DEF_TARGER_ENEMY, 5, true, false));
     Spells.append(new QSpell(29,"SPFPSDW","Permanency", SPELL_TYPE_SPEC,13,0,16, SPELL_DEF_TARGER_SELF, 0, true, false));
     Spells.append(new QSpell(30,"SPPc","Time Stop", SPELL_TYPE_HASTLE,13,0,10, SPELL_DEF_TARGER_SELF, 0, true, false));
     Spells.append(new QSpell(31,"SPPFD","Time Stop", SPELL_TYPE_HASTLE,13,0,10, SPELL_DEF_TARGER_SELF, 0, true, false));

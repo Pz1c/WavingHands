@@ -47,11 +47,13 @@ public:
     void setIsMaladroit(bool newIsMaladroit);
 
 protected:
-    void breakEnemySpell(QSpell *spell);
-    void setAntispell(const QWarlock *enemy);
-    void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void parseStatus();
     void checkPossibleGesture();
+    QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const;
+    QSpell *getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const;
+
+private:
+    void setPriceForMap(QMap<QString, qreal> &L, QMap<QString, qreal> &R, const QString &NG, qreal price);
 
 private:
     int _scared;
