@@ -887,21 +887,23 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         if (Data.indexOf(QString("%1's right hand is paralysed.").arg(w->name())) != -1) {
             w->setParalyzedHand(WARLOCK_HAND_RIGHT);
         }
-    }
-    if (!_player || !_enemy) {
-        return;
+        w->setPossibleSpells(SpellChecker->getSpellsList(w, false));
     }
 
-    // AI that calculate best gestures hidden there
-    _enemy->setPossibleSpells(SpellChecker->getSpellsList(_enemy, false), _player, _Monsters);
-    _player->setPossibleSpells(SpellChecker->getSpellsList(_player, false), _enemy, _Monsters);
+    //_enemy->setPossibleSpells(SpellChecker->getSpellsList(_enemy, false), _player, _Monsters);
+    //_player->setPossibleSpells(SpellChecker->getSpellsList(_player, false), _enemy, _Monsters);
 }
 
+// AI that calculate best gestures hidden there
 void QWarloksDuelCore::calcBattleDecision() {
     if (!_player || !_enemy) {
         return;
     }
-
+    //try {
+        _player->processDecision(*SpellChecker, _enemy, _Monsters);
+    //} catch(const std::exception& e) {
+    //    qDebug() << "QWarloksDuelCore::calcBattleDecision" << e.what();
+    //}
 
 }
 

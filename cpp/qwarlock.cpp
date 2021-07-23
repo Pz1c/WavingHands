@@ -407,28 +407,58 @@ void QWarlock::setPriceForMap(QMap<QString, qreal> &L, QMap<QString, qreal> &R, 
     }
 }
 
-void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock *enemy, const QList<QMonster *> &monsters)
+void QWarlock::processDecision(const QWarlockSpellChecker &SpellChecker, QWarlock *enemy, const QList<QMonster *> monsters) {
+    QMap<QString, qreal> LeftHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
+    QMap<QString, qreal> RightHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
+
+    qDebug() << "QWarlock::processDecision" << QDateTime::currentMSecsSinceEpoch() << LeftHand << RightHand;
+    qreal price;
+    foreach(QSpell *css, _possibleSpells) {
+        if (!css || !css->active() || (css->length() == 1)) {
+            continue;
+        }
+        price = static_cast<qreal>(qMax(1, css->damage()))/css->turnToCast();
+        if (css->hand() == WARLOCK_HAND_LEFT) {
+            setPriceForMap(LeftHand, RightHand, css->nextGesture(), price);
+        } else {
+            setPriceForMap(RightHand, LeftHand, css->nextGesture(), price);
+        }
+    }
+    qDebug() << "QWarlock::processDecision" << QDateTime::currentMSecsSinceEpoch() << LeftHand << RightHand;
+
+    foreach(QSpell *ces, enemy->_possibleSpells) {
+        if ((ces->turnToCast() >= ces->length()) || (ces->length() == 1) || !ces->active()) {
+            continue;
+        }
+
+        //if (ces->turnToCast() == 1) {
+            QSpell *as = getAntiSpell(_possibleSpells, ces);
+            if (as) {
+                if (as->hand() == WARLOCK_HAND_LEFT) {
+                    setPriceForMap(LeftHand, RightHand, as->nextGesture(), 3/ces->turnToCast());
+                } else {
+                    setPriceForMap(RightHand, LeftHand, as->nextGesture(), 3/ces->turnToCast());
+                }
+            }
+        //}
+    }
+    qDebug() << "QWarlock::processDecision" << QDateTime::currentMSecsSinceEpoch() << LeftHand << RightHand;
+
+
+
+
+}
+
+void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells)
 {
     qDebug() << "QWarlock::setPossibleSpells";
     _possibleSpells = possibleSpells;
     _bestSpellL = nullptr;
     _bestSpellR = nullptr;
-    if (!enemy) {
-        return;
-    }
 
-    /*int em_cnt = 0, fm_cnt = 0, total_m_strength = 0;
-    foreach(QMonster *m, monsters) {
-        if (m->is_owner(_name)) {
-            ++em_cnt;
-            total_m_strength += m->getStrength();
-        } else {
-            ++fm_cnt;
-            total_m_strength -= m->getStrength();
-        }
-    }*/
+    return;
 
-    QMap<QString, qreal> LeftHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
+    /*QMap<QString, qreal> LeftHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
     QMap<QString, qreal> RightHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
     qreal price;
     foreach(QSpell *css, _possibleSpells) {
@@ -471,6 +501,7 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock
     //    setAntispell(enemy);
     //}
     //checkSpells();
+    */
 }
 
 void QWarlock::checkSpells() {

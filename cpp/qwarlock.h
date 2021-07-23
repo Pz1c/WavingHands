@@ -4,12 +4,15 @@
 #include <QDebug>
 #include <QString>
 #include <QStringList>
+#include <QDateTime>
 #include "qspell.h"
 //#include "qwarlockspellchecker.h"
 #include "qwarlockutils.h"
 #include "qmonster.h"
 
 #define WARLOCK_GESTURE_LENGTH 8
+
+class QWarlockSpellChecker;
 
 class QWarlock
 {
@@ -25,9 +28,7 @@ public:
     QString separatedString();
     bool player() const;
 
-    void setPossibleSpells(const QList<QSpell *> &possibleSpells, QWarlock *enemy, const QList<QMonster *> &monsters);
-    void checkSpells();
-
+    void setPossibleSpells(const QList<QSpell *> &possibleSpells);
     QString possibleLeftGestures() const;
     QString possibleRightGestures() const;
     void setPossibleGestures(QString left, QString right);
@@ -46,9 +47,13 @@ public:
 
     void setIsMaladroit(bool newIsMaladroit);
 
+    void processDecision(const QWarlockSpellChecker &SpellChecker, QWarlock *enemy, const QList<QMonster *> monsters);
+
 protected:
     void parseStatus();
     void checkPossibleGesture();
+
+    void checkSpells();
     QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const;
     QSpell *getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const;
 
