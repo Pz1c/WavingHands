@@ -20,6 +20,16 @@ public:
     int getStrength() const;
     int getHp() const;
 
+    const QString &newTarget() const;
+    void setNewTarget(const QString &newNewTarget);
+
+    int attackStrength() const;
+    void setAttackStrength(int newAttackStrength);
+
+    bool fireElemental() const;
+
+    bool iceElemental() const;
+
 protected:
     QString getColor(const QString &user_login);
 
@@ -28,8 +38,12 @@ private:
     QString _status;
     QString _owner;
     QString _target;
+    QString _newTarget;
     int _strength;
     int _hp;
+    int _attackStrength;
+    bool _fireElemental;
+    bool _iceElemental;
 };
 
 #endif // QMONSTER_H

@@ -7,6 +7,10 @@ QMonster::QMonster(const QString &Name, const QString &Status, const QString &Ow
     _status = Status;
     _owner = Owner;
     _target = Target;
+    _newTarget = Target;
+    _attackStrength = 0;
+    _fireElemental = false;
+    _iceElemental = false;
     if (_name.indexOf("Goblin") != -1) {
         _strength = 1;
     } else if (_name.indexOf("Orc") != -1) {
@@ -15,6 +19,12 @@ QMonster::QMonster(const QString &Name, const QString &Status, const QString &Ow
         _strength = 3;
     } else if (_name.indexOf("Giant") != -1) {
         _strength = 4;
+    } else if (_name.indexOf("Fire") != -1) {
+        _fireElemental = true;
+        _strength = 3;
+    } else if (_name.indexOf("Ice") != -1) {
+        _iceElemental = true;
+        _strength = 3;
     } else {
         _strength = 0;
     }
@@ -57,6 +67,36 @@ QString QMonster::getColor(const QString &user_login) {
         color = "#D2D2D2";
     }
     return color;
+}
+
+bool QMonster::iceElemental() const
+{
+    return _iceElemental;
+}
+
+bool QMonster::fireElemental() const
+{
+    return _fireElemental;
+}
+
+int QMonster::attackStrength() const
+{
+    return _attackStrength;
+}
+
+void QMonster::setAttackStrength(int newAttackStrength)
+{
+    _attackStrength = newAttackStrength;
+}
+
+const QString &QMonster::newTarget() const
+{
+    return _newTarget;
+}
+
+void QMonster::setNewTarget(const QString &newNewTarget)
+{
+    _newTarget = newNewTarget;
 }
 
 int QMonster::getHp() const

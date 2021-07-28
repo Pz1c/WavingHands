@@ -47,18 +47,17 @@ public:
 
     void setIsMaladroit(bool newIsMaladroit);
 
-    void processDecision(const QWarlockSpellChecker &SpellChecker, QWarlock *enemy, const QList<QMonster *> monsters);
+    void processDecision(QWarlock *enemy, QList<QMonster *> &monsters);
 
 protected:
+    void processMonster(QList<QMonster *> &monsters, QWarlock *enemy);
     void parseStatus();
     void checkPossibleGesture();
-
+    void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
     QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const;
     QSpell *getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const;
 
-private:
-    void setPriceForMap(QMap<QString, qreal> &L, QMap<QString, qreal> &R, const QString &NG, qreal price);
 
 private:
     int _scared;
@@ -98,7 +97,8 @@ private:
     bool _isParaFDF;
     bool _isParaFC;
     bool _isMaladroit;
-
+    bool _charmMonsterLeft;
+    bool _charmMonsterRight;
 };
 
 #endif // QWARLOCK_H

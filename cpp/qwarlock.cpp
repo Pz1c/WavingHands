@@ -11,6 +11,8 @@ QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString R
     _rightGestures = RightGestures;
     _player = Player;
     _AI = isAI;
+    _charmMonsterLeft = false;
+    _charmMonsterRight = false;
     parseStatus();
     checkPossibleGesture();
 }
@@ -269,20 +271,11 @@ bool QWarlock::player() const
     return _player;
 }
 
-/*
+
 void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters) {
     int _coldproof_in = 999, _fireproof_in = 999;
-    int under_attack = 0, paralysis_left = 3, paralysis_right = 3, monster_cnt_friend = 0, monster_cnt_enemy = 0;
-    foreach(QMonster *m,  monsters) {
-        if (m->is_owner(_name)) {
-            ++monster_cnt_friend;
-        } else {
-            ++monster_cnt_enemy;
-        }
-        if (m->is_under_attack(_name)) {
-            under_attack += m->getStrength();
-        }
-    }
+    int paralysis_left = 3, paralysis_right = 3;
+    bool clap_off_lighting_used = (_leftGestures.replace(" ", "").indexOf("WDDC") != -1) || (_rightGestures.replace(" ", "").indexOf("WDDC") != -1);
 
     foreach(QSpell *spell, _possibleSpells) {
         //spell->setPriority(0);
@@ -317,14 +310,6 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
                 spell->changePriority(-4);
             }
             break;
-        case SPELL_CURE_HEAVY_WOUNDS:
-            if (_disease >= spell->turnToCast()) {
-                spell->changePriority(5);
-            }
-            break;
-        case SPELL_TYPE_SHIELD:
-            spell->changePriority(under_attack);
-            break;
         case SPELL_TYPE_CONFUSION:
             if (((paralysis_left == 1) || (paralysis_right == 1)) && (spell->spellID() != SPELL_PARALYSIS) && (spell->spellID() != SPELL_PARALYSIS_FDF) && (spell->spellID() != SPELL_PARALYSIS_FDFD)) {
                 spell->changePriority(-2);
@@ -351,11 +336,25 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
                 spell->changePriority(-5);
             }
             break;
+        case SPELL_CHARM_MONSTER:
+            if (spell->turnToCast() == 1) {
+                if (spell->hand() == WARLOCK_HAND_LEFT) {
+                    _charmMonsterLeft = true;
+                } else {
+                    _charmMonsterRight = true;
+                }
+            }
+            break;
+        case SPELL_CLAP_OF_LIGHTNING:
+            if (clap_off_lighting_used) {
+                spell->setPriority(-100);
+            }
+            break;
         }
     }
 
     //std::sort(_possibleSpells.begin(), _possibleSpells.end());
-}*/
+}
 
 QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const {
     if (CastTo > CastFrom) return nullptr;
@@ -397,52 +396,28 @@ QSpell *QWarlock::getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const
     return getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_MAGIC_SHIELD, QList<int>(), QList<int>());
 }
 
-void QWarlock::setPriceForMap(QMap<QString, qreal> &L, QMap<QString, qreal> &R, const QString &NG, qreal price) {
-    QString U = NG.toUpper();
-    if (U.compare(NG) != 0) {
-        L[U] += price/2;
-        R[U] += price/2;
-    } else {
-        L[U] += price;
+void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
+    QList<QMonster *> _evilMonster;
+    QList<QMonster *> _friendMonster;
+    int tfa = 0, tea = 0, tehp = 0; // total friendly attack, total enemy hp
+    QMonster *elemental = nullptr;
+    foreach(QMonster *m,  monsters) {
+        if (m->iceElemental() || m->fireElemental()) {
+            elemental = m;
+        } else if (m->is_owner(_name)) {
+            _friendMonster.append(m);
+            tfa += m->getStrength();
+        } else {
+            _evilMonster.append(m);
+            tehp += m->getHp();
+            tea += m->getStrength();
+        }
     }
 }
 
-void QWarlock::processDecision(const QWarlockSpellChecker &SpellChecker, QWarlock *enemy, const QList<QMonster *> monsters) {
-    QMap<QString, qreal> LeftHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
-    QMap<QString, qreal> RightHand {{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", 0}, {">", 0}};
-
-    qDebug() << "QWarlock::processDecision" << QDateTime::currentMSecsSinceEpoch() << LeftHand << RightHand;
-    qreal price;
-    foreach(QSpell *css, _possibleSpells) {
-        if (!css || !css->active() || (css->length() == 1)) {
-            continue;
-        }
-        price = static_cast<qreal>(qMax(1, css->damage()))/css->turnToCast();
-        if (css->hand() == WARLOCK_HAND_LEFT) {
-            setPriceForMap(LeftHand, RightHand, css->nextGesture(), price);
-        } else {
-            setPriceForMap(RightHand, LeftHand, css->nextGesture(), price);
-        }
-    }
-    qDebug() << "QWarlock::processDecision" << QDateTime::currentMSecsSinceEpoch() << LeftHand << RightHand;
-
-    foreach(QSpell *ces, enemy->_possibleSpells) {
-        if ((ces->turnToCast() >= ces->length()) || (ces->length() == 1) || !ces->active()) {
-            continue;
-        }
-
-        //if (ces->turnToCast() == 1) {
-            QSpell *as = getAntiSpell(_possibleSpells, ces);
-            if (as) {
-                if (as->hand() == WARLOCK_HAND_LEFT) {
-                    setPriceForMap(LeftHand, RightHand, as->nextGesture(), 3/ces->turnToCast());
-                } else {
-                    setPriceForMap(RightHand, LeftHand, as->nextGesture(), 3/ces->turnToCast());
-                }
-            }
-        //}
-    }
-    qDebug() << "QWarlock::processDecision" << QDateTime::currentMSecsSinceEpoch() << LeftHand << RightHand;
+void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters) {
+    setSpellPriority(enemy, monsters);
+    processMonster(monsters, enemy);
 
 
 
