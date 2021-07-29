@@ -277,26 +277,18 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
     int paralysis_left = 3, paralysis_right = 3;
     bool clap_off_lighting_used = (_leftGestures.replace(" ", "").indexOf("WDDC") != -1) || (_rightGestures.replace(" ", "").indexOf("WDDC") != -1);
 
+    _turnToCast.clear();
+    for(int i = 0; i < SPELL_ID_MAX; ++i) {
+        _turnToCast[i] = nullptr;
+    }
+
     foreach(QSpell *spell, _possibleSpells) {
-        //spell->setPriority(0);
-        switch(spell->spellID()) {
-            case SPELL_RESIST_COLD:
-                _coldproof_in = qMin(_coldproof_in, spell->turnToCast());
-                break;
-            case SPELL_RESIST_HEAT:
-                _fireproof_in = qMin(_fireproof_in, spell->turnToCast());
-                break;
-            case SPELL_PARALYSIS:
-            case SPELL_PARALYSIS_FDF:
-            case SPELL_PARALYSIS_FDFD:
-                if (spell->hand() == WARLOCK_HAND_LEFT) {
-                    paralysis_left = qMin(paralysis_left, spell->turnToCast());
-                } else {
-                    paralysis_right = qMin(paralysis_right, spell->turnToCast());
-                }
-                break;
+        if (!_turnToCast.contains(spell->spellID()) || (_turnToCast[spell->spellID()]->turnToCast() > spell->turnToCast())) {
+            _turnToCast[spell->spellID()] = spell;
         }
     }
+    _coldproof_in = _turnToCast[SPELL_RESIST_COLD] ? _turnToCast[SPELL_RESIST_COLD]->turnToCast() : 5;
+    _fireproof_in = _turnToCast[SPELL_RESIST_HEAT] ? _turnToCast[SPELL_RESIST_HEAT]->turnToCast() : 5;
 
     foreach(QSpell *spell, _possibleSpells) {
         switch(spell->spellType()) {
@@ -310,11 +302,15 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
                 spell->changePriority(-4);
             }
             break;
-        case SPELL_TYPE_CONFUSION:
+        case SPELL_TYPE_SHIELD:
+            if ((_totalEnemyAttack >= 2) && (_totalFriendlyAttack < _totalEnemyHP)) {
+                spell->changePriority(2);
+            }
+        /*case SPELL_TYPE_CONFUSION:
             if (((paralysis_left == 1) || (paralysis_right == 1)) && (spell->spellID() != SPELL_PARALYSIS) && (spell->spellID() != SPELL_PARALYSIS_FDF) && (spell->spellID() != SPELL_PARALYSIS_FDFD)) {
                 spell->changePriority(-2);
             }
-            break;
+            break;*/
         }
 
         switch(spell->spellID()) {
@@ -347,6 +343,16 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
             break;
         case SPELL_CLAP_OF_LIGHTNING:
             if (clap_off_lighting_used) {
+                spell->setPriority(-100);
+            }
+            break;
+        case SPELL_RESIST_COLD:
+            if (_coldproof > 0) {
+                spell->setPriority(-100);
+            }
+            break;
+        case SPELL_RESIST_HEAT:
+            if (_fireproof > 0) {
                 spell->setPriority(-100);
             }
             break;
@@ -392,31 +398,165 @@ QSpell *QWarlock::getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const
         if (res) return res;
     }
 
-
     return getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_MAGIC_SHIELD, QList<int>(), QList<int>());
+}
+
+void QWarlock::analyzeMonster(QList<QMonster *> &monsters) {
+    _elemental = 0;
+    _totalFriendlyAttack = 0;
+    _totalEnemyAttack = 0;
+    _totalEnemyHP = 0;
+    foreach(QMonster *m,  monsters) {
+        m->setAttackStrength(0);
+        if (m->iceElemental()) {
+            _elemental = 1;
+        } else if (m->fireElemental()) {
+            _elemental = 2;
+        } else if (m->is_owner(_name)) {
+            _totalFriendlyAttack += m->getStrength();
+        } else {
+            _totalEnemyAttack += m->getStrength();
+            _totalEnemyHP += m->getHp();
+        }
+    }
 }
 
 void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
     QList<QMonster *> _evilMonster;
     QList<QMonster *> _friendMonster;
-    int tfa = 0, tea = 0, tehp = 0; // total friendly attack, total enemy hp
+    int tfa = 0, tea = 0, insertIdx = 0;//, tehp = 0; // total friendly attack, total enemy hp
+    int elemental_attack = 0;
+    // separate monster
     QMonster *elemental = nullptr;
     foreach(QMonster *m,  monsters) {
+        m->setAttackStrength(0);
         if (m->iceElemental() || m->fireElemental()) {
             elemental = m;
-        } else if (m->is_owner(_name)) {
-            _friendMonster.append(m);
+            elemental_attack = m->getStrength();
+        } else if (m->is_owner(_name) || (_bestSpellL && (_bestSpellL->spellID() == SPELL_CHARM_MONSTER) && (_bestSpellL->turnToCast() == 1) && (_targetL.compare(m->name()) == 0))
+                   || (_bestSpellR && (_bestSpellR->spellID() == SPELL_CHARM_MONSTER) && (_bestSpellR->turnToCast() == 1) && (_targetR.compare(m->name()) == 0))) {
+            insertIdx = 0;
+            foreach(QMonster *mm, _friendMonster) {
+                if (m->getStrength() <= mm->getStrength()) {
+                    break;
+                }
+                ++insertIdx;
+            }
+            _friendMonster.insert(insertIdx, m);
             tfa += m->getStrength();
         } else {
-            _evilMonster.append(m);
-            tehp += m->getHp();
+            insertIdx = 0;
+            foreach(QMonster *mm, _evilMonster) {
+                if (m->getHp() <= mm->getHp()) {
+                    break;
+                }
+                ++insertIdx;
+            }
+            _evilMonster.insert(insertIdx, m);
+            //tehp += m->getHp();
             tea += m->getStrength();
+        }
+    }
+
+    bool all_on_enemy = _evilMonster.empty();
+    QString new_target = enemy->name();
+    // process elemental
+    if (elemental) {
+        if (elemental->iceElemental()) {
+            if (_coldproof > 0) {
+                elemental = nullptr;
+            } else if ((_bestSpellL && (_bestSpellL->spellID() == SPELL_RESIST_COLD)) ||
+                       (_bestSpellR && (_bestSpellR->spellID() == SPELL_RESIST_COLD))) {
+                elemental = nullptr;
+            }
+        } else { // fire
+            if (_fireproof > 0) {
+                elemental = nullptr;
+            } else if ((_bestSpellL && (_bestSpellL->spellID() == SPELL_RESIST_HEAT)) ||
+                       (_bestSpellR && (_bestSpellR->spellID() == SPELL_RESIST_HEAT))) {
+                elemental = nullptr;
+            }
+        }
+
+        if (!elemental) {
+            all_on_enemy = true;
+        } else {
+            //tehp += elemental->getHp();
+            insertIdx = 0;
+            foreach(QMonster *mm, _evilMonster) {
+                if (elemental->getHp() <= mm->getHp() - 3) {
+                    break;
+                }
+                ++insertIdx;
+            }
+            _evilMonster.insert(insertIdx, elemental);
+            elemental = nullptr;
+        }
+    }
+
+    // process monster
+    int actual_hp = 0;
+    foreach(QMonster *fm, _friendMonster) {
+        tfa -= fm->getStrength();
+        fm->setNewTarget(new_target);
+        if (!all_on_enemy) {
+            foreach(QMonster *em, _evilMonster) {
+              actual_hp = em->getHp() - elemental_attack - em->attackStrength();
+              if (actual_hp <= 0) {
+                  continue;
+              }
+              if ((actual_hp < fm->getStrength()) && (tfa >= actual_hp)) {
+                  // hope current monster will be targeted with next monster
+                  continue;
+              } else {
+                  fm->setNewTarget(em->name());
+                  em->setAttackStrength(em->attackStrength() + fm->getStrength());
+              }
+            }
+        }
+    }
+}
+
+void QWarlock::analyzeEnemy(QWarlock *enemy) {
+    enemy->_bestSpellL = nullptr;
+    enemy->_bestSpellR = nullptr;
+    qreal priority = 0;
+    foreach(QSpell *s, enemy->_possibleSpells) {
+        if (s->turnToCast() >= s->length()) {
+            continue;
+        }
+        if ((_fireproof > 0) && (ARR_FIRE_SPELLS.indexOf(s->spellID()) != -1)) {
+            continue;
+        }
+        if ((_coldproof > 0) && (ARR_ICE_SPELLS.indexOf(s->spellID()) != -1)) {
+            continue;
+        }
+        priority = intToReal(s->danger()) * intToReal(s->length() - s->turnToCast())/ intToReal(s->length());
+        s->setRealPriority(priority);
+        if (s->hand() == WARLOCK_HAND_LEFT) {
+            if (!enemy->_bestSpellL || (enemy->_bestSpellL->realPriority() < priority)) {
+                enemy->_bestSpellL = s;
+            }
+        } else {
+            if (!enemy->_bestSpellR || (enemy->_bestSpellR->realPriority() < priority)) {
+                enemy->_bestSpellR = s;
+            }
         }
     }
 }
 
 void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters) {
+    //
+    analyzeMonster(monsters);
+    //
+    analyzeEnemy(enemy);
+    //
     setSpellPriority(enemy, monsters);
+    //
+
+
+
+    //
     processMonster(monsters, enemy);
 
 
@@ -430,6 +570,10 @@ void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells)
     _possibleSpells = possibleSpells;
     _bestSpellL = nullptr;
     _bestSpellR = nullptr;
+    _targetL.clear();
+    _targetR.clear();
+    _gestureL.clear();
+    _gestureR.clear();
 
     return;
 

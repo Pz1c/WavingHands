@@ -78,6 +78,7 @@ private:
     int _defTarget;
     int _damage;
     bool _basic;
+    qreal _realPriority;
 
     static int _orderType;
 };

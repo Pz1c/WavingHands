@@ -19,6 +19,7 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
     _damage = Damage;
     _active = Active;
     _basic = Basic;
+    _realPriority = 0;
 }
 
 int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast) {
@@ -44,6 +45,21 @@ int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, i
     }*/
     qDebug() << "QSpell::calcPriority result" << res;
     return static_cast<int>(res);
+}
+
+int QSpell::danger() const
+{
+    return _danger;
+}
+
+qreal QSpell::realPriority() const
+{
+    return _realPriority;
+}
+
+void QSpell::setRealPriority(qreal newRealPriority)
+{
+    _realPriority = newRealPriority;
 }
 
 int QSpell::damage() const

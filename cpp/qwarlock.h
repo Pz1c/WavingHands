@@ -50,7 +50,9 @@ public:
     void processDecision(QWarlock *enemy, QList<QMonster *> &monsters);
 
 protected:
+    void analyzeMonster(QList<QMonster *> &monsters);
     void processMonster(QList<QMonster *> &monsters, QWarlock *enemy);
+    void analyzeEnemy(QWarlock *enemy);
     void parseStatus();
     void checkPossibleGesture();
     void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
@@ -90,8 +92,10 @@ private:
     bool _AI;
     bool _player;
     QList<QSpell *> _possibleSpells;
-    QString _gestureR;
     QString _gestureL;
+    QString _gestureR;
+    QString _targetL;
+    QString _targetR;
     QSpell *_bestSpellL;
     QSpell *_bestSpellR;
     bool _isParaFDF;
@@ -99,6 +103,11 @@ private:
     bool _isMaladroit;
     bool _charmMonsterLeft;
     bool _charmMonsterRight;
+    QMap<int, QSpell *> _turnToCast;
+    int _elemental;
+    int _totalFriendlyAttack;
+    int _totalEnemyAttack;
+    int _totalEnemyHP;
 };
 
 #endif // QWARLOCK_H

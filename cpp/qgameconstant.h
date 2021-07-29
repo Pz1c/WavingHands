@@ -120,12 +120,14 @@ static QStringList POSSIBLE_GESTURES {"C", "W", "S", "D", "F", "P", ">"};
 static QMap<QString, QString> gestureParaCFMap{{"C","F"},{"S","D"},{"W","P"}};
 static QMap<QString, QString> gestureParaFCMap{{"F","C"},{"S","D"},{"W","P"}};
 static QStringList _lstAI = QStringList({"CONSTRUCT", "EARTHGOLEM", "IRONGOLEM"});
-
+static QList<int> ARR_FIRE_SPELLS = QList<int>({SPELL_FIREBALL, SPELL_FIRE_STORM, SPELL_SUMMON_FIRE_ELEMENTAL});
+static QList<int> ARR_ICE_SPELLS = QList<int>({SPELL_ICE_STORM, SPELL_SUMMON_ICE_ELEMENTAL});
 
 #define intToStr QString::number
 #define boolToInt(val) (val?1:0)
 #define boolToIntS(val) (val?"1":"0")
 #define boolToStr(val) (val?"true":"false")
+#define intToReal(val) static_cast<qreal>(val)
 
 #define DEBUG_MESSAGE_PATTERN "%{time} %{function} %{message}"
 

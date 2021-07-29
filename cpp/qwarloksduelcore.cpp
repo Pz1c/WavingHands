@@ -900,7 +900,7 @@ void QWarloksDuelCore::calcBattleDecision() {
         return;
     }
     //try {
-        _enemy->processDecision(_player, _Monsters);
+        //_enemy->processDecision(_player, _Monsters);
         _player->processDecision(_enemy, _Monsters);
     //} catch(const std::exception& e) {
     //    qDebug() << "QWarloksDuelCore::calcBattleDecision" << e.what();
