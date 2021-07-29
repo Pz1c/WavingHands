@@ -59,6 +59,11 @@ public:
 
     int damage() const;
 
+    qreal realPriority() const;
+    void setRealPriority(qreal newRealPriority);
+
+    int danger() const;
+
 protected:
 
     int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast);
