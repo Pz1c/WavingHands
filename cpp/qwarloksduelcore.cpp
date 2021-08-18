@@ -887,11 +887,14 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         if (Data.indexOf(QString("%1's right hand is paralysed.").arg(w->name())) != -1) {
             w->setParalyzedHand(WARLOCK_HAND_RIGHT);
         }
-        w->setPossibleSpells(SpellChecker->getSpellsList(w, false));
+        if (_WarlockID.contains(w->name())) {
+            w->setId(_WarlockID[w->name()]);
+        }
+        w->setPossibleSpells(SpellChecker->getSpellsList(w));
     }
 
     //_enemy->setPossibleSpells(SpellChecker->getSpellsList(_enemy, false), _player, _Monsters);
-    //_player->setPossibleSpells(SpellChecker->getSpellsList(_player, false), _enemy, _Monsters);
+    //_player->setPossibleSpells(SpellChecker->getSpellsList(_player, false));
 }
 
 // AI that calculate best gestures hidden there
@@ -901,7 +904,7 @@ void QWarloksDuelCore::calcBattleDecision() {
     }
     //try {
         //_enemy->processDecision(_player, _Monsters);
-        _player->processDecision(_enemy, _Monsters);
+        _player->processDecision(_enemy, _Monsters, _paralyzeList, _charmPersonList);
     //} catch(const std::exception& e) {
     //    qDebug() << "QWarloksDuelCore::calcBattleDecision" << e.what();
     //}
@@ -913,6 +916,10 @@ bool QWarloksDuelCore::parseTargetList(QString &Data) {
         emit errorOccurred();
         return false;
     }
+    foreach(QValueName vn, _Targets) {
+        _WarlockID[vn.second] = vn.first;
+    }
+    qDebug() << _Targets << _WarlockID;
     return true;
 }
 

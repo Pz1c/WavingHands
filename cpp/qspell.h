@@ -9,6 +9,7 @@
 
 
 #define logSpellList(sl, point_name) foreach(QSpell *s, sl) { qDebug() << point_name << s->json(); }
+#define logSpellItem(s) (s ? s->json() : "NULL")
 
 class QSpell
 {
@@ -63,6 +64,7 @@ public:
     void setRealPriority(qreal newRealPriority);
 
     int danger() const;
+    bool checkValidSequence(const QSpell &s);
 
 protected:
 

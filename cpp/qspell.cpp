@@ -174,11 +174,22 @@ QString QSpell::nextGesture() const {
     }
 }
 
+bool QSpell::checkValidSequence(const QSpell &s) {
+    QString gesture1 = _gesture.right(turnToCast()), gesture2 = s._gesture.right(s._turnToCast);
+    int Ln = qMin(3, qMin(gesture1.length(), gesture2.length()));
+    for (int i = 0; i > Ln; ++i) {
+        if ((gesture1.at(i) == gesture2.at(i)) && (gesture1.at(i) == 'P')) {
+            return false;
+        }
+    }
+    return true;
+}
+
 QString QSpell::json() const {
     QString ng = nextGesture();
     return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14,\"basic\":%15}").
             arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).
-            arg(ng.toUpper(), boolToIntS(ng.compare(ng.toUpper()) == 0), intToStr(_defTarget), boolToIntS(_active), intToStr(_damage), boolToStr(_basic));
+            arg(ng.toUpper(), boolToIntS(ng.compare(ng.toUpper()) != 0), intToStr(_defTarget), boolToIntS(_active), intToStr(_damage), boolToStr(_basic));
 }
 
 QString QSpell::toString() const {
@@ -191,7 +202,7 @@ bool QSpell::operator < (const QSpell &s) const {
 }
 
 bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
-    qDebug() << "QSpell::sortAsc" << _orderType << s1->json() << s2->json();
+    //qDebug() << "QSpell::sortAsc" << _orderType << s1->json() << s2->json();
 
     if (_orderType == 1) {
         if (s1->_alreadyCasted != s2->_alreadyCasted) {
@@ -200,6 +211,10 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
         //return s1->_spellID < s2->_spellID;
         if (s1->_name.compare(s2->_name) != 0) {
             return s1->_name.compare(s2->_name) > 0;
+        }
+    } else if (_orderType == 2) {
+        if (s1->_realPriority != s2->_realPriority) {
+            return s1->_realPriority < s2->_realPriority;
         }
     }
 

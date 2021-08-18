@@ -133,7 +133,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");
     fillDictionary("hint_1_1", "", "", "Hint: Start by picking the 'S' gesture with both hands");
     fillDictionary("hint_1_2", "", "", "Then in the next 2 turns complete the 'SFW' spell (Summon Goblin) with your left hand...");
-    fillDictionary("hint_1_3", "", "", "...and with your right hand cast the 'SD' spell (Magic Missile) to inflict 1 point of damage")
+    fillDictionary("hint_1_3", "", "", "...and with your right hand cast the 'SD' spell (Magic Missile) to inflict 1 point of damage");
     fillDictionary("hint_1_4", "", "", "Be careful, P/P with both hands means surrender. (marked as lowercase 'p' in your spellbook)");
     fillDictionary("hint_1_5", "", "", "Check your spellbook to learn more spells. Let's start!");
     fillDictionary("old_hint_1_1", "", "", "Hint: Pick the '>' gesture (Stab) to inflict 1 point of damage");

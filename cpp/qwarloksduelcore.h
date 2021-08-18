@@ -274,6 +274,7 @@ private:
     int _loadedBattleType;
     int _loadedBattleTurn;
     QList<QValueName> _Targets;
+    QMap<QString, QString> _WarlockID;
     QList<QMonster *> _Monsters;
     QString _MonstersHtml;
     QList<QWarlock *> _Warlock;

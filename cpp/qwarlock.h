@@ -36,7 +36,7 @@ public:
 
     bool isParaFDF() const;
     void setIsParaFDF(bool isParaFDF);
-    void setParalyzedHand(int Hand);
+    void setParalyzedHand(int Hand, const QString &Gesture = "");
 
     bool isParaFC() const;
     void setIsParaFC(bool newIsParaFC);
@@ -47,18 +47,26 @@ public:
 
     void setIsMaladroit(bool newIsMaladroit);
 
-    void processDecision(QWarlock *enemy, QList<QMonster *> &monsters);
+    void processDecision(QWarlock *enemy, QList<QMonster *> &monsters, const QString &paralyzed, const QString &charmed);
+
+    const QString &id() const;
+    void setId(const QString &newId);
 
 protected:
     void analyzeMonster(QList<QMonster *> &monsters);
     void processMonster(QList<QMonster *> &monsters, QWarlock *enemy);
-    void analyzeEnemy(QWarlock *enemy);
+    void analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QString &charmed);
+    void breakEnemy(QWarlock *enemy);
+    void processMaladroit(QWarlock *enemy);
+    void attackEnemy(QWarlock *enemy);
+    void validateSpellForTurn();
     void parseStatus();
     void checkPossibleGesture();
     void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
     QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const;
     QSpell *getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const;
+    bool checkAntiSpell(const QSpell *as, const QSpell *s) const;
 
 
 private:
@@ -83,6 +91,7 @@ private:
     int _permanency;
     int _blindness;
     int _invisibility;
+    QString _id;
     QString _name;
     QString _status;
     QString _leftGestures;
