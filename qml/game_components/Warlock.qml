@@ -384,7 +384,14 @@ Item {
         var ng;
         iiLeft.visible = lh_visible;
         iiRight.visible = rh_visible;
-        if (!l_warlock.player) {
+        if (l_warlock.player) {
+            if (l_warlock.pgL) {
+                setGesture("L", SG.getIconByGesture(l_warlock.pgL, true));
+            }
+            if (l_warlock.pgR) {
+                setGesture("R", SG.getIconByGesture(l_warlock.pgR, true));
+            }
+        } else {
             if (hands_visible) {
                iiLeft.source = l_control_icon;
                iiRight.source = l_control_icon;

@@ -52,22 +52,25 @@ public:
     const QString &id() const;
     void setId(const QString &newId);
 
+    bool isSummoning() const;
+
 protected:
     void analyzeMonster(QList<QMonster *> &monsters);
     void processMonster(QList<QMonster *> &monsters, QWarlock *enemy);
     void analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QString &charmed);
     void breakEnemy(QWarlock *enemy);
-    void processMaladroit(QWarlock *enemy);
+    void processMaladroit();
     void attackEnemy(QWarlock *enemy);
     void validateSpellForTurn();
     void parseStatus();
     void checkPossibleGesture();
     void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
+    void targetSpell(const QWarlock *enemy, const QList<QMonster *> &monsters);
     QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const;
     QSpell *getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const;
     bool checkAntiSpell(const QSpell *as, const QSpell *s) const;
-
+    QString getTargetForSpell(const QSpell *spell, const QWarlock *enemy, const QList<QMonster *> &monsters);
 
 private:
     int _scared;
@@ -103,10 +106,13 @@ private:
     QList<QSpell *> _possibleSpells;
     QString _gestureL;
     QString _gestureR;
+    QString _spellL;
+    QString _spellR;
     QString _targetL;
     QString _targetR;
     QSpell *_bestSpellL;
     QSpell *_bestSpellR;
+    int _forcedHand;
     bool _isParaFDF;
     bool _isParaFC;
     bool _isMaladroit;
@@ -117,6 +123,7 @@ private:
     int _totalFriendlyAttack;
     int _totalEnemyAttack;
     int _totalEnemyHP;
+    QWarlockSpellChecker *_SpellChecker;
 };
 
 #endif // QWARLOCK_H

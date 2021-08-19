@@ -7,11 +7,17 @@ Qt.include("battle_gui_utils.js");
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
     w.print_g = preparePrintGestures(w.L, w.R, w.smcL, w.smcR);
-    w.id = battle.targetsMap[w.name];
+    if (!w.id) {
+        w.id = battle.targetsMap[w.name];
+    }
     w.paralyzed_hand = battle.paralyzed_hand[w.id];
     if (!w.paralyzed_hand) {
         w.paralyzed_hand = "";
     }
+    if ((w.fh > 0) && !w.paralyzed_hand) {
+        w.paralyzed_hand = w.fh === 1 ? "LH" : "RH";
+    }
+
     w.control_paralyze = battle.paralyze.indexOf(w.id) !== -1;
     w.control_charmed  = battle.charm.indexOf(w.id) !== -1;
     w.statusIcons = prepareStatusIcon(w);
@@ -19,6 +25,12 @@ function prepareWarlock(w) {
     if (w.player) {
         battle.L = w.L;
         battle.R = w.R;
+        battle.player_gesture_L = w.pgL;
+        battle.player_gesture_R = w.pgR;
+        battle.player_spell_L = w.psL;
+        battle.player_spell_R = w.psR;
+        battle.player_target_L = w.ptL;
+        battle.player_target_R = w.ptR;
     }
 
     return w;
@@ -99,7 +111,7 @@ function prepareBattle(raw_battle) {
     // M monsters arr of obj
     // CP - paralyze arr of obj by id
     // CC - paralyze arr of obj by id
-    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:"",D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:battle.chat,D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
     setParaActions(raw_battle.paralyze, raw_battle.charm);
     parseTargets(raw_battle.targets);
     parseParalyzedHands(raw_battle.paralyzed_hand);
@@ -137,6 +149,12 @@ function prepareBattle(raw_battle) {
         prepareWarlock(w);
         battle.warlocks.unshift(w);
     }
+    battle.actions.L.target = battle.player_target_L;
+    battle.actions.L.g = battle.player_gesture_L;
+    battle.actions.L.s = {n:battle.player_spell_L, gp: "", g:battle.player_gesture_L};
+    battle.actions.R.target = battle.player_target_R;
+    battle.actions.R.g = battle.player_gesture_R;
+    battle.actions.R.s = {n:battle.player_spell_R, gp: "", g:battle.player_gesture_R};
     battle.player_name = battle.warlocks[0].name;
     battle.player_changed_mind = battle.warlocks[0].changed_mind;
     battle.enemy_name = battle.warlocks.length > 1 ? battle.warlocks[1].name : "Nobody";
@@ -284,7 +302,7 @@ function prepareOrder() {
     console.log("prepareOrder", "point6", post_request);
     for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
         pc_gv = actions.CC[battle.charm[i]].g;
-        if (!pc_gv || pc_gv === '') {
+        if (!pc_gv || (pc_gv === '')) {
             pc_gv = "-"
         }
         if (pc_gv === ">") {

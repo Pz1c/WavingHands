@@ -176,9 +176,22 @@ QString QSpell::nextGesture() const {
 
 bool QSpell::checkValidSequence(const QSpell &s) {
     QString gesture1 = _gesture.right(turnToCast()), gesture2 = s._gesture.right(s._turnToCast);
+    QString char1, char2, char1U, char2U;
+    bool both_hand;
     int Ln = qMin(3, qMin(gesture1.length(), gesture2.length()));
+    qDebug() << "QSpell::checkValidSequence" << _gesture << s._gesture << gesture1 << gesture2 << Ln;
     for (int i = 0; i > Ln; ++i) {
-        if ((gesture1.at(i) == gesture2.at(i)) && (gesture1.at(i) == 'P')) {
+        char1 = gesture1.at(i);
+        char2 = gesture2.at(i);
+        char1U = char1.toUpper();
+        char2U = char2.toUpper();
+
+        both_hand = (char1U.compare(char1) != 0) || (char2U.compare(char2) != 0);
+        if (both_hand && (char1U.compare(char2U) != 0)) {
+            return false;
+        }
+
+        if ((char1.compare(char2) == 0) && (char1.compare("P") == 0)) {
             return false;
         }
     }

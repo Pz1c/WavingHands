@@ -11,6 +11,7 @@ QMonster::QMonster(const QString &Name, const QString &Status, const QString &Ow
     _attackStrength = 0;
     _fireElemental = false;
     _iceElemental = false;
+    _underControl = -1;
     if (_name.indexOf("Goblin") != -1) {
         _strength = 1;
     } else if (_name.indexOf("Orc") != -1) {
@@ -54,7 +55,10 @@ bool QMonster::is_under_attack(const QString &user_login) {
 }
 
 bool QMonster::is_owner(const QString &user_login) {
-    return _owner.compare(user_login, Qt::CaseInsensitive) == 0;
+    if (_underControl == -1) {
+        _underControl = (_owner.compare(user_login, Qt::CaseInsensitive) == 0) ? 1 : 0;
+    }
+    return _underControl == 1;
 }
 
 QString QMonster::getColor(const QString &user_login) {
@@ -67,6 +71,16 @@ QString QMonster::getColor(const QString &user_login) {
         color = "#D2D2D2";
     }
     return color;
+}
+
+int QMonster::underControl() const
+{
+    return _underControl;
+}
+
+void QMonster::setUnderControl(int newUnderControl)
+{
+    _underControl = newUnderControl;
 }
 
 bool QMonster::iceElemental() const

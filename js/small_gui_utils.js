@@ -9,7 +9,7 @@ function getNextParalyzedGesture(LastGesture, IsFC) {
     return LastGesture;
 }
 
-function getIconByGesture(G) {
+function getIconByGesture(G, with_prefix) {
     //if (G === ' ') {
         //G = '-';
     //}
@@ -19,7 +19,12 @@ function getIconByGesture(G) {
     if (G === '?') {
         G = '=';
     }
-    return G.toLowerCase();
+    var res = '';
+    if (with_prefix) {
+        res += "g_";
+    }
+    res += G.toLowerCase();
+    return res;
 }
 
 function getFullIconPathByGesture(G) {

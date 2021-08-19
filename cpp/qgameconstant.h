@@ -122,6 +122,10 @@ static QMap<QString, QString> gestureParaFCMap{{"F","C"},{"S","D"},{"W","P"}};
 static QStringList _lstAI = QStringList({"CONSTRUCT", "EARTHGOLEM", "IRONGOLEM"});
 static QList<int> ARR_FIRE_SPELLS = QList<int>({SPELL_FIREBALL, SPELL_FIRE_STORM, SPELL_SUMMON_FIRE_ELEMENTAL});
 static QList<int> ARR_ICE_SPELLS = QList<int>({SPELL_ICE_STORM, SPELL_SUMMON_ICE_ELEMENTAL});
+static QList<int> ARR_PARALYZES = QList<int>({SPELL_PARALYSIS_FDF, SPELL_PARALYSIS_FDFD, SPELL_PARALYSIS});
+static QList<int> ARR_COUNTER_SPELL = QList<int>({SPELL_COUNTER_SPELL1, SPELL_COUNTER_SPELL2});
+static QList<int> ARR_SUMMON = QList<int>({SPELL_SUMMON_GIANT, SPELL_SUMMON_GOBLIN, SPELL_SUMMON_OGRE, SPELL_SUMMON_TROLL});
+
 
 #define intToStr QString::number
 #define boolToInt(val) (val?1:0)

@@ -30,6 +30,9 @@ public:
 
     bool iceElemental() const;
 
+    int underControl() const;
+    void setUnderControl(int newUnderControl);
+
 protected:
     QString getColor(const QString &user_login);
 
@@ -44,6 +47,7 @@ private:
     int _attackStrength;
     bool _fireElemental;
     bool _iceElemental;
+    int _underControl;
 };
 
 #endif // QMONSTER_H

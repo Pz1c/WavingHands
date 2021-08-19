@@ -13,8 +13,10 @@ QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString R
     _AI = isAI;
     _charmMonsterLeft = false;
     _charmMonsterRight = false;
+    _forcedHand = 0;
     parseStatus();
     checkPossibleGesture();
+    _SpellChecker = QWarlockSpellChecker::getInstance();
 }
 
 QWarlock::QWarlock(QWarlock *CopyFrom) {
@@ -47,6 +49,8 @@ QWarlock::QWarlock(QWarlock *CopyFrom) {
     _permanency = CopyFrom->_permanency;
     _blindness = CopyFrom->_blindness;
     _invisibility = CopyFrom->_invisibility;
+    _forcedHand = CopyFrom->_forcedHand;
+    _SpellChecker = CopyFrom->_SpellChecker;
 }
 
 QWarlock::~QWarlock() {
@@ -88,6 +92,7 @@ void QWarlock::setIsParaFDF(bool isParaFDF)
 
 void QWarlock::setParalyzedHand(int Hand, const QString &Gesture) {
     qDebug() << "QWarlock::setParalyzedHand" << _name << Hand << Gesture;
+    _forcedHand = Hand;
     QString lastGesture;
     switch(Hand) {
     case WARLOCK_HAND_LEFT:
@@ -265,14 +270,16 @@ QString QWarlock::separatedString() {
                    "\"confused\":%11,\"charmed\":%12,\"paralized\":%13,\"shield\":%14,\"coldproof\":%15,\"fireproof\":%16,\"poison\":%17,\"disease\":%18,"
                    "\"amnesia\":%19,\"maladroit\":%20,\"summon_left\":%21,\"summon_right\":%22,\"active\":%23,\"mshield\":%24,\"delay\":%25,\"time_stop\":%26,"
                    "\"haste\":%27,\"permanency\":%28,\"blindness\":%29,\"invisibility\":%30,\"plg\":\"%31\",\"prg\":\"%32\",\"charm_left\":%33,\"charm_right\":%34,"
-                   "\"lgL\":\"%35\",\"lgR\":\"%36\",\"smcL\":%37,\"smcR\":%38,\"changed_mind\":%39}").
+                   "\"lgL\":\"%35\",\"lgR\":\"%36\",\"smcL\":%37,\"smcR\":%38,\"changed_mind\":%39,"
+                   "\"pgL\":\"%40\",\"pgR\":\"%41\",\"ptL\":\"%42\",\"ptR\":\"%43\",\"psL\":\"%44\",\"psR\":\"%45\",\"id\":\"%46\",\"fh\":%47}").
             arg(_name, _status, _leftGestures, _rightGestures, res, boolToStr(_player), sbsL, sbsR, intToStr(_hp)).
             arg(intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield),
                 intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_disease)).
             arg(intToStr(_amnesia), intToStr(_maladroit), intToStr(summon_left), intToStr(summon_right), _active ? "1" : "0").
             arg(intToStr(_mshield), intToStr(_delay), intToStr(_time_stop), intToStr(_haste), intToStr(_permanency), intToStr(_blindness), intToStr(_invisibility),
                 _possibleLeftGestures, _possibleRightGestures, boolToStr(charmL), boolToStr(charmR)).
-            arg(_leftGestures.trimmed().right(1), _rightGestures.trimmed().right(1), intToStr(spell_max_pass_left), intToStr(spell_max_pass_right), changed_mind);
+            arg(_leftGestures.trimmed().right(1), _rightGestures.trimmed().right(1), intToStr(spell_max_pass_left), intToStr(spell_max_pass_right), changed_mind).
+            arg(_gestureL, _gestureR, _targetL, _targetR, _spellL, _spellR, _id, intToStr(_forcedHand));
 }
 
 bool QWarlock::player() const
@@ -509,8 +516,7 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
         if (m->iceElemental() || m->fireElemental()) {
             elemental = m;
             elemental_attack = m->getStrength();
-        } else if (m->is_owner(_name) || (_bestSpellL && (_bestSpellL->spellID() == SPELL_CHARM_MONSTER) && (_bestSpellL->turnToCast() == 1) && (_targetL.compare(m->name()) == 0))
-                   || (_bestSpellR && (_bestSpellR->spellID() == SPELL_CHARM_MONSTER) && (_bestSpellR->turnToCast() == 1) && (_targetR.compare(m->name()) == 0))) {
+        } else if (m->underControl()) {
             insertIdx = 0;
             foreach(QMonster *mm, _friendMonster) {
                 if (m->getStrength() <= mm->getStrength()) {
@@ -635,7 +641,7 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
         gesture_changed = true;
     }
     if (gesture_changed) {
-        enemy->setPossibleSpells(QWarlockSpellChecker::getInstance()->getSpellsList(enemy));
+        enemy->setPossibleSpells(_SpellChecker->getSpellsList(enemy));
     }
 }
 
@@ -713,7 +719,7 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
     qDebug() << "QWarlock::breakEnemy" << (_bestSpellR ? _bestSpellR->json() : "RIGHT SPELL EMPTY");
 }
 
-void QWarlock::processMaladroit(QWarlock *enemy) {
+void QWarlock::processMaladroit() {
     qDebug() << "QWarlock::processMaladroit" << _gestureL << _gestureR << logSpellItem(_bestSpellL) << logSpellItem(_bestSpellR);
     if (_gestureL.isEmpty() && _gestureR.isEmpty()) {
         QMap<QString, qreal> GW{{"C", 0}, {"W", 0}, {"S", 0}, {"D", 0}, {"F", 0}, {"P", -1000}, {">", 0}};
@@ -758,7 +764,7 @@ void QWarlock::processMaladroit(QWarlock *enemy) {
 void QWarlock::attackEnemy(QWarlock *enemy) {
     qDebug() << "QWarlock::attackEnemy";
     if (_maladroit > 0) {
-        processMaladroit(enemy);
+        processMaladroit();
         return;
     }
 
@@ -808,13 +814,128 @@ void QWarlock::attackEnemy(QWarlock *enemy) {
     if (!_bestSpellR && bR) {
         _bestSpellR = bR;
     }
+
     qDebug() << "QWarlock::attackEnemy" << logSpellItem(_bestSpellL) << logSpellItem(_bestSpellR);
 }
 
 void QWarlock::validateSpellForTurn() {
+    if (_bestSpellL) {
+        _gestureL = _bestSpellL->nextGesture().toUpper();
+    } else {
+        _gestureL = "";
+    }
+    if (_bestSpellR) {
+        _gestureR = _bestSpellR->nextGesture().toUpper();
+    } else {
+        _gestureR = "";
+    }
 
-    qDebug() << "QWarlock::validateSpellForTurn" << (_bestSpellL ? _bestSpellL->json() : "LEFT SPELL EMPTY");
-    qDebug() << "QWarlock::validateSpellForTurn" << (_bestSpellR ? _bestSpellR->json() : "RIGHT SPELL EMPTY");
+    if (_gestureL.isEmpty()) {
+        if (_gestureR.isEmpty()) {
+            _gestureL = "P";
+            _gestureR = "D";
+        } else if ((_gestureR.compare(_bestSpellR->nextGesture()) != 0) || (_gestureR.compare("C") != 0)) {
+            _gestureL = _gestureR;
+        }
+    }
+    if (_gestureR.isEmpty()) {
+        if ((_gestureL.compare(_bestSpellL->nextGesture()) != 0) || (_gestureL.compare("C") != 0)) {
+            _gestureR = _gestureL;
+        }
+    }
+
+    qDebug() << "QWarlock::validateSpellForTurn LEFT" << _gestureL << logSpellItem(_bestSpellL);
+    qDebug() << "QWarlock::validateSpellForTurn RIGHT" << _gestureR << logSpellItem(_bestSpellR);
+}
+
+bool QWarlock::isSummoning() const {
+    if (_bestSpellL && (ARR_SUMMON.indexOf(_bestSpellL->spellID()) != -1)) {
+        return WARLOCK_HAND_LEFT;
+    }
+    if (_bestSpellR && (ARR_SUMMON.indexOf(_bestSpellR->spellID()) != -1)) {
+        return WARLOCK_HAND_RIGHT;
+    }
+    return 0;
+}
+
+QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, const QList<QMonster *> &monsters) {
+    if (spell->spellType() == SPELL_TYPE_CURE) {
+        //return _id;
+    }
+    if ((ARR_COUNTER_SPELL.indexOf(spell->spellID()) != -1) && (enemy->isSummoning() > 0)) {
+        return enemy->_id;
+    }
+    if (spell->spellID() == SPELL_CHARM_MONSTER) {
+        int max = 0;
+        if (enemy->_bestSpellL && (ARR_SUMMON.indexOf(enemy->_bestSpellL->spellID()) != -1)) {
+            max = qMax(max, enemy->_bestSpellL->danger());
+        }
+        if (enemy->_bestSpellR && (ARR_SUMMON.indexOf(enemy->_bestSpellR->spellID()) != -1)) {
+            max = qMax(max, enemy->_bestSpellR->danger());
+        }
+        foreach(QMonster *m, monsters) {
+            if (!m->is_owner(_name) && (max < m->getStrength())) {
+                max = m->getStrength();
+            }
+        }
+        if (max == 0) {
+            return _id;
+        }
+        if (enemy->_bestSpellL && (ARR_SUMMON.indexOf(enemy->_bestSpellL->spellID()) != -1) && (max == enemy->_bestSpellL->danger())) {
+            return "LH:" + enemy->_id;
+        }
+        if (enemy->_bestSpellR && (ARR_SUMMON.indexOf(enemy->_bestSpellR->spellID()) != -1) && (max == enemy->_bestSpellR->danger())) {
+            return "RH:" + enemy->_id;
+        }
+        foreach(QMonster *m, monsters) {
+            if (!m->is_owner(_name) && (max == m->getStrength())) {
+                m->setUnderControl(1);
+                return m->name();
+            }
+        }
+    }
+
+
+    return ""; // default target
+}
+
+void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monsters) {
+    _targetL.clear();
+    _targetR.clear();
+    _spellL.clear();
+    _spellR.clear();
+    QString tgl = _leftGestures.replace(" ", " "), tgr = _rightGestures.replace(" ", " ");
+    tgl.append(_gestureL);
+    tgr.append(_gestureR);
+    QList<QSpell *> sl = _SpellChecker->getStriktSpellsList(tgl, tgr, false);
+    if (sl.size() > 0) {
+        foreach(QSpell *s, sl) {
+            if (_spellL.isEmpty()) {
+                _spellL = s->name();
+                _targetL = getTargetForSpell(s, enemy, monsters);
+            }
+            delete s;
+        }
+        sl.clear();
+    }
+
+    sl = _SpellChecker->getStriktSpellsList(tgr, tgl, false);
+    if (sl.size() > 0) {
+        foreach(QSpell *s, sl) {
+            if (_spellR.isEmpty()) {
+                _spellR = s->name();
+                _targetR = getTargetForSpell(s, enemy, monsters);
+            }
+            delete s;
+        }
+        sl.clear();
+    }
+    if (_targetL.isEmpty()) {
+        _targetL = "Default";
+    }
+    if (_targetR.isEmpty()) {
+        _targetR = "Default";
+    }
 }
 
 void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters, const QString &paralyzed, const QString &charmed) {
@@ -832,8 +953,9 @@ void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters, con
     //
     validateSpellForTurn();
     //
-    processMonster(monsters, enemy);
+    targetSpell(enemy, monsters);
     //
+    processMonster(monsters, enemy);    
 }
 
 void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells)
