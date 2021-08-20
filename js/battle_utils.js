@@ -14,8 +14,14 @@ function prepareWarlock(w) {
     if (!w.paralyzed_hand) {
         w.paralyzed_hand = "";
     }
-    if ((w.fh > 0) && !w.paralyzed_hand) {
+    if (w.fh > 0) {
         w.paralyzed_hand = w.fh === 1 ? "LH" : "RH";
+        if (battle.actions.CP[w.id]) {
+            battle.actions.CP[w.id].h = w.paralyzed_hand;
+        }
+        if (battle.actions.CC[w.id]) {
+            battle.actions.CC[w.id].h = w.paralyzed_hand;
+        }
     }
 
     w.control_paralyze = battle.paralyze.indexOf(w.id) !== -1;
@@ -101,7 +107,7 @@ function parseParalyzedHands(arr) {
 
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
-        monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint};
+        monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg};
     // L left  obj
     // R Right obj
     // C Chat  text
@@ -111,7 +117,7 @@ function prepareBattle(raw_battle) {
     // M monsters arr of obj
     // CP - paralyze arr of obj by id
     // CC - paralyze arr of obj by id
-    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:battle.chat,D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:raw_battle.msg,D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
     setParaActions(raw_battle.paralyze, raw_battle.charm);
     parseTargets(raw_battle.targets);
     parseParalyzedHands(raw_battle.paralyzed_hand);
@@ -240,7 +246,7 @@ function finishPrepareWarlockList() {
 function prepareChat() {
     var with_msg = battle.chat > 0;
     console.log("prepareChat", with_msg, battle.chat);
-    iiChat.text = with_msg ? battle.chat : "";
+    iiChat.text = battle.msg;
 }
 
 function prepareHint() {
@@ -335,7 +341,7 @@ function getOrdersForReview(dictionary) {
     var res = [];
     var actions = battle.actions;
     if (actions.C !== "") {
-        res.push({type:"C",v:"Say: " + actions.C});
+        res.push({type:"C",v:"Say: " + actions.C,c:"snow"});
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
     }
 

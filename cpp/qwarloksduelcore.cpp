@@ -2016,11 +2016,20 @@ QString QWarloksDuelCore::battleInfo() {
         tmp_trg.append(QString("%1;%2#").arg(target.first, target.second));
     }
     QString hint = getBattleHint(_loadedBattleID, _loadedBattleTurn);
+    QString msg = "";
+    if (_isAI) {
+        QString msg_code = QString("BotSay_%1").arg(intToStr(_loadedBattleTurn));
+        msg = GameDictionary->getStringByCode(msg_code);
+        if (msg_code.compare(msg) == 0) {
+            // not found
+            msg.clear();
+        }
+    }
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":%12,\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19}")
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\"}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint);
+            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg);
 }

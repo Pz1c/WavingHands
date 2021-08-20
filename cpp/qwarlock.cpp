@@ -848,7 +848,7 @@ void QWarlock::validateSpellForTurn() {
     qDebug() << "QWarlock::validateSpellForTurn RIGHT" << _gestureR << logSpellItem(_bestSpellR);
 }
 
-bool QWarlock::isSummoning() const {
+int QWarlock::isSummoning() const {
     if (_bestSpellL && (ARR_SUMMON.indexOf(_bestSpellL->spellID()) != -1)) {
         return WARLOCK_HAND_LEFT;
     }
@@ -874,7 +874,7 @@ QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, 
             max = qMax(max, enemy->_bestSpellR->danger());
         }
         foreach(QMonster *m, monsters) {
-            if (!m->is_owner(_name) && (max < m->getStrength())) {
+            if (!m->is_owner(_name) && (max < m->getStrength()) && (m->attackStrength() < m->getHp())) {
                 max = m->getStrength();
             }
         }
@@ -894,6 +894,22 @@ QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, 
             }
         }
     }
+    if (spell->spellType() == SPELL_TYPE_DAMAGE) {
+        int max = 0;
+        foreach(QMonster *m, monsters) {
+            if (!m->underControl() && (m->attackStrength() + spell->damage() >= m->getHp()) && (max < m->getStrength())) {
+                max = m->getStrength();
+            }
+        }
+        if (max > 0) {
+            foreach(QMonster *m, monsters) {
+                if (!m->underControl() && (m->attackStrength() + spell->damage() >= m->getHp()) && (max == m->getStrength())) {
+                    m->setAttackStrength(m->attackStrength() + spell->damage());
+                    return m->name();
+                }
+            }
+        }
+    }
 
 
     return ""; // default target
@@ -910,19 +926,11 @@ void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monst
     QList<QSpell *> sl = _SpellChecker->getStriktSpellsList(tgl, tgr, false);
     if (sl.size() > 0) {
         foreach(QSpell *s, sl) {
-            if (_spellL.isEmpty()) {
+            if (_spellL.isEmpty() && (s->hand() == WARLOCK_HAND_LEFT)) {
                 _spellL = s->name();
                 _targetL = getTargetForSpell(s, enemy, monsters);
             }
-            delete s;
-        }
-        sl.clear();
-    }
-
-    sl = _SpellChecker->getStriktSpellsList(tgr, tgl, false);
-    if (sl.size() > 0) {
-        foreach(QSpell *s, sl) {
-            if (_spellR.isEmpty()) {
+            if (_spellR.isEmpty() && (s->hand() == WARLOCK_HAND_RIGHT)) {
                 _spellR = s->name();
                 _targetR = getTargetForSpell(s, enemy, monsters);
             }
@@ -936,6 +944,7 @@ void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monst
     if (_targetR.isEmpty()) {
         _targetR = "Default";
     }
+    qDebug() << "QWarlock::targetSpell" << _spellL << _targetL << _spellR << _targetR;
 }
 
 void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters, const QString &paralyzed, const QString &charmed) {

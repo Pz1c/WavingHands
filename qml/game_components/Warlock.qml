@@ -421,6 +421,13 @@ Item {
         }
 
         prepareHands();
+
+        if (!l_warlock.player && (l_warlock.fh > 0)) {
+            var lh = l_warlock.fh === 1 ? "L" : "R";
+            var ng = (l_warlock.charmed > 0) ? "-" : SG.getNextParalyzedGesture(l_warlock["lg"+lh], mainWindow.gBattle.is_fc);
+            setGesture(lh, SG.getIconByGesture(ng, true));
+        }
+
         iiBanked.visible = l_warlock.player && (l_warlock.banked_spell !== "");
     }
 }

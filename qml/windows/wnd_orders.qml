@@ -43,7 +43,7 @@ BaseWindow {
                             height: 0.95 * parent.height
                             width: 0.95 * parent.width
                             anchors.bottomMargin: 0.01 * dialogWindow.height
-                            border.color: lvOrderList.model[index].c
+                            border.color: lvOrderList.model[index].c ? lvOrderList.model[index].c : "snow"
                             border.width: 1
 
                             LargeText {

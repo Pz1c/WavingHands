@@ -52,7 +52,7 @@ public:
     const QString &id() const;
     void setId(const QString &newId);
 
-    bool isSummoning() const;
+    int isSummoning() const;
 
 protected:
     void analyzeMonster(QList<QMonster *> &monsters);
