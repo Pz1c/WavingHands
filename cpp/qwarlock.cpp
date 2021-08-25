@@ -600,7 +600,7 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
 }
 
 void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QString &charmed) {
-    qDebug() << "QWarlock::analyzeEnemy";
+    qDebug() << "QWarlock::analyzeEnemy start";
     enemy->_bestSpellL = nullptr;
     enemy->_bestSpellR = nullptr;
 
@@ -615,8 +615,10 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
         if ((_coldproof > 0) && (ARR_ICE_SPELLS.indexOf(s->spellID()) != -1)) {
             continue;
         }
-        priority = intToReal(s->danger()) * intToReal(s->length() - s->turnToCast())/ intToReal(s->length());
+        priority = intToReal(s->danger()) * intToReal(s->alreadyCasted())/ intToReal(s->length());
         s->setRealPriority(priority);
+        qDebug() << "QWarlock::analyzeEnemy" << priority << s->json();
+
         if (s->hand() == WARLOCK_HAND_LEFT) {
             if (!enemy->_bestSpellL || (enemy->_bestSpellL->realPriority() < priority)) {
                 enemy->_bestSpellL = s;
@@ -629,7 +631,7 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
     }
     bool gesture_changed = false;
     int danger_hand = WARLOCK_HAND_LEFT;
-    if (_bestSpellR && (!_bestSpellL || (_bestSpellR->realPriority() > _bestSpellL->realPriority()))) {
+    if (enemy->_bestSpellR && (!enemy->_bestSpellL || (enemy->_bestSpellR->realPriority() > enemy->_bestSpellL->realPriority()))) {
         danger_hand = WARLOCK_HAND_RIGHT;
     }
     if (paralyzed.indexOf(enemy->id()) != -1) {
@@ -643,6 +645,7 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
     if (gesture_changed) {
         enemy->setPossibleSpells(_SpellChecker->getSpellsList(enemy));
     }
+    qDebug() << "QWarlock::analyzeEnemy finish" << danger_hand << logSpellItem(enemy->_bestSpellL) << logSpellItem(enemy->_bestSpellR);
 }
 
 void QWarlock::breakEnemy(QWarlock *enemy) {

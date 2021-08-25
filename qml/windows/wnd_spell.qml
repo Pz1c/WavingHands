@@ -203,7 +203,7 @@ InfoWindow {
               ltShortDesc.text = l_data.st ? l_data.st : "";
               ltError.text = replaceAll(l_data.d, "''", '"');
           } else if (l_data.type && (l_data.type === 8)) {
-            ltTitle.text = "Orders Submited";
+            ltTitle.text = "Orders Submitted";
             ltShortDesc.text = "Your orders are in for this turn";
             ltError.text = l_data.d;
             bbAction.text = "Force Turn";//dict.getStringByCode("MonsterSetTarget");

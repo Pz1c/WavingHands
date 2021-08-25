@@ -139,7 +139,7 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _turnToCast = TurnToCast;
     _alreadyCasted = _gesture.length() - _turnToCast;
     _priority = calcPriority(Spell->_priority, Spell->_danger, TurnToCast, Enemy, _gesture.length());
-    _danger = SPELL_PRIORITY_ZERO;
+    _danger = Spell->_danger;
     _level = Spell->_level;
     _hand = Hand;
     _defTarget = Spell->_defTarget;
