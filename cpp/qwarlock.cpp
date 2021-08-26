@@ -17,6 +17,9 @@ QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString R
     parseStatus();
     checkPossibleGesture();
     _SpellChecker = QWarlockSpellChecker::getInstance();
+    _totalEnemyAttack = 0;
+    _totalEnemyHP = 0;
+    _totalFriendlyAttack = 0;
 }
 
 QWarlock::QWarlock(QWarlock *CopyFrom) {
@@ -287,6 +290,17 @@ bool QWarlock::player() const
     return _player;
 }
 
+int QWarlock::getTurnToCastBySpellID(int spell_id, int def_value) const {
+    if (!_turnToCast.contains(spell_id) || !_turnToCast[spell_id]) {
+        return def_value;
+    }
+    return _turnToCast[spell_id]->turnToCast();
+}
+
+int QWarlock::paralized() const
+{
+    return _paralized;
+}
 
 void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters) {
     qDebug() << "QWarlock::setSpellPriority start";
@@ -305,35 +319,50 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
         if (!_turnToCast.contains(spell->spellID()) || !_turnToCast[spell->spellID()] || (_turnToCast[spell->spellID()]->turnToCast() > spell->turnToCast())) {
             _turnToCast[spell->spellID()] = spell;
         }
+        if (ARR_PARALYZES.indexOf(spell->spellID()) != -1) {
+            if (spell->hand() == WARLOCK_HAND_LEFT) {
+                paralysis_left = qMin(paralysis_left, spell->turnToCast());
+            } else if (spell->hand() == WARLOCK_HAND_RIGHT) {
+                paralysis_right = qMin(paralysis_right, spell->turnToCast());
+            }
+        }
     }
     qDebug() << "QWarlock::setSpellPriority" << "fill _turnToCast";
-    _coldproof_in = _turnToCast[SPELL_RESIST_COLD] ? _turnToCast[SPELL_RESIST_COLD]->turnToCast() : 5;
-    _fireproof_in = _turnToCast[SPELL_RESIST_HEAT] ? _turnToCast[SPELL_RESIST_HEAT]->turnToCast() : 5;
+    _coldproof_in = getTurnToCastBySpellID(SPELL_RESIST_COLD);
+    _fireproof_in = getTurnToCastBySpellID(SPELL_RESIST_HEAT);
     qDebug() << "QWarlock::setSpellPriority" << "_coldproof_in" << _coldproof_in << "_fireproof_in" << _fireproof_in;
 
+    int enemy_counter_spell = qMin(enemy->getTurnToCastBySpellID(SPELL_COUNTER_SPELL1, 3), enemy->getTurnToCastBySpellID(SPELL_COUNTER_SPELL2, 3));
+    int enemy_magic_mirror  = enemy->getTurnToCastBySpellID(SPELL_MAGIC_MIRROR, 2);
     foreach(QSpell *spell, _possibleSpells) {
-        switch(spell->spellType()) {
-        case SPELL_TYPE_MASSIVE:
-        case SPELL_TYPE_ELEMENTAL:
+        if ((spell->spellType() == SPELL_TYPE_MASSIVE) || (spell->spellType() == SPELL_TYPE_ELEMENTAL)) {
             if (((spell->level() == 0) && (_coldproof == 0) && (_coldproof_in - (spell->spellType() == SPELL_TYPE_ELEMENTAL ? 0 : 1) > spell->turnToCast())) ||
                 ((spell->level() == 1) && (_fireproof == 0) && (_fireproof_in - (spell->spellType() == SPELL_TYPE_ELEMENTAL ? 0 : 1) > spell->turnToCast()))) {
-                spell->changePriority(-4);
+                spell->changePriority(-5);
             }
             if (enemy && (((spell->level() == 0) && (enemy->_coldproof > 0)) || ((spell->level() == 1) && (enemy->_fireproof > 0)))) {
-                spell->changePriority(-4);
+                spell->changePriority(-5);
             }
-            break;
-        case SPELL_TYPE_SHIELD:
-            if ((_totalEnemyAttack >= 2) && (_totalFriendlyAttack < _totalEnemyHP)) {
-                spell->changePriority(2);
+        } else if (spell->spellType() == SPELL_TYPE_SHIELD) {
+            if (((_totalEnemyAttack >= 2) && (_totalFriendlyAttack < _totalEnemyHP)) || (_totalEnemyAttack >= qMin(_hp, 3))) {
+                spell->changePriority(3);
             }
-        /*case SPELL_TYPE_CONFUSION:
-            if (((paralysis_left == 1) || (paralysis_right == 1)) && (spell->spellID() != SPELL_PARALYSIS) && (spell->spellID() != SPELL_PARALYSIS_FDF) && (spell->spellID() != SPELL_PARALYSIS_FDFD)) {
-                spell->changePriority(-2);
-            }
-            break;*/
         }
-
+        if (spell->turnToCast() == 1) {
+        if (spell->spellType() == SPELL_TYPE_SUMMON_MONSTER) {
+            if (enemy_counter_spell == 1) {
+                spell->changePriority(-3);
+            }
+            if (enemy->getTurnToCastBySpellID(SPELL_CHARM_MONSTER, 4) == 1) {
+                spell->changePriority(-3);
+            }
+        }
+        if ((spell->spellType() == SPELL_TYPE_MASSIVE) || (spell->spellType() == SPELL_TYPE_DAMAGE) || (spell->spellType() == SPELL_TYPE_POISON) || (spell->spellType() == SPELL_TYPE_CONFUSION)) {
+            if ((spell->turnToCast() == 1) && (qMin(enemy_counter_spell, enemy_magic_mirror) == 1)) {
+                spell->changePriority(-5);
+            }
+        }
+        }
         switch(spell->spellID()) {
         case SPELL_CURE_HEAVY_WOUNDS:
             if ((_disease > 0) && (_disease >= spell->turnToCast())) {
@@ -350,7 +379,7 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
         case SPELL_PARALYSIS_FDF:
         case SPELL_PARALYSIS_FDFD:
             if (((spell->hand() == WARLOCK_HAND_LEFT) && (paralysis_right < spell->turnToCast())) || ((spell->hand() == WARLOCK_HAND_RIGHT) && (paralysis_left < spell->turnToCast()))) {
-                spell->changePriority(-5);
+                spell->setPriority(-100);
             }
             break;
         case SPELL_CHARM_MONSTER:
@@ -422,6 +451,9 @@ QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int 
         if (!byID.empty() && (byID.indexOf(s->spellID()) == -1)) {
             continue;
         }
+        if ((s->priority() < 0) || !s->active()) {
+            continue;
+        }
 
         return s;
     }
@@ -465,21 +497,37 @@ void QWarlock::setId(const QString &newId)
     _id = newId;
 }
 
-QSpell *QWarlock::getAntiSpell(const QList<QSpell *> &sl, const QSpell *s) const {
-    QSpell *res = getSpellByFilter(sl, 1, s->turnToCast() - 1, SPELL_TYPE_CONFUSION, QList<int>(), QList<int>());
+QSpell *QWarlock::getAntiSpell(const QList<QSpell *> &sl, const QSpell *s, const QWarlock *enemy) const {
+    int enemy_counter_spell = qMin(enemy->getTurnToCastBySpellID(SPELL_COUNTER_SPELL1, 3), enemy->getTurnToCastBySpellID(SPELL_COUNTER_SPELL2, 3));
+    int min_turn_to_cast = 1;
+    if (enemy_counter_spell == 1) {
+        min_turn_to_cast = 2;
+    }
+    QList<int> spell_ids_empty;
+    QList<int> spell_ids({SPELL_ANTI_SPELL});
+    QSpell *res = getSpellByFilter(sl, min_turn_to_cast, s->turnToCast() - 1, -1, spell_ids_empty, spell_ids);
     if (res) return res;
 
+    res = getSpellByFilter(sl, min_turn_to_cast, s->turnToCast(), SPELL_TYPE_CONFUSION, spell_ids, spell_ids_empty);
+    if (res) return res;
+
+
     if ((s->spellType() == SPELL_TYPE_CONFUSION) && (s->spellID() != SPELL_ANTI_SPELL)) {
-        res = getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_CONFUSION, QList<int>({SPELL_ANTI_SPELL}), QList<int>());
+        res = getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_CONFUSION, spell_ids, spell_ids_empty);
         if (res) return res;
     }
-
+    spell_ids.clear();
+    spell_ids.append(ARR_COUNTER_SPELL);
+    spell_ids.append(SPELL_CHARM_MONSTER);
     if (s->spellType() == SPELL_TYPE_SUMMON_MONSTER) {
-        res = getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), -1, QList<int>(), QList<int>({SPELL_COUNTER_SPELL1, SPELL_COUNTER_SPELL2, SPELL_CHARM_MONSTER}));
+        res = getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), -1, spell_ids_empty, spell_ids);
         if (res) return res;
     }
-
-    return getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_MAGIC_SHIELD, QList<int>(), QList<int>());
+    spell_ids.clear();
+    if ((s->danger() <= 3) || (s->spellType() == SPELL_TYPE_ELEMENTAL) || (s->spellType() == SPELL_TYPE_MASSIVE)) {
+        spell_ids.append(SPELL_MAGIC_MIRROR);
+    }
+    return getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_MAGIC_SHIELD, spell_ids, spell_ids_empty);
 }
 
 void QWarlock::analyzeMonster(QList<QMonster *> &monsters) {
@@ -610,9 +658,18 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
             continue;
         }
         if ((_fireproof > 0) && (ARR_FIRE_SPELLS.indexOf(s->spellID()) != -1)) {
+            s->setRealPriority(-100);
             continue;
         }
         if ((_coldproof > 0) && (ARR_ICE_SPELLS.indexOf(s->spellID()) != -1)) {
+            s->setRealPriority(-100);
+            continue;
+        }
+        if ((s->spellID() == SPELL_CHARM_MONSTER) && (_totalFriendlyAttack == 0)) {
+            s->setRealPriority(-100);
+            continue;
+        }
+        if (s->length() == 1) {
             continue;
         }
         priority = intToReal(s->danger()) * intToReal(s->alreadyCasted())/ intToReal(s->length());
@@ -629,6 +686,8 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
             }
         }
     }
+
+    // process char or paralyze
     bool gesture_changed = false;
     int danger_hand = WARLOCK_HAND_LEFT;
     if (enemy->_bestSpellR && (!enemy->_bestSpellL || (enemy->_bestSpellR->realPriority() > enemy->_bestSpellL->realPriority()))) {
@@ -644,6 +703,7 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
     }
     if (gesture_changed) {
         enemy->setPossibleSpells(_SpellChecker->getSpellsList(enemy));
+        analyzeEnemy(enemy, "", "");
     }
     qDebug() << "QWarlock::analyzeEnemy finish" << danger_hand << logSpellItem(enemy->_bestSpellL) << logSpellItem(enemy->_bestSpellR);
 }
@@ -662,8 +722,23 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
     std::sort(enemy->_possibleSpells.begin(), enemy->_possibleSpells.end(), customOrder);
     QSpell::setOrderType(0);
 
+    QStringList one_turn_gesture;
     foreach(QSpell *s, enemy->_possibleSpells) {
-        if ((s->alreadyCasted() == 0) || !s->possibleCast()) {
+        if ((s->alreadyCasted() == 0) || !s->possibleCast() || (ARR_COUNTER_SPELL.indexOf(s->spellID()) != -1)) {
+            continue;
+        }
+        if (s->spellType() == SPELL_TYPE_CURE) {
+            if ((s->spellID() == SPELL_CURE_HEAVY_WOUNDS) && (enemy->_disease >= s->turnToCast())) {
+                // try to break
+            } else {
+                continue;
+            }
+        }
+        if (s->turnToCast() == 1) {
+            if (one_turn_gesture.indexOf(s->nextGesture()) == -1) {
+                one_turn_gesture.append(s->nextGesture());
+            }
+        } else if (one_turn_gesture.indexOf(s->nextGesture()) == -1) {
             continue;
         }
         qDebug() << "QWarlock::breakEnemy try to break" << s->json();
@@ -680,7 +755,7 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
             continue;
         }
 
-        as = getAntiSpell(_possibleSpells, s);
+        as = getAntiSpell(_possibleSpells, s, enemy);
         if (!as) {
             qDebug() << "QWarlock::breakEnemy not found anti spell";
             continue;
@@ -716,6 +791,11 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
         } else {
             _bestSpellL = nullptr;
         }
+    }
+    if ((_bestSpellL && (_bestSpellL->spellID() == SPELL_MAGIC_MIRROR) && !_bestSpellR) ||
+        (_bestSpellR && (_bestSpellR->spellID() == SPELL_MAGIC_MIRROR) && !_bestSpellL)) {
+        _gestureL = _bestSpellL ? _bestSpellL->nextGesture() : _bestSpellR->nextGesture();
+        _gestureR = _gestureL;
     }
 
     qDebug() << "QWarlock::breakEnemy" << (_bestSpellL ? _bestSpellL->json() : "LEFT SPELL EMPTY");
@@ -766,6 +846,7 @@ void QWarlock::processMaladroit() {
 
 void QWarlock::attackEnemy(QWarlock *enemy) {
     qDebug() << "QWarlock::attackEnemy";
+    //logSpellList(_possibleSpells, "QWarlock::attackEnemy");
     if (_maladroit > 0) {
         processMaladroit();
         return;
@@ -776,33 +857,45 @@ void QWarlock::attackEnemy(QWarlock *enemy) {
     }
 
     QSpell *bL = _bestSpellL, *bR = _bestSpellR;
+    int pbL = bL ? 3 : 0;// priority bonus left
+    int pbR = bR ? 3 : 0;// priority bonus right
     bool erase_one;
     foreach(QSpell *s, _possibleSpells) {
-        if (!bL && (s->hand() == WARLOCK_HAND_LEFT)) {
+        qDebug() << "QWarlock::attackEnemy process spell" << logSpellItem(s);
+        if (!bL && (s->hand() == WARLOCK_HAND_LEFT) && (_gestureL.isEmpty() || (_gestureL.compare(s->nextGesture()) == 0))) {
             bL = s;
         }
 
-        if (!bR && (s->hand() == WARLOCK_HAND_RIGHT)) {
+        if (!bR && (s->hand() == WARLOCK_HAND_RIGHT) && (_gestureR.isEmpty() || (_gestureR.compare(s->nextGesture()) == 0))) {
             bR = s;
         }
 
         if (bR && bL) {
+            qDebug() << "QWarlock::attackEnemy check erase" << logSpellItem(bL) << logSpellItem(bR);
             erase_one = false;
             if ((bR->spellType() == SPELL_TYPE_CONFUSION) && (bR->spellType() == bL->spellType())) {
                 if (bR->turnToCast() == bL->turnToCast()) {
+                    qDebug() << "QWarlock::attackEnemy erase 1";
                     erase_one = true;
                 }
             } else if ((bR->spellType() == SPELL_TYPE_MAGIC_SHIELD) && (bR->spellType() == bL->spellType()) && (bR->spellID() != SPELL_MAGIC_MIRROR) && (bR->turnToCast() == bL->turnToCast())) {
+                qDebug() << "QWarlock::attackEnemy erase 2";
                 erase_one = true;
             } else if (!bR->checkValidSequence(*bL)) {
+                qDebug() << "QWarlock::attackEnemy erase 3";
                 erase_one = true;
             }
             if (erase_one) {
-                if (bL->priority() > bR->priority()) {
+                if (bL->priority() + pbL > bR->priority() + pbR) {
+                    pbR = 0;
                     bR = nullptr;
+                    _gestureR.clear();
                 } else {
+                    pbL = 0;
                     bL = nullptr;
+                    _gestureL.clear();
                 }
+                qDebug() << "QWarlock::attackEnemy after erase" << logSpellItem(bL) << logSpellItem(bR);
             }
         }
         if (bR && bL) {
@@ -810,11 +903,11 @@ void QWarlock::attackEnemy(QWarlock *enemy) {
         }
     }
 
-    if (!_bestSpellL && bL) {
+    if (bL) {
         _bestSpellL = bL;
     }
 
-    if (!_bestSpellR && bR) {
+    if (bR) {
         _bestSpellR = bR;
     }
 
@@ -852,10 +945,10 @@ void QWarlock::validateSpellForTurn() {
 }
 
 int QWarlock::isSummoning() const {
-    if (_bestSpellL && (ARR_SUMMON.indexOf(_bestSpellL->spellID()) != -1)) {
+    if (_bestSpellL && (ARR_SUMMON.indexOf(_bestSpellL->spellID()) != -1) && (_bestSpellL->turnToCast() == 1)) {
         return WARLOCK_HAND_LEFT;
     }
-    if (_bestSpellR && (ARR_SUMMON.indexOf(_bestSpellR->spellID()) != -1)) {
+    if (_bestSpellR && (ARR_SUMMON.indexOf(_bestSpellR->spellID()) != -1) && (_bestSpellR->turnToCast() == 1)) {
         return WARLOCK_HAND_RIGHT;
     }
     return 0;
@@ -863,10 +956,10 @@ int QWarlock::isSummoning() const {
 
 QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, const QList<QMonster *> &monsters) {
     if (spell->spellType() == SPELL_TYPE_CURE) {
-        //return _id;
+        return "";// default target
     }
     if ((ARR_COUNTER_SPELL.indexOf(spell->spellID()) != -1) && (enemy->isSummoning() > 0)) {
-        return enemy->_id;
+        return enemy->_name;
     }
     if (spell->spellID() == SPELL_CHARM_MONSTER) {
         int max = 0;
@@ -885,10 +978,10 @@ QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, 
             return _id;
         }
         if (enemy->_bestSpellL && (ARR_SUMMON.indexOf(enemy->_bestSpellL->spellID()) != -1) && (max == enemy->_bestSpellL->danger())) {
-            return "LH:" + enemy->_id;
+            return "LH:" + enemy->_name;
         }
         if (enemy->_bestSpellR && (ARR_SUMMON.indexOf(enemy->_bestSpellR->spellID()) != -1) && (max == enemy->_bestSpellR->danger())) {
-            return "RH:" + enemy->_id;
+            return "RH:" + enemy->_name;
         }
         foreach(QMonster *m, monsters) {
             if (!m->is_owner(_name) && (max == m->getStrength())) {
@@ -911,6 +1004,12 @@ QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, 
                     return m->name();
                 }
             }
+        }
+    }
+    if ((spell->spellType() == SPELL_TYPE_CONFUSION) && (spell->spellID() != SPELL_ANTI_SPELL)) {
+        if ((enemy->_bestSpellL && (enemy->_bestSpellL->spellType() == SPELL_TYPE_CONFUSION) && (enemy->_bestSpellL->turnToCast() == 1) && (enemy->_bestSpellL->spellID() != SPELL_ANTI_SPELL) && (ARR_PARALYZES.indexOf(enemy->_bestSpellL->spellID()) == -1)) ||
+            (enemy->_bestSpellR && (enemy->_bestSpellR->spellType() == SPELL_TYPE_CONFUSION) && (enemy->_bestSpellR->turnToCast() == 1) && (enemy->_bestSpellR->spellID() != SPELL_ANTI_SPELL) && (ARR_PARALYZES.indexOf(enemy->_bestSpellR->spellID()) == -1))) {
+            return _name;
         }
     }
 
@@ -957,6 +1056,7 @@ void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters, con
     //
     analyzeEnemy(enemy, paralyzed, charmed);
     //
+    enemy->setSpellPriority(this, monsters);
     setSpellPriority(enemy, monsters);
     //
     breakEnemy(enemy);

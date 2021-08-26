@@ -22,11 +22,11 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(7,"DFWFd","Blindness", SPELL_TYPE_CONFUSION,13,0,15, SPELL_DEF_TARGER_ENEMY, 0, true, false));
     Spells.append(new QSpell(8,"DPP","Amnesia", SPELL_TYPE_CONFUSION,16,1,12, SPELL_DEF_TARGER_ENEMY, 0, true, true));
     Spells.append(new QSpell(9,"DSF","Confusion/Maladroitness", SPELL_TYPE_CONFUSION,16,5,12, SPELL_DEF_TARGER_ENEMY, 0, true, true));
-    Spells.append(new QSpell(SPELL_DISEASE,"DSFFFc","Disease", SPELL_TYPE_POISON,14,1,17, SPELL_DEF_TARGER_ENEMY, 0, true, false));
-    Spells.append(new QSpell(11,"DWFFd","Blindness", SPELL_TYPE_CONFUSION,13,0,15, SPELL_DEF_TARGER_ENEMY, 0, true, false));
+    Spells.append(new QSpell(SPELL_DISEASE,"DSFFFc","Disease", SPELL_TYPE_POISON,14,1,17, SPELL_DEF_TARGER_ENEMY, 5, true, false));
+    Spells.append(new QSpell(11,"DWFFd","Blindness", SPELL_TYPE_CONFUSION,13,0,15, SPELL_DEF_TARGER_ENEMY, 3, true, false));
     Spells.append(new QSpell(12,"DWSSSP","Delay Effect", SPELL_TYPE_SPEC,10,0,10, SPELL_DEF_TARGER_SELF, 0, true, false));
-    Spells.append(new QSpell(13,"DWWFWD","Poison", SPELL_TYPE_POISON,13,1,18, SPELL_DEF_TARGER_ENEMY, 0, true, false));
-    Spells.append(new QSpell(SPELL_PARALYSIS,"FFF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12, SPELL_DEF_TARGER_ENEMY, 0, true, true));
+    Spells.append(new QSpell(13,"DWWFWD","Poison", SPELL_TYPE_POISON,13,1,18, SPELL_DEF_TARGER_ENEMY, 4, true, false));
+    Spells.append(new QSpell(SPELL_PARALYSIS,"FFF","Paralysis", SPELL_TYPE_CONFUSION,15,2, 20, SPELL_DEF_TARGER_ENEMY, 0, true, true));
     Spells.append(new QSpell(15,"WFPSFW","Summon Giant", SPELL_TYPE_SUMMON_MONSTER,13,4,15, SPELL_DEF_TARGER_SELF, 4, true, false));
     Spells.append(new QSpell(16,"FPSFW","Summon Troll", SPELL_TYPE_SUMMON_MONSTER,13,3,14, SPELL_DEF_TARGER_SELF, 3, true, false));
     Spells.append(new QSpell(17,"PSFW","Summon Ogre", SPELL_TYPE_SUMMON_MONSTER,13,2,13, SPELL_DEF_TARGER_SELF, 2, true, true));
@@ -58,8 +58,8 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(43,"p","Surrender", SPELL_TYPE_SPEC,-100,0,0, SPELL_DEF_TARGER_SELF, 0, false, true));
     Spells.append(new QSpell(44,">","Stab", SPELL_TYPE_STAB,-1,0,0, SPELL_DEF_TARGER_ENEMY, 0, true, true));
     Spells.append(new QSpell(SPELL_DISEASE_FDF,"DSFDFc","Disease", SPELL_TYPE_POISON,14,1,17, SPELL_DEF_TARGER_ENEMY, 0, true, false));
-    Spells.append(new QSpell(SPELL_PARALYSIS_FDF,"FDF","Paralysis", SPELL_TYPE_CONFUSION,15,2,12, SPELL_DEF_TARGER_ENEMY, 0, true, false));
-    Spells.append(new QSpell(SPELL_PARALYSIS_FDFD,"FDFD","Paralysis", SPELL_TYPE_CONFUSION,15,2,12, SPELL_DEF_TARGER_ENEMY, 0, true, false));
+    Spells.append(new QSpell(SPELL_PARALYSIS_FDF,"FDF","Paralysis", SPELL_TYPE_CONFUSION,15,2,20, SPELL_DEF_TARGER_ENEMY, 0, true, false));
+    Spells.append(new QSpell(SPELL_PARALYSIS_FDFD,"FDFD","Paralysis", SPELL_TYPE_CONFUSION,15,2,20, SPELL_DEF_TARGER_ENEMY, 0, true, false));
 }
 
 bool QWarlockSpellChecker::checkSpellChar(QChar left, QChar right, QChar spell) {

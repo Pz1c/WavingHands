@@ -25,24 +25,8 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
 int QSpell::calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast) {
     double res = Enemy ? Danger : Priority;
     qDebug() << "QSpell::calcPriority" << _gesture << res << TurnToCast << FullTurnToCast;
-    /*if (Enemy) {
-      res = Danger * (FullTurnToCast - TurnToCast)/FullTurnToCast;
-    } else {
-      res = Priority - TurnToCast + (FullTurnToCast - TurnToCast);
-    }*/
-    if (TurnToCast == FullTurnToCast) {
-        res -= 5;
-    } else if (TurnToCast < 5) {
-        res += 5 - TurnToCast;
-    }
-    //res *= (FullTurnToCast - TurnToCast) / FullTurnToCast + 1;
-    /*if (FullTurnToCast > TurnToCast) {
-        res *= (FullTurnToCast - TurnToCast)/FullTurnToCast;
-    } else if (FullTurnToCast == TurnToCast) {
-        res -= 2;
-    } else if (FullTurnToCast > TurnToCast) {
-        res -= 3;
-    }*/
+    qreal prc = intToReal(FullTurnToCast - TurnToCast)/intToReal(FullTurnToCast);
+    res *= prc;
     qDebug() << "QSpell::calcPriority result" << res;
     return static_cast<int>(res);
 }
@@ -180,21 +164,24 @@ bool QSpell::checkValidSequence(const QSpell &s) {
     bool both_hand;
     int Ln = qMin(3, qMin(gesture1.length(), gesture2.length()));
     qDebug() << "QSpell::checkValidSequence" << _gesture << s._gesture << gesture1 << gesture2 << Ln;
-    for (int i = 0; i > Ln; ++i) {
+    for (int i = 0; i < Ln; ++i) {
         char1 = gesture1.at(i);
         char2 = gesture2.at(i);
         char1U = char1.toUpper();
         char2U = char2.toUpper();
-
         both_hand = (char1U.compare(char1) != 0) || (char2U.compare(char2) != 0);
+        qDebug() << "QSpell::checkValidSequence" << char1 << char1U << char2 << char2U << both_hand;
         if (both_hand && (char1U.compare(char2U) != 0)) {
+            qDebug() << "QSpell::checkValidSequence return false 1";
             return false;
         }
 
         if ((char1.compare(char2) == 0) && (char1.compare("P") == 0)) {
+            qDebug() << "QSpell::checkValidSequence return false 2";
             return false;
         }
     }
+    qDebug() << "QSpell::checkValidSequence return true";
     return true;
 }
 

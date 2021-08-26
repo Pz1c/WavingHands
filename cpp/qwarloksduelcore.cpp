@@ -881,10 +881,10 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         w->setIsParaFDF(_isParaFDF);
         w->setIsParaFC(_isParaFC);
         w->setIsMaladroit(_isMaladroit);
-        if (Data.indexOf(QString("%1's left hand is paralysed.").arg(w->name())) != -1) {
+        if ((w->paralized() > 0) && (Data.indexOf(QString("%1's left hand is paralysed.").arg(w->name())) != -1)) {
             w->setParalyzedHand(WARLOCK_HAND_LEFT);
         }
-        if (Data.indexOf(QString("%1's right hand is paralysed.").arg(w->name())) != -1) {
+        if ((w->paralized() > 0) && (Data.indexOf(QString("%1's right hand is paralysed.").arg(w->name())) != -1)) {
             w->setParalyzedHand(WARLOCK_HAND_RIGHT);
         }
         if (_WarlockID.contains(w->name())) {

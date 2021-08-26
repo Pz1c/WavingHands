@@ -506,7 +506,7 @@ QString QWarlockDictionary::getLang() {
 }
 
 QGameDictionary * QWarlockDictionary::getInstance() {
-    qDebug() << "QWarlockDictionary::getInstance";
+    //qDebug() << "QWarlockDictionary::getInstance";
     if (!self) {
         self = new QWarlockDictionary();
         static_cast<QWarlockDictionary *>(self)->fillGameDictionary();
