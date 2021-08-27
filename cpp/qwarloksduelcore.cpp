@@ -919,7 +919,7 @@ bool QWarloksDuelCore::parseTargetList(QString &Data) {
     foreach(QValueName vn, _Targets) {
         _WarlockID[vn.second] = vn.first;
     }
-    qDebug() << _Targets << _WarlockID;
+    qDebug() << "QWarloksDuelCore::parseTargetList" << _Targets << _WarlockID;
     return true;
 }
 
@@ -957,20 +957,7 @@ bool QWarloksDuelCore::prepareWarlockHtml() {
 }
 
 bool QWarloksDuelCore::parseMonsterCommand(QString &Data) {
-    QStringList ml;
-    foreach(QMonster *m, _Monsters) {
-        if (m->owner().toLower().compare(_login.toLower()) == 0) {
-            ml.append(m->name().toLower());
-        }
-    }
-    QString lg = _leftGestures.replace(" ", "");
-    QString rg = _rightGestures.replace(" ", "");
-    bool is_charm_l = lg.right(3).compare("PSD") == 0;
-    bool is_charm_r = rg.right(3).compare("PSD") == 0;
-//    qDebug() << "QWarloksDuelCore::parseMonsterCommand" << lg << rg << lg.right(3) << rg.right(3) <<
-//                lg.length() << rg.length() << lg.right(3).compare("PSD") << rg.right(3).compare("PSD")
-//             << is_charm_l << is_charm_r;
-    return QWarlockUtils::parseMonsterCommad(Data, _monsterCommandList, _login.toLower(), ml, is_charm_l || is_charm_r);
+    return QWarlockUtils::parseMonsterCommad(Data, _Monsters);
 }
 
 bool QWarloksDuelCore::parseUnits(QString &Data) {
@@ -1005,22 +992,6 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
 
         idx1 = idx2 + search2.length();
     }
-
-    /*QWarlock *enemy = nullptr;
-    bool separate_spellbook = !_isAI;// && _reg_in_app && (_exp_lv < 1);
-    foreach(QWarlock *m, _Warlock) {
-        m->setIsParaFDF(_isParaFDF);
-        m->setIsParaFC(_isParaFC);
-        if (m->player()) {
-            m->setPossibleGestures(_possibleLeftGestures, _possibleRightGestures);
-        } else {
-            enemy = m;
-        }
-        QList<QSpell *> sl = SpellChecker.getSpellsList(m, separate_spellbook && m->player());
-        m->setPossibleSpells(sl, m->player() ? enemy : nullptr, _Monsters);
-    }
-
-    */
 
     return true;
 }
@@ -2027,7 +1998,7 @@ QString QWarloksDuelCore::battleInfo() {
     }
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
-                   "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":%12,\"monsters\":%13,\"warlocks\":%14,"
+                   "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\"}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)

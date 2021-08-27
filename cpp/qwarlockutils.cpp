@@ -208,9 +208,8 @@ void QWarlockUtils::appendSeparatedList(QString &list, const QString &data, cons
     list.append(data);
 }
 
-bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString owner, QStringList &monsters, bool IsCharm) {
-    result.clear();
-    qDebug() << "QWarlockUtils::parseMonsterCommad" << owner << IsCharm << monsters;
+bool QWarlockUtils::parseMonsterCommad(QString &Data, QList<QMonster *> &result) {
+    qDebug() << "QWarlockUtils::parseMonsterCommad" << result.size();
     QString search1 = "<TR><TD COLSPAN=3>Direct ";
     QString search2 = " to attack:";
     QString search3 = "<SELECT NAME=\"";
@@ -222,28 +221,21 @@ bool QWarlockUtils::parseMonsterCommad(QString &Data, QString &result, QString o
         idx1 = Data.indexOf(search3, idx2);
         idx1 += search3.length();
         idx2 = Data.indexOf("\"", idx1);
-        QString monster_id = Data.mid(idx1, idx2 - idx1);
+        QString monster_id = Data.mid(idx1, idx2 - idx1), owner;
         bool just_created = (monster_name.indexOf("LH:") != -1) || (monster_name.indexOf("RH:") != -1);
         if (just_created) {
             // fix
-            monster_name = monster_id.left(3) + monster_name.right(monster_name.length() - monster_name.indexOf(":") - 1);
+            qDebug() << "monster_name before fix" << monster_name;
+            owner = monster_name.right(monster_name.length() - monster_name.indexOf(":") - 1);
+            monster_name = monster_id.left(3) + owner;
+        } else {
+            continue;
         }
-        qDebug() << "monster_name" << monster_name << "monster_id" << monster_id << monsters.count();
-        if (!just_created && monsters.count() > 0) {
-            foreach(QString m, monsters) {
-                if (m.compare(monster_name.toLower()) == 0) {
-                    appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":1,\"just_created\":0,\"charm\":0,\"target\":\"\"}").arg(monster_id, monster_name));
-                    break;
-                }
-            }
-        } else if (just_created && (monster_name.toLower().indexOf(owner) != -1)) {
-            appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":1,\"just_created\":0,\"charm\":0,\"target\":\"\"}").arg(monster_id, monster_name));
-        } else if (IsCharm) {
-            appendSeparatedList(result, QString("{\"id\":\"%1\",\"name\":\"%2\",\"owner\":0,\"just_created\":%3,\"charm\":1,\"target\":\"\"}").arg(monster_id, monster_name, just_created ? "1" : "0"));
-        }
+        qDebug() << "monster_name" << monster_name << "monster_id" << monster_id << result.count();
         idx1 = idx2 + search2.length();
+        result.append(new QMonster(monster_name, "", owner, ""));
     }
-    result.append("]").prepend("[");
+
     return true;
 }
 
@@ -698,4 +690,22 @@ QString QWarlockUtils::parseBattleHistory(QString &history, QString &title, int 
     }
 
     return QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\"}").arg(d, intToStr(battle_id), title, l_title);
+}
+
+int QWarlockUtils::getStrengthByMonsterName(QString val) {
+    if (val.indexOf("Goblin") != -1) {
+        return 1;
+    } else if (val.indexOf("Orc") != -1) {
+        return 2;
+    } else if (val.indexOf("Trol") != -1) {
+        return 3;
+    } else if (val.indexOf("Giant") != -1) {
+        return 4;
+    } else if (val.indexOf("Fire") != -1) {
+        return 3;
+    } else if (val.indexOf("Ice") != -1) {
+        return 3;
+    } else {
+        return 0;
+    }
 }

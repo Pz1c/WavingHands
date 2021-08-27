@@ -59,14 +59,14 @@ function parseTargets(targets_str) {
         battle.targetsMap[title] = obj_id;
         battle.targetsMap[obj_id] = title;
 
-        if ((title.indexOf("LH:") === 0) || (title.indexOf("RH:") === 0)) {
+        /*if ((title.indexOf("LH:") === 0) || (title.indexOf("RH:") === 0)) {
             m_owner = title.substr(3);
             if (!battle.monsters[m_owner]) {
                 battle.monsters[m_owner] = [];
             }
             battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m",action_idx:battle.actions.M.length,under_control:true});
             battle.actions.M.push({id:obj_id,target:"",old_target:"",under_control:true,owner:m_owner,status:""});
-        }
+        }*/
     }
 }
 
@@ -133,7 +133,11 @@ function prepareBattle(raw_battle) {
             battle.elemental.action = "m";
             continue;
         }
-        m.icon = getMonsterIconByName(m.name);
+        if ((m.name.indexOf(":") !== -1) && (m.strength !== 0)) {
+            m.icon = getMonsterIconByName(getMonsterNameByStrength(m.strength));
+        } else {
+            m.icon = getMonsterIconByName(m.name);
+        }
         m.action = "m";
         m.action_idx = battle.actions.M.length;
 

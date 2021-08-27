@@ -420,11 +420,16 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
                 spell->setPriority(3);
             }
             break;
+        case SPELL_STAB:
+        case SPELL_SHIELD:
+        case SPELL_SURRENDER:
+            spell->setPriority(-5);
+            break;
         }
     }
 
     //std::sort(_possibleSpells.begin(), _possibleSpells.end());
-    QSpell::setOrderType(0);
+    QSpell::setOrderType(3);
     qDebug() << "QWarlock::setSpellPriority" << "before sort";
     struct {
             bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
@@ -432,10 +437,10 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
     std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
     QSpell::setOrderType(0);
     qDebug() << "QWarlock::setSpellPriority" << "after sort";
-    logSpellList(_possibleSpells, "QWarlock::setSpellPriority")
+    //logSpellList(_possibleSpells, "QWarlock::setSpellPriority")
 }
 
-QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const {
+QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID, int Hand) const {
     if (CastTo < CastFrom) return nullptr;
 
     foreach(QSpell *s, sl) {
@@ -452,6 +457,9 @@ QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int 
             continue;
         }
         if ((s->priority() < 0) || !s->active()) {
+            continue;
+        }
+        if ((Hand != -1) && (s->hand() != Hand)) {
             continue;
         }
 
@@ -530,7 +538,7 @@ QSpell *QWarlock::getAntiSpell(const QList<QSpell *> &sl, const QSpell *s, const
     return getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_MAGIC_SHIELD, spell_ids, spell_ids_empty);
 }
 
-void QWarlock::analyzeMonster(QList<QMonster *> &monsters) {
+void QWarlock::analyzeMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
     qDebug() << "QWarlock::analyzeMonster";
     _elemental = 0;
     _totalFriendlyAttack = 0;
@@ -538,6 +546,16 @@ void QWarlock::analyzeMonster(QList<QMonster *> &monsters) {
     _totalEnemyHP = 0;
     foreach(QMonster *m,  monsters) {
         m->setAttackStrength(0);
+        if (m->justCreated()) {
+            QSpell *summon = getSpellByFilter(m->is_owner(_name) ? _possibleSpells : enemy->_possibleSpells, 1, 1, SPELL_TYPE_SUMMON_MONSTER, QList<int>({}), QList<int>({}), m->hand());
+            if (summon) {
+                QString moster_name = summon->name().mid(summon->name().indexOf(" ") + 1);
+                m->setStrength(QWarlockUtils::getStrengthByMonsterName(moster_name));
+                m->setHp(m->getStrength());
+                //m->setName(QString("%1H:%2").arg(m->hand() == WARLOCK_HAND_LEFT ? "L" : "R", moster_name));
+                qDebug() << "QWarlock::analyzeMonster" << "JUST CREATED" << m->json(_name);
+            }
+        }
         if (m->iceElemental()) {
             _elemental = -m->getHp();
         } else if (m->fireElemental()) {
@@ -587,6 +605,7 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
             tea += m->getStrength();
         }
     }
+    qDebug() << "QWarlock::processMonster" << _evilMonster.size() << _friendMonster.size() << (elemental ? elemental->json(_name) : "NO ELEMENTAL");
 
     bool all_on_enemy = _evilMonster.empty();
     QString new_target = enemy->name();
@@ -631,7 +650,7 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
         fm->setNewTarget(new_target);
         if (!all_on_enemy) {
             foreach(QMonster *em, _evilMonster) {
-              actual_hp = em->getHp() - elemental_attack - em->attackStrength();
+              actual_hp = em->getHp() - elemental_attack;
               if (actual_hp <= 0) {
                   continue;
               }
@@ -722,26 +741,41 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
     std::sort(enemy->_possibleSpells.begin(), enemy->_possibleSpells.end(), customOrder);
     QSpell::setOrderType(0);
 
-    QStringList one_turn_gesture;
+    QStringList one_turn_gesture_L, one_turn_gesture_R;
     foreach(QSpell *s, enemy->_possibleSpells) {
+        //qDebug() << "QWarlock::breakEnemy try to break" << s->json();
         if ((s->alreadyCasted() == 0) || !s->possibleCast() || (ARR_COUNTER_SPELL.indexOf(s->spellID()) != -1)) {
+            //qDebug() << "QWarlock::breakEnemy skip 1";
             continue;
         }
         if (s->spellType() == SPELL_TYPE_CURE) {
             if ((s->spellID() == SPELL_CURE_HEAVY_WOUNDS) && (enemy->_disease >= s->turnToCast())) {
                 // try to break
             } else {
+                //qDebug() << "QWarlock::breakEnemy skip 2";
                 continue;
             }
         }
-        if (s->turnToCast() == 1) {
-            if (one_turn_gesture.indexOf(s->nextGesture()) == -1) {
-                one_turn_gesture.append(s->nextGesture());
+
+        if (s->length() > 1) {
+            if (s->turnToCast() == 1) {
+                if (s->hand() == WARLOCK_HAND_LEFT) {
+                    if (one_turn_gesture_L.indexOf(s->nextGesture()) == -1) {
+                        one_turn_gesture_L.append(s->nextGesture());
+                    }
+                } else {
+                    if (one_turn_gesture_R.indexOf(s->nextGesture()) == -1) {
+                        one_turn_gesture_R.append(s->nextGesture());
+                    }
+                }
+            } else if (((s->hand() == WARLOCK_HAND_LEFT) && (one_turn_gesture_L.size() > 0) && (one_turn_gesture_L.indexOf(s->nextGesture()) == -1)) ||
+                       ((s->hand() == WARLOCK_HAND_RIGHT) && (one_turn_gesture_R.size() > 0) && (one_turn_gesture_R.indexOf(s->nextGesture()) == -1))) {
+                //qDebug() << "QWarlock::breakEnemy skip 3" << one_turn_gesture_L << one_turn_gesture_R;
+                continue;
             }
-        } else if (one_turn_gesture.indexOf(s->nextGesture()) == -1) {
-            continue;
         }
         qDebug() << "QWarlock::breakEnemy try to break" << s->json();
+
         priority = 1.0 / s->turnToCast();
         if (checkAntiSpell(_bestSpellL, s)) {
             qDebug() << "QWarlock::breakEnemy Left spell looks fine" << _bestSpellL->json();
@@ -1052,9 +1086,9 @@ void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monst
 void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters, const QString &paralyzed, const QString &charmed) {
     qDebug() << "QWarlock::processDecision" << enemy << monsters.size() << paralyzed << charmed;
     //
-    analyzeMonster(monsters);
-    //
     analyzeEnemy(enemy, paralyzed, charmed);
+    //
+    analyzeMonster(monsters, enemy);
     //
     enemy->setSpellPriority(this, monsters);
     setSpellPriority(enemy, monsters);

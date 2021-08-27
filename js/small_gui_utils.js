@@ -30,3 +30,13 @@ function getIconByGesture(G, with_prefix) {
 function getFullIconPathByGesture(G) {
     return "qrc:/res/g_" + getIconByGesture(G) + ".png";
 }
+
+function getMonsterNameByStrength(Strength) {
+    switch(Strength) {
+    case 1: return "Goblin";
+    case 2: return "Ogre";
+    case 3: return "Trol";
+    case 4: return "Giant";
+    default: return "Unknown";
+    }
+}

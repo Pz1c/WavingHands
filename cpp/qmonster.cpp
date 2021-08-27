@@ -11,27 +11,22 @@ QMonster::QMonster(const QString &Name, const QString &Status, const QString &Ow
     _attackStrength = 0;
     _fireElemental = false;
     _iceElemental = false;
-    _underControl = -1;
-    if (_name.indexOf("Goblin") != -1) {
-        _strength = 1;
-    } else if (_name.indexOf("Orc") != -1) {
-        _strength = 2;
-    } else if (_name.indexOf("Trol") != -1) {
-        _strength = 3;
-    } else if (_name.indexOf("Giant") != -1) {
-        _strength = 4;
-    } else if (_name.indexOf("Fire") != -1) {
-        _fireElemental = true;
-        _strength = 3;
-    } else if (_name.indexOf("Ice") != -1) {
-        _iceElemental = true;
-        _strength = 3;
-    } else {
-        _strength = 0;
+    _justCreated = Name.indexOf(":") != -1;
+    if (_justCreated) {
+        _hand = Name.indexOf("LH:") == 0 ? WARLOCK_HAND_LEFT : WARLOCK_HAND_RIGHT;
     }
-    //_hp = _strength;
-    int pos = 0;
-    _hp = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Health", ":", " #;#)", pos));
+    _underControl = -1;
+    _strength = QWarlockUtils::getStrengthByMonsterName(_name);
+    _hp = _strength;
+    if (_strength == 3) {
+        _fireElemental = _name.indexOf("Fire") != -1;
+        _iceElemental = _name.indexOf("Ice") != -1;
+    }
+
+    if (_strength > 0) {
+        int pos = 0;
+        _hp = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Health", ":", " #;#)", pos));
+    }
 }
 
 QString QMonster::name() {
@@ -71,6 +66,31 @@ QString QMonster::getColor(const QString &user_login) {
         color = "#D2D2D2";
     }
     return color;
+}
+
+void QMonster::setHp(int newHp)
+{
+    _hp = newHp;
+}
+
+void QMonster::setStrength(int newStrength)
+{
+    _strength = newStrength;
+}
+
+void QMonster::setName(const QString &newName)
+{
+    _name = newName;
+}
+
+int QMonster::hand() const
+{
+    return _hand;
+}
+
+bool QMonster::justCreated() const
+{
+    return _justCreated;
 }
 
 int QMonster::underControl() const

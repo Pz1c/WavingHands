@@ -68,7 +68,7 @@ public:
 
 protected:
 
-    int calcPriority(int Priority, int Danger, int TurnToCast, bool Enemy, int FullTurnToCast);
+    int calcPriority(bool Enemy);
 
 private:
     bool _active;

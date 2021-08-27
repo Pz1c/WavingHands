@@ -33,6 +33,16 @@ public:
     int underControl() const;
     void setUnderControl(int newUnderControl);
 
+    bool justCreated() const;
+
+    int hand() const;
+
+    void setName(const QString &newName);
+
+    void setStrength(int newStrength);
+
+    void setHp(int newHp);
+
 protected:
     QString getColor(const QString &user_login);
 
@@ -47,6 +57,8 @@ private:
     int _attackStrength;
     bool _fireElemental;
     bool _iceElemental;
+    bool _justCreated;
+    int _hand;
     int _underControl;
 };
 

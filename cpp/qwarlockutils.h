@@ -30,7 +30,7 @@ public:
     static bool parseWarlock(QString &Data, QList<QWarlock *> &result, QString &error, const QString &player);
     static QList<QValueName> getSelectOptionFromData(QString &Data, QString SearchBegin, QString SearchEnd, QString ValueBegin, QString ValueEnd, QString &error);
     static bool parseGestures(QString &Data, QString &left, QString &right, QString &error);
-    static bool parseMonsterCommad(QString &Data, QString &result, QString owner, QStringList &monsters, bool IsCharm);
+    static bool parseMonsterCommad(QString &Data, QList<QMonster *> &result);
     static QString getCharmedPersonList(QString &Data);
     static QString getParalyseList(QString &Data);
     static QString parseChallengesList(QString &Data);
@@ -47,6 +47,7 @@ public:
     static void appendSeparatedList(QString &list, const QString &data, const QString &separator = ",");
     static QString parseBattleHistory(QString &history, QString &title, int &battle_id);
     static QString parseBattleTurn(QString &turn_text, QString &title, bool first_turn, bool last_turn);
+    static int getStrengthByMonsterName(QString val);
 };
 
 #endif // QWARLOCKUTILS_H

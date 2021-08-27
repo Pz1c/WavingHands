@@ -57,7 +57,7 @@ public:
     int paralized() const;
 
 protected:
-    void analyzeMonster(QList<QMonster *> &monsters);
+    void analyzeMonster(QList<QMonster *> &monsters, QWarlock *enemy);
     void processMonster(QList<QMonster *> &monsters, QWarlock *enemy);
     void analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QString &charmed);
     void breakEnemy(QWarlock *enemy);
@@ -69,7 +69,7 @@ protected:
     void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
     void targetSpell(const QWarlock *enemy, const QList<QMonster *> &monsters);
-    QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID) const;
+    QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID, int Hand = -1) const;
     QSpell *getAntiSpell(const QList<QSpell *> &sl, const QSpell *s, const QWarlock *enemy) const;
     bool checkAntiSpell(const QSpell *as, const QSpell *s) const;
     QString getTargetForSpell(const QSpell *spell, const QWarlock *enemy, const QList<QMonster *> &monsters);

@@ -215,18 +215,28 @@ InfoWindow {
             icon.source = "qrc:/res/" + l_data.icon + ".png";
             icon.visible = true;
             icon.text = l_data.hp;
-            var details = "Life: Unknown<br>Power: Unknown<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
-            if (l_data.hp === "R") {
-              ltTitle.text = dict.getStringByCode("RH_summon");
-              ltShortDesc.text = dict.getStringByCode("WH_summon");
-            } else if (l_data.hp === "L") {
+            var details = "Life: " + l_data.hp + "<br>Power: "+l_data.strength;
+            if (l_data.name.indexOf("RH:") === 0) {
+                ltTitle.text = dict.getStringByCode("RH_summon");
+                ltShortDesc.text = dict.getStringByCode("WH_summon");
+                if (l_data.hp === "R") {
+                    details = "Life: Unknown<br>Power: Unknown";
+                } else {
+                    ltTitle.text += " ("+BGU.getMonsterNameByStrength(l_data.strength)+")";
+                }
+            } else if (l_data.name.indexOf("LH:") === 0) {
                 ltTitle.text = dict.getStringByCode("LH_summon");
                 ltShortDesc.text = dict.getStringByCode("WH_summon");
+                if (l_data.hp === "L") {
+                    details = "Life: Unknown<br>Power: Unknown";
+                } else {
+                    ltTitle.text += " ("+BGU.getMonsterNameByStrength(l_data.strength) +")";
+                }
             } else {
               ltTitle.text = l_data.name;
               ltShortDesc.text = dict.getStringByCode("Warlock");
-              details = "Life: " + l_data.hp + "<br>Power: "+l_data.strength+"<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
             }
+            details += "<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
             ltError.text = details;
             bbAction.text = dict.getStringByCode("MonsterSetTarget");
             bbAction.visible = l_data.under_control;
