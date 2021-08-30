@@ -147,7 +147,7 @@ function prepareBattle(raw_battle) {
 
         m.damage = getMonsterDamageByName(m.name);
         battle.monsters[m.owner].push(m);
-        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.target,old_target:m.target,under_control:true,owner:m.owner,name:m.name,
+        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.new_target,old_target:m.target,under_control:true,owner:m.owner,name:m.name,
                                   status:m.status,d:m.damage,hp:m.hp});
     }
 

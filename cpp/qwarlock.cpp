@@ -575,6 +575,8 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
     QList<QMonster *> _friendMonster;
     int tfa = 0, tea = 0, insertIdx = 0;//, tehp = 0; // total friendly attack, total enemy hp
     int elemental_attack = 0;
+    bool summon_left = (_bestSpellL && (_bestSpellL->turnToCast() == 1) && (_bestSpellL->spellType() == SPELL_TYPE_SUMMON_MONSTER));
+    bool summon_right = (_bestSpellR && (_bestSpellR->turnToCast() == 1) && (_bestSpellR->spellType() == SPELL_TYPE_SUMMON_MONSTER));
     // separate monster
     QMonster *elemental = nullptr;
     foreach(QMonster *m,  monsters) {
@@ -591,7 +593,12 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
                 ++insertIdx;
             }
             _friendMonster.insert(insertIdx, m);
-            tfa += m->getStrength();
+            if (((m->hand() == WARLOCK_HAND_LEFT) && !summon_left) ||
+                ((m->hand() == WARLOCK_HAND_RIGHT) && !summon_right)) {
+                // ignore
+            } else {
+                tfa += m->getStrength();
+            }
         } else {
             insertIdx = 0;
             foreach(QMonster *mm, _evilMonster) {
@@ -646,12 +653,21 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
     // process monster
     int actual_hp = 0;
     foreach(QMonster *fm, _friendMonster) {
+        qDebug() << "QWarlock::processMonster FRIEND" << fm->name() << fm->getStrength() << tfa << all_on_enemy;
         tfa -= fm->getStrength();
         fm->setNewTarget(new_target);
+        if (fm->hand() > 0) {
+            if (((fm->hand() == WARLOCK_HAND_LEFT) && !summon_left) ||
+                ((fm->hand() == WARLOCK_HAND_RIGHT) && !summon_right)) {
+                // set def target for just summoned monsters without spell
+                continue;
+            }
+        }
         if (!all_on_enemy) {
             foreach(QMonster *em, _evilMonster) {
               actual_hp = em->getHp() - elemental_attack;
-              if (actual_hp <= 0) {
+              qDebug() << "QWarlock::processMonster ENEMY" << em->name() << em->getHp() << tfa << elemental_attack << actual_hp << em->attackStrength();
+              if ((actual_hp <= 0) || (em->attackStrength() >= actual_hp)) {
                   continue;
               }
               if ((actual_hp < fm->getStrength()) && (tfa >= actual_hp)) {
@@ -660,6 +676,8 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
               } else {
                   fm->setNewTarget(em->name());
                   em->setAttackStrength(em->attackStrength() + fm->getStrength());
+                  qDebug() << "QWarlock::processMonster set new target" << em->name();
+                  break;
               }
             }
         }
