@@ -270,8 +270,6 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
         _challengeList = list;
         qDebug() << list;
         emit challengeListChanged();
-
-        //prepareSpellHtmlList();
     } else if (_isAI) {
         aiLogin();
     }

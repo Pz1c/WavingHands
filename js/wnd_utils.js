@@ -132,7 +132,7 @@ function processEscape() {
             }
             return;
         } */
-    } else {
+    } else if (!mainWindow.gameCore.isAI) {
         mdNoGesture.dialogType = 0;
         mdNoGesture.text = mainWindow.warlockDictionary.getStringByCode("ConfirmExit");
         mdNoGesture.visible = true;

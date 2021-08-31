@@ -167,25 +167,25 @@ bool QSpell::checkValidSequence(const QSpell &s) {
     QString char1, char2, char1U, char2U;
     bool both_hand;
     int Ln = qMin(3, qMin(gesture1.length(), gesture2.length()));
-    qDebug() << "QSpell::checkValidSequence" << _gesture << s._gesture << gesture1 << gesture2 << Ln;
+    //qDebug() << "QSpell::checkValidSequence" << _gesture << s._gesture << gesture1 << gesture2 << Ln;
     for (int i = 0; i < Ln; ++i) {
         char1 = gesture1.at(i);
         char2 = gesture2.at(i);
         char1U = char1.toUpper();
         char2U = char2.toUpper();
         both_hand = (char1U.compare(char1) != 0) || (char2U.compare(char2) != 0);
-        qDebug() << "QSpell::checkValidSequence" << char1 << char1U << char2 << char2U << both_hand;
+        //qDebug() << "QSpell::checkValidSequence" << char1 << char1U << char2 << char2U << both_hand;
         if (both_hand && (char1U.compare(char2U) != 0)) {
-            qDebug() << "QSpell::checkValidSequence return false 1";
+            //qDebug() << "QSpell::checkValidSequence return false 1";
             return false;
         }
 
         if ((char1.compare(char2) == 0) && (char1.compare("P") == 0)) {
-            qDebug() << "QSpell::checkValidSequence return false 2";
+            //qDebug() << "QSpell::checkValidSequence return false 2";
             return false;
         }
     }
-    qDebug() << "QSpell::checkValidSequence return true";
+    //qDebug() << "QSpell::checkValidSequence return true";
     return true;
 }
 

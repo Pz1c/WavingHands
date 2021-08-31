@@ -532,7 +532,7 @@ QSpell *QWarlock::getAntiSpell(const QList<QSpell *> &sl, const QSpell *s, const
         if (res) return res;
     }
     spell_ids.clear();
-    if ((s->danger() <= 3) || (s->spellType() == SPELL_TYPE_ELEMENTAL) || (s->spellType() == SPELL_TYPE_MASSIVE)) {
+    if ((s->danger() <= 3) || (s->spellType() == SPELL_TYPE_ELEMENTAL) || (s->spellType() == SPELL_TYPE_MASSIVE) || _enemyParalyze) {
         spell_ids.append(SPELL_MAGIC_MIRROR);
     }
     return getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_MAGIC_SHIELD, spell_ids, spell_ids_empty);
@@ -751,6 +751,7 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
     _bestSpellR = nullptr;
     qreal priority = 0;
     QSpell *as;
+    _enemyParalyze = false;
 
     QSpell::setOrderType(2);
     struct {
@@ -762,7 +763,7 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
     QStringList one_turn_gesture_L, one_turn_gesture_R;
     foreach(QSpell *s, enemy->_possibleSpells) {
         //qDebug() << "QWarlock::breakEnemy try to break" << s->json();
-        if ((s->alreadyCasted() == 0) || !s->possibleCast() || (ARR_COUNTER_SPELL.indexOf(s->spellID()) != -1)) {
+        if ((s->alreadyCasted() == 0) || !s->possibleCast() || (ARR_IGNORE_SPELL.indexOf(s->spellID()) != -1) || (s->turnToCast() > 6)) {
             //qDebug() << "QWarlock::breakEnemy skip 1";
             continue;
         }
@@ -809,7 +810,12 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
 
         as = getAntiSpell(_possibleSpells, s, enemy);
         if (!as) {
+            _enemyParalyze = _enemyParalyze || ((s->turnToCast() == 1) && (ARR_PARALYZES.indexOf(s->spellID()) != -1));
             qDebug() << "QWarlock::breakEnemy not found anti spell";
+            continue;
+        }
+        if ((as->spellID() == SPELL_MAGIC_MIRROR) && (_bestSpellL || _bestSpellR)) {
+            qDebug() << "QWarlock::breakEnemy MAGIC_MIRROR with not free hands";
             continue;
         }
         if ((as->hand() == WARLOCK_HAND_LEFT) && (!_bestSpellL || (_bestSpellL->turnToCast() > as->turnToCast()))) {
@@ -820,6 +826,9 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
             as->setRealPriority(priority);
             _bestSpellR = as;
             qDebug() << "QWarlock::breakEnemy new best RIGHT spell" << _bestSpellR->json();
+        }
+        if (as->spellID() == SPELL_MAGIC_MIRROR) {
+            break;
         }
     }
 
@@ -1015,26 +1024,27 @@ QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, 
     }
     if (spell->spellID() == SPELL_CHARM_MONSTER) {
         int max = 0;
-        if (enemy->_bestSpellL && (ARR_SUMMON.indexOf(enemy->_bestSpellL->spellID()) != -1)) {
+        // summoned in this turn monsters already in "monsters" list
+        /*if (enemy->_bestSpellL && (ARR_SUMMON.indexOf(enemy->_bestSpellL->spellID()) != -1)) {
             max = qMax(max, enemy->_bestSpellL->danger());
         }
         if (enemy->_bestSpellR && (ARR_SUMMON.indexOf(enemy->_bestSpellR->spellID()) != -1)) {
             max = qMax(max, enemy->_bestSpellR->danger());
-        }
+        }*/
         foreach(QMonster *m, monsters) {
             if (!m->is_owner(_name) && (max < m->getStrength()) && (m->attackStrength() < m->getHp())) {
                 max = m->getStrength();
             }
         }
         if (max == 0) {
-            return _id;
-        }
+            return _name;
+        }/*
         if (enemy->_bestSpellL && (ARR_SUMMON.indexOf(enemy->_bestSpellL->spellID()) != -1) && (max == enemy->_bestSpellL->danger())) {
             return "LH:" + enemy->_name;
         }
         if (enemy->_bestSpellR && (ARR_SUMMON.indexOf(enemy->_bestSpellR->spellID()) != -1) && (max == enemy->_bestSpellR->danger())) {
             return "RH:" + enemy->_name;
-        }
+        }*/
         foreach(QMonster *m, monsters) {
             if (!m->is_owner(_name) && (max == m->getStrength())) {
                 m->setUnderControl(1);
@@ -1059,12 +1069,14 @@ QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, 
         }
     }
     if ((spell->spellType() == SPELL_TYPE_CONFUSION) && (spell->spellID() != SPELL_ANTI_SPELL)) {
-        if ((enemy->_bestSpellL && (enemy->_bestSpellL->spellType() == SPELL_TYPE_CONFUSION) && (enemy->_bestSpellL->turnToCast() == 1) && (enemy->_bestSpellL->spellID() != SPELL_ANTI_SPELL) && (ARR_PARALYZES.indexOf(enemy->_bestSpellL->spellID()) == -1)) ||
-            (enemy->_bestSpellR && (enemy->_bestSpellR->spellType() == SPELL_TYPE_CONFUSION) && (enemy->_bestSpellR->turnToCast() == 1) && (enemy->_bestSpellR->spellID() != SPELL_ANTI_SPELL) && (ARR_PARALYZES.indexOf(enemy->_bestSpellR->spellID()) == -1))) {
+        bool left_confusion = enemy->_bestSpellL && (enemy->_bestSpellL->spellType() == SPELL_TYPE_CONFUSION) && (enemy->_bestSpellL->turnToCast() == 1) && (enemy->_bestSpellL->spellID() != SPELL_ANTI_SPELL);
+        bool left_paralyze = left_confusion && (ARR_PARALYZES.indexOf(enemy->_bestSpellL->spellID()) != -1);
+        bool right_confusion = enemy->_bestSpellR && (enemy->_bestSpellR->spellType() == SPELL_TYPE_CONFUSION) && (enemy->_bestSpellR->turnToCast() == 1) && (enemy->_bestSpellR->spellID() != SPELL_ANTI_SPELL);
+        bool right_paralyze = right_confusion && (ARR_PARALYZES.indexOf(enemy->_bestSpellR->spellID()) == -1);
+        if ((left_confusion || right_confusion) && !left_paralyze && !right_paralyze) {
             return _name;
         }
     }
-
 
     return ""; // default target
 }
@@ -1078,6 +1090,12 @@ void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monst
     tgl.append(_gestureL);
     tgr.append(_gestureR);
     QList<QSpell *> sl = _SpellChecker->getStriktSpellsList(tgl, tgr, false);
+    QSpell::setOrderType(0);
+    struct {
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+    } customOrder;
+    std::sort(sl.begin(), sl.end(), customOrder);
+
     if (sl.size() > 0) {
         foreach(QSpell *s, sl) {
             if (_spellL.isEmpty() && (s->hand() == WARLOCK_HAND_LEFT)) {
@@ -1091,6 +1109,12 @@ void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monst
             delete s;
         }
         sl.clear();
+    }
+    if (_spellL.isEmpty()) {
+        _spellL = "Default";
+    }
+    if (_spellR.isEmpty()) {
+        _spellR = "Default";
     }
     if (_targetL.isEmpty()) {
         _targetL = "Default";

@@ -126,6 +126,7 @@ private:
     int _totalFriendlyAttack;
     int _totalEnemyAttack;
     int _totalEnemyHP;
+    bool _enemyParalyze;
     QWarlockSpellChecker *_SpellChecker;
 };
 
