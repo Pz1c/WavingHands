@@ -250,7 +250,7 @@ function finishPrepareWarlockList() {
 function prepareChat() {
     var with_msg = battle.chat > 0;
     console.log("prepareChat", with_msg, battle.chat);
-    iiChat.text = battle.msg;
+    iiChat.text = battle.chat;
 }
 
 function prepareHint() {

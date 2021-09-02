@@ -35,7 +35,7 @@ function loadChallengeList() {
         return;
     }
     var cli, bot_cnt = 0;
-    for(var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
+    for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
         cli = G_CHALLENGE_LIST[i];
         if (cli.for_bot) {
             console.log("loadChallengeList", "accept", JSON.stringify(cli));

@@ -116,6 +116,7 @@
 #define SPELL_DEF_TARGER_ENEMY_MONSTER 3
 #define SPELL_DEF_TARGER_SELF_MONSTER 4
 
+#define SECONDS_AT_20210901 1630454400
 static QStringList POSSIBLE_GESTURES {"C", "W", "S", "D", "F", "P", ">"};
 static QMap<QString, QString> gestureParaCFMap{{"C","F"},{"S","D"},{"W","P"}};
 static QMap<QString, QString> gestureParaFCMap{{"F","C"},{"S","D"},{"W","P"}};

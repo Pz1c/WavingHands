@@ -266,6 +266,7 @@ private:
     QMap<int, QString> _battleDesc;
     QMap<int, int> _battleHint;
     QMap<int, int> _battleState; // -2 deleted, -1 not started, 0 wait, 1 ready, 2 finished
+    QMap<int, int> _battleWait;
     QStringList _msg;
     QList<QValueName> _accounts;
 
