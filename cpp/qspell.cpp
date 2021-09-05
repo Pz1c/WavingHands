@@ -212,10 +212,12 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
         if (s1->_alreadyCasted != s2->_alreadyCasted) {
             return s1->_alreadyCasted < s2->_alreadyCasted;
         }
-        //return s1->_spellID < s2->_spellID;
-        if (s1->_name.compare(s2->_name) != 0) {
-            return s1->_name.compare(s2->_name) > 0;
-        }
+        /*if (s1->_spellID != s2->_spellID) {
+            return s1->_spellID < s2->_spellID;
+        }*/
+        //if (s1->_gesture.compare(s2->_gesture) != 0) {
+        //    return s1->_gesture.compare(s2->_gesture) > 0;
+        //}
     } else if (_orderType == 2) {
         if (s1->_realPriority != s2->_realPriority) {
             return s1->_realPriority < s2->_realPriority;
@@ -245,7 +247,39 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
     //return s1->_hand < s2->_hand;
 }
 
-bool QSpell::sortDesc(const QSpell *s1, const QSpell *s2) {
+bool QSpell::sortDesc1(const QSpell *s1, const QSpell *s2) {
+    return !sortAsc(s1, s2);
+}
+
+bool QSpell::sortDesc2(const QSpell *s1, const QSpell *s2) {
+    return !sortAsc(s1, s2);
+}
+
+bool QSpell::sortDesc3(const QSpell *s1, const QSpell *s2) {
+    return !sortAsc(s1, s2);
+}
+
+bool QSpell::sortDesc4(const QSpell *s1, const QSpell *s2) {
+    return !sortAsc(s1, s2);
+}
+
+bool QSpell::sortDesc5(const QSpell *s1, const QSpell *s2) {
+    return !sortAsc(s1, s2);
+}
+
+bool QSpell::sortDesc6(const QSpell *s1, const QSpell *s2) {
+    return !sortAsc(s1, s2);
+}
+
+bool QSpell::sortDesc7(const QSpell *s1, const QSpell *s2) {
+    return !sortAsc(s1, s2);
+}
+
+bool QSpell::sortDesc8(const QSpell *s1, const QSpell *s2) {
+    return !sortAsc(s1, s2);
+}
+
+bool QSpell::sortDesc9(const QSpell *s1, const QSpell *s2) {
     return !sortAsc(s1, s2);
 }
 

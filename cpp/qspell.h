@@ -39,8 +39,16 @@ public:
 
     QString toString() const;
 
-    static bool sortAsc(const QSpell *s1, const QSpell *s2) ;
-    static bool sortDesc(const QSpell *s1, const QSpell *s2);
+    static bool sortAsc(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc1(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc2(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc3(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc4(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc5(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc6(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc7(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc8(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc9(const QSpell *s1, const QSpell *s2);
     static void setOrderType(int OrderType);
     int level() const;
 
@@ -89,5 +97,9 @@ private:
 
     static int _orderType;
 };
+
+struct {
+        bool operator()(const QSpell *s1, const QSpell *s2) const { return !QSpell::sortAsc(s1, s2); }
+} customSpellOrder;
 
 #endif // QSPELL_H

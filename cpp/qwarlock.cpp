@@ -429,10 +429,10 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
     }
 
     //std::sort(_possibleSpells.begin(), _possibleSpells.end());
-    QSpell::setOrderType(3);
+    QSpell::setOrderType(2);
     qDebug() << "QWarlock::setSpellPriority" << "before sort";
     struct {
-            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc4(s1, s2); }
     } customOrder;
     std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
     QSpell::setOrderType(0);
@@ -755,7 +755,7 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
 
     QSpell::setOrderType(2);
     struct {
-            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc5(s1, s2); }
     } customOrder;
     std::sort(enemy->_possibleSpells.begin(), enemy->_possibleSpells.end(), customOrder);
     QSpell::setOrderType(0);
@@ -1092,7 +1092,7 @@ void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monst
     QList<QSpell *> sl = _SpellChecker->getStriktSpellsList(tgl, tgr, false);
     QSpell::setOrderType(0);
     struct {
-            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc6(s1, s2); }
     } customOrder;
     std::sort(sl.begin(), sl.end(), customOrder);
 

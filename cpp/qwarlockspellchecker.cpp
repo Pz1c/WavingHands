@@ -223,7 +223,7 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool Sepa
         QSpell::setOrderType(1);
     }
     struct {
-            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc1(s1, s2); }
     } customOrder;
     std::sort(sl.begin(), sl.end(), customOrder);
     //std::sort(sl.begin(), sl.end());
@@ -238,7 +238,7 @@ QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool Enem
     qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right;
     QList<QSpell *> sl = getStriktSpellsList(Left.replace(" ", ""), Right.replace(" ", ""), Enemy);
     struct {
-            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc2(s1, s2); }
     } customOrder;
     std::sort(sl.begin(), sl.end(), customOrder);
     //std::sort(sl.begin(), sl.end());
@@ -270,7 +270,7 @@ QString QWarlockSpellChecker::getSpellBook(bool IsFDF, bool Sort, bool EnableSur
 
     if (Sort) {
         struct {
-                bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+                bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc3(s1, s2); }
         } customOrder;
         std::sort(Spells.begin(), Spells.end(), customOrder);
     }
