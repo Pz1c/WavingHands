@@ -20,6 +20,10 @@ Rectangle {
     property alias textVisible: btnText.visible
     property alias iconHeight: iIcon.height
     property alias iconWidth: iIcon.width
+    property alias textHeight: btnText.height
+    property alias textWidth: btnText.width
+    property alias textAnchors: btnText.anchors
+    property alias iconAnchors: iIcon.anchors
     //property alias paddingLeft: anchors.leftMargin
     //property alias paddingRignt: anchors.rightMargin
 

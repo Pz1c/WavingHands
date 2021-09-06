@@ -71,8 +71,11 @@ InfoWindow {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
+
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                 ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+                contentWidth: -1
 
                 Text {
                     id: ltError

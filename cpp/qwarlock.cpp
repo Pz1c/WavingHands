@@ -224,7 +224,7 @@ QString QWarlock::separatedString() {
     QSpell::setOrderType(1);
     qDebug() << "QWarlock::separatedString" << "before sort";
     struct {
-            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc7(s1, s2); }
     } customOrder;
     std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
     QSpell::setOrderType(0);
@@ -437,13 +437,12 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
     }
 
     //std::sort(_possibleSpells.begin(), _possibleSpells.end());
-    QSpell::setOrderType(2);
     qDebug() << "QWarlock::setSpellPriority" << "before sort";
     struct {
             bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc4(s1, s2); }
     } customOrder;
+    // try sort by priority
     std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
-    QSpell::setOrderType(0);
     qDebug() << "QWarlock::setSpellPriority" << "after sort";
     //logSpellList(_possibleSpells, "QWarlock::setSpellPriority")
 }
