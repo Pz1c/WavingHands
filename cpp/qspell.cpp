@@ -207,7 +207,6 @@ bool QSpell::operator < (const QSpell &s) const {
 
 bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
     //qDebug() << "QSpell::sortAsc" << _orderType << s1->json() << s2->json();
-
     if (_orderType == 1) {
         if (s1->_alreadyCasted != s2->_alreadyCasted) {
             return s1->_alreadyCasted < s2->_alreadyCasted;
@@ -217,6 +216,9 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
             return s1->_gesture.compare(s2->_gesture) > 0;
         }
     } else if (_orderType == 2) {
+        if (s1->_alreadyCasted != s2->_alreadyCasted) {
+            return s1->_alreadyCasted < s2->_alreadyCasted;
+        }
         if (s1->_realPriority != s2->_realPriority) {
             return s1->_realPriority < s2->_realPriority;
         }

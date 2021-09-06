@@ -298,8 +298,11 @@ bool QWarlock::player() const
     return _player;
 }
 
-int QWarlock::getTurnToCastBySpellID(int spell_id, int def_value) const {
+int QWarlock::getTurnToCastBySpellID(int spell_id, int def_value, int hand) const {
     if (!_turnToCast.contains(spell_id) || !_turnToCast[spell_id]) {
+        return def_value;
+    }
+    if ((hand != -1) && (_turnToCast[spell_id]->hand() != hand)) {
         return def_value;
     }
     return _turnToCast[spell_id]->turnToCast();
@@ -310,30 +313,33 @@ int QWarlock::paralized() const
     return _paralized;
 }
 
-void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters) {
+void QWarlock::fillTurnToCast() {
+    _turnToCast.clear();
+    for(int i = 0; i < SPELL_ID_MAX; ++i) {
+        _turnToCast[i] = nullptr;
+    }
+    qDebug() << "QWarlock::fillTurnToCast";
+
+    foreach(QSpell *spell, _possibleSpells) {
+        if (!_turnToCast.contains(spell->spellID()) || !_turnToCast[spell->spellID()] || (_turnToCast[spell->spellID()]->turnToCast() > spell->turnToCast())) {
+            _turnToCast[spell->spellID()] = spell;
+        }
+    }
+}
+
+void QWarlock::setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monsters) {
     qDebug() << "QWarlock::setSpellPriority start";
     int _coldproof_in = 999, _fireproof_in = 999;
     int paralysis_left = 3, paralysis_right = 3;
     bool clap_off_lighting_used = (_leftGestures.replace(" ", "").indexOf("WDDC") != -1) || (_rightGestures.replace(" ", "").indexOf("WDDC") != -1);
     qDebug() << "QWarlock::setSpellPriority" << "clap_off_lighting_used" << clap_off_lighting_used;
 
-    _turnToCast.clear();
-    for(int i = 0; i < SPELL_ID_MAX; ++i) {
-        _turnToCast[i] = nullptr;
-    }
-    qDebug() << "QWarlock::setSpellPriority" << "init _turnToCast";
+    enemy->fillTurnToCast();
+    this->fillTurnToCast();
 
-    foreach(QSpell *spell, _possibleSpells) {
-        if (!_turnToCast.contains(spell->spellID()) || !_turnToCast[spell->spellID()] || (_turnToCast[spell->spellID()]->turnToCast() > spell->turnToCast())) {
-            _turnToCast[spell->spellID()] = spell;
-        }
-        if (ARR_PARALYZES.indexOf(spell->spellID()) != -1) {
-            if (spell->hand() == WARLOCK_HAND_LEFT) {
-                paralysis_left = qMin(paralysis_left, spell->turnToCast());
-            } else if (spell->hand() == WARLOCK_HAND_RIGHT) {
-                paralysis_right = qMin(paralysis_right, spell->turnToCast());
-            }
-        }
+    foreach(int sid, ARR_PARALYZES) {
+        paralysis_left = qMin(paralysis_left, getTurnToCastBySpellID(sid, 5, WARLOCK_HAND_LEFT));
+        paralysis_right = qMin(paralysis_right, getTurnToCastBySpellID(sid, 5, WARLOCK_HAND_RIGHT));
     }
     qDebug() << "QWarlock::setSpellPriority" << "fill _turnToCast";
     _coldproof_in = getTurnToCastBySpellID(SPELL_RESIST_COLD);
@@ -342,6 +348,7 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
 
     int enemy_counter_spell = qMin(enemy->getTurnToCastBySpellID(SPELL_COUNTER_SPELL1, 3), enemy->getTurnToCastBySpellID(SPELL_COUNTER_SPELL2, 3));
     int enemy_magic_mirror  = enemy->getTurnToCastBySpellID(SPELL_MAGIC_MIRROR, 2);
+
     foreach(QSpell *spell, _possibleSpells) {
         if ((spell->spellType() == SPELL_TYPE_MASSIVE) || (spell->spellType() == SPELL_TYPE_ELEMENTAL)) {
             if (((spell->level() == 0) && (_coldproof == 0) && (_coldproof_in - (spell->spellType() == SPELL_TYPE_ELEMENTAL ? 0 : 1) > spell->turnToCast())) ||
@@ -439,10 +446,10 @@ void QWarlock::setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &
     //std::sort(_possibleSpells.begin(), _possibleSpells.end());
     qDebug() << "QWarlock::setSpellPriority" << "before sort";
     struct {
-            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc4(s1, s2); }
-    } customOrder;
+        bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc4(s1, s2); }
+    } customOrder2;
     // try sort by priority
-    std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
+    std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder2);
     qDebug() << "QWarlock::setSpellPriority" << "after sort";
     //logSpellList(_possibleSpells, "QWarlock::setSpellPriority")
 }
@@ -1139,7 +1146,7 @@ void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters, con
     //
     analyzeMonster(monsters, enemy);
     //
-    enemy->setSpellPriority(this, monsters);
+    //enemy->setSpellPriority(this, monsters);
     setSpellPriority(enemy, monsters);
     //
     breakEnemy(enemy);

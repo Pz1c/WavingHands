@@ -66,14 +66,15 @@ protected:
     void validateSpellForTurn();
     void parseStatus();
     void checkPossibleGesture();
-    void setSpellPriority(const QWarlock *enemy, const QList<QMonster *> &monsters);
+    void fillTurnToCast();
+    void setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
     void targetSpell(const QWarlock *enemy, const QList<QMonster *> &monsters);
     QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID, int Hand = -1) const;
     QSpell *getAntiSpell(const QList<QSpell *> &sl, const QSpell *s, const QWarlock *enemy) const;
     bool checkAntiSpell(const QSpell *as, const QSpell *s) const;
     QString getTargetForSpell(const QSpell *spell, const QWarlock *enemy, const QList<QMonster *> &monsters);
-    int getTurnToCastBySpellID(int spell_id, int def_value = 5) const;
+    int getTurnToCastBySpellID(int spell_id, int def_value = 5, int hand = -1) const;
 
 private:
     int _scared;
