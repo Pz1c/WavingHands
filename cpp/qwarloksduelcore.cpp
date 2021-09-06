@@ -180,15 +180,15 @@ QString QWarloksDuelCore::accountToString() {
 }
 
 void QWarloksDuelCore::accountsFromString(QString acc) {
-    qDebug() << "QWarloksDuelCore::accountsFromString" << acc;
+    //qDebug() << "QWarloksDuelCore::accountsFromString" << acc;
     _accounts.clear();
     QStringList sl1 = acc.split("&&"), sl2;
     foreach(QString s, sl1) {
         sl2 = s.split("&");
-        qDebug() << "QWarloksDuelCore::accountsFromString" << sl2;
+        //qDebug() << "QWarloksDuelCore::accountsFromString" << sl2;
         if (sl2.size() == 2) {
             _accounts.append(QValueName(sl2.at(0), sl2.at(1)));
-            qDebug() << "QWarloksDuelCore::accountsFromString" << sl2.at(0) << sl2.at(1);
+            //qDebug() << "QWarloksDuelCore::accountsFromString" << sl2.at(0) << sl2.at(1);
         }
     }
     if (_accounts.size() > 1) {
@@ -2004,7 +2004,8 @@ QString QWarloksDuelCore::battleInfo() {
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\"}")
-            .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay))
-            .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures)
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg);
+            .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
+            .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
+            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg); // 12 - 20
+
 }

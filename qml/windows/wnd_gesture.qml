@@ -236,7 +236,7 @@ BaseWindow {
                                     anchors.rightMargin: 12 * mainWindow.ratioObject
                                     height: 50 * mainWindow.ratioObject
                                     width: 0.55 * parent.width
-                                    color: lvCast.model[index].basic ? "snow" : "darkgrey"
+                                    color: "snow"//lvCast.model[index].basic ? "snow" : "darkgrey"
                                     fontSizeMode: Text.VerticalFit
                                     horizontalAlignment: Text.AlignRight
                                     text: lvCast.model[index].n
@@ -325,7 +325,7 @@ BaseWindow {
                                     anchors.rightMargin: 12 * mainWindow.ratioObject
                                     height: 50 * mainWindow.ratioObject
                                     width: 0.55 * parent.width
-                                    color: lvCastNext.model[index].basic ? "snow" : "darkgrey"
+                                    color: "snow"//lvCastNext.model[index].basic ? "snow" : "darkgrey"
                                     fontSizeMode: Text.VerticalFit
                                     horizontalAlignment: Text.AlignRight
                                     text: lvCastNext.model[index].n

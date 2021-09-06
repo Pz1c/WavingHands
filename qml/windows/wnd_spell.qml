@@ -76,7 +76,7 @@ InfoWindow {
 
                 Text {
                     id: ltError
-                    width: svMain.width
+                    width: iItem.width * 0.99
                     wrapMode: Text.WordWrap
                     textFormat: Text.RichText
                     font.pixelSize: 28 * mainWindow.ratioFont

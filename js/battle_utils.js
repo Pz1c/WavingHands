@@ -37,6 +37,8 @@ function prepareWarlock(w) {
         battle.player_spell_R = w.psR;
         battle.player_target_L = w.ptL;
         battle.player_target_R = w.ptR;
+        battle.ngL = battle.player_gesture_L;
+        battle.ngR = battle.player_gesture_R;
     }
 
     return w;
@@ -299,9 +301,9 @@ function prepareOrder() {
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
         m_obj = actions.M[i];
         console.log("mt_label", JSON.stringify(m_obj));
-        if (m_obj.target === m_obj.old_target) {
+        /*if (m_obj.target === m_obj.old_target) {
             continue;
-        }
+        }*/
 
         post_request += m_obj.id + "$" + battle.targetsMap[m_obj.target].replace(" ", "+") + "#";
     }

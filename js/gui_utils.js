@@ -28,14 +28,23 @@ function loadBattleList(filter) {
 }
 
 function loadChallengeList() {
-    var str = core.challengeList;
-    console.log("loadChallengeList", core.isAI, str);
-    G_CHALLENGE_LIST = JSON.parse(str);
+    var str = core.challengeList, i, Ln;
+    //console.log("loadChallengeList", core.isAI, str);
+    var arr = JSON.parse(str);
+    G_CHALLENGE_LIST = [];
+    for(i = 0, Ln = arr.length; i < Ln; ++i) {
+        if (!arr[i].active || (arr[i].total_count !== 2)) {
+            continue;
+        }
+        G_CHALLENGE_LIST.push(arr[i]);
+    }
+    //console.log("loadChallengeList", JSON.stringify(G_CHALLENGE_LIST));
+
     if (!core.isAI) {
         return;
     }
     var cli, bot_cnt = 0;
-    for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
+    for (i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
         cli = G_CHALLENGE_LIST[i];
         if (cli.for_bot) {
             console.log("loadChallengeList", "accept", JSON.stringify(cli));
@@ -124,14 +133,14 @@ function startGameWithPlayer() {
             best_idx = i;
         }
     }
-    if (best_idx === -1) {
+    //if (best_idx === -1) {
         core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
-    } else {
+    /*} else {
         V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;
         mdNoGesture.text = getJoinDialogText(G_CHALLENGE_LIST[best_idx]);
         mdNoGesture.dialogType = 2;
         mdNoGesture.visible = true;
-    }
+    }*/
 }
 
 function joinBattleDialogResult(accept) {

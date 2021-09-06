@@ -54,7 +54,7 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
 
 
 QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos, bool NoChangePos) {
-    qDebug() << "QWarlockUtils::getStringFromData" << (Data.length() > 60 ? Data.left(60) : Data) << Search << ValueBegin << ValueEnd << Pos << NoChangePos;
+    //qDebug() << "QWarlockUtils::getStringFromData" << (Data.length() > 60 ? Data.left(60) : Data) << Search << ValueBegin << ValueEnd << Pos << NoChangePos;
     int old_pos = Pos, idx1, idx2 = 0, idx3 = -1;
     if (Pos == -1) {
         Pos = 0;
@@ -95,10 +95,10 @@ QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString 
     }
     if (idx3 != -1) {
         QString res = Data.mid(idx2, idx3 - idx2);
-        qDebug() << "QWarlockUtils::getStringFromData" << idx1 << idx2 << idx3 << res;
+        //qDebug() << "QWarlockUtils::getStringFromData" << idx1 << idx2 << idx3 << res;
         return res;
     } else {
-        qDebug() << "QWarlockUtils::getStringFromData not found" << idx1 << idx2 << idx3;
+        //qDebug() << "QWarlockUtils::getStringFromData not found" << idx1 << idx2 << idx3;
         return "";
     }
 }
@@ -108,7 +108,7 @@ int QWarlockUtils::getIntFromPlayerData(QString &Data, QString Search, QString V
     bool ok;
     int int_res = res.toInt(&ok, 10);
     int final_res = ok ? int_res : 0;
-    qDebug() << "QWarlockUtils::getIntFromPlayerData" << res << int_res << ok << final_res;
+    //qDebug() << "QWarlockUtils::getIntFromPlayerData" << res << int_res << ok << final_res;
     return final_res;
 }
 
@@ -349,7 +349,7 @@ QString QWarlockUtils::parseChallengePart3(QString &Data) {
 }
 
 QString QWarlockUtils::parseChallenge(QString &Data) {
-    qDebug() << "parseChallenge" << Data;
+    //qDebug() << "parseChallenge" << Data;
     QString res;
     bool is_active = Data.indexOf(">Accept</A>") != -1;
     QString search1 = "<TD";
@@ -409,12 +409,12 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
     }
     bool for_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("NO BOT") == -1);
     bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
-    qDebug() << "for_bot" << level << total_count << description << for_bot;
+    //qDebug() << "for_bot" << level << total_count << description << for_bot;
     res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8,\"level_color\":\"%9\""
                   ",\"friendly\":%10,\"with_bot\":%11,\"need\":%12,\"active\":%13,\"total_count\":%14}")
             .arg(logins, intToStr(fast), level, intToStr(parafc), intToStr(maladroit), description, battle_id, boolToStr(for_bot), level_color)
             .arg(intToStr(friendly), boolToStr(with_bot), intToStr(need_more), boolToStr(is_active), intToStr(total_count));
-    qDebug() << res;
+    //qDebug() << res;
     return res;
 }
 
@@ -695,7 +695,7 @@ QString QWarlockUtils::parseBattleHistory(QString &history, QString &title, int 
 int QWarlockUtils::getStrengthByMonsterName(QString val) {
     if (val.indexOf("Goblin") != -1) {
         return 1;
-    } else if (val.indexOf("Orc") != -1) {
+    } else if (val.indexOf("Ogre") != -1) {
         return 2;
     } else if (val.indexOf("Trol") != -1) {
         return 3;

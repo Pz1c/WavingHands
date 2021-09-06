@@ -221,6 +221,14 @@ QString QWarlock::separatedString() {
     bool charmL = false;
     bool charmR = false;
     int summon_left = SPELL_ID_MAX, summon_right = SPELL_ID_MAX, spell_max_pass_left = 0, spell_max_pass_right = 0;
+    QSpell::setOrderType(1);
+    qDebug() << "QWarlock::separatedString" << "before sort";
+    struct {
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
+    } customOrder;
+    std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
+    QSpell::setOrderType(0);
+
     QString res;
     foreach(QSpell *s, _possibleSpells) {
         if (!res.isEmpty()) {

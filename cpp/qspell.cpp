@@ -212,12 +212,10 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
         if (s1->_alreadyCasted != s2->_alreadyCasted) {
             return s1->_alreadyCasted < s2->_alreadyCasted;
         }
-        /*if (s1->_spellID != s2->_spellID) {
-            return s1->_spellID < s2->_spellID;
-        }*/
-        //if (s1->_gesture.compare(s2->_gesture) != 0) {
-        //    return s1->_gesture.compare(s2->_gesture) > 0;
-        //}
+        //return s1->_spellID < s2->_spellID;
+        if (s1->_gesture.compare(s2->_gesture) != 0) {
+            return s1->_gesture.compare(s2->_gesture) > 0;
+        }
     } else if (_orderType == 2) {
         if (s1->_realPriority != s2->_realPriority) {
             return s1->_realPriority < s2->_realPriority;
