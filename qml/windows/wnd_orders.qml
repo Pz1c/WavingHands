@@ -59,7 +59,7 @@ BaseWindow {
                 anchors.top:  parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: (60 + lvOrderList.model.length * 102) * mainWindow.ratioObject
+                height: (2 + 60 + lvOrderList.model.length * 102) * mainWindow.ratioObject
 
                 visible: true
 
@@ -76,10 +76,19 @@ BaseWindow {
                     text: "Review your orders:"
                 }
 
+                Rectangle {
+                    id: rLine
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: ltSpellbook.bottom
+                    height: 2 * mainWindow.ratioObject
+                    color: "#FEE206"
+                }
+
                 ListView {
                     id: lvOrderList
                     model: []
-                    anchors.top: ltSpellbook.bottom
+                    anchors.top: rLine.bottom
                     anchors.left: parent.left
                     anchors.right: parent.right
                     height: lvOrderList.model.length * 102 * mainWindow.ratioObject
@@ -89,23 +98,13 @@ BaseWindow {
                     delegate: Item {
                             id: idRoot
                             width: lvOrderList.width
-                            height: 0.10 * dialogWindow.height
+                            height: 102 * mainWindow.ratioObject
 
-                            Rectangle {
-                                id: rdSpellItem
-                                color: "transparent"
-                                radius: 30
-                                anchors.centerIn: parent
-                                height: 0.95 * parent.height
-                                width: 0.95 * parent.width
-                                anchors.bottomMargin: 0.01 * dialogWindow.height
-                                border.color: lvOrderList.model[index].c ? lvOrderList.model[index].c : "snow"
-                                border.width: 1
 
                                 LargeText {
                                     id: rdbiGesture
-                                    anchors.centerIn: rdSpellItem
-                                    color: "snow"
+                                    anchors.centerIn: idRoot
+                                    color: "#FEE206"
                                     horizontalAlignment: Text.AlignLeft
                                     text: lvOrderList.model[index].v
                                     width: 0.9 * parent.width
@@ -134,7 +133,15 @@ BaseWindow {
                                         }
                                     }
                                 }
-                            }
+
+                                Rectangle {
+                                    id: rItemLine
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.bottom: idRoot.bottom
+                                    height: 2 * mainWindow.ratioObject
+                                    color: "#FEE206"
+                                }
                         }
                 }
             }
