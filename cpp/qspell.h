@@ -8,7 +8,7 @@
 #include "qgameconstant.h"
 
 
-#define logSpellList(sl, point_name) foreach(QSpell *s, sl) { qDebug() << point_name << s->json(); }
+#define logSpellList(sl, point_name) foreach(QSpell *s, sl) { qDebug() << point_name << s->json(true); }
 #define logSpellItem(s) (s ? s->json() : "NULL")
 
 class QSpell
@@ -35,21 +35,14 @@ public:
 
     int spellType() const;
 
-    QString json() const;
+    QString json(bool Short = false) const;
 
     QString toString() const;
 
     static bool sortAsc(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc1(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc2(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc3(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc4(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc5(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc6(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc7(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc8(const QSpell *s1, const QSpell *s2);
-    static bool sortDesc9(const QSpell *s1, const QSpell *s2);
+    static bool sortDesc(const QSpell *s1, const QSpell *s2);
     static void setOrderType(int OrderType);
+    static void sort(QList<QSpell *> &list, int order_type = 0);
     int level() const;
 
     bool possibleCast() const;

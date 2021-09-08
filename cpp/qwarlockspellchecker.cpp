@@ -219,17 +219,18 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool Sepa
     QString possible_right = warlock->possibleRightGestures();
     QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF());
     logSpellList(sl, "QWarlockSpellChecker::getSpellsList before");
-    if (SeparateSpellbook) {
+    /*if (SeparateSpellbook) {
         QSpell::setOrderType(1);
     }
     struct {
-            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc1(s1, s2); }
+            bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc(s1, s2); }
     } customOrder;
     std::sort(sl.begin(), sl.end(), customOrder);
     //std::sort(sl.begin(), sl.end());
     if (SeparateSpellbook) {
         QSpell::setOrderType(0);
-    }
+    }*/
+    QSpell::sort(sl, SeparateSpellbook ? 1 : 0);
     logSpellList(sl, "QWarlockSpellChecker::getSpellsList after");
     return sl;
 }
@@ -237,12 +238,12 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool Sepa
 QString QWarlockSpellChecker::checkSpells(QString Left, QString Right, bool Enemy) {
     qDebug() << "QWarlockSpellChecker::checkSpells" << Left << Right;
     QList<QSpell *> sl = getStriktSpellsList(Left.replace(" ", ""), Right.replace(" ", ""), Enemy);
-    struct {
+    /*struct {
             bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc2(s1, s2); }
     } customOrder;
-    std::sort(sl.begin(), sl.end(), customOrder);
+    std::sort(sl.begin(), sl.end(), customOrder);*/
     //std::sort(sl.begin(), sl.end());
-
+    QSpell::sort(sl);
     QString res;
     foreach(QSpell *s, sl) {
         if (!res.isEmpty()) {
@@ -269,10 +270,11 @@ QString QWarlockSpellChecker::getSpellBook(bool IsFDF, bool Sort, bool EnableSur
     Spells.at(SPELL_SURRENDER)->setActive(EnableSurrender);
 
     if (Sort) {
-        struct {
+        /*struct {
                 bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc3(s1, s2); }
         } customOrder;
-        std::sort(Spells.begin(), Spells.end(), customOrder);
+        std::sort(Spells.begin(), Spells.end(), customOrder);*/
+        QSpell::sort(Spells);
     }
 
     foreach(QSpell *vn, Spells) {

@@ -82,7 +82,7 @@ BaseWindow {
                     anchors.right: parent.right
                     anchors.top: ltSpellbook.bottom
                     height: 2 * mainWindow.ratioObject
-                    color: "#FEE206"
+                    color: "#FEE2D6"
                 }
 
                 ListView {
@@ -100,16 +100,38 @@ BaseWindow {
                             width: lvOrderList.width
                             height: 102 * mainWindow.ratioObject
 
+                                IconInfo {
+                                    id: rdbiIcon
+                                    source: lvOrderList.model[index].icon
+                                    anchors.left: parent.right
+                                    anchors.leftMargin: 24 * mainWindow.ratioObject
+                                    horizontalAlignment: Text.AlignLeft
+                                    height: 78 * mainWindow.ratioObject
+                                    width: 60 * mainWindow.ratioObject
+                                }
 
                                 LargeText {
                                     id: rdbiGesture
                                     anchors.centerIn: idRoot
-                                    color: "#FEE206"
+                                    color: "#FEE2D6"
                                     horizontalAlignment: Text.AlignLeft
                                     text: lvOrderList.model[index].v
                                     width: 0.9 * parent.width
                                     height: 0.8 * parent.height
                                 }
+
+                                LargeText {
+                                    id: rdbiAction
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 24 * mainWindow.ratioObject
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    color: "#FEE2D6"
+                                    text: ">"
+                                    width: 24 * mainWindow.ratioObject
+                                    height: 24 * mainWindow.ratioObject
+                                }
+
+
 
                                 MouseArea {
                                     id: maSpell
@@ -140,7 +162,7 @@ BaseWindow {
                                     anchors.right: parent.right
                                     anchors.bottom: idRoot.bottom
                                     height: 2 * mainWindow.ratioObject
-                                    color: "#FEE206"
+                                    color: "#FEE2D6"
                                 }
                         }
                 }

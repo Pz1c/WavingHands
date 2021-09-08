@@ -189,11 +189,16 @@ bool QSpell::checkValidSequence(const QSpell &s) {
     return true;
 }
 
-QString QSpell::json() const {
+QString QSpell::json(bool Short) const {
+    if (Short) {
+        return QString("{\"g\":\"%1\",\"id\":%2,\"ac\":%3,\"h\":%4}").
+                arg(_gesture, intToStr(_spellID), intToStr(_alreadyCasted), intToStr(_hand));
+    } else {
     QString ng = nextGesture();
     return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14,\"basic\":%15,\"rp\":%16}").
             arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).
             arg(ng.toUpper(), boolToIntS(ng.compare(ng.toUpper()) != 0), intToStr(_defTarget), boolToIntS(_active), intToStr(_damage), boolToStr(_basic), QString::number(_realPriority));
+    }
 }
 
 QString QSpell::toString() const {
@@ -208,13 +213,21 @@ bool QSpell::operator < (const QSpell &s) const {
 bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
     //qDebug() << "QSpell::sortAsc" << _orderType << s1->json() << s2->json();
     if (_orderType == 1) {
+        if (s1->_hand != s2->_hand) {
+            return s1->_hand < s2->_hand;
+        }
+
         if (s1->_alreadyCasted != s2->_alreadyCasted) {
             return s1->_alreadyCasted < s2->_alreadyCasted;
         }
         //return s1->_spellID < s2->_spellID;
         if (s1->_gesture.compare(s2->_gesture) != 0) {
-            return s1->_gesture.compare(s2->_gesture) > 0;
+            QString s1g = s1->spellID() == SPELL_STAB ? "ZZZZZZZZZ" : s1->_gesture;
+            QString s2g = s2->spellID() == SPELL_STAB ? "ZZZZZZZZZ" : s2->_gesture;
+            return s1g.compare(s2g) > 0;
         }
+
+        return s1->_spellID < s2->_spellID;
     } else if (_orderType == 2) {
         if (s1->_alreadyCasted != s2->_alreadyCasted) {
             return s1->_alreadyCasted < s2->_alreadyCasted;
@@ -223,7 +236,6 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
             return s1->_realPriority < s2->_realPriority;
         }
     }
-
 
     if ((s1->_spellType == s2->_spellType) && (s1->_turnToCast == s2->_turnToCast) && (s1->_turnToCast != -1) && (s1->_level != s2->_level)) {
         return s1->_level < s2->_level;
@@ -247,42 +259,59 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
     //return s1->_hand < s2->_hand;
 }
 
-bool QSpell::sortDesc1(const QSpell *s1, const QSpell *s2) {
-    return !sortAsc(s1, s2);
-}
-
-bool QSpell::sortDesc2(const QSpell *s1, const QSpell *s2) {
-    return !sortAsc(s1, s2);
-}
-
-bool QSpell::sortDesc3(const QSpell *s1, const QSpell *s2) {
-    return !sortAsc(s1, s2);
-}
-
-bool QSpell::sortDesc4(const QSpell *s1, const QSpell *s2) {
-    return !sortAsc(s1, s2);
-}
-
-bool QSpell::sortDesc5(const QSpell *s1, const QSpell *s2) {
-    return !sortAsc(s1, s2);
-}
-
-bool QSpell::sortDesc6(const QSpell *s1, const QSpell *s2) {
-    return !sortAsc(s1, s2);
-}
-
-bool QSpell::sortDesc7(const QSpell *s1, const QSpell *s2) {
-    return !sortAsc(s1, s2);
-}
-
-bool QSpell::sortDesc8(const QSpell *s1, const QSpell *s2) {
-    return !sortAsc(s1, s2);
-}
-
-bool QSpell::sortDesc9(const QSpell *s1, const QSpell *s2) {
+bool QSpell::sortDesc(const QSpell *s1, const QSpell *s2) {
     return !sortAsc(s1, s2);
 }
 
 void QSpell::setOrderType(int OrderType) {
     _orderType = OrderType;
+}
+
+void QSpell::sort(QList<QSpell *> &list, int order_type) {
+    setOrderType(order_type);
+    QList<QSpell *> res;
+    //logSpellList(list, "QSpell::sort before");
+    int check_idx = 0, high_idx = 0, low_idx = 0, max_iteration_count = 8, i, idx_diff, spell_idx = 0, insert_idx;
+    foreach(QSpell *s, list) {
+        ++spell_idx;
+        if (res.isEmpty()) {
+            res.append(s);
+            continue;
+        }
+        high_idx = res.size();
+        low_idx = 0;
+        i = 0;
+        //qDebug() << "QSpell::sort start" << s->json(true);
+        while(++i < max_iteration_count) {
+            idx_diff = high_idx - low_idx;
+            //qDebug() << "while check" << i << low_idx << high_idx << idx_diff;
+            if (idx_diff <= 1) {
+                bool compare = sortDesc(res.at(low_idx), s);
+                if (compare) {
+                    insert_idx = low_idx + 1;
+                } else {
+                    insert_idx = low_idx;
+                }
+                res.insert(insert_idx, s);
+                //qDebug() << "while last check" << res.at(low_idx)->json(true) << compare << insert_idx;
+                break;
+            } else {
+                check_idx = low_idx + idx_diff / 2;
+                bool compare = sortDesc(res.at(check_idx), s);
+                if (compare) {
+                    low_idx = check_idx;
+                } else {
+                    high_idx = check_idx;
+                }
+                //qDebug() << "while internal check" << check_idx << low_idx << high_idx << res.at(check_idx)->json(true) << compare;
+            }
+        }
+        //logSpellList(res, QString("QSpell::sort iteration %1").arg(intToStr(spell_idx)));
+    }
+    list.clear();
+    foreach(QSpell *s, res) {
+        list.append(s);
+    }
+    setOrderType(0);
+    //logSpellList(list, "QSpell::sort after");
 }

@@ -221,13 +221,14 @@ QString QWarlock::separatedString() {
     bool charmL = false;
     bool charmR = false;
     int summon_left = SPELL_ID_MAX, summon_right = SPELL_ID_MAX, spell_max_pass_left = 0, spell_max_pass_right = 0;
-    QSpell::setOrderType(1);
+    /*QSpell::setOrderType(1);
     qDebug() << "QWarlock::separatedString" << "before sort";
     struct {
             bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc7(s1, s2); }
     } customOrder;
     std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
-    QSpell::setOrderType(0);
+    QSpell::setOrderType(0);*/
+    QSpell::sort(_possibleSpells, 1);
 
     QString res;
     foreach(QSpell *s, _possibleSpells) {
@@ -445,11 +446,12 @@ void QWarlock::setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monste
 
     //std::sort(_possibleSpells.begin(), _possibleSpells.end());
     qDebug() << "QWarlock::setSpellPriority" << "before sort";
-    struct {
+    /*struct {
         bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc4(s1, s2); }
     } customOrder2;
     // try sort by priority
-    std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder2);
+    std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder2);*/
+    QSpell::sort(_possibleSpells);
     qDebug() << "QWarlock::setSpellPriority" << "after sort";
     //logSpellList(_possibleSpells, "QWarlock::setSpellPriority")
 }
@@ -767,12 +769,13 @@ void QWarlock::breakEnemy(QWarlock *enemy) {
     QSpell *as;
     _enemyParalyze = false;
 
-    QSpell::setOrderType(2);
+    /*QSpell::setOrderType(2);
     struct {
             bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc5(s1, s2); }
     } customOrder;
     std::sort(enemy->_possibleSpells.begin(), enemy->_possibleSpells.end(), customOrder);
-    QSpell::setOrderType(0);
+    QSpell::setOrderType(0);*/
+    QSpell::sort(enemy->_possibleSpells, 2);
 
     QStringList one_turn_gesture_L, one_turn_gesture_R;
     foreach(QSpell *s, enemy->_possibleSpells) {
@@ -1104,11 +1107,12 @@ void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monst
     tgl.append(_gestureL);
     tgr.append(_gestureR);
     QList<QSpell *> sl = _SpellChecker->getStriktSpellsList(tgl, tgr, false);
-    QSpell::setOrderType(0);
+    /*QSpell::setOrderType(0);
     struct {
             bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc6(s1, s2); }
     } customOrder;
-    std::sort(sl.begin(), sl.end(), customOrder);
+    std::sort(sl.begin(), sl.end(), customOrder);*/
+    QSpell::sort(sl);
 
     if (sl.size() > 0) {
         foreach(QSpell *s, sl) {
