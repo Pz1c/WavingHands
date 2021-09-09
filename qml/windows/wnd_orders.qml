@@ -41,6 +41,13 @@ BaseWindow {
             opacity: 0.5
         }
 
+        Gradient {
+            id: gGesture
+            GradientStop { position: 0.0;  color: "#E7FFFF" }
+            GradientStop { position: 0.25; color: "#E7FFFF" }
+            GradientStop { position: 1.0;  color: "#FEE2D6" }
+        }
+
         ScrollView {
             id: svError
             anchors.top: parent.top
@@ -108,9 +115,10 @@ BaseWindow {
                                     anchors.leftMargin: 24 * mainWindow.ratioObject
                                     anchors.verticalCenter: idRoot.verticalCenter
                                     height: 78 * mainWindow.ratioObject
-                                    width: 60 * mainWindow.ratioObject
+                                    width: lvOrderList.model[index].icon !== "" ? 60 * mainWindow.ratioObject : 0
                                     text: lvOrderList.model[index].icon_text
                                     textVisible: lvOrderList.model[index].icon_text !== ""
+                                    gradient: ((lvOrderList.model[index].type === "LH") || (lvOrderList.model[index].type === "RH")) ? gGesture : undefined
                                 }
 
                                 LargeText {

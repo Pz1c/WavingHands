@@ -81,6 +81,10 @@ function getIconByGesture(G) {
     return G.toLowerCase();
 }
 
+function getFullIconPathByGesture(G) {
+    return "qrc:/res/g_" + getIconByGesture(G) + ".png";
+}
+
 function preparePrintGestures(GL, GR, mscL, mscR) {
     var res = [], item, ll, lr;
     //GL = GL.toLowerCase();

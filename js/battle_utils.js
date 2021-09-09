@@ -351,13 +351,13 @@ function getOrdersForReview(dictionary) {
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
     }
 
-    if ((actions.L.g === "P") && actions.R.g === "P") {
+    if ((actions.L.g === "P") && (actions.R.g === "P")) {
         res.push({type:"LH",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"",icon_text:""});
     }
     // gesture
-    res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary),c:"snow",icon:"",icon_text:""});
+    res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary),c:"snow",icon:getFullIconPathByGesture(actions.L.g),icon_text:""});
     console.log("getOrdersForReview", "point2", JSON.stringify(res));
-    res.push({type:"RH",v:getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary),c:"snow",icon:"",icon_text:""});
+    res.push({type:"RH",v:getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary),c:"snow",icon:getFullIconPathByGesture(actions.R.g),icon_text:""});
     console.log("getOrdersForReview", "point3", JSON.stringify(res));
 
     if (actions.D !== -1) {
@@ -375,12 +375,12 @@ function getOrdersForReview(dictionary) {
     var i, Ln, m_obj, pc_gv;
     for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
         res.push({type:"CP",v:getCharmActionText("CP", actions.CP[battle.paralyze[i]],
-                  battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow",icon:"",icon_text:""});
+                  battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow",icon:"qrc:/res/paralized.png",icon_text:""});
         console.log("getOrdersForReview", "point7", JSON.stringify(res));
     }
     for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
         console.log("getOrdersForReview before charm", i, Ln, battle.charm[i], JSON.stringify(actions.CC[battle.charm[i]]));
-        res.push({type:"CC",v:getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary), c:"snow",icon:"",icon_text:""});
+        res.push({type:"CC",v:getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary), c:"snow",icon:"qrc:/res/charmed.png",icon_text:""});
         console.log("getOrdersForReview", "point8", JSON.stringify(res));
     }
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
