@@ -138,9 +138,10 @@ Rectangle {
 
     function onFinishCreation() {
         console.log("IconInfo.onFinishCreation", JSON.stringify(l_data), iIcon.height, button.height);
-        if (iIcon.height === 1) {
-            iIcon.height = 0.9 * button.height;
-            iIcon.width = 0.9 * button.height;
+        if (iIcon.height <= 1) {
+            var wh = Math.min(button.height, button.width);
+            iIcon.height = 0.9 * wh;
+            iIcon.width = 0.9 * wh;
         }
     }
 

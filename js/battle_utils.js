@@ -150,7 +150,7 @@ function prepareBattle(raw_battle) {
         m.damage = getMonsterDamageByName(m.name);
         battle.monsters[m.owner].push(m);
         battle.actions.M.push({id:battle.targetsMap[m.name],target:m.new_target,old_target:m.target,under_control:true,owner:m.owner,name:m.name,
-                                  status:m.status,d:m.damage,hp:m.hp});
+                                  status:m.status,d:m.damage,hp:m.hp,action:"m",strength:m.damage,icon:m.icon});
     }
 
     for (i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {
@@ -355,38 +355,49 @@ function getOrdersForReview(dictionary) {
         res.push({type:"LH",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"",icon_text:""});
     }
     // gesture
-    res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary),c:"snow",icon:getFullIconPathByGesture(actions.L.g),icon_text:""});
+    res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary),
+              c:"snow",icon:"g_" + getIconByGesture(actions.L.g),icon_text:"",icon_visible:true,icon_width:60});
     console.log("getOrdersForReview", "point2", JSON.stringify(res));
-    res.push({type:"RH",v:getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary),c:"snow",icon:getFullIconPathByGesture(actions.R.g),icon_text:""});
+    res.push({type:"RH",v:getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary),
+              c:"snow",icon:"g_" + getIconByGesture(actions.R.g),icon_text:"",icon_visible:true,icon_width:60});
     console.log("getOrdersForReview", "point3", JSON.stringify(res));
 
     if (actions.D !== -1) {
-        res.push({type:"D",v:getSpecActionText("D", actions.D, dictionary),c:"snow",icon:"",icon_text:""});
+        res.push({type:"D",v:getSpecActionText("D", actions.D, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point4", JSON.stringify(res));
     }
     if (actions.P !== -1) {
-        res.push({type:"P",v:getSpecActionText("P", actions.P, dictionary),c:"snow",icon:"",icon_text:""});
+        res.push({type:"P",v:getSpecActionText("P", actions.P, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point5", JSON.stringify(res));
     }
     if (actions.F === 1) {
-        res.push({type:"F",v:battle.fire,c:"snow",icon:"",icon_text:""});
+        res.push({type:"F",v:battle.fire,c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point6", JSON.stringify(res));
     }
     var i, Ln, m_obj, pc_gv;
     for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
         res.push({type:"CP",v:getCharmActionText("CP", actions.CP[battle.paralyze[i]],
-                  battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow",icon:"qrc:/res/paralized.png",icon_text:""});
+                  battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow",icon:"paralized",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point7", JSON.stringify(res));
     }
     for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
         console.log("getOrdersForReview before charm", i, Ln, battle.charm[i], JSON.stringify(actions.CC[battle.charm[i]]));
-        res.push({type:"CC",v:getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary), c:"snow",icon:"qrc:/res/charmed.png",icon_text:""});
+        res.push({type:"CC",v:getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary),
+                     c:"snow",icon:"charmed",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point8", JSON.stringify(res));
     }
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
         m_obj = actions.M[i];
-        console.log("mt_label", JSON.stringify(m_obj));
-        res.push({type:"M",v:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow",action_idx:i,icon:"",icon_text:""});
+        console.log("m_obj", JSON.stringify(m_obj));
+        var obj = {type:"M",v:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow",action_idx:i,icon:"",icon_text:"",icon_visible:true,icon_width:78};
+        if (m_obj.name.indexOf(":") !== -1) {
+            obj.icon = getMonsterIconBySummonHP(m_obj.hp);
+            obj.icon_text = m_obj.name.substr(0, 1);
+        } else {
+            obj.icon = getMonsterIconByName(m_obj.name);
+            obj.icon_text = m_obj.hp;
+        }
+        res.push(obj);
         console.log("getOrdersForReview", "point9", JSON.stringify(res));
     }
     return res;

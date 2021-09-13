@@ -112,6 +112,16 @@ function getMonsterIconByName(name) {
     }
 }
 
+function getMonsterIconBySummonHP(HP) {
+    switch(HP) {
+    case 1: return "goblin";
+    case 2: return "ogre";
+    case 3: return "troll";
+    case 4: return "giant";
+    default: return "summon";
+    }
+}
+
 function getMonsterDamageByName(name) {
     if (name.indexOf("Goblin") !== -1) {
         return 1;
@@ -193,8 +203,8 @@ function getSpellNameForOrderReview(action) {
         return "Unknown spell";
     }
     // default spell
-    if (action.s.gp === "?") {
-        return "Default spell";
+    if ((action.s.gp === "?") || (action.s.n === "Default")) {
+        return "default spell";
     }
 
     return action.s.n;
@@ -209,15 +219,29 @@ function getSpellTargetForOrder(action, targetMap) {
 
 function getSpellTargetForOrderReview(action, targetMap) {
     if (!action.target || !targetMap[action.target]) {
-        return "Default";
+        return "default target";
     }
+    if (action.target.indexOf(":") !== -1) {
+        return "New monster (" + action.target.substr(0, 1) + ")";
+    }
+
     return action.target;
 }
 
 // res.push({type:"RH",g:actions.R.g,s:getSpellNameForOrderReview(actions.R),t:getSpellTargetForOrderReview(actions.R, battle.targetsMap)});
 function getTextForHandAction(hand, action, targetMap, dict) {
-    var res = dict.getStringByCode(hand) + ": ";
-    res += action.g + " cast " + getSpellNameForOrderReview(action) + " on " + getSpellTargetForOrderReview(action, targetMap);
+    var spell_name = getSpellNameForOrderReview(action);
+    var target_name = getSpellTargetForOrderReview(action, targetMap);
+    var res;
+    if ((spell_name === "default spell") && (target_name === "default target")) {
+        if (hand === "LH") {
+            res = "Left hand gesture";
+        } else {
+            res = "Right hand gesture";
+        }
+    } else {
+        res = "cast " + spell_name + "<br>at " + target_name;
+    }
     return res;
 }
 
@@ -226,15 +250,19 @@ function getSpecActionText(type, action, dict) {
 }
 
 function getCharmActionText(type, action, target, dict) {
-
     return dict.getStringByCode("TitleAction_" + type).replace("%1", getHandTitleByIdx(action.h)).replace("%2", action.g) + target;
 }
 
 function getMonsterActionText(action, target, targetMap, dict) {
-    var t = targetMap[action.id] + dict.getStringByCode("TitleAction_M") + target;
+    var name = targetMap[action.id];
     if (!target) {
-        t += "Default";
+        target = "Default";
     }
+    if (name.indexOf(":") !== -1) {
+        name = "New monster (" + action.id.substr(0, 1) + ")";
+    }
+
+    var t = dict.getStringByCode("TitleAction_M").replace("%1", name).replace("%2", target);
 
     return t;
 }

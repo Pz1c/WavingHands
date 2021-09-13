@@ -109,30 +109,32 @@ BaseWindow {
 
                                 IconInfo {
                                     id: rdbiIcon
-                                    source: lvOrderList.model[index].icon
-                                    visible: lvOrderList.model[index].icon !== ""
+                                    source: lvOrderList.model[index].icon_visible ? "qrc:/res/" + lvOrderList.model[index].icon + ".png" : ""
+                                    visible: lvOrderList.model[index].icon_visible
                                     anchors.left: idRoot.left
                                     anchors.leftMargin: 24 * mainWindow.ratioObject
                                     anchors.verticalCenter: idRoot.verticalCenter
                                     height: 78 * mainWindow.ratioObject
-                                    width: lvOrderList.model[index].icon !== "" ? 60 * mainWindow.ratioObject : 0
+                                    width: lvOrderList.model[index].icon_width * mainWindow.ratioObject
                                     text: lvOrderList.model[index].icon_text
                                     textVisible: lvOrderList.model[index].icon_text !== ""
                                     gradient: ((lvOrderList.model[index].type === "LH") || (lvOrderList.model[index].type === "RH")) ? gGesture : undefined
                                 }
 
-                                LargeText {
+                                Text {
                                     id: rdbiGesture
                                     anchors.left: idRoot.left
-                                    anchors.leftMargin: 108 * mainWindow.ratioObject
+                                    anchors.leftMargin: 126 * mainWindow.ratioObject
                                     anchors.right: rdbiAction.left
                                     anchors.rightMargin: 24 * mainWindow.ratioObject
                                     anchors.verticalCenter: parent.verticalCenter
                                     color: "#FEE2D6"
                                     horizontalAlignment: Text.AlignLeft
                                     text: lvOrderList.model[index].v
+                                    font.pixelSize: 28 * mainWindow.ratioFont
+
                                     //width: 0.9 * parent.width
-                                    height: 0.8 * parent.height
+                                    height: 0.9 * parent.height
                                 }
 
                                 LargeText {
@@ -142,11 +144,10 @@ BaseWindow {
                                     anchors.verticalCenter: idRoot.verticalCenter
                                     color: "#FEE2D6"
                                     text: ">"
+                                    font.pixelSize: 28 * mainWindow.ratioFont
                                     width: 48 * mainWindow.ratioObject
                                     height: 64 * mainWindow.ratioObject
                                 }
-
-
 
                                 MouseArea {
                                     id: maSpell

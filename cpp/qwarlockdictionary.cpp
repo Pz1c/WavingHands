@@ -109,7 +109,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
     fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
     fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P) -raising a white flag");
-    fillDictionary("TitleAction_M", "", "", " direct to attack ");
+    fillDictionary("TitleAction_M", "", "", "direct %1<br>at %2");
     fillDictionary("Refresh", "", "", "Refresh");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
