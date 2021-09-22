@@ -519,7 +519,7 @@ BaseWindow {
         currGesture = "";
         arrPossibleGesture = [];
         arrSpell = [];
-        arrSpellFull = [];
+        //arrSpellFull = [];
         initGFields();
         visible = true;
     }
