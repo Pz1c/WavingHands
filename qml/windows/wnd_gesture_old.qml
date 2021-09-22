@@ -1,7 +1,6 @@
 // source https://qt-project.org/forums/viewthread/26455
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import Qt.labs.qmlmodels 1.0
 
 import "qrc:/qml/components"
 
@@ -35,9 +34,9 @@ BaseWindow {
     property var arrGestureVal: ["C","D","F","S","P","W",">","-"]
     property var mapGesture: ({"C":iiGC,"D":iiGD,"F":iiGF,"S":iiGS,"P":iiGP,"W":iiGW,">":iiGSt,"-":iiGN})
     property var arrPossibleGesture: []
-    //property var arrSpellFull: []
+    property var arrSpellFull: []
     property var arrSpell: []
-    //property var arrSpellLater: []
+    property var arrSpellLater: []
 
     // This rectangle is the actual popup
     Item {
@@ -70,138 +69,284 @@ BaseWindow {
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
             contentWidth: -1
-            contentHeight: lvSpellList.model.length * 78 * mainWindow.ratioObject
 
-            ListView {
-                id: lvSpellList
-                model: []
-                anchors.fill: svError
+            Item {
+                id: iSpellBook
+                anchors.top:  parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: (40 + lvSpellList.model.length * 78) * mainWindow.ratioObject
 
-                DelegateChooser {
-                    id: chooser
-                    role: "row_type"
+                visible: true
 
-                    DelegateChoice {
-                        roleValue: "1"
-                        delegate: Item {
-                                id: idRoot
-                                width: lvSpellList.width
-                                height: 78 * mainWindow.ratioObject
-
-                                Rectangle {
-                                    id: rdSpellItem
-                                    color: "transparent"
-                                    radius: 30
-                                    anchors.fill: parent
-                                    //anchors.bottomMargin: 0.01 * dialogWindow.height
-                                    //border.color: "#A8F4F4"
-                                    //border.width: lvSpellList.model[index].choose === 1 ? (2 * mainWindow.ratioObject) : 0
-
-                                    LargeText {
-                                        id: rdbiGesture
-                                        anchors.verticalCenter: rdSpellItem.verticalCenter
-                                        anchors.left: rdSpellItem.left
-                                        anchors.leftMargin: 12 * mainWindow.ratioObject
-                                        width: 0.40 * parent.width
-                                        height: 68 * mainWindow.ratioObject
-                                        //anchors.rightMargin: 0.05 * parent.width
-                                        color: "snow"
-                                        horizontalAlignment: Text.AlignLeft
-                                        text: lvSpellList.model[index].gp
-                                    }
-
-                                    LargeText {
-                                        id: rdbifTitle
-                                        anchors.verticalCenter: rdSpellItem.verticalCenter
-                                        anchors.right: rdSpellItem.right
-                                        anchors.rightMargin: 12 * mainWindow.ratioObject
-                                        height: 50 * mainWindow.ratioObject
-                                        width: 0.55 * parent.width
-                                        color: "snow"//lvSpellList.model[index].basic ? "snow" : "darkgrey"
-                                        fontSizeMode: Text.VerticalFit
-                                        horizontalAlignment: Text.AlignRight
-                                        text: lvSpellList.model[index].n
-                                    }
-
-                                    MouseArea {
-                                        id: maSpell
-                                        anchors.fill: parent
-                                        onClicked: {
-                                            console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpellFull[index]));
-                                            if ((currGesture === "") && (lvSpellList.model[index].gp !== "?")) {
-                                                mainWindow.showSpellDetails(lvSpellList.model[index].g);
-                                            } else if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
-                                                arrSpell[index].choose = 1;
-                                                arrSpell[index].need_target = true;
-                                                arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
-                                                mainWindow.gBattle.spellIdx = index;
-                                                lvSpellList.model = arrSpell;
-                                            } else if (arrSpell[index].cast_type === 2) {
-                                                mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
-                                            } else if (arrSpell[index].cast_type === 3) {
-                                                setGesture(arrSpellFull[index].ng);
-                                            }
-                                        }
-
-                                        onPressAndHold: {
-                                            console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
-                                            if(lvSpellList.model[index].gp !== "?") {
-                                                mainWindow.showSpellDetails(lvSpellList.model[index].g);
-                                            } else {
-
-                                            }
-                                        }
-                                    }
-                            }
-                        }
-                    }
-
-                    DelegateChoice {
-                        roleValue: "2"
-                        delegate: Item {
-                                id: idRoot2
-                                width: lvSpellList.width
-                                height: 78 * mainWindow.ratioObject
-
-                                Text {
-                                    id: idRoot2Title
-                                    anchors.verticalCenter: idRoot2.verticalCenter
-                                    anchors.left: parent.left//rdbifInfo.left
-                                    anchors.leftMargin: 0.03 * parent.width
-                                    height: 0.8 * idRoot2.height
-                                    font.pixelSize: 28 * mainWindow.ratioFont
-                                    color: "#10C9F5"
-                                    //fontSizeMode: Text.VerticalFit
-                                    horizontalAlignment: Text.AlignRight
-                                    text: lvSpellList.model[index].n
-                                }
-                            }
-                        }
-
-                    DelegateChoice {
-                        roleValue: "3"
-                        delegate: Item {
-                                id: idRoot3
-                                width: lvSpellList.width
-                                height: 78 * mainWindow.ratioObject
-
-                                Text {
-                                    id: idRoot3Title
-                                    anchors.verticalCenter: idRoot3.verticalCenter
-                                    anchors.right: parent.right//rdbifInfo.left
-                                    anchors.rightMargin: 0.03 * parent.width
-                                    height: 0.8 * idRoot3.height
-                                    font.pixelSize: 35 * mainWindow.ratioFont
-                                    color: "#10C9F5"
-                                    //fontSizeMode: Text.VerticalFit
-                                    horizontalAlignment: Text.AlignRight
-                                    text: lvSpellList.model[index].n
-                                }
-                            }
-                        }
+                LargeText {
+                    id: ltSpellbook
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.leftMargin: 13 * mainWindow.ratioObject
+                    height: 40 * mainWindow.ratioObject
+                    width: parent.width
+                    color: "#0654C0"
+                    horizontalAlignment: Text.AlignLeft
+                    text: "Spellbook"
                 }
 
-                delegate: chooser
+                ListView {
+                    id: lvSpellList
+                    model: []
+                    anchors.top: ltSpellbook.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: lvSpellList.model.length * 78 * mainWindow.ratioObject
+
+
+                    delegate: Item {
+                            id: idRoot
+                            width: lvSpellList.width
+                            height: 78 * mainWindow.ratioObject
+
+                            Rectangle {
+                                id: rdSpellItem
+                                color: "transparent"
+                                radius: 30
+                                anchors.fill: parent
+                                //anchors.bottomMargin: 0.01 * dialogWindow.height
+                                //border.color: "#A8F4F4"
+                                //border.width: lvSpellList.model[index].choose === 1 ? (2 * mainWindow.ratioObject) : 0
+
+                                LargeText {
+                                    id: rdbiGesture
+                                    anchors.verticalCenter: rdSpellItem.verticalCenter
+                                    anchors.left: rdSpellItem.left
+                                    anchors.leftMargin: 12 * mainWindow.ratioObject
+                                    width: 0.40 * parent.width
+                                    height: 68 * mainWindow.ratioObject
+                                    //anchors.rightMargin: 0.05 * parent.width
+                                    color: "snow"
+                                    horizontalAlignment: Text.AlignLeft
+                                    text: lvSpellList.model[index].gp
+                                }
+
+                                LargeText {
+                                    id: rdbifTitle
+                                    anchors.verticalCenter: rdSpellItem.verticalCenter
+                                    anchors.right: rdSpellItem.right
+                                    anchors.rightMargin: 12 * mainWindow.ratioObject
+                                    height: 50 * mainWindow.ratioObject
+                                    width: 0.55 * parent.width
+                                    color: "snow"//lvSpellList.model[index].basic ? "snow" : "darkgrey"
+                                    fontSizeMode: Text.VerticalFit
+                                    horizontalAlignment: Text.AlignRight
+                                    text: lvSpellList.model[index].n
+                                }
+
+                                MouseArea {
+                                    id: maSpell
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpellFull[index]));
+                                        if ((currGesture === "") && (lvSpellList.model[index].gp !== "?")) {
+                                            mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                        } else if ((arrSpell[index].cast_type === 1) && (arrSpellFull[index].choose !== 1)) {
+                                            arrSpellFull[index].choose = 1;
+                                            arrSpellFull[index].need_target = true;
+                                            arrSpellFull[mainWindow.gBattle.spellIdx].choose = 0;
+                                            mainWindow.gBattle.spellIdx = index;
+                                            lvSpellList.model = arrSpellFull;
+                                        } else if (arrSpellFull[index].cast_type === 2) {
+                                            mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
+                                        } else if (arrSpellFull[index].cast_type === 3) {
+                                            setGesture(arrSpellFull[index].ng);
+                                        }
+                                    }
+
+                                    onPressAndHold: {
+                                        console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
+                                        if(lvSpellList.model[index].gp !== "?") {
+                                            mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                        } else {
+
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                }
+            }
+
+            Item {
+                id: iCast
+                anchors.top:  parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 140 * mainWindow.ratioObject + lvCast.height + lvCastNext.height
+                visible: false
+
+                LargeText {
+                    id: ltCast
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.leftMargin: 13 * mainWindow.ratioObject
+                    height: 40 * mainWindow.ratioObject
+                    width: parent.width
+                    color: "#0654C0"
+                    horizontalAlignment: Text.AlignLeft
+                    text: "Completed Spells"
+                }
+
+                ListView {
+                    id: lvCast
+                    model: []
+                    anchors.top: ltCast.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: lvCast.model.length * 78 * mainWindow.ratioObject
+
+                    delegate: Item {
+                            id: idCastRoot
+                            width: lvCast.width
+                            height: 78 * mainWindow.ratioObject
+
+                            Rectangle {
+                                id: rdCastSpellItem
+                                color: "transparent"
+                                radius: 30
+                                anchors.fill: parent
+                                //anchors.bottomMargin: 0.01 * dialogWindow.height
+                                border.color: "#A8F4F4"
+                                border.width: lvCast.model[index].choose === 1 ? (2 * mainWindow.ratioObject) : 0
+
+                                LargeText {
+                                    id: rdbiCastGesture
+                                    anchors.verticalCenter: rdCastSpellItem.verticalCenter
+                                    anchors.left: rdCastSpellItem.left
+                                    anchors.leftMargin: 12 * mainWindow.ratioObject
+                                    width: 0.40 * parent.width
+                                    height: 68 * mainWindow.ratioObject
+                                    //anchors.rightMargin: 0.05 * parent.width
+                                    color: "snow"
+                                    horizontalAlignment: Text.AlignLeft
+                                    text: lvCast.model[index].gp
+                                }
+
+                                LargeText {
+                                    id: rdbifCastTitle
+                                    anchors.verticalCenter: rdCastSpellItem.verticalCenter
+                                    anchors.right: rdCastSpellItem.right
+                                    anchors.rightMargin: 12 * mainWindow.ratioObject
+                                    height: 50 * mainWindow.ratioObject
+                                    width: 0.55 * parent.width
+                                    color: "snow"//lvCast.model[index].basic ? "snow" : "darkgrey"
+                                    fontSizeMode: Text.VerticalFit
+                                    horizontalAlignment: Text.AlignRight
+                                    text: lvCast.model[index].n
+                                }
+
+                                MouseArea {
+                                    id: maCastSpell
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvCast.model[index]), JSON.stringify(arrSpell[index]));
+                                        if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
+                                            arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
+                                            arrSpell[index].choose = 1;
+                                            arrSpell[index].need_target = true;
+                                            mainWindow.gBattle.spellIdx = index;
+                                            lvCast.model = arrSpell;
+                                        } else if (arrSpell[index].cast_type === 2) {
+                                            mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
+                                        } else if (arrSpell[index].cast_type === 0) {
+                                            mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, false);
+                                        }
+                                    }
+
+                                    onPressAndHold: {
+                                        console.log("spell info", index, JSON.stringify(lvCast.model[index]));
+                                        if((lvCast.model[index].gp !== "?") && (lvCast.model[index].gp !== "None")) {
+                                            mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                        } else {
+
+                                        }
+                                    }
+                                }
+                        }
+                    }
+                }
+
+                LargeText {
+                    id: ltCastNext
+                    anchors.top: lvCast.bottom
+                    anchors.topMargin: 60 * mainWindow.ratioObject
+                    anchors.left: parent.left
+                    anchors.leftMargin: 13 * mainWindow.ratioObject
+                    height: 40 * mainWindow.ratioObject
+                    width: parent.width
+                    horizontalAlignment: Text.AlignLeft
+                    color: "#0654C0"
+                    text: "Incomplete Spells"
+                }
+
+                ListView {
+                    id: lvCastNext
+                    model: []
+                    anchors.top: ltCastNext.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    height: lvCastNext.model.length * 78 * mainWindow.ratioObject
+
+                    delegate: Item {
+                            id: idCastNextRoot
+                            width: lvCastNext.width
+                            height: 78 * mainWindow.ratioObject
+
+                            Rectangle {
+                                id: rdCastNextSpellItem
+                                color: "transparent"
+                                radius: 30
+                                anchors.fill: parent
+
+                                LargeText {
+                                    id: rdbiCastNextGesture
+                                    anchors.verticalCenter: rdCastNextSpellItem.verticalCenter
+                                    anchors.left: rdCastNextSpellItem.left
+                                    anchors.leftMargin: 12 * mainWindow.ratioObject
+                                    width: 0.40 * parent.width
+                                    height: 68 * mainWindow.ratioObject
+                                    //anchors.rightMargin: 0.05 * parent.width
+                                    color: "snow"
+                                    horizontalAlignment: Text.AlignLeft
+                                    text: lvCastNext.model[index].gp
+                                }
+
+                                LargeText {
+                                    id: rdbifCastNextTitle
+                                    anchors.verticalCenter: rdCastNextSpellItem.verticalCenter
+                                    anchors.right: rdCastNextSpellItem.right
+                                    anchors.rightMargin: 12 * mainWindow.ratioObject
+                                    height: 50 * mainWindow.ratioObject
+                                    width: 0.55 * parent.width
+                                    color: "snow"//lvCastNext.model[index].basic ? "snow" : "darkgrey"
+                                    fontSizeMode: Text.VerticalFit
+                                    horizontalAlignment: Text.AlignRight
+                                    text: lvCastNext.model[index].n
+                                }
+
+                                MouseArea {
+                                    id: maCastNextSpell
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvCastNext.model[index]), JSON.stringify(arrSpellLater[index]));
+                                        mainWindow.showSpellDetails(lvCastNext.model[index].g);
+                                    }
+
+                                    onPressAndHold: {
+                                        console.log("spell info", index, JSON.stringify(lvCastNext.model[index]));
+                                        mainWindow.showSpellDetails(lvCastNext.model[index].g);
+                                    }
+                                }
+                        }
+                    }
+                }
             }
         }
 
@@ -580,20 +725,18 @@ BaseWindow {
         }
         if (new_gesture === "-") {
             mainWindow.gBattle.spellIdx = 0;
-            arrSpell = [{gp:"?",n:"Default",t:1,choose:1,row_type:1}];
-            //arrSpellLater = [];
+            arrSpell = [{gp:"?",n:"Default",t:1,choose:1}];
+            arrSpellLater = [];
         } else if (new_gesture === ">") {
             mainWindow.gBattle.spellIdx = 0;
-            arrSpell = [{gp:">",n:"Stab",t:1,choose:1,row_type:1}];
-            //arrSpellLater = [];
-        } else {
-            arrSpell = mainWindow.getSpellList(new_gesture);
-        }/*if (new_gesture === "") {
+            arrSpell = [{gp:">",n:"Stab",t:1,choose:1}];
+            arrSpellLater = [];
+        } else if (new_gesture === "") {
             if (arrSpellFull.length === 0) {
                 arrSpellFull = mainWindow.getSpellList("");
                 lvSpellList.model = arrSpellFull;
             }
-            //svError.contentHeight = iSpellBook.height;
+            svError.contentHeight = iSpellBook.height;
             iCast.visible = false;
             iSpellBook.visible = true;
             return;
@@ -601,14 +744,12 @@ BaseWindow {
             var tmp_arr = mainWindow.getSpellList(new_gesture);
             arrSpell = tmp_arr[0];
             arrSpellLater = tmp_arr[1];
-        }*/
-        //lvCast.model = arrSpell;
-        //lvCastNext.model = arrSpellLater;
-        //svError.contentHeight = iCast.height;
-        //iSpellBook.visible = false;
-        //iCast.visible = true;
-        console.log("FINAL ARRAY", JSON.stringify(arrSpell));
-        lvSpellList.model = arrSpell;
+        }
+        lvCast.model = arrSpell;
+        lvCastNext.model = arrSpellLater;
+        svError.contentHeight = iCast.height;
+        iSpellBook.visible = false;
+        iCast.visible = true;
     }
 
     function initGFields() {

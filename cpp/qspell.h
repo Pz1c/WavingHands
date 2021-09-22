@@ -15,7 +15,7 @@ class QSpell
 {
 public:
     QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget = SPELL_DEF_TARGER_NOBODY,
-           int Damage = 0, bool Active = true, bool Basic = false);
+           int Damage = 0, bool Active = true, bool Basic = false, int SpellGroup = SPELL_GROUP_UNDEFINED);
     QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy = false);
 
     int spellID() const;
@@ -87,12 +87,9 @@ private:
     int _damage;
     bool _basic;
     qreal _realPriority;
+    int _spellGroup;
 
     static int _orderType;
 };
-
-struct {
-        bool operator()(const QSpell *s1, const QSpell *s2) const { return !QSpell::sortAsc(s1, s2); }
-} customSpellOrder;
 
 #endif // QSPELL_H

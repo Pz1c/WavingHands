@@ -128,6 +128,15 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("DefNotStartTitle", "", "", "Waiting to Start...");
     fillDictionary("DefNotStartSTitle", "", "", "The battle has not yet begun.");
     fillDictionary("DefNotStartDesc", "", "", "Training games may take a few minutes to start. In games against other warlocks it may take a few hours until another warlock joins your game.");
+    fillDictionary("SpellGroup0", "", "", "Undefined");
+    fillDictionary("SpellGroup1", "", "", "Disruptions");
+    fillDictionary("SpellGroup2", "", "", "Damaging");
+    fillDictionary("SpellGroup3", "", "", "Healing");
+    fillDictionary("SpellGroup4", "", "", "Monsters");
+    fillDictionary("SpellGroup5", "", "", "Protection");
+    fillDictionary("SpellGroup6", "", "", "Counters");
+    fillDictionary("SpellGroup7", "", "", "Advanced Enchantments");
+    fillDictionary("SpellGroup8", "", "", "Elements");
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");

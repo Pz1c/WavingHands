@@ -2,7 +2,7 @@
 
 int QSpell::_orderType = 0;
 
-QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget, int Damage, bool Active, bool Basic)
+QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget, int Damage, bool Active, bool Basic, int SpellGroup)
 {
     _spellID = SpellID;
     _gesture = Gesture;
@@ -20,6 +20,7 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
     _active = Active;
     _basic = Basic;
     _realPriority = 0;
+    _spellGroup = SpellGroup;
 }
 
 int QSpell::calcPriority(bool Enemy) {
@@ -133,6 +134,8 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _damage = Spell->_damage;
     _basic = Spell->_basic;
     _priority = calcPriority(Enemy);
+    _realPriority = Spell->_realPriority;
+    _spellGroup = Spell->_spellGroup;
 }
 
 int QSpell::spellID() const
@@ -191,13 +194,14 @@ bool QSpell::checkValidSequence(const QSpell &s) {
 
 QString QSpell::json(bool Short) const {
     if (Short) {
-        return QString("{\"g\":\"%1\",\"id\":%2,\"ac\":%3,\"h\":%4}").
-                arg(_gesture, intToStr(_spellID), intToStr(_alreadyCasted), intToStr(_hand));
+        return QString("{\"g\":\"%1\",\"id\":%2,\"ac\":%3,\"h\":%4,\"sg\":%5}").
+                arg(_gesture, intToStr(_spellID), intToStr(_alreadyCasted), intToStr(_hand), intToStr(_spellGroup));
     } else {
     QString ng = nextGesture();
-    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14,\"basic\":%15,\"rp\":%16}").
+    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14,\"basic\":%15,\"rp\":%16,\"sg\":%17}").
             arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).
-            arg(ng.toUpper(), boolToIntS(ng.compare(ng.toUpper()) != 0), intToStr(_defTarget), boolToIntS(_active), intToStr(_damage), boolToStr(_basic), QString::number(_realPriority));
+            arg(ng.toUpper(), boolToIntS(ng.compare(ng.toUpper()) != 0), intToStr(_defTarget), boolToIntS(_active), intToStr(_damage), boolToStr(_basic), QString::number(_realPriority)).
+            arg(intToStr(_spellGroup));
     }
 }
 
@@ -217,10 +221,14 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
             return s1->_hand < s2->_hand;
         }
 
+        /*if (s1->_spellGroup != s2->_spellGroup) {
+            return s1->_spellGroup < s2->_spellGroup;
+        }*/
+
         if (s1->_alreadyCasted != s2->_alreadyCasted) {
             return s1->_alreadyCasted < s2->_alreadyCasted;
         }
-        //return s1->_spellID < s2->_spellID;
+
         if (s1->_gesture.compare(s2->_gesture) != 0) {
             QString s1g = s1->spellID() == SPELL_STAB ? "ZZZZZZZZZ" : s1->_gesture;
             QString s2g = s2->spellID() == SPELL_STAB ? "ZZZZZZZZZ" : s2->_gesture;
