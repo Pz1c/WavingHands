@@ -217,7 +217,10 @@ void QWarlock::setIsParaFC(bool newIsParaFC)
 
 QString QWarlock::separatedString() {
     //int Ln = _leftGestures.length();
-    qDebug() << "QWarlock::separatedString" << _name << logSpellItem(_bestSpellL) << logSpellItem(_bestSpellR) << _possibleSpells;
+    qDebug() << "QWarlock::separatedString" << _name << logSpellItem(_bestSpellL) << logSpellItem(_bestSpellR);
+    /*if (_name.compare("Galbarad") == 0) {
+    logSpellList(_possibleSpells, "QWarlock::separatedString");
+    }*/
     bool charmL = false;
     bool charmR = false;
     int summon_left = SPELL_ID_MAX, summon_right = SPELL_ID_MAX, spell_max_pass_left = 0, spell_max_pass_right = 0;
@@ -228,7 +231,10 @@ QString QWarlock::separatedString() {
     } customOrder;
     std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
     QSpell::setOrderType(0);*/
-    QSpell::sort(_possibleSpells, 1);
+    QSpell::sort(_possibleSpells,  _player ? 1 : 0);
+    /*if (_name.compare("Galbarad") == 0) {
+    logSpellList(_possibleSpells, "after sort");
+    }*/
 
     QString res;
     foreach(QSpell *s, _possibleSpells) {
@@ -1103,6 +1109,11 @@ void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monst
     _targetR.clear();
     _spellL.clear();
     _spellR.clear();
+    if (!_AI) {
+        _gestureL.clear();
+        _gestureR.clear();
+        return;
+    }
     QString tgl = _leftGestures.replace(" ", " "), tgr = _rightGestures.replace(" ", " ");
     tgl.append(_gestureL);
     tgr.append(_gestureR);

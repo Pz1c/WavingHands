@@ -90,7 +90,7 @@ bool QWarlockSpellChecker::checkStriktSpell(QString left, QString right, QString
 }
 
 int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString spell, QString possible_left, QString possible_right) {
-    int Ln = spell.length() - 1, GLn = left.length() < right.length() ? left.length() : right.length();
+    int Ln = spell.length() - 1, GLn = qMin(left.length(), right.length());
     if (Ln == 0) {
         if ((spell.length() == 1) && ((possible_left.indexOf(spell.toUpper()) != -1) || (spell.compare(">") == 0))) {
             return 1;
@@ -100,7 +100,7 @@ int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString
     }
     QString work_spell = spell.left(Ln);
     qDebug() << "checkSpellPosible " << spell << " work spell " << work_spell << " left " << left << " right" << right << "possible_left" << possible_left << "possible_right" << possible_right;
-    bool perhapse;
+    bool perhapse, print_debug = false || (spell.compare("cWSSW") == 0);
     int spell_idx;
     QChar spell_char;
     int res = 0;
@@ -109,6 +109,9 @@ int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString
         spell_idx = -1;
         for (int j = Ln - i; j > 0; --j) {
             spell_char = work_spell.at(++spell_idx);
+            if (print_debug && !(GLn - j < 0)) {
+                qDebug() << "checkSpellPosible point1" << i << GLn << j << spell_char << left.at(GLn - j) << right.at(GLn - j) << checkSpellChar(left.at(GLn - j), right.at(GLn - j), spell_char);
+            }
             if ((GLn - j < 0) || !checkSpellChar(left.at(GLn - j), right.at(GLn - j), spell_char)) {
                 perhapse = false;
                 break;
@@ -121,6 +124,9 @@ int QWarlockSpellChecker::checkSpellPosible(QString left, QString right, QString
     }
     if (res > 0) {
         QString g = spell.mid(spell.length() - res, 1);
+        if (print_debug) {
+            qDebug() << "checkSpellPosible point2" << res << g << possible_left << possible_right << g.toUpper().compare(g) << g.toUpper();
+        }
         if (possible_left.indexOf(g.toUpper()) == -1) {
             res = spell.length() + 1;
         } else if ((g.toUpper().compare(g) != 0) && (possible_right.indexOf(g.toUpper()) == -1)) {
@@ -218,7 +224,7 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool Sepa
     QString possible_left = warlock->possibleLeftGestures();
     QString possible_right = warlock->possibleRightGestures();
     QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF());
-    logSpellList(sl, "QWarlockSpellChecker::getSpellsList before");
+    //logSpellList(sl, "QWarlockSpellChecker::getSpellsList before");
     /*if (SeparateSpellbook) {
         QSpell::setOrderType(1);
     }
@@ -231,7 +237,7 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool Sepa
         QSpell::setOrderType(0);
     }*/
     QSpell::sort(sl, SeparateSpellbook ? 1 : 0);
-    logSpellList(sl, "QWarlockSpellChecker::getSpellsList after");
+    //logSpellList(sl, "QWarlockSpellChecker::getSpellsList after");
     return sl;
 }
 

@@ -73,12 +73,12 @@ InfoWindow {
                         Text {
                             id: rdbiGesture
                             anchors.top: rdSpellItem.top
-                            anchors.topMargin: lvSpellList.model[index].t ? 10 * mainWindow.ratioObject : 0
+                            anchors.topMargin: 0
                             anchors.bottom: rdSpellItem.bottom
                             anchors.left: rdSpellItem.left
                             anchors.leftMargin: 0.03 * parent.width
-                            font.pixelSize: (lvSpellList.model[index].t ? 21 : 28) * mainWindow.ratioFont
-                            color: lvSpellList.model[index].t ? "#10C9F5" : "#FEE2D6"
+                            font.pixelSize: 21 * mainWindow.ratioFont
+                            color: "#FEE2D6"
                             horizontalAlignment: Text.AlignLeft
                             text: lvSpellList.model[index].g
                         }

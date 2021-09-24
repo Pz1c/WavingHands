@@ -805,7 +805,7 @@ ApplicationWindow {
     function getSpellList(new_gesture) {
         console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture);
         gBattle["ng" + gBattle.currentHand] = new_gesture;
-        var res = [], arr_cast_now = [], arr_cast_later = [[],[],[],[],[],[],[],[],[]];
+        var res = [], arr_cast_now = [], arr_cast_later = [];//[[],[],[],[],[],[],[],[],[]];
 
         console.log("mainWindow.getSpellList", gBattle.L, gBattle.R, gBattle.ngL, gBattle.ngR);
         //var str = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
@@ -834,7 +834,7 @@ ApplicationWindow {
                         idx = s.g.length - s.t + 1;
                         s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
                         s.cast_type = 2;
-                        arr_cast_later[s.sg].push(s);
+                        arr_cast_later/*[s.sg]*/.push(s);
                         ++uncompleted_cnt;
                     }
                 }
@@ -843,7 +843,7 @@ ApplicationWindow {
                 idx = s.g.length - s.t;
                 s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
                 s.cast_type = 3;
-                arr_cast_later[s.sg].push(s);
+                arr_cast_later/*[s.sg]*/.push(s);
                 ++uncompleted_cnt;
             }
         }
@@ -851,20 +851,22 @@ ApplicationWindow {
 
         if (new_gesture !== '') {
             gBattle.spellIdx = arr_cast_now.length;
-            var def_spell = ((gBattle.spellIdx > 0) || gBattle.player_changed_mind) ? {gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
-            res.push({gp:"?",n:"Completed spells",choose:0,t:0,cast_type:100,row_type:3});
+            var def_or_none = ((gBattle.spellIdx > 0) || gBattle.player_changed_mind);
+            if (def_or_none) {
+                gBattle.spellIdx = 1 + arr_cast_now.length;
+            }
+            var def_spell = def_or_none ? {gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
+            res.push({gp:"?",n:"Completed spells",choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
             res.push(def_spell);
         } else {
             res.push({gp:"?",n:"Spellbook",choose:0,t:0,cast_type:100,row_type:3});
         }
         if (uncompleted_cnt > 0) {
-            for (i = 0, Ln = arr_cast_later.length; i < Ln; ++i) {
-                if (arr_cast_later[i].length > 0) {
-                    res.push({gp:"?",n:warlockDictionary.getStringByCode("SpellGroup" + i),choose:0,t:0,cast_type:50,row_type:2});
-                    res = res.concat(arr_cast_later[i]);
-                }
+            if (new_gesture !== '') {
+                res.push({gp:"?",n:"Uncompleted spells",choose:0,t:0,cast_type:100,row_type:2});
             }
+            res = res.concat(arr_cast_later);
         }
 
         return res;

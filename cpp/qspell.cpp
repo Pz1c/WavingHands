@@ -277,9 +277,10 @@ void QSpell::setOrderType(int OrderType) {
 
 void QSpell::sort(QList<QSpell *> &list, int order_type) {
     setOrderType(order_type);
+    bool print_debug = false && (order_type == 1);
     QList<QSpell *> res;
     //logSpellList(list, "QSpell::sort before");
-    int check_idx = 0, high_idx = 0, low_idx = 0, max_iteration_count = 8, i, idx_diff, spell_idx = 0, insert_idx;
+    int check_idx = 0, high_idx = 0, low_idx = 0, max_iteration_count = 10, i, idx_diff, spell_idx = 0, insert_idx;
     foreach(QSpell *s, list) {
         ++spell_idx;
         if (res.isEmpty()) {
@@ -289,10 +290,12 @@ void QSpell::sort(QList<QSpell *> &list, int order_type) {
         high_idx = res.size();
         low_idx = 0;
         i = 0;
-        //qDebug() << "QSpell::sort start" << s->json(true);
+        if (print_debug) {
+            qDebug() << "QSpell::sort start" << s->json(true);
+        }
         while(++i < max_iteration_count) {
             idx_diff = high_idx - low_idx;
-            //qDebug() << "while check" << i << low_idx << high_idx << idx_diff;
+            if (print_debug) qDebug() << "while check" << i << low_idx << high_idx << idx_diff;
             if (idx_diff <= 1) {
                 bool compare = sortDesc(res.at(low_idx), s);
                 if (compare) {
@@ -301,7 +304,9 @@ void QSpell::sort(QList<QSpell *> &list, int order_type) {
                     insert_idx = low_idx;
                 }
                 res.insert(insert_idx, s);
-                //qDebug() << "while last check" << res.at(low_idx)->json(true) << compare << insert_idx;
+                if (print_debug) {
+                    qDebug() << "while last check" << res.at(low_idx)->json(true) << compare << insert_idx;
+                }
                 break;
             } else {
                 check_idx = low_idx + idx_diff / 2;
@@ -311,15 +316,21 @@ void QSpell::sort(QList<QSpell *> &list, int order_type) {
                 } else {
                     high_idx = check_idx;
                 }
-                //qDebug() << "while internal check" << check_idx << low_idx << high_idx << res.at(check_idx)->json(true) << compare;
+                if (print_debug) {
+                    qDebug() << "while internal check" << check_idx << low_idx << high_idx << res.at(check_idx)->json(true) << compare;
+                }
             }
         }
-        //logSpellList(res, QString("QSpell::sort iteration %1").arg(intToStr(spell_idx)));
+        if (print_debug) {
+            logSpellList(res, QString("QSpell::sort iteration %1").arg(intToStr(spell_idx)));
+        }
     }
     list.clear();
     foreach(QSpell *s, res) {
         list.append(s);
     }
     setOrderType(0);
-    //logSpellList(list, "QSpell::sort after");
+    if (print_debug) {
+        logSpellList(list, "QSpell::sort after");
+    }
 }

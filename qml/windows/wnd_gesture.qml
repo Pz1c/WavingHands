@@ -108,6 +108,7 @@ BaseWindow {
                                         color: "snow"
                                         horizontalAlignment: Text.AlignLeft
                                         text: lvSpellList.model[index].gp
+                                        font.underline: lvSpellList.model[index].choose === 1
                                     }
 
                                     LargeText {
@@ -127,7 +128,7 @@ BaseWindow {
                                         id: maSpell
                                         anchors.fill: parent
                                         onClicked: {
-                                            console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpellFull[index]));
+                                            console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpell[index]));
                                             if ((currGesture === "") && (lvSpellList.model[index].gp !== "?")) {
                                                 mainWindow.showSpellDetails(lvSpellList.model[index].g);
                                             } else if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
@@ -139,7 +140,7 @@ BaseWindow {
                                             } else if (arrSpell[index].cast_type === 2) {
                                                 mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
                                             } else if (arrSpell[index].cast_type === 3) {
-                                                setGesture(arrSpellFull[index].ng);
+                                                setGesture(arrSpell[index].ng);
                                             }
                                         }
 
