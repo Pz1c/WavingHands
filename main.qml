@@ -849,6 +849,7 @@ ApplicationWindow {
         }
         //arr_cast_now.push();
 
+        gBattle["completed_spell_" + gBattle.currentHand] = arr_cast_now.length > 0 ? 1 : 0;
         if (new_gesture !== '') {
             gBattle.spellIdx = arr_cast_now.length;
             var def_or_none = ((gBattle.spellIdx > 0) || gBattle.player_changed_mind);

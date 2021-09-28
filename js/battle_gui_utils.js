@@ -229,11 +229,11 @@ function getSpellTargetForOrderReview(action, targetMap) {
 }
 
 // res.push({type:"RH",g:actions.R.g,s:getSpellNameForOrderReview(actions.R),t:getSpellTargetForOrderReview(actions.R, battle.targetsMap)});
-function getTextForHandAction(hand, action, targetMap, dict) {
+function getTextForHandAction(hand, action, targetMap, dict, exist_completed_spell) {
     var spell_name = getSpellNameForOrderReview(action);
     var target_name = getSpellTargetForOrderReview(action, targetMap);
     var res;
-    if ((spell_name === "default spell") && (target_name === "default target")) {
+    if ((spell_name === "default spell") && (target_name === "default target") && (exist_completed_spell === 0)) {
         if (hand === "LH") {
             res = "Left hand gesture";
         } else {

@@ -171,7 +171,7 @@ BaseWindow {
                                     anchors.leftMargin: 0.03 * parent.width
                                     height: 0.8 * idRoot2.height
                                     font.pixelSize: 28 * mainWindow.ratioFont
-                                    color: "#10C9F5"
+                                    color: "#0654C0"
                                     //fontSizeMode: Text.VerticalFit
                                     horizontalAlignment: Text.AlignRight
                                     text: lvSpellList.model[index].n
@@ -189,11 +189,11 @@ BaseWindow {
                                 Text {
                                     id: idRoot3Title
                                     anchors.verticalCenter: idRoot3.verticalCenter
-                                    anchors.right: parent.right//rdbifInfo.left
-                                    anchors.rightMargin: 0.03 * parent.width
+                                    anchors.left: parent.left//rdbifInfo.left
+                                    anchors.leftMargin: 0.03 * parent.width
                                     height: 0.8 * idRoot3.height
                                     font.pixelSize: 35 * mainWindow.ratioFont
-                                    color: "#10C9F5"
+                                    color: "#0654C0"
                                     //fontSizeMode: Text.VerticalFit
                                     horizontalAlignment: Text.AlignRight
                                     text: lvSpellList.model[index].n

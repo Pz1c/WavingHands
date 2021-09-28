@@ -355,10 +355,10 @@ function getOrdersForReview(dictionary) {
         res.push({type:"LH",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"",icon_text:""});
     }
     // gesture
-    res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary),
+    res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary, battle.completed_spell_L),
               c:"snow",icon:"g_" + getIconByGesture(actions.L.g),icon_text:"",icon_visible:true,icon_width:60});
     console.log("getOrdersForReview", "point2", JSON.stringify(res));
-    res.push({type:"RH",v:getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary),
+    res.push({type:"RH",v:getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary, battle.completed_spell_R),
               c:"snow",icon:"g_" + getIconByGesture(actions.R.g),icon_text:"",icon_visible:true,icon_width:60});
     console.log("getOrdersForReview", "point3", JSON.stringify(res));
 
@@ -389,6 +389,10 @@ function getOrdersForReview(dictionary) {
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
         m_obj = actions.M[i];
         console.log("m_obj", JSON.stringify(m_obj));
+        if (!m_obj.under_control) {
+            continue;
+        }
+
         var obj = {type:"M",v:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow",action_idx:i,icon:"",icon_text:"",icon_visible:true,icon_width:78};
         if (m_obj.name.indexOf(":") !== -1) {
             obj.icon = getMonsterIconBySummonHP(m_obj.hp);

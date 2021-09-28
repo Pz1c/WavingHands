@@ -124,10 +124,10 @@ function startGameWithPlayer() {
             if (bb.need > battle.need) {
                 continue;
             }
-            if (bb.friendly < b.friendly) {
+            if (bb.friendly < battle.friendly) {
                 continue;
             }
-            if (bb.fast && !b.fast) {
+            if (bb.fast && !battle.fast) {
                 continue;
             }
             best_idx = i;
