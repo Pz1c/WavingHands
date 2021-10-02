@@ -308,6 +308,7 @@ private:
 
     // management
     bool _isTimerActive;
+    QList<QSslError> ignoredSslErrors;
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;
