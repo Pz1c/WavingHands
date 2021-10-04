@@ -3,15 +3,21 @@
 #ifdef Q_OS_ANDROID
 //#include <QAndroidJniObject>
 #endif
+#include <QtNetwork/QSslConfiguration>
+#include <QtNetwork/QSslSocket>
+#include <QtGlobal>
 #include <QtQml>
 #include <QDebug>
 #include <QFontDatabase>
 #include "cpp/qwarloksduelcore.h"
 #include "cpp/qwarlockdictionary.h"
 
+
 int main(int argc, char *argv[])
 {
     //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    qDebug() << "loading embedded \"ISRG Root X1\" CA cert:"
+          << QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
 
     QGuiApplication app(argc, argv);
 
