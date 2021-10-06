@@ -69,7 +69,7 @@ function loadChallengeList() {
         cli = G_CHALLENGE_LIST[i];
         if (cli.for_bot) {
             console.log("loadChallengeList", "accept", JSON.stringify(cli));
-            core.aiAcceptChallenge(cli.id);
+            core.aiAcceptChallenge(cli.battle_id);
             return;
         } else if (cli.with_bot) {
             ++bot_cnt;

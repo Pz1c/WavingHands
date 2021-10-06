@@ -464,6 +464,7 @@ BaseWindow {
         //AI.processBattle(mainWindow.gBattle, mainWindow.gameCore.isAI);
         if (mainWindow.gameCore.isAI) {
             sendOrders();
+            mainWindow.processEscape();
         }
     }
 
