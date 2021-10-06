@@ -671,6 +671,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
     if ((_loadedBattleType == 2) && (Data.indexOf(QString("Battle %1 does not exist.").arg(intToStr(_loadedBattleID))) != -1)) {
         return -2;
     }
+    int prev_battle_type = _loadedBattleType;
 
     if ((_loadedBattleType == 0) && (idx_action != -1)) {
         _loadedBattleType = 1;
@@ -749,7 +750,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
             new_desc = new_desc.mid(0, 10);
             new_desc.append("...");
         }
-    } else if ((_loadedBattleType == 2) && (curr_desc.indexOf(" vs. ") == -1)) {
+    } else if ((_loadedBattleType == 2) && (prev_battle_type != 2)) {
         // finished
         res = 2;
         new_desc = QWarlockUtils::getFinishedBattleDescription(Data, _login);
@@ -776,7 +777,8 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
 
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
-    int old_state = _loadedBattleType, _loadedBattleType = parseBattleDescription(Data);
+    int old_state = _loadedBattleType;
+    _loadedBattleType = parseBattleDescription(Data);
     if (_loadedBattleType == -2) { // finished but deleted
         _battleDesc.remove(_loadedBattleID);
         if (_finished_battles.indexOf(_loadedBattleID) != -1) {
@@ -797,8 +799,24 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     }
 
     if ((old_state == 1) && (_loadedBattleType == 2)) {
+        QString d = _battleDesc[_loadedBattleID].toUpper();
+        qDebug() << "finishGetFinishedBattle" << "check rate us" << d << _finished_battles.count();
+        if (!_rateus && (d.indexOf("WON VS. ") != -1)) {
+            bool vsbot = false;
+            foreach(QString bot_name, _lstAI) {
+                if (d.indexOf(bot_name) != -1) {
+                    vsbot = true;
+                    break;
+                }
+            }
+            if (!vsbot || (_finished_battles.count() >= 7)) {
+                _rateus = true;
+                _errorMsg = "{\"type\":14,\"id\":-1,\"action\":\"rate_us\"}";
+                emit errorOccurred();
+            }
+        }
         // to get full history, but not only last turn
-        getBattle(_loadedBattleID, _loadedBattleType);
+        getBattle(_loadedBattleID, 2);
         scanState(true);
         return false;
     }
@@ -831,7 +849,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     idx1 += point1.length();
     int idx2 = Data.indexOf(point2, idx1);
     if (idx2 == -1) {
-        _errorMsg = "Wrong battle answer!";
+        _errorMsg = "Wrong battle answer!!";
         emit errorOccurred();
         return false;
     }
@@ -882,7 +900,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
     int idx3 = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">", idx1);
     if (idx3 == -1) {
-        _errorMsg = "Wrong battle answer!";
+        _errorMsg = "Wrong battle answer!!!";
         emit errorOccurred();
         return false;
     }

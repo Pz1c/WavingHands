@@ -70,6 +70,9 @@ function loadChallengeList() {
         if (cli.for_bot) {
             console.log("loadChallengeList", "accept", JSON.stringify(cli));
             core.aiAcceptChallenge(cli.battle_id);
+            // battle item example
+            // {"is_new_btn":0,"logins":"Galbarad(2)","fast":1,"level":"Very friendly","parafc":1,"maladroit":1,"desc":"TRANING BOT ONLY",
+            // "battle_id":86536,"for_bot":true,"level_color":"#c6e5bc","friendly":2,"with_bot":false,"need":1,"active":true,"total_count":2}
             return;
         } else if (cli.with_bot) {
             ++bot_cnt;

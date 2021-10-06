@@ -529,7 +529,7 @@ QString QWarlockUtils::getFinishedBattleDescription(const QString &Data, const Q
     int idx1 = 0, idx2, idx3, count = 0, dead = 0, surrender = 0;
     idx1 = Data.indexOf(" is victorious!");
     if (idx1 != -1) {
-        idx2 = idx1 - 13; // max login length is 10
+        idx2 = idx1 - 13; // max login length is 10 + 3 for <b>
         idx2 = Data.indexOf("<B>", idx2);
         idx2 += 3;
         winner = Data.mid(idx2, idx1 - idx2);
