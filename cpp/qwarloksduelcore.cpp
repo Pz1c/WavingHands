@@ -263,9 +263,11 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
 
 void QWarloksDuelCore::aiLogin() {
     qDebug() << "QWarloksDuelCore::aiLogin" << _isAI << _ready_in_battles.count() << _lstAI.count() << _botIdx;
+
     if (!_isAI) {
         return;
     }
+
     if (_ready_in_battles.count() == 0) {
         _isLogined = false;
         if (++_botIdx >= _lstAI.count()) {
@@ -278,7 +280,7 @@ void QWarloksDuelCore::aiLogin() {
 
 void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl) {
     QString list = QWarlockUtils::parseChallengesList(Data);
-    //qDebug() << "finishChallengeList" << StatusCode << NewUrl << _challengeList << list;
+    qDebug() << "finishChallengeList" << StatusCode << NewUrl << _challengeList << list;
     if (_challengeList.compare(list) != 0) {
         _challengeList = list;
         qDebug() << list;
@@ -774,8 +776,8 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
 
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
-    int old_state = _loadedBattleType, state = parseBattleDescription(Data);
-    if (state == -2) { // finished but deleted
+    int old_state = _loadedBattleType, _loadedBattleType = parseBattleDescription(Data);
+    if (_loadedBattleType == -2) { // finished but deleted
         _battleDesc.remove(_loadedBattleID);
         if (_finished_battles.indexOf(_loadedBattleID) != -1) {
             _finished_battles.removeAt(_finished_battles.indexOf(_loadedBattleID));
@@ -786,7 +788,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         _finishedBattle = "Sorry, but you battle already deleted from game server and we not store it on archive server";
         emit finishedBattleChanged();
         return false;
-    } else if (state == -1) { // unstarted
+    } else if (_loadedBattleType == -1) { // unstarted
 
         _finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(_battleDesc[_loadedBattleID], intToStr(_loadedBattleID));
                 //"Battle not start yet:<br>" + _battleDesc[_loadedBattleID];
@@ -834,7 +836,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         return false;
     }
 
-    qDebug() << "finishGetFinishedBattle all fine" << state << point2 << idx1 << idx2;
+    qDebug() << "finishGetFinishedBattle all fine" << _loadedBattleType << point2 << idx1 << idx2;
     _finishedBattle = Data.mid(idx1, idx2 - idx1).replace("<a href=\"/player", "<b atr=\"")
             .replace("<A CLASS=amonoturn HREF=\"/warlocks", "<b atr=\"").replace("</A>", "</b>").replace("</a>", "</b>")
             .replace("BLOCKQUOTE", "p").replace("WIDTH=\"100%\"", "").replace("WIDTH=\"50%\"", "");
