@@ -2,10 +2,31 @@ var C_NG_PLAYER_CODE = 'player';
 var C_NG_BOT_CODE = 'bot';
 var G_BATTLE_LIST = [[],[]];
 var G_CHALLENGE_LIST = [];
-var G_PROFILE = {elo:1500};
+var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0};
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
 var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
+var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookTitle"}, {c:"rules",t:"Rules"}, {c:"top",t:"Top"}, {c:"feedback",t:"Feedback"},
+                     {c:"rateus",t:"RateUs"}, {c:"switch_account",t:"SwitchAccount"}, {c:"logout",t:"Logout"}/*, {c:"refresh",t:"Refresh"}*/];
+function getMainMenuList() {
+    return ARR_MAIN_MENU;
+}
+
+function mainMenuActionEx(code) {
+    switch(code) {
+    case "refresh": return core.scanState(false);
+    case "spellbook": return showWndSpellbook();
+    case "rules": return Qt.openUrlExternally("https://games.ravenblack.net/rules");
+    case "feedback": return showFeedbackWnd();
+    case "rateus": return showRateUsWnd();
+    }
+    showErrorWnd({id:-1,type:1013});
+}
+
+function mainMenuAction(code) {
+    console.log("mainMenuAction", code);
+    mainMenuActionEx(code);
+}
 
 function newUserRegistered() {
     var l_login = core.login;
@@ -164,11 +185,22 @@ function startGameWithBot() {
 
 function startGame(actionIdx) {
     switch(V_BTN_ACTION[actionIdx]) {
-         case 'player': return startGameWithPlayer();
-         case 'bot': return startGameWithBot();
+         case 'player':
+             startGameWithPlayer();
+             break;
+         case 'bot': startGameWithBot();
+             break;
     }
     timerCounter = 10;
     tScanTimer.interval = 5000;
+    console.log("!!!FEEDBACK CHECK", G_PROFILE.feedback, G_PROFILE.finished_game_count);
+    if (!G_PROFILE.feedback && (G_PROFILE.finished_game_count >= 2)) {
+        G_PROFILE.feedback = true;
+        core.setParamValue("feedback", "true");
+        showFeedbackWnd();
+        console.log("!!!FEEDBACK CHECK", "after", G_PROFILE.feedback);
+    }
+
     //core.scanState(true);
 }
 
@@ -184,10 +216,10 @@ function prepareLoginMenu(menu_str) {
         console.log("try to add", login);
         G_ACCOUNT_LIST.push(login);
     }
-    cbLoginAs.model = G_ACCOUNT_LIST;
-    cbLoginAs.visible = G_ACCOUNT_LIST.length > 2;
+    //cbLoginAs.model = G_ACCOUNT_LIST;
+    //cbLoginAs.visible = G_ACCOUNT_LIST.length > 2;
 
-    console.log("prepareLoginMenu", cbLoginAs.visible, JSON.stringify(G_ACCOUNT_LIST), JSON.stringify(cbLoginAs.model));
+    console.log("prepareLoginMenu", JSON.stringify(G_ACCOUNT_LIST));
 }//*/
 
 function isLoadingChanged() {

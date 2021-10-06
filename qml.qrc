@@ -108,5 +108,6 @@
         <file>qml/components/InfoWindow.qml</file>
         <file>qml/windows/wnd_spell.qml</file>
         <file>res/certs/isrgrootx1.pem</file>
+        <file>js/spell_gui_utils.js</file>
     </qresource>
 </RCC>

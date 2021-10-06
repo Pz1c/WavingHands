@@ -15,7 +15,6 @@
 
 int main(int argc, char *argv[])
 {
-    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     qDebug() << "loading embedded \"ISRG Root X1\" CA cert:"
           << QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
 
@@ -38,6 +37,4 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
     return app.exec();
-
-    // http://stackoverflow.com/questions/9029040/how-to-run-an-android-app-in-background
 }

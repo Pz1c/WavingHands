@@ -35,24 +35,10 @@ class QWarloksDuelCore : public QGameCore
     Q_PROPERTY(QString finishedBattle READ finishedBattle NOTIFY finishedBattleChanged)
     Q_PROPERTY(int readyBattle READ readyBattle NOTIFY readyBattleChanged)
     Q_PROPERTY(int loadedBattleID READ loadedBattleID NOTIFY loadedBattleIDChanged)
-    //Q_PROPERTY(QString targets READ targets NOTIFY targetsChanged)
-    //Q_PROPERTY(QString warlocks READ warlocks NOTIFY warlocksChanged)
-    //Q_PROPERTY(QString monsters READ monsters NOTIFY monstersChanged)
-    //Q_PROPERTY(QString leftGesture READ leftGesture NOTIFY leftGestureChanged)
-    //Q_PROPERTY(QString rightGesture READ rightGesture NOTIFY rightGestureChanged)
     Q_PROPERTY(int registerNewUser READ registerNewUser NOTIFY registerNewUserChanged)
-    //Q_PROPERTY(QString monsterCommandList READ monsterCommandList NOTIFY monsterCommandListChanged)
-    //Q_PROPERTY(QString leftHand READ leftHand NOTIFY leftHandChanged)
-    //Q_PROPERTY(QString rightHand READ rightHand NOTIFY rightHandChanged)
     Q_PROPERTY(int orderSubmited READ orderSubmited NOTIFY orderSubmitedChanged)
     Q_PROPERTY(int challengeSubmited READ challengeSubmited NOTIFY challengeSubmitedChanged)
-    //Q_PROPERTY(QString charmPerson READ charmPerson NOTIFY charmPersonChanged)
-    //Q_PROPERTY(QString paralyze READ paralyze NOTIFY paralyzeChanged)
     Q_PROPERTY(int timerState READ timerState NOTIFY timerStateChanged)
-    //Q_PROPERTY(int isDelay READ isDelay NOTIFY isDelayChanged)
-    //Q_PROPERTY(int isPermanent READ isPermanent NOTIFY isPermanentChanged)
-    //Q_PROPERTY(int isParaFDF READ isParaFDF NOTIFY isParaFDFChanged)
-    //Q_PROPERTY(QString fire READ fire NOTIFY fireChanged)
     Q_PROPERTY(QString challengeList READ challengeList NOTIFY challengeListChanged)
     Q_PROPERTY(QString spellListHtml READ spellListHtml NOTIFY spellListHtmlChanged)
     Q_PROPERTY(QString defaultSpellListHtml READ defaultSpellListHtml NOTIFY defaultSpellListHtmlChanged)
@@ -79,23 +65,9 @@ public:
     QString finishedBattle();
     int readyBattle();
     int loadedBattleID();
-    //QString targets();
-    //QString warlocks();
-    //QString monsters();
-    //QString leftGesture();
-    //QString rightGesture();
     int registerNewUser();
-    //QString monsterCommandList();
-    //QString leftHand();
-    //QString rightHand();
     int orderSubmited();
-    //QString charmPerson();
-    //QString paralyze();
     int timerState();
-    //int isDelay();
-    //int isPermanent();
-    //int isParaFDF();
-    //QString fire();
     int challengeSubmited();
     QString challengeList();
     QString spellListHtml();
@@ -107,7 +79,6 @@ public:
     QString warlockInfo();
     QString accountMenu();
     QString battleList();
-
 
 signals:
     void needLogin();
@@ -121,18 +92,8 @@ signals:
     void finishedBattleChanged();
     void readyBattleChanged();
     void loadedBattleIDChanged();
-    //void targetsChanged();
-    //void warlocksChanged();
-    //void monstersChanged();
-    //void leftGestureChanged();
-    //void rightGestureChanged();
     void registerNewUserChanged();
-    //void monsterCommandListChanged();
-    //void leftHandChanged();
-    //void rightHandChanged();
     void orderSubmitedChanged();
-    //void charmPersonChanged();
-    //void paralyzeChanged();
     void timerStateChanged();
     void challengeSubmitedChanged();
     void challengeListChanged();
@@ -145,10 +106,6 @@ signals:
     void warlockInfoChanged();
     void accountMenuChanged();
     void battleListChanged();
-    //void isDelayChanged();
-    //void fireChanged();
-    //void isPermanentChanged();
-    //void isParaFDFChanged();
 
 public slots:
 
@@ -172,10 +129,13 @@ public slots:
     void autoLogin(int Idx);
     void aiLogin();
     void leaveBattle(int battle_id);
+    void setParamValue(const QString &Parameter, const QString &Value);
 
-    void slotReadyRead();
-    void slotError(QNetworkReply::NetworkError error);
-    void slotSslErrors(QList<QSslError> error_list);
+
+    void slotReadyRead() override;
+    void slotError(QNetworkReply::NetworkError error) override;
+    void slotSslErrors(QList<QSslError> error_list) override;
+
     void onAuthenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator);
     void onProxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
     QString getSpellList(QString left, QString right, bool Enemy);
@@ -255,6 +215,8 @@ private:
     int _elo;
     int _exp_lv;
     int _hint1;
+    bool _feedback;
+    bool _rateus;
     bool _show_hint;
     bool _reg_in_app;
     QList<int> _ready_in_battles;
@@ -308,7 +270,6 @@ private:
 
     // management
     bool _isTimerActive;
-    QList<QSslError> ignoredSslErrors;
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;

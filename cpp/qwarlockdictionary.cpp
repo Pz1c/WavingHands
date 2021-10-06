@@ -137,6 +137,19 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("SpellGroup6", "", "", "Counters");
     fillDictionary("SpellGroup7", "", "", "Advanced Enchantments");
     fillDictionary("SpellGroup8", "", "", "Elements");
+    fillDictionary("NewGameWithFriend", "", "", "Duel with a Friend");
+    fillDictionary("FnNotReadyTitle", "", "", "Restricted zone");
+    fillDictionary("FnNotReady_short_desc", "", "", "Hey! how did you get here?!");
+    fillDictionary("FnNotReady_desc", "", "", "Sorry, functionality you found is under construction.<br>Spellcaster is free, open source game. Game are supported by community, you can help us with development or just chat with like-minded people");
+    fillDictionary("JoinUs", "", "", "Join us");
+    fillDictionary("Feedback", "", "", "Feedback");
+    fillDictionary("FeedbackTitle", "", "", "We need your help :)");
+    fillDictionary("Feedback_short_desc", "", "", "We're putting a lot of love to bring this old (1977) favorite game back to life.<br><br>Would you help us improve by answering 3 quick questions?");
+    fillDictionary("RateUs", "", "", "Rate Us");
+    fillDictionary("RateUsAction", "", "", "Rate");
+    fillDictionary("SendFeedback", "", "", "Send Feedback");
+    fillDictionary("RateUs_short_desc", "", "", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us a 5 star rating?");
+
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");

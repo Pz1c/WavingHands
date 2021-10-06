@@ -6,6 +6,7 @@ import QtQuick.Controls 2.15
 import "qrc:/qml/components"
 
 import "qrc:/js/battle_gui_utils.js" as BGU
+import "qrc:/js/spell_gui_utils.js" as SGU
 
 InfoWindow {
     id: dMainItem
@@ -115,7 +116,15 @@ InfoWindow {
 
                 onClicked: {
                     console.log("chooseMonsterTarget", JSON.stringify(l_data));
-                    if (l_data.action === "leave") {
+                    if (l_data.action === "rate_us") {
+                        Qt.openUrlExternally("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel");
+                        mainWindow.processEscape();
+                    } else if (l_data.action === "feedback") {
+                        Qt.openUrlExternally("https://forms.gle/vW3tBW8595KtREZe8");
+                        mainWindow.processEscape();
+                    } else if (l_data.action === "joinus") {
+                        Qt.openUrlExternally("https://www.facebook.com/WarlocksDuel");
+                    } else if (l_data.action === "leave") {
                         mainWindow.gameCore.leaveBattle(l_data.id);
                         mainWindow.processEscape();
                     } else if (l_data.action === "reg_info") {
@@ -124,6 +133,33 @@ InfoWindow {
                         mainWindow.gameCore.forceSurrender(l_data.id, l_data.fst);
                     } else if (l_data.under_control) {
                         mainWindow.chooseMonsterTarget(ltTitle.text);
+                    }
+                }
+            }
+
+            BtnBig {
+                id: bbSkipAction
+                text_color: "#A8F4F4"
+                text: "Skip"
+                transparent: true
+                font.underline: true
+                border.width: 0
+                visible: false
+
+                width: 0.5 * parent.width
+                height: 60 * mainWindow.ratioObject
+                font.pixelSize: 28 * mainWindow.ratioFont
+                fontSizeMode: Text.VerticalFit
+
+                anchors.top: bbAction.bottom
+                anchors.topMargin: 24 * mainWindow.ratioObject
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                onClicked: {
+                    console.log("skip feedback action");
+                    mainWindow.processEscape();
+                    if (l_data.action === "rate_us") {
+                        mainWindow.showFeedbackWnd();
                     }
                 }
             }
@@ -159,16 +195,20 @@ InfoWindow {
         } else {
             l_data = spell_code ? {} : mainWindow.gERROR.data;
         }
-        ltDesc.visible = true;
-        bbAction.visible = false;
-        bbAction.transparent = false;
-        bbAction.gradient = gDef;
-        bbAction.font.underline = false;
-        svMain.anchors.topMargin = 20 * mainWindow.ratioObject;
+
+        SGU.cleanUpWindow(mainWindow.ratioObject);
+
         if (l_data && (l_data.action || (l_data.type && (l_data.type >= 8)))) {
           icon.visible = false;
-          if (l_data.type && (l_data.type === 12)) {
-            l_data.action = "leave";
+          if (l_data.type && (l_data.type === 14)) {
+            SGU.prepareRateUs(l_data, dict);
+          } else if (l_data.type && (l_data.type === 13)) {
+            SGU.prepareFeedback(l_data, dict);
+          } else if (l_data.type && (l_data.type === 1013)) {
+            SGU.prepareNotReadyFunctionalMsg(l_data, dict);
+          } else if (l_data.type && (l_data.type === 12)) {
+            SGU.prepareDataType12(l_data, dict);
+            /*l_data.action = "leave";
             ltTitle.text = dict.getStringByCode('DefNotStartTitle');
             ltShortDesc.text = dict.getStringByCode('DefNotStartSTitle');
             ltError.text = "";
@@ -184,13 +224,15 @@ InfoWindow {
             }
             ltError.text += dict.getStringByCode('DefNotStartDesc');
             bbAction.text = "Leave";
-            bbAction.visible = true;
+            bbAction.visible = true;*/
           } else if (l_data.type && (l_data.type === 11)) {
-              ltTitle.text = dict.getStringByCode('DefErrTitle');
+              SGU.prepareDataType11(l_data, dict);
+              /*ltTitle.text = dict.getStringByCode('DefErrTitle');
               ltShortDesc.text = dict.getStringByCode('JoinBattleError');
-              ltError.text = l_data.d ? replaceAll(l_data.d, "''", '"') : "Unknown error";
+              ltError.text = l_data.d ? replaceAll(l_data.d, "''", '"') : "Unknown error";*/
           } else if (l_data.type && (l_data.type === 10)) {
-              l_data.action = "reg_info";
+              SGU.prepareDataType10(l_data, dict);
+              /*l_data.action = "reg_info";
               ltTitle.text = dict.getStringByCode('DefErrTitle');
               ltShortDesc.text = dict.getStringByCode('BattleCreateError');
               ltError.text = dict.getStringByCode('BattleCreateErrorDetails');
@@ -198,24 +240,27 @@ InfoWindow {
               bbAction.font.underline = true;
               bbAction.text = dict.getStringByCode('LearnMore');
               bbAction.transparent = true;
-              bbAction.visible = true;
+              bbAction.visible = true;*/
           } else if (l_data.type && (l_data.type === 9)) {
-              ltDesc.visible = false;
+              SGU.prepareDataType9(l_data, dict);
+              /*ltDesc.visible = false;
               svMain.anchors.topMargin = 0;
               ltTitle.text = l_data.t;
               ltShortDesc.text = l_data.st ? l_data.st : "";
-              ltError.text = replaceAll(l_data.d, "''", '"');
+              ltError.text = replaceAll(l_data.d, "''", '"');*/
           } else if (l_data.type && (l_data.type === 8)) {
-            ltTitle.text = "Orders Submitted";
+              SGU.prepareDataType8(l_data, dict);
+            /*ltTitle.text = "Orders Submitted";
             ltShortDesc.text = "Your orders are in for this turn";
             ltError.text = l_data.d;
             bbAction.text = "Force Turn";//dict.getStringByCode("MonsterSetTarget");
             if (l_data.fst > 0) {
                 bbAction.visible = true;
                 l_data.action = "force";
-            }
+            }*/
           } else if (l_data.action === 'm') {
-            icon.source = "qrc:/res/" + l_data.icon + ".png";
+            SGU.prepareMonsterDetails(l_data, dict);
+            /*icon.source = "qrc:/res/" + l_data.icon + ".png";
             icon.visible = true;
             icon.text = l_data.hp;
             var details = "Life: " + l_data.hp + "<br>Power: "+l_data.strength;
@@ -242,18 +287,21 @@ InfoWindow {
             details += "<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
             ltError.text = details;
             bbAction.text = dict.getStringByCode("MonsterSetTarget");
-            bbAction.visible = l_data.under_control;
+            bbAction.visible = l_data.under_control;*/
           } else if (l_data.action === 'hp') {
-            icon.source = "qrc:/res/heart_small.png";
+            SGU.prepareHPDetails(l_data, dict);
+            /*icon.source = "qrc:/res/heart_small.png";
             icon.text = l_data.value;
             icon.visible = true;
             ltTitle.text = l_data.warlock_name;
             ltShortDesc.text = dict.getStringByCode("Warlock");
-            ltError.text = "Life: " + l_data.value;
+            ltError.text = "Life: " + l_data.value;*/
           }
           ltError.font.pixelSize = 28 * mainWindow.ratioFont;
         } else if (spell_code) {
             var spell_icon = BGU.map_spell_to_icon[spell_code];
+            SGU.prepareSpellDescription(spell_code, spell_icon);
+            /*
             if (spell_icon) {
                 icon.source = "qrc:/res/"+spell_icon+".png";
                 icon.visible = true;
@@ -264,7 +312,7 @@ InfoWindow {
             ltTitle.text = dict.getStringByCode(spell_code);
             ltShortDesc.text = dict.getStringByCode(spell_code + "_short_desc");
             ltError.font.pixelSize = 21 * mainWindow.ratioFont;
-            ltError.text = dict.getStringByCode(spell_code + "_desc");
+            ltError.text = dict.getStringByCode(spell_code + "_desc");*/
         }
 
         mainWindow.gERROR = {};

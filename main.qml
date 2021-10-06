@@ -20,7 +20,7 @@ ApplicationWindow {
     visible: true
     width: 506//600
     height: 900//1068
-    flags: Qt.FramelessWindowHint|Qt.Window
+    flags: /*Qt.FramelessWindowHint|*/Qt.Window
 
     property real ratioObject: 1
     property real ratioFont: 1
@@ -174,7 +174,7 @@ ApplicationWindow {
 
     Drawer {
         id: dMenu
-        width: 0.66 * mainWindow.width
+        width: 516 * ratioObject
         height: mainWindow.height
         edge: Qt.LeftEdge
 
@@ -191,84 +191,144 @@ ApplicationWindow {
                 source: "res/stars_bg.png"
                 anchors.fill: parent
             }
+
+            z: -1
         }
 
-        BtnBig {
-            id: bbMenuRefresh
-            text_color: "#A8F4F4"
-            text: warlockDictionary.getStringByCode("Refresh")
-            transparent: true
-            border.width: 0
-            height: 0.1 * parent.height
+        Item {
+            id: dmITop
             anchors.top: parent.top
-            anchors.topMargin: 0.01 * parent.height
             anchors.left: parent.left
             anchors.right: parent.right
-            visible: false
+            height: 188 * ratioObject
+            z: 10
 
-            onClicked: {
-                console.log("try refresh state");
-                dMenu.close();
-                core.scanState(0);
+            Text {
+                id: dmIHi
+                anchors.top: parent.top
+                anchors.topMargin: 108 * ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: 48 * ratioObject
+                anchors.right: parent.right
+                font.pixelSize: 42 * ratioFont
+                color: "#E7FFFF"
+                text: "Hi, " + core.login
+            }
+
+            Rectangle {
+                id: dmRLine
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: 2 * ratioObject
+                color: "#E7FFFF"
             }
         }
 
-        BtnBig {
-            id: bbSpellbook
-            text_color: "#A8F4F4"
-            text: warlockDictionary.getStringByCode("Spellbook")
-            transparent: true
-            border.width: 0
-            height: 0.1 * parent.height
-            anchors.top: parent.top
-            anchors.topMargin: 0.01 * parent.height
+        ScrollView {
+            id: iMenuItems
+            anchors.top: dmITop.bottom
+            anchors.topMargin: 24 * ratioObject
             anchors.left: parent.left
+            anchors.leftMargin: 48 * ratioObject
             anchors.right: parent.right
+            anchors.rightMargin: 48 * ratioObject
+            anchors.bottom: bbNewGameWithFriend.top
+            anchors.bottomMargin: 24 * ratioObject
+            contentWidth: -1
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            z: 9
 
-            onClicked: {
-                console.log("try refresh state");
-                dMenu.close();
-                WNDU.showSpellbook();
-            }
-        }
 
-        BtnBig {
-            id: bbMenuLogin
-            text_color: "#A8F4F4"
-            text: warlockDictionary.getStringByCode("Login")
-            transparent: true
-            border.width: 0
-            height: 0.1 * parent.height
-            anchors.bottom: cbLoginAs.top
-            anchors.bottomMargin: 0.01 * parent.height
-            anchors.left: parent.left
-            anchors.right: parent.right
+            ListView {
+                id: lvmItem
+                model: GUI.getMainMenuList()
 
-            onClicked: {
-                console.log("try login");
-                dMenu.close();
-                getLoginFromUser(true);
-            }
-        }
+                delegate: Item {
+                        id: idmiRoot
+                        width: 420 * ratioObject
+                        height: 74 * ratioObject
 
-        ComboBox {
-            id: cbLoginAs
-            height: 0.1 * parent.height
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 0.01 * parent.height
-            anchors.left: parent.left
-            anchors.right: parent.right
-            model: []
+                        Item {
+                            id: rdmiItem
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            //anchors.bottomMargin: 12 * ratioObject
 
-            onCurrentIndexChanged: {
-                var curr_login = core.login;
-                console.log("cbLoginAs.onAccepted", currentIndex, currentValue, cbLoginAs.model[currentIndex], curr_login);
-                if ((currentIndex > 0) && (cbLoginAs.model[currentIndex] !== curr_login)) {
-                    dMenu.close();
-                    core.autoLogin(currentIndex - 1);
+                            LargeText {
+                                id: rdbiText
+                                anchors.verticalCenter: rdmiItem.verticalCenter
+                                height: 48 * ratioObject
+                                font.pixelSize: 28 * ratioFont
+                                anchors.left: rdmiItem.left
+                                //anchors.leftMargin: 36 * ratioObject
+                                anchors.right: rmiiLink.left
+                                anchors.rightMargin: 5 * ratioObject
+                                color: "#A8F4F4"
+                                horizontalAlignment: Text.AlignLeft
+
+                                text: warlockDictionary.getStringByCode(lvmItem.model[index].t)
+                            }
+
+                            LargeText {
+                                id: rmiiLink
+                                anchors.verticalCenter: rdmiItem.verticalCenter
+                                height: 48 * ratioObject
+                                width: 10 * ratioObject
+                                font.pixelSize: 28 * ratioFont
+                                anchors.right: rdmiItem.right
+                                anchors.rightMargin: 18 * ratioObject
+                                color: "#A8F4F4"
+                                horizontalAlignment: Text.AlignLeft
+                                text: ">"
+                            }
+
+                            MouseArea {
+                                id: maMainMenuItem
+                                anchors.fill: parent
+                                onClicked: {
+                                    console.log("MenuItem", index, JSON.stringify(lvmItem.model[index]));
+                                    GUI.mainMenuAction(lvmItem.model[index].c);
+                                    dMenu.close();
+                                }
+                            }
+                    }
                 }
             }
+
+
         }
+
+        BtnBig {
+            id: bbNewGameWithFriend
+            text_color: "#ABF4F4"
+            text: warlockDictionary.getStringByCode("NewGameWithFriend")
+            bg_color_active: "#551470"
+            border_color_active: "#551470"
+            radius: 30
+
+            gradient: Gradient {
+                GradientStop { position: 0.0 ; color: "#905B93" }
+                GradientStop { position: 0.75; color: "#551470" }
+                GradientStop { position: 1.0 ; color: "#551470" }
+            }
+
+            width: 300 * ratioObject
+            height: 64 * ratioObject
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 84 * ratioObject
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            onClicked: {
+                console.log("start game WITH FRIEND");
+                //GUI.startGame(0);
+            }
+        }
+
+
     }
 
     Image {
@@ -327,7 +387,7 @@ ApplicationWindow {
                 width: 48 * ratioObject
 
                 onClicked: {
-                    WNDU.showSpellbook();
+                    showWndSpellbook();
                 }
                 background: Image {
                     anchors.fill: parent
@@ -405,6 +465,7 @@ ApplicationWindow {
             anchors.rightMargin: 10 * ratioObject
             visible: core.allowedAdd || true
             contentHeight: iMainScrollBody.height
+            contentWidth: -1
 
             Item {
                 id: iMainScrollBody
@@ -882,6 +943,14 @@ ApplicationWindow {
         mdNoGesture.visible = true;
     }
 
+    function showFeedbackWnd() {
+        return showErrorWnd({id:-1,type:13,action:"feedback"});
+    }
+
+    function showRateUsWnd() {
+        return showErrorWnd({id:-1,type:14,action:"rate_us"});
+    }
+
     function confirmOrdersEx() {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
         WNDU.closeChilds();
@@ -889,6 +958,10 @@ ApplicationWindow {
 
     function processEscape() {
         WNDU.processEscape();
+    }
+
+    function showWndSpellbook() {
+        WNDU.showSpellbook();
     }
 
     function storeWnd(wnd) {
