@@ -20,7 +20,7 @@ ApplicationWindow {
     visible: true
     width: 506//600
     height: 900//1068
-    flags: /*Qt.FramelessWindowHint|*/Qt.Window
+    flags: Qt.FramelessWindowHint|Qt.Window
 
     property real ratioObject: 1
     property real ratioFont: 1
@@ -269,7 +269,6 @@ ApplicationWindow {
                                 anchors.rightMargin: 5 * ratioObject
                                 color: "#A8F4F4"
                                 horizontalAlignment: Text.AlignLeft
-
                                 text: warlockDictionary.getStringByCode(lvmItem.model[index].t)
                             }
 
@@ -324,7 +323,7 @@ ApplicationWindow {
 
             onClicked: {
                 console.log("start game WITH FRIEND");
-                //GUI.startGame(0);
+                GUI.mainMenuAction("battle_with_friend");
             }
         }
 

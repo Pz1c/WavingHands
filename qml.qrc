@@ -109,5 +109,7 @@
         <file>qml/windows/wnd_spell.qml</file>
         <file>res/certs/isrgrootx1.pem</file>
         <file>js/spell_gui_utils.js</file>
+        <file>res/chat_pimple.png</file>
+        <file>res/scroll.png</file>
     </qresource>
 </RCC>

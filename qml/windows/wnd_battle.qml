@@ -53,7 +53,7 @@ BaseWindow {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 90 * mainWindow.ratioObject
+            height: 120 * mainWindow.ratioObject
 
             LargeText {
                id: ltAll
@@ -70,7 +70,110 @@ BaseWindow {
                visible: false
             }
 
-            BtnBig {
+            IconInfo {
+                id: iiChat
+                source: "qrc:/res/chat.png";
+                text: ""
+                text_color: "red"
+                height: 78 * mainWindow.ratioObject
+                width: height
+                iconHeight: 48 * mainWindow.ratioObject
+                iconWidth: 48 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.top: parent.top
+                //anchors.topMargin: 10 * mainWindow.ratioObject
+                anchors.right: iiScroll.left
+                anchors.rightMargin: 32 * mainWindow.ratioObject
+                radius: 10
+                borderOnPress: false
+                color: buttonPressed ? "#A8F4F4" : "transparent"
+
+                onClicked: {
+                    source = "qrc:/res/chat.png";
+                    mainWindow.showBattleChat("chat");
+                }
+            }
+
+            IconInfo {
+                id: iiScroll
+                source: "qrc:/res/scroll.png";
+                text: ""
+                text_color: "red"
+                height: 78 * mainWindow.ratioObject
+                width: height
+                iconHeight: 48 * mainWindow.ratioObject
+                iconWidth: 48 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.top: parent.top
+                //anchors.topMargin: 0 * mainWindow.ratioObject
+                anchors.right: iiSpellbook.left
+                anchors.rightMargin: 32 * mainWindow.ratioObject
+                radius: 10
+                borderOnPress: false
+                color: buttonPressed ? "#A8F4F4" : "transparent"
+
+                onClicked: {
+                    mainWindow.showBattleChat("hist");
+                }
+            }
+
+            IconInfo {
+                id: iiSpellbook
+                source: "qrc:/res/spellbook.png";
+                text: ""
+                text_color: "red"
+                height: 78 * mainWindow.ratioObject
+                width: height
+                iconHeight: 48 * mainWindow.ratioObject
+                iconWidth: 48 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.top: parent.top
+                //anchors.topMargin: 3 * mainWindow.ratioObject
+                anchors.right: bbSendOrders.left
+                anchors.rightMargin: 14 * mainWindow.ratioObject
+                radius: 10
+                borderOnPress: false
+                color: buttonPressed ? "#A8F4F4" : "transparent"
+
+                onClicked: {
+                    mainWindow.showWndSpellbook();
+                }
+            }
+
+            IconInfo {
+                id: bbSendOrders
+                active: false
+                source: "qrc:/res/send_"+(active ? "1" : "0")+".png"
+                textVisible: true
+
+                height: 64 * mainWindow.ratioObject
+                iconHeight: 64 * mainWindow.ratioObject
+                iconWidth: 64 * mainWindow.ratioObject
+                textHeight: 64 * mainWindow.ratioObject
+                textWidth: 80 * mainWindow.ratioObject
+                width: (64 + 18 + 80) * mainWindow.ratioObject
+                textAnchors.left: bbSendOrders.left
+                textAnchors.right: undefined
+                iconAnchors.right: bbSendOrders.right
+                iconAnchors.centerIn: undefined
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.top: parent.top
+                //anchors.topMargin: 5 * mainWindow.ratioObject
+                anchors.right: parent.right
+                anchors.rightMargin: 12 * mainWindow.ratioObject
+
+                color: "transparent"
+                text_color: active ? "#A8F4F4" : "#544653"
+                text: "Submit"
+
+                onClicked: {
+                    console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
+                    mainWindow.showOrders(BU.getOrdersForReview(dict));
+                }
+            }
+
+
+            /*BtnBig {
                 id: bbSendOrders
                 text_color: "#ABF4F4"
                 text: warlockDictionary.getStringByCode("SendOrders")
@@ -94,7 +197,7 @@ BaseWindow {
                     console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
                     mainWindow.showOrders(BU.getOrdersForReview(dict));
                 }
-            }
+            }*/
 
             IconInfo {
                 id: iiElemental
@@ -102,8 +205,9 @@ BaseWindow {
                 text: "3"
                 height: 78 * mainWindow.ratioObject
                 width: height
-                anchors.top: parent.top
-                anchors.topMargin: 12 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.top: parent.top
+                //anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: 6 * mainWindow.ratioObject
                 radius: 10
@@ -118,24 +222,6 @@ BaseWindow {
             }
 
             IconInfo {
-                id: iiChat
-                source: "qrc:/res/chat.png";
-                text: ""
-                text_color: "red"
-                height: 78 * mainWindow.ratioObject
-                width: height
-                anchors.top: parent.top
-                anchors.topMargin: 12 * mainWindow.ratioObject
-                anchors.right: parent.right
-                anchors.rightMargin: 6 * mainWindow.ratioObject
-                radius: 10
-
-                onClicked: {
-                    mainWindow.showBattleChat();
-                }
-            }
-
-            IconInfo {
                 id: iiNobody
                 source: "qrc:/res/target_nobody.png";
                 text: ""
@@ -143,8 +229,9 @@ BaseWindow {
                 iconHeight: 60 * mainWindow.ratioObject
                 iconWidth: 60 * mainWindow.ratioObject
                 width: height
-                anchors.top: parent.top
-                anchors.topMargin: 12 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.top: parent.top
+                //anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: ((iiElemental.visible ? 84: 0) + 6) * mainWindow.ratioObject
                 visible: false
@@ -166,8 +253,9 @@ BaseWindow {
                 iconHeight: 60 * mainWindow.ratioObject
                 iconWidth: 60 * mainWindow.ratioObject
                 width: height
-                anchors.top: parent.top
-                anchors.topMargin: 15 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.top: parent.top
+                //anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.right: parent.right
                 anchors.rightMargin: 12 * mainWindow.ratioObject
                 visible: false
@@ -211,7 +299,6 @@ BaseWindow {
                     paHint.stop();
                 }
             }
-
 
             Rectangle {
                 id: ltTutorial
@@ -385,7 +472,7 @@ BaseWindow {
             battleChanged();
             ltHint.visible = false;
         } else {
-            bbSendOrders.visible = false;
+            //bbSendOrders.active = false;
             if (Title) {
                 ltHint.visible = true;
                 ltHint.text = "Select target for " + Title + (IsSpell ? " spell" : "");
@@ -401,12 +488,22 @@ BaseWindow {
         iiNobody.visible = Enable;
         iiDefault.visible = Enable;
         //iiElemental.border.width = Enable ? 3 : 0;
+        bbSendOrders.visible = !Enable;
         iiChat.visible = !Enable;
+        iiScroll.visible = !Enable;
+        iiSpellbook.visible = !Enable;
         //iiChat.opacity = Enable ? 0.3 : 1;
     }
 
     function battleChanged() {
-        bbSendOrders.visible = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g);
+        var old_state = bbSendOrders.active;
+        var new_state = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g);
+        if (old_state != new_state) {
+            bbSendOrders.active = new_state;
+            if (new_state) {
+                bbSendOrders.animate(3);
+            }
+        }
     }
 
     function setGesture(gesture, is_maladroit) {
@@ -472,5 +569,6 @@ BaseWindow {
         console.log("battle window", x, y);
         mainWindow.storeWnd(battleItem);
         initBattleFields();
+        iiElemental.visible = true;
     }
 }

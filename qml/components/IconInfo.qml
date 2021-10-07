@@ -11,6 +11,7 @@ Rectangle {
     property bool blink: false
     property bool disbleBlinkAfterClick: true
     property bool borderOnPress: true
+    property bool buttonPressed: false
     property int borderOnPressWidth: 3
     property alias text_color: btnText.color
     property alias text: btnText.text
@@ -99,12 +100,14 @@ Rectangle {
                 borderBeforePress = border.width;
                 border.width = borderOnPressWidth;
             }
+            buttonPressed = true;
         }
 
         onReleased: {
             if (borderOnPress) {
                 border.width = borderBeforePress;
             }
+            buttonPressed = false;
         }
 
         /*onDoubleClicked: {

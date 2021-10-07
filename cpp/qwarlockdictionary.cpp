@@ -138,9 +138,9 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("SpellGroup7", "", "", "Advanced Enchantments");
     fillDictionary("SpellGroup8", "", "", "Elements");
     fillDictionary("NewGameWithFriend", "", "", "Duel with a Friend");
-    fillDictionary("FnNotReadyTitle", "", "", "Restricted zone");
-    fillDictionary("FnNotReady_short_desc", "", "", "Hey! how did you get here?!");
-    fillDictionary("FnNotReady_desc", "", "", "Sorry, functionality you found is under construction.<br>Spellcaster is free, open source game. Game are supported by community, you can help us with development or just chat with like-minded people");
+    fillDictionary("FnNotReadyTitle", "", "", "Coming Soon");
+    fillDictionary("FnNotReady_short_desc", "", "", "Hey! this is not ready yet, wanna help?");
+    fillDictionary("FnNotReady_desc", "", "", "Warlock's Duel is a free open source game, developed by the Spellcaster community. You can give us a hand, or just chat with like-minded people");
     fillDictionary("JoinUs", "", "", "Join us");
     fillDictionary("Feedback", "", "", "Feedback");
     fillDictionary("FeedbackTitle", "", "", "We need your help :)");
@@ -149,6 +149,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("RateUsAction", "", "", "Rate");
     fillDictionary("SendFeedback", "", "", "Send Feedback");
     fillDictionary("RateUs_short_desc", "", "", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us a 5 star rating?");
+    fillDictionary("miRulesTitle", "", "", "Advanced Rules");
+    fillDictionary("miLogoutTitle", "", "", "Sign Out");
 
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");

@@ -6,8 +6,9 @@ var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0};
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
 var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
-var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookTitle"}, {c:"rules",t:"Rules"}, {c:"top",t:"Top"}, {c:"feedback",t:"Feedback"},
-                     {c:"rateus",t:"RateUs"}, {c:"switch_account",t:"SwitchAccount"}, {c:"logout",t:"Logout"}/*, {c:"refresh",t:"Refresh"}*/];
+var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookTitle"}, /*{c:"top",t:"Top"},*/ {c:"feedback",t:"Feedback"},
+                     {c:"rateus",t:"RateUs"}, /*{c:"switch_account",t:"SwitchAccount"},*/ {c:"rules",t:"miRulesTitle"},
+                     {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/];
 function getMainMenuList() {
     return ARR_MAIN_MENU;
 }

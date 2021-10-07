@@ -252,7 +252,9 @@ function finishPrepareWarlockList() {
 function prepareChat() {
     var with_msg = battle.chat > 0;
     console.log("prepareChat", with_msg, battle.chat);
-    iiChat.text = battle.chat;
+    if (with_msg) {
+        iiChat.source = "qrc:/res/chat_pimple.png";
+    }
 }
 
 function prepareHint() {
