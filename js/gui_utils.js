@@ -20,6 +20,7 @@ function mainMenuActionEx(code) {
     case "rules": return Qt.openUrlExternally("https://games.ravenblack.net/rules");
     case "feedback": return showFeedbackWnd();
     case "rateus": return showRateUsWnd();
+    case "player_score": return showUserScoreWnd();
     }
     showErrorWnd({id:-1,type:1013});
 }
@@ -114,6 +115,7 @@ function userProfileChanged() {
     if (old_elo !== G_PROFILE.elo) {
         prepareNewGameBtn(G_PROFILE.elo);
     }
+    tbScoreText.text = G_PROFILE.elo;
 }
 
 function getJoinDialogText(b) {

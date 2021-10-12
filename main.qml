@@ -344,6 +344,7 @@ ApplicationWindow {
             anchors.right: parent.right
             height: 84 * ratioObject
             color: "#210430"
+            //opacity: 0.39
 
             ToolButton {
                 id: tbMenu
@@ -361,25 +362,10 @@ ApplicationWindow {
                 }
             }
 
-            LargeText {
-                id: lPlayerTitle
-                text: "Hi, " + core.login
-                horizontalAlignment: Qt.AlignHCenter
-                verticalAlignment: Qt.AlignVCenter
-                fontSizeMode: Text.VerticalFit
-                color: "#FEE2D6"
-                font.pixelSize: 28 * ratioFont
-
-                anchors.left: tbMenu.right
-                anchors.right: tbProfile.left
-                height: 48 * ratioObject
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
             ToolButton {
                 id: tbProfile
-                anchors.right: parent.right
-                anchors.rightMargin: 18 * ratioObject
+                anchors.left: tbMenu.right
+                anchors.leftMargin: 18 * ratioObject
                 anchors.top: parent.top
                 anchors.topMargin: 18 * ratioObject
                 height: 48 * ratioObject
@@ -391,6 +377,61 @@ ApplicationWindow {
                 background: Image {
                     anchors.fill: parent
                     source: "res/spellbook.png"
+                }
+            }
+
+            LargeText {
+                id: lPlayerTitle
+                text: "Hi " + core.login
+                horizontalAlignment: Qt.AlignHCenter
+                verticalAlignment: Qt.AlignVCenter
+                fontSizeMode: Text.VerticalFit
+                color: "#FEE2D6"
+                font.pixelSize: 28 * ratioFont
+
+                anchors.left: tbProfile.right
+                anchors.right: tbScoreText.left
+                height: 48 * ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            LargeText {
+                id: tbScoreText
+                text: "1500"
+                horizontalAlignment: Qt.AlignHCenter
+                verticalAlignment: Qt.AlignVCenter
+                fontSizeMode: Text.VerticalFit
+                color: "#FEE2D6"
+                font.pixelSize: 28 * ratioFont
+
+                anchors.right: tbScoreIcon.left
+                height: 48 * ratioObject
+                width: 64 * ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+
+                onClicked: {
+                    GUI.mainMenuAction("player_score");
+                }
+            }
+
+
+
+            ToolButton {
+                id: tbScoreIcon
+                anchors.right: parent.right
+                anchors.rightMargin: 18 * ratioObject
+                anchors.top: parent.top
+                anchors.topMargin: 18 * ratioObject
+                height: 48 * ratioObject
+                width: 48 * ratioObject
+
+                onClicked: {
+                    GUI.mainMenuAction("player_score");
+                    //showWndSpellbook();
+                }
+                background: Image {
+                    anchors.fill: parent
+                    source: "res/trophy.png"
                 }
             }
     }
@@ -521,10 +562,12 @@ ApplicationWindow {
                             id: idRoot
                             width: lvActiveBattle.width
                             height: 96 * ratioObject
-                            Rectangle {
+                            Item {
                                 id: rdBattleItem
-                                color: "#544653"
-                                radius: 30
+                                z: 10
+                                //color: "#544653"
+                                //opacity: 0.39
+                                //radius: 30
                                 anchors.top: parent.top
                                 anchors.left: parent.left
                                 anchors.right: parent.right
@@ -532,7 +575,7 @@ ApplicationWindow {
                                 anchors.bottomMargin: 12 * ratioObject
 
                                 LargeText {
-                                    id: rdbiText
+                                    id: rdbiText2
                                     anchors.verticalCenter: rdBattleItem.verticalCenter
                                     height: 48 * ratioObject
                                     font.pixelSize: 28 * ratioFont
@@ -583,6 +626,18 @@ ApplicationWindow {
                                     }
                                 }
                         }
+
+                            Rectangle {
+                                                            id: rdBattleItemBg
+                                                            color: "#544653"
+                                                            opacity: 0.39
+                                                            radius: 30
+                                                            anchors.top: parent.top
+                                                            anchors.left: parent.left
+                                                            anchors.right: parent.right
+                                                            anchors.bottom: parent.bottom
+                                                            anchors.bottomMargin: 12 * ratioObject
+                        }
                     }
                 }
 
@@ -613,10 +668,11 @@ ApplicationWindow {
                             id: idfRoot
                             width: lvFinishedBattle.width
                             height: 96 * ratioObject
-                            Rectangle {
+                            Item {
                             id: rdfBattleItem
-                            radius: 30
-                            color: "#544653"
+                            //radius: 30
+                            //color: "#544653"
+                            //opacity: 0.39
                             anchors.top: parent.top
                             anchors.left: parent.left
                             anchors.right: parent.right
@@ -659,6 +715,17 @@ ApplicationWindow {
                                 }
                             }
                         }
+                            Rectangle {
+                            id: rdfBattleItemBG
+                            radius: 30
+                            color: "#544653"
+                            opacity: 0.39
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 12 * ratioObject
+                            }
                     }
                 }
             }
@@ -948,6 +1015,14 @@ ApplicationWindow {
 
     function showRateUsWnd() {
         return showErrorWnd({id:-1,type:14,action:"rate_us"});
+    }
+
+    function showUserScoreWnd(data) {
+        if (!data) {
+            data = JSON.parse(JSON.stringify(GUI.G_PROFILE));
+        }
+        data.type = 15;
+        return showErrorWnd(data);
     }
 
     function confirmOrdersEx() {

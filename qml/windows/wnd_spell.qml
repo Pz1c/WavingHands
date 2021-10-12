@@ -200,7 +200,9 @@ InfoWindow {
 
         if (l_data && (l_data.action || (l_data.type && (l_data.type >= 8)))) {
           icon.visible = false;
-          if (l_data.type && (l_data.type === 14)) {
+          if (l_data.type && (l_data.type === 15)) {
+            SGU.prepareUserScore(l_data, dict);
+          } else if (l_data.type && (l_data.type === 14)) {
             SGU.prepareRateUs(l_data, dict);
           } else if (l_data.type && (l_data.type === 13)) {
             SGU.prepareFeedback(l_data, dict);

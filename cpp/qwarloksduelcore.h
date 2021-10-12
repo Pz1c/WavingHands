@@ -19,6 +19,7 @@
 #include "qwarlockdictionary.h"
 #include "qgameconstant.h"
 #include "qwarlock.h"
+#include "qwarlockstat.h"
 
 
 class QWarloksDuelCore : public QGameCore
@@ -203,7 +204,6 @@ private:
     QString _login;
     QString _password;
     QString _errorMsg;
-    //QStringList _lstAI;
     QStringList _activeBattle;
 
     // user statistic
@@ -231,6 +231,11 @@ private:
     QMap<int, int> _battleWait;
     QStringList _msg;
     QList<QValueName> _accounts;
+    qint64 _lastPlayersScan;
+    QMap<QString, QWarlockStat> _playerStats;
+    QMap<int, QStringList> _battleHistory;
+    QMap<int, QStringList> _battleChat;
+
 
     // current battle
     int _loadedBattleID;

@@ -13,6 +13,7 @@ HEADERS += \
     cpp/qwarlock.h \
     cpp/qwarlockdictionary.h \
     cpp/qwarlockspellchecker.h \
+    cpp/qwarlockstat.h \
     cpp/qwarlockutils.h \
     cpp/qwarloksduelcore.h \
     cpp/qspell.h\
@@ -27,6 +28,7 @@ SOURCES += main.cpp \
     cpp/qwarlock.cpp \
     cpp/qwarlockdictionary.cpp \
     cpp/qwarlockspellchecker.cpp \
+    cpp/qwarlockstat.cpp \
     cpp/qwarlockutils.cpp \
     cpp/qwarloksduelcore.cpp \
     cpp/qspell.cpp\

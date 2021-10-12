@@ -152,3 +152,10 @@ function prepareRateUs(l_data, dict) {
     ltShortDesc.text = dict.getStringByCode("RateUs_short_desc");
     ltError.text = "";
 }
+
+function prepareUserScore(l_data, dict) {
+    ltDesc.visible = true;
+    ltTitle.text = l_data.name + ": Stats";
+    ltShortDesc.visible = false;
+    ltError.text = "Score: " + l_data.ladder + "<br>Played: " + l_data.played + "<br>Won: " + l_data.won + "<br>Died: " + l_data.died + "<br>ELO: " + l_data.elo;
+}
