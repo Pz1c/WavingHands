@@ -779,9 +779,9 @@ ApplicationWindow {
         }
     }
 
-    function showBattleChat(battle_id, new_msg) {
+    function showBattleChat(chat_history) {
         console.log("showBattleChat");
-        showErrorWnd({type:3,text:core.finishedBattle, title: "Battle #" + gBattle.id + " chat", msg: gBattle.actions.C});
+        showErrorWnd({type:3,text:chat_history, title: "Battle #" + gBattle.id + " chat", msg: gBattle.actions.C});
     }
 
     function storeBattleChatMsg(msg) {
@@ -836,6 +836,10 @@ ApplicationWindow {
         //msg_txt += warlockDictionary.getStringByCode(spell_code + "_desc");
 
         showErrorWnd({type:7,spell:spell_code});
+    }
+
+    function showBattleHistory(txt) {
+        showErrorWnd({type:16,history:txt});
     }
 
     function showGesture(isLeft, possible_gestures) {

@@ -90,7 +90,7 @@ BaseWindow {
 
                 onClicked: {
                     source = "qrc:/res/chat.png";
-                    mainWindow.showBattleChat("chat");
+                    mainWindow.showBattleChat(mainWindow.gBattle.battle_chat);
                 }
             }
 
@@ -113,7 +113,7 @@ BaseWindow {
                 color: buttonPressed ? "#A8F4F4" : "transparent"
 
                 onClicked: {
-                    mainWindow.showBattleChat("hist");
+                    mainWindow.showBattleHistory(mainWindow.gBattle.battle_hist);
                 }
             }
 
@@ -569,6 +569,6 @@ BaseWindow {
         console.log("battle window", x, y);
         mainWindow.storeWnd(battleItem);
         initBattleFields();
-        iiElemental.visible = true;
+        //iiElemental.visible = true;
     }
 }

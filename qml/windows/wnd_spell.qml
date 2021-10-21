@@ -186,7 +186,7 @@ InfoWindow {
     function initErrFields() {
         console.log("wnd_spell.initFields", JSON.stringify(mainWindow.gERROR));
         if (!mainWindow.gERROR || (!mainWindow.gERROR.spell && !mainWindow.gERROR.data && !(mainWindow.gERROR.type >= 7))) {
-            return;
+        return;
         }
 
         var spell_code = mainWindow.gERROR.spell;
@@ -199,122 +199,36 @@ InfoWindow {
         SGU.cleanUpWindow(mainWindow.ratioObject);
 
         if (l_data && (l_data.action || (l_data.type && (l_data.type >= 8)))) {
-          icon.visible = false;
-          if (l_data.type && (l_data.type === 15)) {
-            SGU.prepareUserScore(l_data, dict);
-          } else if (l_data.type && (l_data.type === 14)) {
-            SGU.prepareRateUs(l_data, dict);
-          } else if (l_data.type && (l_data.type === 13)) {
-            SGU.prepareFeedback(l_data, dict);
-          } else if (l_data.type && (l_data.type === 1013)) {
-            SGU.prepareNotReadyFunctionalMsg(l_data, dict);
-          } else if (l_data.type && (l_data.type === 12)) {
-            SGU.prepareDataType12(l_data, dict);
-            /*l_data.action = "leave";
-            ltTitle.text = dict.getStringByCode('DefNotStartTitle');
-            ltShortDesc.text = dict.getStringByCode('DefNotStartSTitle');
-            ltError.text = "";
-            if (l_data.d) {
-                var tarr = l_data.d.split(" ");
-                if (!tarr[0] || (tarr[0] === '')) {
-                    ltError.text = "No one other warlock in then circle<br>";
-                } else {
-                    ltError.text = "Warlocks waiting in the circle: " + tarr[0].replace(",", ", ") + "<br>";
-                }
-                var tarr2 = tarr[1].split("/");
-                ltError.text += "Waiting for: " + (tarr2[1] * 1 - tarr2[0] * 1) + " warlocks<br><br>";
+            icon.visible = false;
+            if (l_data.type && (l_data.type === 16)) {
+                SGU.prepareBattleHistory(l_data, dict);
+            } else if (l_data.type && (l_data.type === 15)) {
+                SGU.prepareUserScore(l_data, dict);
+            } else if (l_data.type && (l_data.type === 14)) {
+                SGU.prepareRateUs(l_data, dict);
+            } else if (l_data.type && (l_data.type === 13)) {
+                SGU.prepareFeedback(l_data, dict);
+            } else if (l_data.type && (l_data.type === 1013)) {
+                SGU.prepareNotReadyFunctionalMsg(l_data, dict);
+            } else if (l_data.type && (l_data.type === 12)) {
+                SGU.prepareDataType12(l_data, dict);
+            } else if (l_data.type && (l_data.type === 11)) {
+                SGU.prepareDataType11(l_data, dict);
+            } else if (l_data.type && (l_data.type === 10)) {
+                SGU.prepareDataType10(l_data, dict);
+            } else if (l_data.type && (l_data.type === 9)) {
+                SGU.prepareDataType9(l_data, dict);
+            } else if (l_data.type && (l_data.type === 8)) {
+                SGU.prepareDataType8(l_data, dict);
+            } else if (l_data.action === 'm') {
+                SGU.prepareMonsterDetails(l_data, dict);
+            } else if (l_data.action === 'hp') {
+                SGU.prepareHPDetails(l_data, dict);
             }
-            ltError.text += dict.getStringByCode('DefNotStartDesc');
-            bbAction.text = "Leave";
-            bbAction.visible = true;*/
-          } else if (l_data.type && (l_data.type === 11)) {
-              SGU.prepareDataType11(l_data, dict);
-              /*ltTitle.text = dict.getStringByCode('DefErrTitle');
-              ltShortDesc.text = dict.getStringByCode('JoinBattleError');
-              ltError.text = l_data.d ? replaceAll(l_data.d, "''", '"') : "Unknown error";*/
-          } else if (l_data.type && (l_data.type === 10)) {
-              SGU.prepareDataType10(l_data, dict);
-              /*l_data.action = "reg_info";
-              ltTitle.text = dict.getStringByCode('DefErrTitle');
-              ltShortDesc.text = dict.getStringByCode('BattleCreateError');
-              ltError.text = dict.getStringByCode('BattleCreateErrorDetails');
-              bbAction.gradient = undefined;
-              bbAction.font.underline = true;
-              bbAction.text = dict.getStringByCode('LearnMore');
-              bbAction.transparent = true;
-              bbAction.visible = true;*/
-          } else if (l_data.type && (l_data.type === 9)) {
-              SGU.prepareDataType9(l_data, dict);
-              /*ltDesc.visible = false;
-              svMain.anchors.topMargin = 0;
-              ltTitle.text = l_data.t;
-              ltShortDesc.text = l_data.st ? l_data.st : "";
-              ltError.text = replaceAll(l_data.d, "''", '"');*/
-          } else if (l_data.type && (l_data.type === 8)) {
-              SGU.prepareDataType8(l_data, dict);
-            /*ltTitle.text = "Orders Submitted";
-            ltShortDesc.text = "Your orders are in for this turn";
-            ltError.text = l_data.d;
-            bbAction.text = "Force Turn";//dict.getStringByCode("MonsterSetTarget");
-            if (l_data.fst > 0) {
-                bbAction.visible = true;
-                l_data.action = "force";
-            }*/
-          } else if (l_data.action === 'm') {
-            SGU.prepareMonsterDetails(l_data, dict);
-            /*icon.source = "qrc:/res/" + l_data.icon + ".png";
-            icon.visible = true;
-            icon.text = l_data.hp;
-            var details = "Life: " + l_data.hp + "<br>Power: "+l_data.strength;
-            if (l_data.name.indexOf("RH:") === 0) {
-                ltTitle.text = dict.getStringByCode("RH_summon");
-                ltShortDesc.text = dict.getStringByCode("WH_summon");
-                if (l_data.hp === "R") {
-                    details = "Life: Unknown<br>Power: Unknown";
-                } else {
-                    ltTitle.text += " ("+BGU.getMonsterNameByStrength(l_data.strength)+")";
-                }
-            } else if (l_data.name.indexOf("LH:") === 0) {
-                ltTitle.text = dict.getStringByCode("LH_summon");
-                ltShortDesc.text = dict.getStringByCode("WH_summon");
-                if (l_data.hp === "L") {
-                    details = "Life: Unknown<br>Power: Unknown";
-                } else {
-                    ltTitle.text += " ("+BGU.getMonsterNameByStrength(l_data.strength) +")";
-                }
-            } else {
-              ltTitle.text = l_data.name;
-              ltShortDesc.text = dict.getStringByCode("Warlock");
-            }
-            details += "<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
-            ltError.text = details;
-            bbAction.text = dict.getStringByCode("MonsterSetTarget");
-            bbAction.visible = l_data.under_control;*/
-          } else if (l_data.action === 'hp') {
-            SGU.prepareHPDetails(l_data, dict);
-            /*icon.source = "qrc:/res/heart_small.png";
-            icon.text = l_data.value;
-            icon.visible = true;
-            ltTitle.text = l_data.warlock_name;
-            ltShortDesc.text = dict.getStringByCode("Warlock");
-            ltError.text = "Life: " + l_data.value;*/
-          }
-          ltError.font.pixelSize = 28 * mainWindow.ratioFont;
+            ltError.font.pixelSize = 28 * mainWindow.ratioFont;
         } else if (spell_code) {
             var spell_icon = BGU.map_spell_to_icon[spell_code];
             SGU.prepareSpellDescription(spell_code, spell_icon);
-            /*
-            if (spell_icon) {
-                icon.source = "qrc:/res/"+spell_icon+".png";
-                icon.visible = true;
-            } else {
-                icon.visible = false;
-            }
-
-            ltTitle.text = dict.getStringByCode(spell_code);
-            ltShortDesc.text = dict.getStringByCode(spell_code + "_short_desc");
-            ltError.font.pixelSize = 21 * mainWindow.ratioFont;
-            ltError.text = dict.getStringByCode(spell_code + "_desc");*/
         }
 
         mainWindow.gERROR = {};

@@ -3,6 +3,7 @@
 #ifdef Q_OS_ANDROID
 //#include <QAndroidJniObject>
 #endif
+#include <cpp/qgameconstant.h>
 #include <QtNetwork/QSslConfiguration>
 #include <QtNetwork/QSslSocket>
 #include <QtGlobal>

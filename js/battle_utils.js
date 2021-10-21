@@ -109,7 +109,7 @@ function parseParalyzedHands(arr) {
 
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
-        monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg};
+        monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: raw_battle.battle_hist, battle_chat: raw_battle.battle_chat};
     // L left  obj
     // R Right obj
     // C Chat  text

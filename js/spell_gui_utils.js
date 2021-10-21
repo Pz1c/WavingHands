@@ -159,3 +159,14 @@ function prepareUserScore(l_data, dict) {
     ltShortDesc.visible = false;
     ltError.text = "Score: " + l_data.ladder + "<br>Played: " + l_data.played + "<br>Won: " + l_data.won + "<br>Died: " + l_data.died + "<br>ELO: " + l_data.elo;
 }
+
+function replaceAll(str, find, replace) {
+  return str.replace(new RegExp(find, 'g'), replace);
+}
+
+function prepareBattleHistory(l_data, dict) {
+    ltDesc.visible = false;
+    ltTitle.visible = false;
+    ltShortDesc.visible = false;
+    ltError.text = replaceAll(l_data.history, "&quot;", '"');
+}

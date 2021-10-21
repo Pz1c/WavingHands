@@ -12,6 +12,7 @@
 #include <QNetworkProxy>
 #include <QList>
 #include <QPair>
+#include <QStandardPaths>
 #include <qcore.h>
 
 //#include "qwarlockutils.h"
@@ -170,13 +171,14 @@ protected:
     bool parseSpecReadyBattleValues(QString &Data);
     void setPossibleSpell(const QString &Data);
     void calcBattleDecision();
+    void prepareBattleChatAndHistory(QString &Data);
 
     bool parseReadyBattle(QString &Data);
     void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
     void parseChallendge(QString &Data);
     void parseMessages(QString &Data);
 
-    void setOrganization() override;
+    //void setOrganization() override;
     void saveGameParameters() override;
     void loadGameParameters() override;
 

@@ -4,7 +4,10 @@
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     QGameCore(parent)
 {
-    setOrganization();
+    QString ini_path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    qDebug() << "QWarloksDuelCore::QWarloksDuelCore" << ini_path;
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, ini_path);
+    setOrganization(ORGANIZATION_NAME, APPLICATION_NAME);
     init();
     GameDictionary->setCurrentLang("en");
     SpellChecker = QWarlockSpellChecker::getInstance();
@@ -33,13 +36,6 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
     prepareSpellHtmlList();
-}
-
-
-void QWarloksDuelCore::setOrganization() {
-    qDebug() << "QWarloksDuelCore::setOrganization";
-    _organizationName = ORGANIZATION_NAME;
-    _applicationName = APPLICATION_NAME;
 }
 
 QWarloksDuelCore::~QWarloksDuelCore() {
@@ -745,11 +741,6 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         return false;
     }
 
-    /*int cidx1 = Data.indexOf("<U>Turn");
-    int cidx2 = Data.indexOf("</BLOCKQUOTE>", cidx1);
-    _chat = Data.mid(cidx1, cidx2 - cidx1);
-    butifyTurnMessage(_chat);*/
-
     int idx3 = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">", idx1);
     if (idx3 == -1) {
         _errorMsg = "Wrong battle answer!!!";
@@ -779,10 +770,47 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             return false;
         }
 
+        prepareBattleChatAndHistory(Data);
+
         setTimeState(false);
         emit readyBattleChanged();
     }
     return res;
+}
+
+void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
+    int cidx1 = Data.indexOf("</U><BLOCKQUOTE>");
+    if (cidx1 == -1) {
+        return;
+    }
+    cidx1 += 16;
+    int cidx2 = Data.indexOf("</BLOCKQUOTE>", cidx1);
+    if (cidx2 == -1) {
+        return;
+    }
+    QString turn_hist = Data.mid(cidx1, cidx2 - cidx1);
+    butifyTurnMessage(turn_hist);
+    QString chat_msg;
+    QStringList slC = turn_hist.split("<BR>");
+    foreach(QString ss, slC) {
+        if (ss.indexOf(" says ") != -1) {
+            if (!chat_msg.isEmpty()) {
+                chat_msg.append("<br>");
+            }
+            chat_msg.append(ss);
+        }
+        if (ss.indexOf("<FONT") != -1) {
+            break;
+        }
+    }
+    while(_battleChat[_loadedBattleID].size() < _loadedBattleTurn - 1) {
+        _battleChat[_loadedBattleID].append("");
+    }
+    _battleChat[_loadedBattleID].append(chat_msg);
+    while(_battleHistory[_loadedBattleID].size() < _loadedBattleTurn - 1) {
+        _battleHistory[_loadedBattleID].append("");
+    }
+    _battleHistory[_loadedBattleID].append(turn_hist);
 }
 
 void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
@@ -1985,14 +2013,25 @@ QString QWarloksDuelCore::battleInfo() {
             msg.clear();
         }
     }
+    QString tmpBH, tmpBC;
+    int turn_idx = 0;
+    foreach(QString s, _battleHistory[_loadedBattleID]) {
+        tmpBH.append(QString("<h3>Turn %1</h3>").arg(intToStr(turn_idx++)));
+        tmpBH.append(s.replace('"', "&quot;"));
+    }
+    turn_idx = 0;
+    foreach(QString s, _battleChat[_loadedBattleID]) {
+        tmpBC.append(QString("<h3>Turn %1</h3>").arg(intToStr(turn_idx++)));
+        tmpBC.append(s.replace('"', "&quot;"));
+    }
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\"}")
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\",\"battle_hist\":\"%21\",\"battle_chat\":\"%22\"}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg); // 12 - 20
-
+            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
+            .arg(tmpBH, tmpBC); // 21-22
 }
 
 void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Value) {
