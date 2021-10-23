@@ -237,6 +237,11 @@ BaseWindow {
         console.log("wnd_gesture.initGFields", JSON.stringify(mainWindow.gERROR));
         title_text = mainWindow.gERROR.title;
         lvOrderList.model = mainWindow.gERROR.data;
+        var is_surrender = mainWindow.gERROR.data && (mainWindow.gERROR.data.length > 0) && mainWindow.gERROR.data[0] && mainWindow.gERROR.data[0].type &&
+                (mainWindow.gERROR.data[0].type === "SS");
+        iiSend.text = is_surrender ? "SURRENDER!" : "Submit";
+        iiSend.width = (is_surrender ? (64 + 30 + 80) : (64 + 30 + 120))* mainWindow.ratioObject
+        iiSend.textWidth = (is_surrender ? 80 : 120)* mainWindow.ratioObject
         mainWindow.gERROR = {};
     }
 

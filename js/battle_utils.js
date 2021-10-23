@@ -348,13 +348,14 @@ function getOrdersForReview(dictionary) {
     console.log("getOrdersForReview", JSON.stringify(battle.actions));
     var res = [];
     var actions = battle.actions;
+
+    if ((actions.L.g === "P") && (actions.R.g === "P")) {
+        res.push({type:"SS",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"RIP2",icon_text:"",icon_visible:true,icon_width:60});
+    }
+
     if (actions.C !== "") {
         res.push({type:"C",v:"Say: " + actions.C,c:"snow",icon:"",icon_text:""});
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
-    }
-
-    if ((actions.L.g === "P") && (actions.R.g === "P")) {
-        res.push({type:"LH",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"",icon_text:""});
     }
     // gesture
     res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary, battle.completed_spell_L),

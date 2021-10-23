@@ -2031,7 +2031,7 @@ QString QWarloksDuelCore::battleInfo() {
         if (++turn_idx == 0) {
             continue;
         }
-        tmpBH.append(QString("<h3>Turn %1</h3>").arg(intToStr(turn_idx)));
+        tmpBH.append(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(turn_idx)));
         tmpBH.append(s.replace('"', "&quot;"));
     }
     turn_idx = -1;
@@ -2039,7 +2039,10 @@ QString QWarloksDuelCore::battleInfo() {
         if (++turn_idx == 0) {
             continue;
         }
-        tmpBC.append(QString("<h3>Turn %1</h3>").arg(intToStr(turn_idx)));
+        if (s.isEmpty()) {
+            continue;
+        }
+        tmpBC.append(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(turn_idx)));
         tmpBC.append(s.replace('"', "&quot;"));
     }
 

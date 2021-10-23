@@ -1,6 +1,7 @@
 function cleanUpWindow(ratioObject) {
     ltDesc.visible = true;
     bbAction.visible = false;
+    ltShortDesc.visible = true;
     bbSkipAction.visible = false;
     bbAction.transparent = false;
     bbAction.gradient = gDef;

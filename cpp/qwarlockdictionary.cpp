@@ -108,7 +108,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleAction_P", "", "", "Try do permanent spell casted by ");
     fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
     fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
-    fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P) -raising a white flag");
+    fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P)\n-raising a white flag");
     fillDictionary("TitleAction_M", "", "", "direct %1<br>at %2");
     fillDictionary("Refresh", "", "", "Refresh");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
@@ -152,6 +152,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("miRulesTitle", "", "", "Advanced Rules");
     fillDictionary("miLogoutTitle", "", "", "Sign Out");
     fillDictionary("BattleHistoryTitle", "", "", "Battle History");
+    fillDictionary("Say", "", "", "Your message for this turn");
 
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
