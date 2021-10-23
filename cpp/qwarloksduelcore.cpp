@@ -262,7 +262,7 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
 }
 
 bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl) {
-    qDebug() << "finishCreateChallenge " << StatusCode << NewUrl;
+    qDebug() << "finishCreateChallenge " << StatusCode << NewUrl << Data;
     if (NewUrl.isEmpty()) {
         _errorMsg = "{\"type\":10}";
         emit errorOccurred();
@@ -779,17 +779,20 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 }
 
 void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
-    int cidx1 = Data.indexOf("</U><BLOCKQUOTE>");
+    qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << _loadedBattleTurn << _battleChat[_loadedBattleID].size() << _battleHistory[_loadedBattleID].size();
+    int cidx1 = Data.indexOf("</U></H2><BR><BLOCKQUOTE>");
     if (cidx1 == -1) {
         return;
     }
-    cidx1 += 16;
+    cidx1 += 25;
     int cidx2 = Data.indexOf("</BLOCKQUOTE>", cidx1);
     if (cidx2 == -1) {
         return;
     }
-    QString turn_hist = Data.mid(cidx1, cidx2 - cidx1);
+    QString turn_hist = Data.mid(cidx1, cidx2 - cidx1).replace("\n", " ");
     butifyTurnMessage(turn_hist);
+
+    //qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << turn_hist;
     QString chat_msg;
     QStringList slC = turn_hist.split("<BR>");
     foreach(QString ss, slC) {
@@ -803,14 +806,23 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
             break;
         }
     }
+    //qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << chat_msg;
+    while(_battleChat[_loadedBattleID].size() >= _loadedBattleTurn) {
+        _battleChat[_loadedBattleID].removeLast();
+    }
     while(_battleChat[_loadedBattleID].size() < _loadedBattleTurn - 1) {
         _battleChat[_loadedBattleID].append("");
     }
     _battleChat[_loadedBattleID].append(chat_msg);
+    //qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << _battleChat[_loadedBattleID];
+    while(_battleHistory[_loadedBattleID].size() >= _loadedBattleTurn) {
+        _battleHistory[_loadedBattleID].removeLast();
+    }
     while(_battleHistory[_loadedBattleID].size() < _loadedBattleTurn - 1) {
         _battleHistory[_loadedBattleID].append("");
     }
     _battleHistory[_loadedBattleID].append(turn_hist);
+    //qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << _battleHistory[_loadedBattleID];
 }
 
 void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
@@ -2014,14 +2026,20 @@ QString QWarloksDuelCore::battleInfo() {
         }
     }
     QString tmpBH, tmpBC;
-    int turn_idx = 0;
+    int turn_idx = -1;
     foreach(QString s, _battleHistory[_loadedBattleID]) {
-        tmpBH.append(QString("<h3>Turn %1</h3>").arg(intToStr(turn_idx++)));
+        if (++turn_idx == 0) {
+            continue;
+        }
+        tmpBH.append(QString("<h3>Turn %1</h3>").arg(intToStr(turn_idx)));
         tmpBH.append(s.replace('"', "&quot;"));
     }
-    turn_idx = 0;
+    turn_idx = -1;
     foreach(QString s, _battleChat[_loadedBattleID]) {
-        tmpBC.append(QString("<h3>Turn %1</h3>").arg(intToStr(turn_idx++)));
+        if (++turn_idx == 0) {
+            continue;
+        }
+        tmpBC.append(QString("<h3>Turn %1</h3>").arg(intToStr(turn_idx)));
         tmpBC.append(s.replace('"', "&quot;"));
     }
 

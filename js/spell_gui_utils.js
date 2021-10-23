@@ -5,6 +5,7 @@ function cleanUpWindow(ratioObject) {
     bbAction.transparent = false;
     bbAction.gradient = gDef;
     bbAction.font.underline = false;
+    svMain.anchors.top = ltDesc.bottom;
     svMain.anchors.topMargin = 20 * ratioObject;
 }
 
@@ -157,7 +158,7 @@ function prepareUserScore(l_data, dict) {
     ltDesc.visible = true;
     ltTitle.text = l_data.name + ": Stats";
     ltShortDesc.visible = false;
-    ltError.text = "Score: " + l_data.ladder + "<br>Played: " + l_data.played + "<br>Won: " + l_data.won + "<br>Died: " + l_data.died + "<br>ELO: " + l_data.elo;
+    ltError.text = "Score: " + l_data.elo + "<br>Played: " + l_data.played + "<br>Won: " + l_data.won + "<br>Died: " + l_data.died;
 }
 
 function replaceAll(str, find, replace) {
@@ -166,7 +167,9 @@ function replaceAll(str, find, replace) {
 
 function prepareBattleHistory(l_data, dict) {
     ltDesc.visible = false;
-    ltTitle.visible = false;
+    ltTitle.visible = true;
+    ltTitle.text = dict.getStringByCode("BattleHistoryTitle");
     ltShortDesc.visible = false;
+    svMain.anchors.top = ltTitle.bottom;
     ltError.text = replaceAll(l_data.history, "&quot;", '"');
 }

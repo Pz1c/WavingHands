@@ -151,6 +151,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("RateUs_short_desc", "", "", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us a 5 star rating?");
     fillDictionary("miRulesTitle", "", "", "Advanced Rules");
     fillDictionary("miLogoutTitle", "", "", "Sign Out");
+    fillDictionary("BattleHistoryTitle", "", "", "Battle History");
 
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
