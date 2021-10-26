@@ -48,7 +48,7 @@ InfoWindow {
                 x: 0
                 width: dialogWindow.width - 0.11 * dialogWindow.height
                 //height: svLog.height
-                font.pixelSize: 0.05 * dialogWindow.height
+                font.pixelSize: 28 * mainWindow.ratioFont
                 wrapMode: Text.WordWrap
                 color: "snow"
                 textFormat: Text.RichText

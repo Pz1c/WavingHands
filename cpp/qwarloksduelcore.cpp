@@ -795,15 +795,18 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
     //qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << turn_hist;
     QString chat_msg;
     QStringList slC = turn_hist.split("<BR>");
+    QString short_hist;
     foreach(QString ss, slC) {
         if (ss.indexOf(" says ") != -1) {
             if (!chat_msg.isEmpty()) {
                 chat_msg.append("<br>");
             }
             chat_msg.append(ss);
-        }
-        if (ss.indexOf("<FONT") != -1) {
-            break;
+        } else {
+            if (!short_hist.isEmpty()) {
+                short_hist.append("<br>");
+            }
+            short_hist.append(ss);
         }
     }
     //qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << chat_msg;
@@ -821,7 +824,7 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
     while(_battleHistory[_loadedBattleID].size() < _loadedBattleTurn - 1) {
         _battleHistory[_loadedBattleID].append("");
     }
-    _battleHistory[_loadedBattleID].append(turn_hist);
+    _battleHistory[_loadedBattleID].append(short_hist);
     //qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << _battleHistory[_loadedBattleID];
 }
 
