@@ -501,7 +501,7 @@ BaseWindow {
         if (old_state != new_state) {
             bbSendOrders.active = new_state;
             if (new_state) {
-                bbSendOrders.animate(3);
+                bbSendOrders.animate(1);
             }
         }
     }
@@ -512,7 +512,7 @@ BaseWindow {
             iWarlocks.children[0].setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture));
         }
 
-        battleChanged();
+        //battleChanged();
     }
 
     function setCharm(hand, gesture) {

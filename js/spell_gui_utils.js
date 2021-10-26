@@ -174,3 +174,20 @@ function prepareBattleHistory(l_data, dict) {
     svMain.anchors.top = ltTitle.bottom;
     ltError.text = replaceAll(l_data.history, "&quot;", '"');
 }
+
+function preparePersonalChallenge(l_data, dict) {
+    ltTitle.text = dict.getStringByCode("PersonalChalengeTitle");
+    ltShortDesc.text = dict.getStringByCode("PersonalChalengeSDesc") + l_data.el;
+    var enemy = JSON.parse(mainWindow.gameCore.getWarlockStats(l_data.el));
+    ltError.text = l_data.dt.replace("Waiting", "<br>Waiting").replace(", need", "<br>Need") + "<br>Score: " + enemy.elo + "<br>Played: " + enemy.played + "<br>Won: " + enemy.won + "<br>Died: " + enemy.died;
+    bbAction.visible = true;
+    bbAction.text = dict.getStringByCode("PersonalChalengeAccept");
+    bbSkipAction.visible = true;
+    bbSkipAction.text = dict.getStringByCode("PersonalChalengeReject");
+}
+
+function prepareShareWnd(l_data, dict) {
+    ltTitle.text = dict.getStringByCode("ShareWndTitle");
+    ltShortDesc.text = dict.getStringByCode("ShareWndSDesc");
+    ltError.text = dict.getStringByCode("ShareWndDesc") + mainWindow.gameCore.getSharableLink();
+}

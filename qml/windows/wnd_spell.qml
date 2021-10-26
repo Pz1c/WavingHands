@@ -81,11 +81,12 @@ InfoWindow {
                 Text {
                     id: ltError
                     width: iItem.width * 0.99
-                    wrapMode: Text.WordWrap
+                    wrapMode: Text.Wrap
                     textFormat: Text.RichText
                     font.pixelSize: 28 * mainWindow.ratioFont
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignJustify
+
                 }
             }
 
@@ -116,7 +117,9 @@ InfoWindow {
 
                 onClicked: {
                     console.log("chooseMonsterTarget", JSON.stringify(l_data));
-                    if (l_data.action === "rate_us") {
+                    if (l_data.action === "private_challenge") {
+                        mainWindow.gameCore.acceptChallenge(l_data.id, true);
+                    } else if (l_data.action === "rate_us") {
                         Qt.openUrlExternally("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel");
                         mainWindow.processEscape();
                     } else if (l_data.action === "feedback") {
@@ -160,6 +163,8 @@ InfoWindow {
                     mainWindow.processEscape();
                     if (l_data.action === "rate_us") {
                         mainWindow.showFeedbackWnd();
+                    } else if (l_data.action === "private_challenge") {
+                        mainWindow.gameCore.rejectChallenge(l_data.id);
                     }
                 }
             }
@@ -200,7 +205,11 @@ InfoWindow {
 
         if (l_data && (l_data.action || (l_data.type && (l_data.type >= 8)))) {
             icon.visible = false;
-            if (l_data.type && (l_data.type === 16)) {
+            if (l_data.type && (l_data.type === 18)) {
+                SGU.prepareShareWnd(l_data, dict);
+            } else if (l_data.type && (l_data.type === 17)) {
+                SGU.preparePersonalChallenge(l_data, dict);
+            } else if (l_data.type && (l_data.type === 16)) {
                 SGU.prepareBattleHistory(l_data, dict);
             } else if (l_data.type && (l_data.type === 15)) {
                 SGU.prepareUserScore(l_data, dict);

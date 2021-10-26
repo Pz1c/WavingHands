@@ -13,6 +13,8 @@
 #include <QList>
 #include <QPair>
 #include <QStandardPaths>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <qcore.h>
 
 //#include "qwarlockutils.h"
@@ -132,6 +134,8 @@ public slots:
     void aiLogin();
     void leaveBattle(int battle_id);
     void setParamValue(const QString &Parameter, const QString &Value);
+    QString getWarlockStats(const QString &WarlockName);
+    QString getSharableLink();
 
 
     void slotReadyRead() override;
@@ -226,7 +230,7 @@ private:
     QList<int> _finished_battles;
     //QStringList _shown_battles;
     QString _finishedBattle;
-    QMap<int, QString> _challenge;
+    QStringList _challenge;
     QMap<int, QString> _battleDesc;
     QMap<int, int> _battleHint;
     QMap<int, int> _battleState; // -2 deleted, -1 not started, 0 wait, 1 ready, 2 finished

@@ -118,6 +118,7 @@ BaseWindow {
                                     width: lvOrderList.model[index].icon_width * mainWindow.ratioObject
                                     text: lvOrderList.model[index].icon_text
                                     textVisible: lvOrderList.model[index].icon_text !== ""
+                                    color: lvOrderList.model[index].type === "PP" ? "transparent" : "#551470"
                                     gradient: ((lvOrderList.model[index].type === "LH") || (lvOrderList.model[index].type === "RH")) ? gGesture : undefined
                                 }
 
@@ -132,6 +133,7 @@ BaseWindow {
                                     horizontalAlignment: Text.AlignLeft
                                     text: lvOrderList.model[index].v
                                     font.pixelSize: 28 * mainWindow.ratioFont
+                                    wrapMode: Text.WordWrap
 
                                     //width: 0.9 * parent.width
                                     height: 0.9 * parent.height
@@ -238,10 +240,10 @@ BaseWindow {
         title_text = mainWindow.gERROR.title;
         lvOrderList.model = mainWindow.gERROR.data;
         var is_surrender = mainWindow.gERROR.data && (mainWindow.gERROR.data.length > 0) && mainWindow.gERROR.data[0] && mainWindow.gERROR.data[0].type &&
-                (mainWindow.gERROR.data[0].type === "SS");
+                (mainWindow.gERROR.data[0].type === "PP");
+        iiSend.width = (!is_surrender ? (64 + 30 + 80) : (64 + 30 + 120)) * mainWindow.ratioObject;
+        iiSend.textWidth = (!is_surrender ? 80 : 120)* mainWindow.ratioObject;
         iiSend.text = is_surrender ? "SURRENDER!" : "Submit";
-        iiSend.width = (is_surrender ? (64 + 30 + 80) : (64 + 30 + 120))* mainWindow.ratioObject
-        iiSend.textWidth = (is_surrender ? 80 : 120)* mainWindow.ratioObject
         mainWindow.gERROR = {};
     }
 

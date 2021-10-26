@@ -350,7 +350,7 @@ function getOrdersForReview(dictionary) {
     var actions = battle.actions;
 
     if ((actions.L.g === "P") && (actions.R.g === "P")) {
-        res.push({type:"SS",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"RIP2",icon_text:"",icon_visible:true,icon_width:60});
+        res.push({type:"PP",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"RIP2",icon_text:"",icon_visible:true,icon_width:60});
     }
 
     if (actions.C !== "") {

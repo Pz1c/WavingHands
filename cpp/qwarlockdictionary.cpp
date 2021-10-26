@@ -108,7 +108,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleAction_P", "", "", "Try do permanent spell casted by ");
     fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
     fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
-    fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P)\n-raising a white flag");
+    fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P) - raising a white flag");
     fillDictionary("TitleAction_M", "", "", "direct %1<br>at %2");
     fillDictionary("Refresh", "", "", "Refresh");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
@@ -153,7 +153,14 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("miLogoutTitle", "", "", "Sign Out");
     fillDictionary("BattleHistoryTitle", "", "", "Battle History");
     fillDictionary("Say", "", "", "Your message for this turn");
-
+    fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");
+    fillDictionary("PersonalChalengeSDesc", "", "", "You are invited for a private duel by ");
+    fillDictionary("PersonalChalengeAccept", "", "", "Accept");
+    fillDictionary("PersonalChalengeReject", "", "", "Refuse");
+    fillDictionary("DuelWithFriend", "", "", "Duel with a friend");
+    fillDictionary("ShareWndTitle", "", "", "Invite friends");
+    fillDictionary("ShareWndSDesc", "", "", "Please share following link with your friends");
+    fillDictionary("ShareWndDesc", "", "", "Link should be in your clipboad already<br><br>");
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");

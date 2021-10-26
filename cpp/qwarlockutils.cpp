@@ -709,3 +709,73 @@ int QWarlockUtils::getStrengthByMonsterName(QString val) {
         return 0;
     }
 }
+
+void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &result) {
+    int idx1 = 0, idx2, idx3 = 0, idx4, battle_id, idx5, idx6;
+    QString tmp, desc, logins, fast, level, parafc, maladroit, fl, need;
+
+
+    while((idx1 = Data.indexOf("<A HREF=\"/warlocks?num=", idx1)) != -1) {
+        if (idx3 == 0) {
+            idx3 = Data.indexOf("</TD></TR>", idx1);
+        } else if (idx1 > idx3) {
+            break;
+        }
+        idx1 += 23;
+        idx2 = Data.indexOf('"', idx1);
+        tmp = Data.mid(idx1, idx2 - idx1);
+        battle_id = tmp.toInt();
+        idx1 = Data.indexOf("</A>. ", idx2);
+        idx1 += 6;
+        idx2 = Data.indexOf("<A HREF", idx1);
+        desc = Data.mid(idx1, idx2 - idx1);
+        fast = desc.indexOf("Fast") != -1 ? "1" : "0";
+        if (desc.indexOf("Very") != -1) {
+            level = "Very Friendly";
+            fl = "2";
+        } else if (desc.indexOf("Friendly") != -1) {
+            level = "Friendly";
+            fl = "1";
+        } else {
+            level = "Ladder";
+            fl = "0";
+        }
+        idx1 = Data.indexOf("Waiting: ", idx2);
+        idx2 = Data.indexOf("<A HREF=\"/warlocks?num=", idx1);
+        idx4 = Data.indexOf("</TD></TR>", idx1);
+        idx2 = ((idx2 != -1) && (idx2 < idx3)) ? idx2 : idx4;
+        tmp = Data.mid(idx1, idx2 - idx1);
+        idx5 = tmp.indexOf("<BR>");
+        idx5 += 4;
+        idx6 = tmp.indexOf(" more wanted.", idx5);
+        need = tmp.mid(idx5, idx6 - idx5);
+        logins = tmp.mid(9, idx5 - 4 - 9).replace("<BR>", " ").replace("(", "<p width=").replace(")", ">").replace("\n", "").replace("\r", "").trimmed();
+        logins = QTextDocumentFragment::fromHtml(logins).toPlainText().replace(" ", "");
+        tmp = tmp.replace("<BR>", " ").replace("(", "<p width=").replace(")", ">").replace("\r", " ").replace("\n", " ").replace("  ", " ");
+        desc.append(QTextDocumentFragment::fromHtml(tmp).toPlainText());
+        parafc = desc.indexOf("ParaFC", Qt::CaseInsensitive) != -1 ? "1" : "0";
+        maladroit = desc.indexOf("Maladroit", Qt::CaseInsensitive) != -1 ? "1" : "0";
+        idx1 = idx2 - 1;
+        if (battle_id > 0) {
+            QStringList lg = logins.split(",");
+            desc = level;
+            desc.append(" Waiting: ");
+            bool first = true;
+            foreach(QString s, lg) {
+                if (first) {
+                    first = false;
+                } else {
+                    desc.append(", ");
+                }
+                desc.append(s.trimmed());
+            }
+            desc.append(QString(", need %1 more").arg(need));
+            result.append(QString("{\"id\":%1,\"s\":3,\"d\":\"Challenged by %2\",\"dt\":\"%3\",\"el\":\"%4\"}").arg(intToStr(battle_id), lg.at(0).trimmed(), desc, lg.at(0).trimmed()));
+            /*result.append(QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,"
+                                  "\"maladroit\":%5,\"desc\":%6,\"battle_id\":%7,\"for_bot\":false,\"friendly\":%8,\"with_bot\":false,"
+                                  "\"need\":1,\"active\":true,\"need\":%9,\"total_count\":%10}").
+                          arg(logins, fast, level, parafc, maladroit, desc, intToStr(battle_id), fl, need).
+                          arg(intToStr(need.toInt() + 1)));*/
+        }
+    }
+}

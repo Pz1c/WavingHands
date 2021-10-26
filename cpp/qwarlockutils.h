@@ -6,6 +6,7 @@
 #include <QStringList>
 #include <QPair>
 #include <QDebug>
+#include <QTextDocumentFragment>
 //#include "qwarlock.h"
 //#include "qmonster.h"
 
@@ -41,6 +42,7 @@ public:
     static QString parseChallengePart1(QString &Data);
     static QString parseChallengeDescription(QString &Data);
     static QString parseChallengePart3(QString &Data);
+    static void parsePersonalChallenge(const QString &Data, QStringList &result);
     static QString getFinishedBattleDescription(const QString &Data, const QString &Login);
     static QString getBattleShortTitle(const QString &Title, int State, int BattleID);
     static int strValueToInt(QString val);

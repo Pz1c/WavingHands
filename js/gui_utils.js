@@ -7,7 +7,8 @@ var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
 var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
 var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookTitle"}, /*{c:"top",t:"Top"},*/ {c:"feedback",t:"Feedback"},
-                     {c:"rateus",t:"RateUs"}, /*{c:"switch_account",t:"SwitchAccount"},*/ {c:"rules",t:"miRulesTitle"},
+                     {c:"battle_with_friend",t:"DuelWithFriend"}, /*{c:"switch_account",t:"SwitchAccount"},*/
+                     {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"},
                      {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/];
 function getMainMenuList() {
     return ARR_MAIN_MENU;
@@ -21,6 +22,7 @@ function mainMenuActionEx(code) {
     case "feedback": return showFeedbackWnd();
     case "rateus": return showRateUsWnd();
     case "player_score": return showUserScoreWnd();
+    case "battle_with_friend": return showShareWnd();
     }
     showErrorWnd({id:-1,type:1013});
 }

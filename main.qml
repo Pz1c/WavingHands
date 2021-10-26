@@ -324,6 +324,7 @@ ApplicationWindow {
             onClicked: {
                 console.log("start game WITH FRIEND");
                 GUI.mainMenuAction("battle_with_friend");
+                dMenu.close();
             }
         }
 
@@ -622,7 +623,14 @@ ApplicationWindow {
                                     anchors.fill: parent
                                     onClicked: {
                                         console.log("getBattle", index, JSON.stringify(lvActiveBattle.model[index]));
-                                        core.getBattle(lvActiveBattle.model[index].id, lvActiveBattle.model[index].s);
+                                        if (lvActiveBattle.model[index].s === 3) {
+                                            var obj = JSON.parse(JSON.stringify(lvActiveBattle.model[index]));
+                                            obj.type = 17;
+                                            obj.action = "private_challenge";
+                                            showErrorWnd(obj);
+                                        } else {
+                                            core.getBattle(lvActiveBattle.model[index].id, lvActiveBattle.model[index].s);
+                                        }
                                     }
                                 }
                         }
@@ -948,6 +956,8 @@ ApplicationWindow {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit);
         if (need_target) {
             WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, spell.n);
+        } else {
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].battleChanged();
         }
         WNDU.processEscape();
     }
@@ -1019,6 +1029,10 @@ ApplicationWindow {
 
     function showRateUsWnd() {
         return showErrorWnd({id:-1,type:14,action:"rate_us"});
+    }
+
+    function showShareWnd() {
+        return showErrorWnd({id:-1,type:18,action:"playe_with_friends"});
     }
 
     function showUserScoreWnd(data) {

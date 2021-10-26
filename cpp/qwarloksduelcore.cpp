@@ -248,7 +248,7 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
     while((pos1 = Data.indexOf("<TR>", pos1)) != -1) {
         pos2 = Data.indexOf("</TR>", pos1);
         QWarlockStat ws(Data.mid(pos1, pos2 - pos1));
-        _playerStats[ws.name()] = ws;
+        _playerStats[ws.name().toLower()] = ws;
         qDebug() << "QWarloksDuelCore::finishTopList" << ws.toString();
         pos1 = pos2 + 4;
     }
@@ -1064,38 +1064,14 @@ void QWarloksDuelCore::parseMessages(QString &Data) {
 }
 
 void QWarloksDuelCore::parseChallendge(QString &Data) {
-    int idx1 = 0, idx2, idx3 = 0, idx4, battle_id;
-    QString tmp, desc;
-    while((idx1 = Data.indexOf("<A HREF=\"/warlocks?num=", idx1)) != -1) {
-        if (idx3 == 0) {
-            idx3 = Data.indexOf("</TD></TR>", idx1);
-        } else if (idx1 > idx3) {
-            break;
-        }
-        idx1 += 23;
-        idx2 = Data.indexOf('"', idx1);
-        tmp = Data.mid(idx1, idx2 - idx1);
-        battle_id = tmp.toInt();
-        idx1 = Data.indexOf("</A>. ", idx2);
-        idx1 += 6;
-        idx2 = Data.indexOf("<A HREF", idx1);
-        desc = Data.mid(idx1, idx2 - idx1);
-        idx1 = Data.indexOf("Waiting: ", idx2);
-        idx2 = Data.indexOf("<A HREF=\"/warlocks?num=", idx1);
-        idx4 = Data.indexOf("</TD></TR>", idx1);
-        idx2 = ((idx2 != -1) && (idx2 < idx3)) ? idx2 : idx4;
-        tmp = Data.mid(idx1, idx2 - idx1).replace("<BR>", " ");
-        desc.append(tmp);
-        idx1 = idx2 - 1;
-        if (battle_id > 0) {
-            _challenge[battle_id] = desc;
-        }
-    }
+    qDebug() << "QWarloksDuelCore::parseChallendge" << Data;
+    QWarlockUtils::parsePersonalChallenge(Data, _challenge);
+    qDebug() << "QWarloksDuelCore::parseChallendge" << _challenge;
 }
 
 void QWarloksDuelCore::generateBattleList() {
-    _battleList = "[[";
-    bool first = true;
+    _battleList = "[[" + _challenge.join(",");
+    bool first = _challenge.isEmpty();
     QString d;
     foreach(int bid, _ready_in_battles) {
         if (first) {
@@ -1750,6 +1726,11 @@ void QWarloksDuelCore::loadGameParameters() {
     size = settings->beginReadArray("ps");
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
+        if (settings->value("n").toString().toLower().compare(settings->value("n").toString()) != 0) {
+            _lastPlayersScan = 0;
+            _playerStats.clear();
+            break;
+        }
         _playerStats[settings->value("n").toString()] = QWarlockStat(settings->value("v").toString(), true);
     }
     settings->endArray();
@@ -1828,14 +1809,14 @@ QString QWarloksDuelCore::playerInfo() {
             res.append(QString("<p>%1</p>").arg(s));
         }
     }
-    if (_challenge.size() > 0) {
+    /*if (_challenge.size() > 0) {
         res.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("ChallengeB")));
         QMapIterator<int, QString> i(_challenge);
         while (i.hasNext()) {
             i.next();
             res.append(QString("<p>%1 <a href=\"/challenge/%2/accept\">Accept</a> <a href=\"/challenge/%3/reject\">Reject</a></p>").arg(i.value(), intToStr(i.key()), intToStr(i.key())));
         }
-    }
+    }*/
     if (_ready_in_battles.count() > 0) {
         res.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("ReadyB")));
         idx = -1;
@@ -2061,4 +2042,27 @@ void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Va
     } else if (Parameter.compare("rate_us") == 0) {
         _rateus = Value.compare("true") == 0;
     }
+}
+
+QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName) {
+    QString stmp;
+    if (_playerStats.contains(WarlockName.toLower())) {
+        stmp = _playerStats[WarlockName.toLower()].toString();
+    } else {
+        stmp = QString("{0,%1,0,0,0,0,0,1500,0}").arg(WarlockName);
+    }
+    // boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), intToStr(_active)
+    QStringList sltmp = stmp.split(",");
+    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6}").
+            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6));
+}
+
+QString QWarloksDuelCore::getSharableLink() {
+    QString s = "https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel&utm_source=invite_from_app&referrer=";
+    s.append(_login);
+    QClipboard *cp = QGuiApplication::clipboard();
+    if (cp) {
+        cp->setText(s);
+    }
+    return s;
 }
