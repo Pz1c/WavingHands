@@ -156,7 +156,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");
     fillDictionary("PersonalChalengeSDesc", "", "", "You are invited for a private duel by ");
     fillDictionary("PersonalChalengeAccept", "", "", "Accept");
-    fillDictionary("PersonalChalengeReject", "", "", "Refuse");
+    fillDictionary("PersonalChalengeReject", "", "", "Reject");
     fillDictionary("DuelWithFriend", "", "", "Duel with a friend");
     fillDictionary("ShareWndTitle", "", "", "Invite friends");
     fillDictionary("ShareWndSDesc", "", "", "Please share following link with your friends");

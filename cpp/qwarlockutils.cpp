@@ -731,7 +731,7 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
         desc = Data.mid(idx1, idx2 - idx1);
         fast = desc.indexOf("Fast") != -1 ? "1" : "0";
         if (desc.indexOf("Very") != -1) {
-            level = "Very Friendly";
+            level = "Training game";
             fl = "2";
         } else if (desc.indexOf("Friendly") != -1) {
             level = "Friendly";
@@ -769,7 +769,7 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
                 }
                 desc.append(s.trimmed());
             }
-            desc.append(QString(", need %1 more").arg(need));
+            //desc.append(QString(", need %1 more").arg(need));
             result.append(QString("{\"id\":%1,\"s\":3,\"d\":\"Challenged by %2\",\"dt\":\"%3\",\"el\":\"%4\"}").arg(intToStr(battle_id), lg.at(0).trimmed(), desc, lg.at(0).trimmed()));
             /*result.append(QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,"
                                   "\"maladroit\":%5,\"desc\":%6,\"battle_id\":%7,\"for_bot\":false,\"friendly\":%8,\"with_bot\":false,"
