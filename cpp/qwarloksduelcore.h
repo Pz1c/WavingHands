@@ -132,6 +132,7 @@ public slots:
     void sendMessage(const QString &Msg);
     void autoLogin(int Idx);
     void aiLogin();
+    void logout();
     void leaveBattle(int battle_id);
     void setParamValue(const QString &Parameter, const QString &Value);
     QString getWarlockStats(const QString &WarlockName);
@@ -281,6 +282,7 @@ private:
 
     // management
     bool _isTimerActive;
+    bool _isScanForced;
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;

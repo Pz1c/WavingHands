@@ -16,6 +16,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _isLogined = false;
     _isAI = false;
     _botIdx = 0;
+    _isScanForced = false;
 
     _played = 0;
     _won = 0;
@@ -383,6 +384,7 @@ void QWarloksDuelCore::scanState(bool Silent) {
     }
 
     if (!Silent) {
+        _isScanForced = true;
         setIsLoading(true);
     }
 
@@ -443,12 +445,11 @@ void QWarloksDuelCore::deleteMsg(QString msg_from) {
 }
 
 void QWarloksDuelCore::forceSurrender(int battle_id, int turn) {
-    //QNetworkRequest request;
-    //request.setUrl(QUrl(QString(GAME_SERVER_URL_SUBMIT)));
+    _loadedBattleID = battle_id;
+    _loadedBattleType = 1;
     QString postData;
     postData.append(QString("force=1&turn=%1&num=%2").arg(QString::number(turn), QString::number(battle_id)));
     qDebug() << postData;
-    //return;
     sendPostRequest(GAME_SERVER_URL_SUBMIT, postData.toUtf8());
 }
 
@@ -1188,6 +1189,10 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     }
     qDebug() << old_read <<  _ready_in_battles << old_wait << _waiting_in_battles;// << new_fb_id;
     bool changed = _ready_in_battles.size() > 0;
+    if (_isScanForced) {
+        changed = true;
+        _isScanForced = false;
+    }
     //if (!changed) {
         foreach(int bid, _ready_in_battles) {
             _battleWait.remove(bid);
@@ -1430,6 +1435,11 @@ void QWarloksDuelCore::slotReadyRead() {
         case 307:
             new_url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
             break;
+    }
+    if (!new_url.isEmpty() && (url.indexOf("/logout") != -1)) {
+        setIsLoading(false);
+        emit needLogin();
+        return;
     }
     saveRequest(data);
     processData(data, statusCode, url, new_url.toString());
@@ -2068,4 +2078,36 @@ QString QWarloksDuelCore::getSharableLink() {
         cp->setText(s);
     }
     return s;
+}
+
+void QWarloksDuelCore::logout() {
+    _isLogined = false;
+    _login.clear();
+    _password.clear();
+
+    _finished_battles.clear();
+    _exp_lv = 0;
+    _played = 0;
+    _won = 0;
+    _died = 0;
+    _ladder = 0;
+    _melee = 0;
+    _elo = 1500;
+    _hint1 = 0;
+    _show_hint = true;
+    _feedback = false;
+    _rateus = false;
+    _battleDesc.clear();
+    _battleHint.clear();
+    _battleState.clear();
+    _battleWait.clear();
+    _battleHistory.clear();
+    _battleChat.clear();
+
+    settings->beginGroup("Game");
+    settings->remove("");
+    settings->endGroup();
+
+    saveParameters();
+    sendGetRequest(GAME_SERVER_URL_LOGOUT);
 }
