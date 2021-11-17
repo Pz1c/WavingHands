@@ -23,7 +23,12 @@ function prepareDataType12(l_data, dict) {
             ltError.text = "Warlocks waiting in the circle: " + tarr[0].replace(",", ", ") + "<br>";
         }
         var tarr2 = tarr[1].split("/");
-        ltError.text += "Waiting for: " + (tarr2[1] * 1 - tarr2[0] * 1) + " warlocks<br><br>";
+        var need_cnt = tarr2[1] * 1 - tarr2[0] * 1;
+        if (need_cnt > 1) {
+            ltError.text += "Waiting for: " + (need_cnt) + " warlocks<br><br>";
+        } else if (need_cnt === 1) {
+            ltError.text += "Join to start battle";
+        }
     }
     ltError.text += dict.getStringByCode('DefNotStartDesc');
     bbAction.text = "Leave";
