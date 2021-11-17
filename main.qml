@@ -1032,8 +1032,7 @@ ApplicationWindow {
     }
 
     function showFeedbackWnd() {
-        core.getSharableLink();
-        //return showErrorWnd({id:-1,type:13,action:"feedback"});
+        return showErrorWnd({id:-1,type:13,action:"feedback"});
     }
 
     function showRateUsWnd() {
@@ -1041,7 +1040,8 @@ ApplicationWindow {
     }
 
     function showShareWnd() {
-        return showErrorWnd({id:-1,type:18,action:"playe_with_friends"});
+        core.getSharableLink();
+        //return showErrorWnd({id:-1,type:18,action:"playe_with_friends"});
     }
 
     function showUserScoreWnd(data) {

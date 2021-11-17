@@ -2077,7 +2077,7 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName) {
 void QWarloksDuelCore::getSharableLink() {
     QString s = "https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel&utm_source=invite_from_app&referrer=";
     s.append(_login);
-
+    qDebug() << "QWarloksDuelCore::getSharableLink" << s;
     #ifdef Q_OS_ANDROID
     QJniObject javaNotification = QJniObject::fromString(s);
     QJniObject::callStaticMethod<void>(
@@ -2086,13 +2086,14 @@ void QWarloksDuelCore::getSharableLink() {
         "(Landroid/content/Context;Ljava/lang/String;)V",
         QNativeInterface::QAndroidApplication::context(),
     javaNotification.object<jstring>());
-    #endif
-
-    /*QClipboard *cp = QGuiApplication::clipboard();
+    #else
+    QClipboard *cp = QGuiApplication::clipboard();
     if (cp) {
         cp->setText(s);
-    }*/
-    //return s;
+    }
+    _errorMsg = QString("{\"id\":-1,\"type\":18,\"action\":\"play_with_friends\",\"link\":\"%1\"}").arg(s);
+    emit errorOccurred();
+    #endif
 }
 
 void QWarloksDuelCore::logout() {

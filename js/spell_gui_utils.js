@@ -189,5 +189,5 @@ function preparePersonalChallenge(l_data, dict) {
 function prepareShareWnd(l_data, dict) {
     ltTitle.text = dict.getStringByCode("ShareWndTitle");
     ltShortDesc.text = dict.getStringByCode("ShareWndSDesc");
-    ltError.text = dict.getStringByCode("ShareWndDesc") + mainWindow.gameCore.getSharableLink();
+    ltError.text = dict.getStringByCode("ShareWndDesc") + l_data.link;
 }
