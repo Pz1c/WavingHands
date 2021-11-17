@@ -1,6 +1,8 @@
 TEMPLATE = app
 
+QT += core
 QT += qml quick network
+
 #android {
 #    QT += androidextras
 #}

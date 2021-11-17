@@ -4,6 +4,7 @@
          Remove the comment if you do not require these default permissions. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- The following comment will be replaced upon deployment with default features based on the dependencies of the application.
          Remove the comment if you do not require these default features. -->
@@ -71,6 +72,26 @@
             <meta-data android:name="android.app.splash_screen_drawable_landscape" android:resource="@drawable/logo_landscape"/>
         </activity>
         <!-- For adding service(s) please check: https://wiki.qt.io/AndroidServices -->
+        <service android:process=":qt" android:name=".MyService">
+          <!-- android:process=":qt" is needed to force the service to run on a separate process than the Activity -->
+          <!-- .... -->
+          <!-- Background running -->
+          <meta-data android:name="android.app.background_running" android:value="true"/>
+          <!-- Background running -->
+          <!-- Application arguments -->
+          <meta-data android:name="android.app.arguments" android:value="-service"/>
+          <!-- Application arguments -->
+          <!-- ... -->
+          <meta-data android:name="android.app.lib_name" android:value="WarlocksDuel"/>
+          <!-- ... -->
+        </service>
+        <!-- .... -->
+        <receiver android:name=".MyBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <!-- .... -->
     </application>
 
 </manifest>

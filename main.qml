@@ -24,6 +24,7 @@ ApplicationWindow {
 
     property real ratioObject: 1
     property real ratioFont: 1
+    property string afterCloseAction: ""
 
     Dialog {
         id: mdNoGesture
@@ -147,8 +148,8 @@ ApplicationWindow {
         z: 500
         focus: true
 
-        Keys.onBackPressed: WNDU.processEscape();
-        Keys.onEscapePressed: WNDU.processEscape();
+        Keys.onBackPressed: processEscape();
+        Keys.onEscapePressed: processEscape();
     }
 
     Rectangle {
@@ -597,7 +598,7 @@ ApplicationWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.right: rdbiLink.right
                                     anchors.rightMargin: 36 * ratioObject
-                                    visible: lvActiveBattle.model[index].s === 1
+                                    visible: (lvActiveBattle.model[index].s === 1) || (lvActiveBattle.model[index].s === 3)
                                     radius: width / 2
                                     gradient: Gradient {
                                         GradientStop { position: 0.0; color: "#9DFFD3" }
@@ -782,7 +783,14 @@ ApplicationWindow {
             if (err_msg.indexOf("{") === -1) {
                 showErrorWnd({text:err_msg});
             } else {
-                showErrorWnd(JSON.parse(err_msg));
+                var obj = JSON.parse(err_msg);
+                if (obj.type === 14) {
+                    // rate us action
+                    afterCloseAction = "rateus";
+                    return ;
+                }
+
+                showErrorWnd(obj);
             }
         }
     }
@@ -1049,7 +1057,13 @@ ApplicationWindow {
     }
 
     function processEscape() {
+        console.log("main.qml:processEscape", afterCloseAction);
         WNDU.processEscape();
+        if (afterCloseAction !== "") {
+            var action_code = afterCloseAction;
+            afterCloseAction = "";
+            GUI.mainMenuAction(action_code);
+        }
     }
 
     function showWndSpellbook() {

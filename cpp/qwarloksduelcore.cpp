@@ -132,8 +132,8 @@ void QWarloksDuelCore::loginToSite() {
 
 void QWarloksDuelCore::processNewLogin() {
     // check is exists
-    foreach(QValueName i, _accounts) {
-        if (i.first.compare(_login.toLower()) == 0) {
+    for(int i = 0, Ln = _accounts.size(); i < Ln; ++i) {
+        if (_accounts.at(i).first.compare(_login.toLower()) == 0) {
             return;
         }
     }
@@ -144,8 +144,8 @@ void QWarloksDuelCore::processNewLogin() {
 
 QString QWarloksDuelCore::accountToString() {
     QString result;
-    foreach(QValueName i, _accounts) {
-        result.append(QString("%1&%2&&").arg(i.first, i.second));
+    for(int i = 0, Ln = _accounts.size(); i < Ln; ++i) {
+        result.append(QString("%1&%2&&").arg(_accounts.at(i).first, _accounts.at(i).second));
     }
     return result;
 }
@@ -169,8 +169,8 @@ void QWarloksDuelCore::accountsFromString(QString acc) {
 
 QString QWarloksDuelCore::accountMenu() {
     QString result = "{\"lst\":[";
-    foreach(QValueName i, _accounts) {
-        result.append(QString("\"%1\",").arg(i.first));
+    for(int i = 0, Ln = _accounts.size(); i < Ln; ++i) {
+        result.append(QString("\"%1\",").arg(_accounts.at(i).first));
     }
     result.append("\" \"]}");
     return result;
@@ -876,8 +876,9 @@ bool QWarloksDuelCore::parseTargetList(QString &Data) {
         emit errorOccurred();
         return false;
     }
-    foreach(QValueName vn, _Targets) {
-        _WarlockID[vn.second] = vn.first;
+    //foreach(QValueName vn, _Targets) {
+    for(int i = 0, Ln = _Targets.size(); i < Ln; ++i) {
+        _WarlockID[_Targets.at(i).second] = _Targets.at(i).first;
     }
     qDebug() << "QWarloksDuelCore::parseTargetList" << _Targets << _WarlockID;
     return true;
@@ -1077,7 +1078,9 @@ void QWarloksDuelCore::generateBattleList() {
     _battleList = "[[" + _challenge.join(",");
     bool first = _challenge.isEmpty();
     QString d;
-    foreach(int bid, _ready_in_battles) {
+    int bid, i;
+    for(i = _ready_in_battles.size() - 1; i >= 0; --i) {
+        bid = _ready_in_battles.at(i);
         if (first) {
             first = false;
         } else {
@@ -1092,8 +1095,8 @@ void QWarloksDuelCore::generateBattleList() {
         _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\"}").arg(intToStr(bid), d));
     }
     QString wait_str = "";
-    foreach(int bid, _waiting_in_battles) {
-
+    for(i = _waiting_in_battles.size()- 1; i >= 0; --i) {
+        bid = _waiting_in_battles.at(i);
         d = QWarlockUtils::getBattleShortTitle(_battleDesc[bid], _battleState[bid], bid);
         if (_battleState[bid] == 0) {
             if (first) {
@@ -1126,7 +1129,8 @@ void QWarloksDuelCore::generateBattleList() {
         }
     }*/
     first = true;
-    foreach(int bid, _finished_battles) {
+    for(i = _finished_battles.size() - 1; i >= 0; --i) {
+        bid = _finished_battles.at(i);
         if (first) {
             first = false;
         } else {
@@ -2006,8 +2010,8 @@ QString QWarloksDuelCore::getBattleHint(int battle_id, int battle_turn) {
 
 QString QWarloksDuelCore::battleInfo() {
     QString tmp_trg;
-    foreach(QValueName target, _Targets) {
-        tmp_trg.append(QString("%1;%2#").arg(target.first, target.second));
+    for(int i = 0, Ln = _Targets.size(); i < Ln; ++i) {
+        tmp_trg.append(QString("%1;%2#").arg(_Targets.at(i).first, _Targets.at(i).second));
     }
     QString hint = getBattleHint(_loadedBattleID, _loadedBattleTurn);
     QString msg = "";

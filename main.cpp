@@ -1,15 +1,15 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#ifdef Q_OS_ANDROID
-//#include <QAndroidJniObject>
-#endif
-#include <cpp/qgameconstant.h>
 #include <QtNetwork/QSslConfiguration>
 #include <QtNetwork/QSslSocket>
 #include <QtGlobal>
 #include <QtQml>
 #include <QDebug>
 #include <QFontDatabase>
+#ifdef Q_OS_ANDROID
+#include <QAndroidService>
+#endif
+#include <cpp/qgameconstant.h>
 #include "cpp/qwarloksduelcore.h"
 #include "cpp/qwarlockdictionary.h"
 
@@ -19,23 +19,32 @@ int main(int argc, char *argv[])
     qDebug() << "loading embedded \"ISRG Root X1\" CA cert:"
           << QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
 
-    QGuiApplication app(argc, argv);
-
-    qint32 fontId = QFontDatabase::addApplicationFont(":/res/AgencyFB.ttf");
-    qDebug() << "fontId" << fontId;
-    if (fontId != -1) {
-        QStringList fontList = QFontDatabase::applicationFontFamilies(fontId);
-        if (fontList.size() > 0) {
-            QString family = fontList.at(0);
-            QGuiApplication::setFont(QFont(family));
+    if (argc > 1 && strcmp(argv[1], "-service") == 0) {
+        qDebug() << "Service starting with from the same .so file";
+        #ifdef Q_OS_ANDROID
+        QAndroidService app(argc, argv);
+        return app.exec();
+        #else
+        return 1;
+        #endif
+    } else {
+        QGuiApplication app(argc, argv);
+        qint32 fontId = QFontDatabase::addApplicationFont(":/res/AgencyFB.ttf");
+        qDebug() << "fontId" << fontId;
+        if (fontId != -1) {
+            QStringList fontList = QFontDatabase::applicationFontFamilies(fontId);
+            if (fontList.size() > 0) {
+                QString family = fontList.at(0);
+                QGuiApplication::setFont(QFont(family));
+            }
         }
+
+        QWarlockDictionary::getInstance();
+        qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");
+        qmlRegisterSingletonType<QWarlockDictionary>("ua.sp.warlockdictionary", 1, 0, "WarlockDictionary", gamedictionary_qobject_singletontype_provider);
+
+        QQmlApplicationEngine engine;
+        engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
+        return app.exec();
     }
-
-    QWarlockDictionary::getInstance();
-    qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");
-    qmlRegisterSingletonType<QWarlockDictionary>("ua.sp.warlockdictionary", 1, 0, "WarlockDictionary", gamedictionary_qobject_singletontype_provider);
-
-    QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
-    return app.exec();
 }
