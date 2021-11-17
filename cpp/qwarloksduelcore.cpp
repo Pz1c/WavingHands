@@ -2075,8 +2075,7 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName) {
 }
 
 void QWarloksDuelCore::getSharableLink() {
-    QString s = "https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel&utm_source=invite_from_app&referrer=";
-    s.append(_login);
+    QString s = QString("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel&utm_source=invite_from_app&referrer=vf,%1").arg(_login);
     qDebug() << "QWarloksDuelCore::getSharableLink" << s;
     #ifdef Q_OS_ANDROID
     QJniObject javaNotification = QJniObject::fromString(s);
