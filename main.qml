@@ -1032,7 +1032,8 @@ ApplicationWindow {
     }
 
     function showFeedbackWnd() {
-        return showErrorWnd({id:-1,type:13,action:"feedback"});
+        core.getSharableLink();
+        //return showErrorWnd({id:-1,type:13,action:"feedback"});
     }
 
     function showRateUsWnd() {

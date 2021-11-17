@@ -15,8 +15,9 @@
 #include <QStandardPaths>
 #include <QClipboard>
 #include <QGuiApplication>
-#include <qcore.h>
+#include <QJniObject>
 
+#include <qcore.h>
 //#include "qwarlockutils.h"
 #include "qwarlockspellchecker.h"
 #include "qwarlockdictionary.h"
@@ -136,7 +137,7 @@ public slots:
     void leaveBattle(int battle_id);
     void setParamValue(const QString &Parameter, const QString &Value);
     QString getWarlockStats(const QString &WarlockName);
-    QString getSharableLink();
+    void getSharableLink();
 
 
     void slotReadyRead() override;
