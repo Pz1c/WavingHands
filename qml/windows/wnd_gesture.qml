@@ -56,9 +56,43 @@ BaseWindow {
             opacity: 0.5
         }
 
+        Rectangle {
+            id: rpAlert
+            anchors.top: parent.top
+            anchors.topMargin: 60 * mainWindow.ratioObject
+            anchors.left: iGlow.right
+            anchors.leftMargin: 12 * mainWindow.ratioObject
+            anchors.right: parent.right
+            anchors.rightMargin: 12 * mainWindow.ratioObject
+            height: 0
+            border.width: 1 * mainWindow.ratioObject
+            border.color: "#10C9F5"
+            color: "transparent"
+
+            Text {
+                id: rpAlertH1
+                anchors.top: parent.top
+                anchors.topMargin: 10 * mainWindow.ratioObject
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: 49 * ratioFont
+                color: "#10C9F5"
+                text: "Surrendering!"
+            }
+
+            Text {
+                id: rpAlertH3
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 10 * mainWindow.ratioObject
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pixelSize: 28 * ratioFont
+                color: "#10C9F5"
+                text: "('P' with both hands)"
+            }
+        }
+
         ScrollView {
             id: svError
-            anchors.top: parent.top
+            anchors.top: rpAlert.bottom
             anchors.topMargin: 60 * mainWindow.ratioObject
             anchors.left: iGlow.right
             anchors.leftMargin: 12 * mainWindow.ratioObject
@@ -579,6 +613,14 @@ BaseWindow {
             mapGesture[new_gesture].checked = true;
             currGesture = new_gesture;
         }
+        if ((new_gesture === "P") && (mainWindow.gBattle["ng" + mainWindow.gBattle.otherHand] === "P")) {
+            rpAlert.height = rpAlertH1.height + rpAlertH3.height + 30 * mainWindow.ratioObject;
+            rpAlert.visible = true;
+        } else {
+            rpAlert.height = 0;
+            rpAlert.visible = false;
+        }
+
         if (new_gesture === "-") {
             mainWindow.gBattle.spellIdx = 0;
             arrSpell = [{gp:"?",n:"Default",t:1,choose:1,row_type:1}];

@@ -893,7 +893,7 @@ ApplicationWindow {
         /*if (new_gesture !== '') {
             console.log("mainWindow.getSpellList", JSON.stringify(arr));
         }*/
-        var uncompleted_cnt = 0, i, Ln;
+        var uncompleted_cnt = 0, i, Ln, charm_monster = 0;
         for (i = 0, Ln = arr.length; i < Ln; ++i) {
             s = arr[i];
             s.choose = 0;
@@ -909,6 +909,9 @@ ApplicationWindow {
                         s.gp = '<font color="#10C9F5">'+s.g+'</font>';
                         s.cast_type = 1;
                         arr_cast_now.push(s);
+                        if (s.id === 11) {
+                            charm_monster = 1;
+                        }
                     } else {
                         idx = s.g.length - s.t + 1;
                         s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
