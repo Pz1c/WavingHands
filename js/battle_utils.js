@@ -444,7 +444,8 @@ function checkIsMonsterCharmed(monster) {
         return false;
     }
     var spell = battle.actions[battle.currentHand].s;
-    var res =  (spell.id === C_SPELL_CHARM_MONSTER) || (lp.amnesia > 0) || (lp.charmed > 0)|| (lp.confused > 0) || (lp.paralized > 0) || (lp.maladroit > 0);
+    var res =  (spell.id === C_SPELL_CHARM_MONSTER) || ((spell.id === -1) && spell.is_charm_monster && (spell.is_charm_monster === 1))
+            || (lp.amnesia > 0) || (lp.charmed > 0)|| (lp.confused > 0) || (lp.paralized > 0) || (lp.maladroit > 0);
     if (res) {
         monster.allow_choose_target = true;
         battle.actions.M[monster.action_idx].under_control = true;

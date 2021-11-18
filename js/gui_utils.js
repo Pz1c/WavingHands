@@ -10,6 +10,9 @@ var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookTitle"}, /*{c:"top",t:"Top"},*/ 
                      //{c:"battle_with_friend",t:"DuelWithFriend"}, /*{c:"switch_account",t:"SwitchAccount"},*/
                      {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"},
                      {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/];
+
+const SPELL_CHARM_MONSTER = 23;
+
 function getMainMenuList() {
     return ARR_MAIN_MENU;
 }
