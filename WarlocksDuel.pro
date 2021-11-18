@@ -1,6 +1,7 @@
 TEMPLATE = app
 
 QT += core
+QT += core-private
 QT += qml quick network
 
 #android {

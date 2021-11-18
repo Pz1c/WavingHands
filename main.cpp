@@ -7,7 +7,7 @@
 #include <QDebug>
 #include <QFontDatabase>
 #ifdef Q_OS_ANDROID
-#include <QAndroidService>
+#include <QtCore/private/qandroidextras_p.h>
 #endif
 #include <cpp/qgameconstant.h>
 #include "cpp/qwarloksduelcore.h"
