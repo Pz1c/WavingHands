@@ -200,7 +200,8 @@ function startGame(actionIdx) {
          case 'player':
              startGameWithPlayer();
              break;
-         case 'bot': startGameWithBot();
+         case 'bot':
+             startGameWithBot();
              break;
     }
     timerCounter = 10;

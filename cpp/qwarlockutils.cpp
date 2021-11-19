@@ -187,16 +187,16 @@ bool QWarlockUtils::parseGestures(QString &Data, QString &left, QString &right, 
     if (!error.isEmpty()) {
         return false;
     }
-    foreach(QValueName v, g) {
-        left.append(QString("%1;%2#").arg(v.first.replace("&gt;", ">"), v.second.replace("&gt;", ">")));
+    for (int i = 0, Ln = g.size(); i < Ln; ++i) {
+        left.append(QString("%1;%2#").arg(g[i].first.replace("&gt;", ">"), g[i].second.replace("&gt;", ">")));
     }
     g.clear();
     g = getSelectOptionFromData(Data, "<SELECT NAME=RH>", "</SELECT>", "<OPTION VALUE=\"", "</OPTION>", error);
     if (!error.isEmpty()) {
         return false;
     }
-    foreach(QValueName v, g) {
-        right.append(QString("%1;%2#").arg(v.first.replace("&gt;", ">"), v.second.replace("&gt;", ">")));
+    for (int i = 0, Ln = g.size(); i < Ln; ++i) {
+        right.append(QString("%1;%2#").arg(g[i].first.replace("&gt;", ">"), g[i].second.replace("&gt;", ">")));
     }
     return true;
 }

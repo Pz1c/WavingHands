@@ -3,6 +3,10 @@ function cleanUpWindow(ratioObject) {
     bbAction.visible = false;
     ltShortDesc.visible = true;
     bbSkipAction.visible = false;
+    bbSkipAction.font.underline = true;
+    bbSkipAction.gradient = undefined;
+    bbSkipAction.font.pixelSize = 28 * mainWindow.ratioFont;
+    bbSkipAction.height = 60 * ratioObject;
     bbAction.transparent = false;
     bbAction.gradient = gDef;
     bbAction.font.underline = false;

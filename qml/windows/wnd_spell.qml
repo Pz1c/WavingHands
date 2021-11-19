@@ -105,7 +105,7 @@ InfoWindow {
                 radius: 30
                 visible: false
                 z: 30
-
+                font.pixelSize: 42 * mainWindow.ratioFont
                 gradient: gDef
 
                 width: 366 * ratioObject
@@ -117,6 +117,7 @@ InfoWindow {
 
                 onClicked: {
                     console.log("chooseMonsterTarget", JSON.stringify(l_data));
+                    mainWindow.processEscape();
                     if (l_data.action === "private_challenge") {
                         mainWindow.gameCore.acceptChallenge(l_data.id, true);
                     } else if (l_data.action === "rate_us") {
@@ -147,10 +148,11 @@ InfoWindow {
                 transparent: true
                 font.underline: true
                 border.width: 0
+                radius: 30
                 visible: false
 
-                width: 0.5 * parent.width
-                height: 60 * mainWindow.ratioObject
+                width: 366 * ratioObject
+                height: 60 * ratioObject
                 font.pixelSize: 28 * mainWindow.ratioFont
                 fontSizeMode: Text.VerticalFit
 
