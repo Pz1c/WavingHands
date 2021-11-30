@@ -78,4 +78,15 @@ contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
 android: include(D:/Android/sdk/android_openssl/openssl.pri)
 
 DISTFILES += \
-    platforms/android/AndroidManifest.xml
+    platforms/android/AndroidManifest.xml \
+    platforms/android/AndroidManifest.xml \
+    platforms/android/build.gradle \
+    platforms/android/gradle.properties \
+    platforms/android/gradle/wrapper/gradle-wrapper.jar \
+    platforms/android/gradle/wrapper/gradle-wrapper.properties \
+    platforms/android/gradlew \
+    platforms/android/gradlew.bat \
+    platforms/android/res/values/libs.xml \
+    platforms/android/src/com/kdab/training/MyBroadcastReceiver.java \
+    platforms/android/src/com/kdab/training/MyService.java \
+    platforms/android/src/org/qtproject/example/androidnotifier/NotificationClient.java

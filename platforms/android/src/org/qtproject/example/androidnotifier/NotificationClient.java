@@ -3,6 +3,7 @@ package org.qtproject.example.androidnotifier;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.BitmapFactory;

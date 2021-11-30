@@ -335,6 +335,7 @@ void QWarlock::fillTurnToCast() {
 }
 
 void QWarlock::setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monsters) {
+    Q_UNUSED(monsters);
     qDebug() << "QWarlock::setSpellPriority start";
     int _coldproof_in = 999, _fireproof_in = 999;
     int paralysis_left = 3, paralysis_right = 3;
@@ -930,6 +931,7 @@ void QWarlock::processMaladroit() {
 
 void QWarlock::attackEnemy(QWarlock *enemy) {
     qDebug() << "QWarlock::attackEnemy";
+    Q_UNUSED(enemy);
     //logSpellList(_possibleSpells, "QWarlock::attackEnemy");
     if (_maladroit > 0) {
         processMaladroit();
