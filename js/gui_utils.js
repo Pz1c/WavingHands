@@ -205,7 +205,7 @@ function startGame(actionIdx) {
              break;
     }
     timerCounter = 10;
-    tScanTimer.interval = 5000;
+    tScanTimer.interval = 10000;
     console.log("!!!FEEDBACK CHECK", G_PROFILE.feedback, G_PROFILE.finished_game_count);
     if (!G_PROFILE.feedback && (G_PROFILE.finished_game_count >= 2)) {
         G_PROFILE.feedback = true;

@@ -59,7 +59,7 @@ ApplicationWindow {
     property int timerCounter: 0
     Timer {
         id: tScanTimer
-        interval: core.isAI ? 20000 : 60000
+        interval: core.isAI ? 30000 : 60000
         running: false
         repeat: true
 
@@ -67,7 +67,7 @@ ApplicationWindow {
             console.log("start scanning");
             core.scanState(true);
             if (--timerCounter <= 0) {
-                tScanTimer.interval = core.isAI ? 10000 : 60000;
+                tScanTimer.interval = core.isAI ? 30000 : 60000;
             }
         }
     }
