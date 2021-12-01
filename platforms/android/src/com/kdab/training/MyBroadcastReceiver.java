@@ -1,7 +1,7 @@
 import android.content.Context;
 import android.content.Intent;
 import android.content.BroadcastReceiver;
-import com.kdab.training.service;
+import com.kdab.training.service.MyService;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
     @Override
