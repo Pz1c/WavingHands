@@ -1,12 +1,14 @@
 package org.qtproject.example.androidnotifier;
 
+import android.content.Context;
+import android.content.Intent;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.content.Context;
+import android.app.NotificationChannel;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.BitmapFactory;
-import android.app.NotificationChannel;
+
 
 public class NotificationClient
 {
