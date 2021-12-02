@@ -190,6 +190,10 @@ function getSpellNameForOrder(action) {
         return "";
     }
 
+    if (!action.s.n) {
+        return "";
+    }
+
     return action.s.n.replace(" ", "+");
 }
 
