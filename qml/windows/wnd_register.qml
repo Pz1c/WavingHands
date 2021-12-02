@@ -289,7 +289,7 @@ BaseWindow {
                     anchors.top: ltiLogin.bottom
                     //anchors.topMargin: 0.02 * parent.height
                     anchors.horizontalCenter: parent.horizontalCenter
-                    height: 0.09 * parent.height
+                    height: 0//0.09 * parent.height
                     width: parent.width
                     title: dict.getStringByCode("Email")
                     title_color: "#E7FFFF"
@@ -298,6 +298,7 @@ BaseWindow {
                     placeholderText: ""
                     //regularExpression: /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
                     regularExpression: /^.{6,100}$/
+                    visible: false
                 }
 
                 LabeledTextInput {
@@ -378,12 +379,12 @@ BaseWindow {
                             ltiLogin.border_color = "#E7FFFF";
                         }
 
-                        if ((ltiEmail.text.indexOf("@") === -1) || (ltiEmail.text.indexOf(".") === -1)|| (ltiEmail.text.length < 6)) {
+                        /*if ((ltiEmail.text.indexOf("@") === -1) || (ltiEmail.text.indexOf(".") === -1)|| (ltiEmail.text.length < 6)) {
                             ltiEmail.border_color = "red";
                             ++err_cnt;
                         } else {
                             ltiEmail.border_color = "#E7FFFF";
-                        }
+                        }*/
 
                         if ((ltiPass.text.length < 4)|| (ltiPass.text.length > 10)) {
                             ltiPass.border_color = "red";
@@ -402,7 +403,7 @@ BaseWindow {
                         }
 
                         if (err_cnt === 0) {
-                            mainWindow.gameCore.regNewUser(ltiLogin.text, ltiEmail.text, ltiPass.text);
+                            mainWindow.gameCore.regNewUser(ltiLogin.text, ""/*ltiEmail.text*/, ltiPass.text);
                         }
                     }
                 }

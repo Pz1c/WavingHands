@@ -98,14 +98,14 @@ void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, co
     postData.append(QUrl::toPercentEncoding(_login));
     postData.append("&password=");
     postData.append(QUrl::toPercentEncoding(_password));
-    postData.append("&referrer=Galbarad&email=");
-    postData.append(QUrl::toPercentEncoding(Email));
+    //postData.append("&referrer=Galbarad&email=");
+    //postData.append(QUrl::toPercentEncoding(Email));
 
     postData.append("&icq=&aim=&website=&blurb=I+am+using+Android+application+%22"
                     "Warlock+duel%22+too+play+net.is.games.WarlockDuel&preferfast=4&me13=1&update=1");
 
 
-    qDebug() << postData;
+    qDebug() << postData << Email;
     sendPostRequest(GAME_SERVER_URL_NEW_PLAYER, postData.toUtf8());
 }
 
