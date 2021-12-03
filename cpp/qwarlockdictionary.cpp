@@ -161,6 +161,21 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("ShareWndTitle", "", "", "Invite friends");
     fillDictionary("ShareWndSDesc", "", "", "Please share following link with your friends");
     fillDictionary("ShareWndDesc", "", "", "Link should be in your clipboad already<br><br>");
+    fillDictionary("SearchWizardTitle", "", "", "Start a Private duel");
+    fillDictionary("SearchWizardShortDesc", "", "", "Find a warlock by name and invite for a private duel");
+    fillDictionary("SearchWizardInputTitle", "", "", "Invite a warlock by name:");
+    fillDictionary("NewGameWithPlayerTitle", "", "", "Choose your partner");
+    fillDictionary("NewGameWithPlayerSDesc", "", "", "Start a duel against a random warlock or invite a friend to play");
+    fillDictionary("NewGameWithPlayerBtn1", "", "", "Warlock");
+    fillDictionary("NewGameWithPlayerBtn2", "", "", "Friend");
+    fillDictionary("NewGameWithPlayerBtn3", "", "", "Find a warlock by name");
+    fillDictionary("NewGameWithBotTitle", "", "", "Choose your training partner");
+    fillDictionary("NewGameWithBotSDesc", "", "", "Play against an AI training bot, or invite a friend and train against each other");
+    fillDictionary("NewGameWithBotBtn1", "", "", "Training bot");
+    fillDictionary("NewGameWithBotBtn2", "", "", "Friend");
+    fillDictionary("NewGameWithBotBtn3", "", "", "Find a warlock by name");
+
+
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");

@@ -170,6 +170,33 @@ InfoWindow {
                     }
                 }
             }
+
+            BtnBig {
+                id: bbBtn3
+                text_color: "#A8F4F4"
+                text: "Skip"
+                transparent: true
+                font.underline: true
+                border.width: 0
+                radius: 30
+                visible: false
+
+                width: 366 * ratioObject
+                height: 60 * ratioObject
+                font.pixelSize: 28 * mainWindow.ratioFont
+                fontSizeMode: Text.VerticalFit
+
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 24 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: 24 * mainWindow.ratioObject
+
+
+                onClicked: {
+                    console.log("btn3 feedback action");
+                    mainWindow.processEscape();
+                }
+            }
         }
     }
 
@@ -207,7 +234,11 @@ InfoWindow {
 
         if (l_data && (l_data.action || (l_data.type && (l_data.type >= 8)))) {
             icon.visible = false;
-            if (l_data.type && (l_data.type === 18)) {
+            if (l_data.type && (l_data.type === 20)) {
+                SGU.prepareGameWithBot(l_data, dict);
+            } else if (l_data.type && (l_data.type === 19)) {
+                SGU.prepareGameWithPlayer(l_data, dict);
+            } else if (l_data.type && (l_data.type === 18)) {
                 SGU.prepareShareWnd(l_data, dict);
             } else if (l_data.type && (l_data.type === 17)) {
                 SGU.preparePersonalChallenge(l_data, dict);

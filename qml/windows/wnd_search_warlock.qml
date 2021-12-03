@@ -29,53 +29,39 @@ InfoWindow {
             color: "#10C9F5"
             horizontalAlignment: Text.AlignLeft
             //fontSizeMode: Text.VerticalFit
-            text: "Chat"
+            text: dict.getStringByCode("SearchWizardTitle")
         }
 
-        ScrollView {
-            id: svError
+        Text {
+            id: ltShortDesc
             anchors.top: ltTitle.bottom
             anchors.topMargin: 20 * mainWindow.ratioObject
             anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
             anchors.right: parent.right
-            anchors.bottom: ltiMsg.top
-            contentWidth: -1
-
-            Text {
-                id: ltError
-                y: 0
-                x: 0
-                width: dialogWindow.width - 0.11 * dialogWindow.height
-                //height: svLog.height
-                font.pixelSize: 28 * mainWindow.ratioFont
-                wrapMode: Text.WordWrap
-                color: "snow"
-                textFormat: Text.RichText
-                /*
-                onLinkActivated: {
-                    mainWindow.linkActivated(link);
-                    mainWindow.processEscape();
-                }*/
-            }
+            //height: 50 * mainWindow.ratioObject
+            color: "#FEE2D6"
+            horizontalAlignment: Text.AlignLeft
+            font.pixelSize: 28 * mainWindow.ratioFont
+            text: dict.getStringByCode("SearchWizardShortDesc")
+            wrapMode: Text.WordWrap
         }
 
         LabeledTextInput {
-            id: ltiMsg
+            id: ltiLogin
             anchors.bottom: dialogWindow.bottom
-            anchors.bottomMargin: 0.02 * parent.height
+            anchors.bottomMargin: 2 * mainWindow.ratioObject
             anchors.left: parent.left
             anchors.leftMargin: 20 * mainWindow.ratioObject
             anchors.right: iiCSend.left
             anchors.rightMargin: 20 * mainWindow.ratioObject
-            height: 0.20 * dialogWindow.height
+            height: 128 * mainWindow.ratioObject
             //width: dialogWindow.width
-            title: dict.getStringByCode("Say")
+            title: dict.getStringByCode("SearchWizardInputTitle")
             title_color: "lightgray"
             //text_color: "black"
             transparent: false
-            //placeholderText: "write your message there"
-            regularExpression: /.{0,256}$/
+            placeholderText: "Warlock"
+            regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
         }
 
         IconInfo {
@@ -87,14 +73,14 @@ InfoWindow {
             width: 64 * mainWindow.ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 20 * mainWindow.ratioObject
-            anchors.verticalCenter: ltiMsg.verticalCenter
+            anchors.verticalCenter: ltiLogin.verticalCenter
             active: true
             color: "transparent"
             //text_color: "#E7FFFF"
             //text: "Submit"
 
             onClicked: {
-                mainWindow.storeBattleChatMsg(ltiMsg.text);
+                console.log("try to find", ltiLogin.text);
             }
         }
 

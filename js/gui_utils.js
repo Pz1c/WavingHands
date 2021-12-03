@@ -136,7 +136,7 @@ function getJoinDialogText(b) {
     return txt;
 }
 
-function startGameWithPlayer() {
+function startGameWithPlayerEx() {
     console.log("startGameWithPlayer", JSON.stringify(G_CHALLENGE_LIST));
     var best_idx = -1, battle, bb;
     for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
@@ -176,6 +176,10 @@ function startGameWithPlayer() {
     }*/
 }
 
+function startGameWithPlayer() {
+    showErrorWnd({id:-1,type:19});
+}
+
 function joinBattleDialogResult(accept) {
     if (accept && V_BEST_BATTLE_ID) {
         core.acceptChallenge(V_BEST_BATTLE_ID);
@@ -184,7 +188,7 @@ function joinBattleDialogResult(accept) {
     }
 }
 
-function startGameWithBot() {
+function startGameWithBotEx() {
     console.log("startGameWithBot", JSON.stringify(G_CHALLENGE_LIST));
     for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
         if (G_CHALLENGE_LIST[i].active && G_CHALLENGE_LIST[i].with_bot) {
@@ -193,6 +197,10 @@ function startGameWithBot() {
         }
     }
     core.createNewChallenge(1, 0, 1, 1, 2, 2, "TRANING BOT ONLY");
+}
+
+function startGameWithBot() {
+    showErrorWnd({id:-1,type:20});
 }
 
 function startGame(actionIdx) {

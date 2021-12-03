@@ -2,6 +2,7 @@ function cleanUpWindow(ratioObject) {
     ltDesc.visible = true;
     bbAction.visible = false;
     ltShortDesc.visible = true;
+    bbBtn3.visible = false;
     bbSkipAction.visible = false;
     bbSkipAction.font.underline = true;
     bbSkipAction.gradient = undefined;
@@ -200,3 +201,36 @@ function prepareShareWnd(l_data, dict) {
     ltShortDesc.text = dict.getStringByCode("ShareWndSDesc");
     ltError.text = dict.getStringByCode("ShareWndDesc") + l_data.link;
 }
+
+function prepareGameWithPlayer(l_data, dict) {
+    bbSkipAction.font.underline = false;
+    bbSkipAction.gradient = gDef;
+    bbSkipAction.font.pixelSize = 42 * mainWindow.ratioFont;
+    bbSkipAction.height = 96 * ratioObject;
+    ltTitle.text = dict.getStringByCode("NewGameWithPlayerTitle");
+    ltShortDesc.text = dict.getStringByCode("NewGameWithPlayerSDesc");
+    ltError.visible = false;
+    bbAction.visible = true;
+    bbAction.text = dict.getStringByCode("NewGameWithPlayerBtn1");
+    bbSkipAction.visible = true;
+    bbSkipAction.text = dict.getStringByCode("NewGameWithPlayerBtn2");
+    bbBtn3.text = dict.getStringByCode("NewGameWithPlayerBtn3");
+    bbBtn3.visible = true;
+}
+
+function prepareGameWithBot(l_data, dict) {
+    bbSkipAction.font.underline = false;
+    bbSkipAction.gradient = gDef;
+    bbSkipAction.font.pixelSize = 42 * mainWindow.ratioFont;
+    bbSkipAction.height = 96 * ratioObject;
+    ltTitle.text = dict.getStringByCode("NewGameWithBotTitle");
+    ltShortDesc.text = dict.getStringByCode("NewGameWithBotSDesc");
+    ltError.visible = false;
+    bbAction.visible = true;
+    bbAction.text = dict.getStringByCode("NewGameWithBotBtn1");
+    bbSkipAction.visible = true;
+    bbSkipAction.text = dict.getStringByCode("NewGameWithBotBtn2");
+    bbBtn3.text = dict.getStringByCode("NewGameWithBotBtn3");
+    bbBtn3.visible = true;
+}
+

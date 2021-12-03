@@ -111,5 +111,6 @@
         <file>js/spell_gui_utils.js</file>
         <file>res/chat_pimple.png</file>
         <file>res/scroll.png</file>
+        <file>qml/windows/wnd_search_warlock.qml</file>
     </qresource>
 </RCC>
