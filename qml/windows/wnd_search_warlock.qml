@@ -37,6 +37,7 @@ InfoWindow {
             anchors.top: ltTitle.bottom
             anchors.topMargin: 20 * mainWindow.ratioObject
             anchors.left: parent.left
+            anchors.leftMargin: 20 * mainWindow.ratioObject
             anchors.right: parent.right
             //height: 50 * mainWindow.ratioObject
             color: "#FEE2D6"
@@ -49,17 +50,19 @@ InfoWindow {
         LabeledTextInput {
             id: ltiLogin
             anchors.bottom: dialogWindow.bottom
-            anchors.bottomMargin: 2 * mainWindow.ratioObject
+            anchors.bottomMargin: 20 * mainWindow.ratioObject
             anchors.left: parent.left
             anchors.leftMargin: 20 * mainWindow.ratioObject
             anchors.right: iiCSend.left
-            anchors.rightMargin: 20 * mainWindow.ratioObject
+            anchors.rightMargin: 5 * mainWindow.ratioObject
             height: 128 * mainWindow.ratioObject
+            marginPrc: 0
             //width: dialogWindow.width
             title: dict.getStringByCode("SearchWizardInputTitle")
-            title_color: "lightgray"
+            title_color: "#E7FFFF"
+            border_color: "#E7FFFF"
             //text_color: "black"
-            transparent: false
+            transparent: true
             placeholderText: "Warlock"
             regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
         }
@@ -73,7 +76,8 @@ InfoWindow {
             width: 64 * mainWindow.ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 20 * mainWindow.ratioObject
-            anchors.verticalCenter: ltiLogin.verticalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 50 * mainWindow.ratioObject
             active: true
             color: "transparent"
             //text_color: "#E7FFFF"
@@ -110,13 +114,13 @@ InfoWindow {
 
     function initErrFields() {
         console.log("wnd_chat.initErrFields", JSON.stringify(mainWindow.gERROR));
-        ltError.text = replaceAll(mainWindow.gERROR.text, "&quot;", '"');
-        title_text = mainWindow.gERROR.title;
-        if (mainWindow.gERROR.msg && (mainWindow.gERROR.msg.length > 0)) {
+        //ltError.text = replaceAll(mainWindow.gERROR.text, "&quot;", '"');
+        //title_text = mainWindow.gERROR.title;
+        /*if (mainWindow.gERROR.msg && (mainWindow.gERROR.msg.length > 0)) {
             ltiMsg.text = mainWindow.gERROR.msg;
         } else {
             ltiMsg.text = "";
-        }
+        }*/
 
         mainWindow.gERROR = {};
     }

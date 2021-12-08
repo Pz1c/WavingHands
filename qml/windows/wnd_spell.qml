@@ -110,15 +110,19 @@ InfoWindow {
 
                 width: 366 * ratioObject
                 height: 96 * ratioObject
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 144 * ratioObject
+                anchors.bottom: bbSkipAction.top
+                anchors.bottomMargin: 60 * ratioObject
                 anchors.horizontalCenter: parent.horizontalCenter
 
 
                 onClicked: {
                     console.log("chooseMonsterTarget", JSON.stringify(l_data));
                     mainWindow.processEscape();
-                    if (l_data.action === "private_challenge") {
+                    if (l_data.action === "game_with_player") {
+                        mainWindow.startGameWithPlayerEx();
+                    } else if (l_data.action === "game_with_bot") {
+                        mainWindow.startGameWithBotEx();
+                    } else if (l_data.action === "private_challenge") {
                         mainWindow.gameCore.acceptChallenge(l_data.id, true);
                     } else if (l_data.action === "rate_us") {
                         Qt.openUrlExternally("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel");
@@ -150,36 +154,7 @@ InfoWindow {
                 border.width: 0
                 radius: 30
                 visible: false
-
-                width: 366 * ratioObject
-                height: 60 * ratioObject
-                font.pixelSize: 28 * mainWindow.ratioFont
-                fontSizeMode: Text.VerticalFit
-
-                anchors.top: bbAction.bottom
-                anchors.topMargin: 24 * mainWindow.ratioObject
-                anchors.horizontalCenter: parent.horizontalCenter
-
-                onClicked: {
-                    console.log("skip feedback action");
-                    mainWindow.processEscape();
-                    if (l_data.action === "rate_us") {
-                        mainWindow.showFeedbackWnd();
-                    } else if (l_data.action === "private_challenge") {
-                        mainWindow.gameCore.rejectChallenge(l_data.id);
-                    }
-                }
-            }
-
-            BtnBig {
-                id: bbBtn3
-                text_color: "#A8F4F4"
-                text: "Skip"
-                transparent: true
-                font.underline: true
-                border.width: 0
-                radius: 30
-                visible: false
+                gradient: gDef
 
                 width: 366 * ratioObject
                 height: 60 * ratioObject
@@ -187,14 +162,50 @@ InfoWindow {
                 fontSizeMode: Text.VerticalFit
 
                 anchors.bottom: parent.bottom
+                anchors.bottomMargin: 150 * mainWindow.ratioObject
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                onClicked: {
+                    console.log("skip feedback action");
+                    mainWindow.processEscape();
+                    if (l_data.action === "game_with_player") {
+                        mainWindow.showShareWnd("f");
+                    } else if (l_data.action === "game_with_bot") {
+                        mainWindow.showShareWnd("vf");
+                    } if (l_data.action === "rate_us") {
+                        mainWindow.showFeedbackWnd();
+                    } else if (l_data.action === "private_challenge") {
+                        mainWindow.gameCore.rejectChallenge(l_data.id);
+                    }
+                }
+            }
+
+            Text {
+                id: bbBtn3
+                color: "#A8F4F4"
+                text: "Skip"
+                font.underline: true
+                visible: false
+                horizontalAlignment: Text.AlignLeft
+                font.pixelSize: 28 * mainWindow.ratioFont
+
+                anchors.bottom: parent.bottom
                 anchors.bottomMargin: 24 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: 24 * mainWindow.ratioObject
 
-
-                onClicked: {
-                    console.log("btn3 feedback action");
-                    mainWindow.processEscape();
+                MouseArea {
+                    id: maBtn3
+                    anchors.fill: parent
+                    onClicked: {
+                        console.log("btn3 feedback action");
+                        mainWindow.processEscape();
+                        if (l_data.action === "game_with_player") {
+                            mainWindow.showSearchWarlockWnd("f");
+                        } else if (l_data.action === "game_with_bot") {
+                            mainWindow.showSearchWarlockWnd("vf");
+                        }
+                    }
                 }
             }
         }

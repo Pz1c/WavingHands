@@ -14,6 +14,7 @@ Rectangle {
     property string bg_color_inactive: "lightgray"
     property string border_color_active: "royalblue"
     property string border_color_inactive: "gray"
+    property alias textObj: btnText
 
     signal clicked
 

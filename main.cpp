@@ -16,8 +16,11 @@
 
 int main(int argc, char *argv[])
 {
-    qDebug() << "loading embedded \"ISRG Root X1\" CA cert:"
-          << QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
+    bool add_cert = QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
+    QString s1 = QString("QSslSocket::sslLibraryBuildVersionString() %1 QSslSocket::sslLibraryVersionString() %2").arg(QSslSocket::sslLibraryBuildVersionString(), QSslSocket::sslLibraryVersionString());
+    QString s2 = QString("loading embedded \"ISRG Root X1\" CA cert: %1").arg(add_cert);
+    qDebug() << s1;
+    qDebug() << s2;
 
     if (argc > 1 && strcmp(argv[1], "-service") == 0) {
         qDebug() << "Service starting with from the same .so file";

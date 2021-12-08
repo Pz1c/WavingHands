@@ -12,6 +12,7 @@ var wnd_charm = "wnd_charm.qml";
 var wnd_orders = "wnd_orders.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_spell = "wnd_spell.qml";
+var wnd_search_warlock = "wnd_search_warlock.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -209,6 +210,11 @@ function showProfileWindow() {
 function showSpellbookWindow() {
     showWnd(wnd_spellbook, 0, 0, 1);
 }
+
+function showSearchWarlockWindow() {
+    showWnd(wnd_search_warlock, 0, 0, 1);
+}
+
 
 function showErrorWnd(error, chat) {
     if (!error.type) {

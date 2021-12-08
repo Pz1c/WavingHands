@@ -1227,7 +1227,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             }
             if (!_battleWait.contains(bid)) {
                 _battleWait[bid] = curre_time_spec;
-            } else if (_isAI && (curre_time_spec - _battleWait[bid] >= 75 * 60 * 60) && (_ready_in_battles.size() == 0)) {
+            } else if ((_battleState[bid] == 0) && _isAI && (curre_time_spec - _battleWait[bid] >= 75 * 60 * 60) && (_ready_in_battles.size() == 0)) {
                 _battleWait[bid] -= 30 * 60;
                 getBattle(bid, 1); // try force surrender
             }
@@ -1260,8 +1260,7 @@ bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
         getChallengeList();
     }
     if (!_isAI) {
-        qint64 udt = QDateTime::currentSecsSinceEpoch();
-        if (udt - _lastPlayersScan > 10 * 60) {
+        if (QDateTime::currentSecsSinceEpoch() - _lastPlayersScan > 10 * 60) {
             getTopList();
         }
     }
@@ -1326,19 +1325,9 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
                         "<tr><td>%10:</td> <td>%11</td></tr>\n"
                         "<tr><td>%12:</td> <td>%13</td></tr>"
                         "</table>")
-            .arg(login)
-            .arg(GameDictionary->getStringByCode("Played"))
-            .arg(QString::number(played))
-            .arg(GameDictionary->getStringByCode("Won"))
-            .arg(QString::number(won))
-            .arg(GameDictionary->getStringByCode("Died"))
-            .arg(QString::number(died))
-            .arg(GameDictionary->getStringByCode("LadderScore"))
-            .arg(QString::number(ladder))
-            .arg(GameDictionary->getStringByCode("MeleeScore"))
-            .arg(QString::number(melee))
-            .arg(GameDictionary->getStringByCode("Elo"))
-            .arg(QString::number(elo))
+            .arg(login, GameDictionary->getStringByCode("Played"), QString::number(played), GameDictionary->getStringByCode("Won"), QString::number(won),
+                 GameDictionary->getStringByCode("Died"), QString::number(died), GameDictionary->getStringByCode("LadderScore"), QString::number(ladder))
+            .arg(GameDictionary->getStringByCode("MeleeScore"), QString::number(melee), GameDictionary->getStringByCode("Elo"), QString::number(elo))
             ).append("</html>");
 
     emit warlockInfoChanged();
@@ -1427,25 +1416,26 @@ void QWarloksDuelCore::onProxyAuthenticationRequired(const QNetworkProxy &proxy,
 
 void QWarloksDuelCore::slotReadyRead() {
     //QGameCore::slotReadyRead();
-
     QNetworkReply *reply = (QNetworkReply *)sender();
     QString url = reply->url().toString();
     QString data = reply->readAll();
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    _httpResponceCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    saveRequest(data);
+    int statusCode = _httpResponceCode;
     QUrl new_url;
-    switch(statusCode)  {
-        case 301:
-        case 302:
-        case 307:
-            new_url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
-            break;
+    if ((statusCode >= 500) && (statusCode < 600))  {
+        QTimer::singleShot(5000, this, SLOT(resendLastRequest));
+        return;
+    } else if ((statusCode >= 300) && (statusCode < 400))  {
+        new_url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
     }
+
     if (!new_url.isEmpty() && (url.indexOf("/logout") != -1)) {
         setIsLoading(false);
         emit needLogin();
         return;
     }
-    saveRequest(data);
+
     processData(data, statusCode, url, new_url.toString());
     setIsLoading(false);
 }
@@ -2074,8 +2064,8 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName) {
             arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6));
 }
 
-void QWarloksDuelCore::getSharableLink() {
-    QString s = QString("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel&utm_source=invite_from_app&referrer=vf,%1").arg(_login);
+void QWarloksDuelCore::getSharableLink(const QString &game_level) {
+    QString s = QString("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel&utm_source=invite_from_app&referrer=%1,%2").arg(game_level, _login);
     qDebug() << "QWarloksDuelCore::getSharableLink" << s;
     #ifdef Q_OS_ANDROID
     QJniObject javaNotification = QJniObject::fromString(s);

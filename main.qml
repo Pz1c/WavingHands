@@ -20,7 +20,7 @@ ApplicationWindow {
     visible: true
     width: 506//600
     height: 900//1068
-    flags: Qt.FramelessWindowHint|Qt.Window
+    flags: /*Qt.FramelessWindowHint|*/Qt.Window
 
     property real ratioObject: 1
     property real ratioFont: 1
@@ -87,25 +87,15 @@ ApplicationWindow {
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onRegisterNewUserChanged: GUI.newUserRegistered(core)
-        //onOrderSubmitedChanged: MUtils.cleanOrders(core)
         onTimerStateChanged: changeTimerState()
         onChallengeListChanged: GUI.loadChallengeList()
-        //onSpellListHtmlChanged: MUtils.loadSpellList(core)
-        //onTopListChanged: MUtils.loadTopList(false)
-        //onChallengeSubmitedChanged: MUtils.loadChallengesList(false)
         onAllowedAcceptChanged: {
             console.log("onAllowedAcceptChanged");
-            //closeChild();
-            //MUtils.loadChallengesList(false);
         }
         onWarlockInfoChanged: {
             console.log("onWarlockInfoChanged");
             showUserProfile(true);
         }
-        /*onAccountMenuChanged: {
-            console.log("onAccountMenuChanged");
-            GUI.prepareLoginMenu(core.accountMenu);
-        }*/
         onPlayerInfoChanged: GUI.userProfileChanged()
         onLoginChanged: closeChild()
 
@@ -129,11 +119,8 @@ ApplicationWindow {
     }*/
 
     property var warlockDictionary: WarlockDictionary
-    property real height_koeff: 1//rMain.height / 800
+    property real height_koeff: 1
     property bool exit_on_back_button: true
-    //property var  battles: MUtils.loadChallengesList(true)
-    //property var  top_player: MUtils.loadTopList(true)
-    //property var  spells: MUtils.default_spell_list
     property bool action_send_order: true
     property string tipTxt;
     //property bool allowCloseTip: false;
@@ -776,6 +763,10 @@ ApplicationWindow {
         WNDU.showErrorWnd(data);
     }
 
+    function showSearchWarlockWnd() {
+        WNDU.showSearchWarlockWindow();
+    }
+
     function showErrorMessage() {
         var err_msg = core.errorMsg;
         console.log("Error: ", err_msg);
@@ -1042,8 +1033,11 @@ ApplicationWindow {
         return showErrorWnd({id:-1,type:14,action:"rate_us"});
     }
 
-    function showShareWnd() {
-        core.getSharableLink();
+    function showShareWnd(game_level) {
+        if (!game_level) {
+            game_level = "vf";
+        }
+        core.getSharableLink(game_level);
         //return showErrorWnd({id:-1,type:18,action:"playe_with_friends"});
     }
 
@@ -1058,6 +1052,14 @@ ApplicationWindow {
     function confirmOrdersEx() {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
         WNDU.closeChilds();
+    }
+
+    function startGameWithBotEx() {
+        GUI.startGameWithBotEx();
+    }
+
+    function startGameWithPlayerEx() {
+        GUI.startGameWithPlayerEx();
     }
 
     function processEscape() {

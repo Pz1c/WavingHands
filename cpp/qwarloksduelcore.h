@@ -16,6 +16,7 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QJniObject>
+#include <QTimer>
 
 #include <qcore.h>
 //#include "qwarlockutils.h"
@@ -137,7 +138,7 @@ public slots:
     void leaveBattle(int battle_id);
     void setParamValue(const QString &Parameter, const QString &Value);
     QString getWarlockStats(const QString &WarlockName);
-    void getSharableLink();
+    void getSharableLink(const QString &game_level = "vf");
 
 
     void slotReadyRead() override;

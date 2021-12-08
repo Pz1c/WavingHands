@@ -6,6 +6,7 @@ function cleanUpWindow(ratioObject) {
     bbSkipAction.visible = false;
     bbSkipAction.font.underline = true;
     bbSkipAction.gradient = undefined;
+    bbSkipAction.transparent = true;
     bbSkipAction.font.pixelSize = 28 * mainWindow.ratioFont;
     bbSkipAction.height = 60 * ratioObject;
     bbAction.transparent = false;
@@ -68,7 +69,7 @@ function prepareDataType9(l_data, dict) {
 
 function prepareDataType8(l_data, dict) {
     ltTitle.text = "Orders Submitted";
-    ltShortDesc.text = "Your orders are in for this turn";
+    ltShortDesc.text = "Your orders are in for this turn. Players may take up to 3 days to submit orders.";
     ltError.text = l_data.d;
     bbAction.text = "Force Turn";//dict.getStringByCode("MonsterSetTarget");
     if (l_data.fst > 0) {
@@ -203,12 +204,15 @@ function prepareShareWnd(l_data, dict) {
 }
 
 function prepareGameWithPlayer(l_data, dict) {
+    l_data.action = 'game_with_player';
     bbSkipAction.font.underline = false;
     bbSkipAction.gradient = gDef;
+    bbSkipAction.transparent = false;
     bbSkipAction.font.pixelSize = 42 * mainWindow.ratioFont;
     bbSkipAction.height = 96 * ratioObject;
     ltTitle.text = dict.getStringByCode("NewGameWithPlayerTitle");
     ltShortDesc.text = dict.getStringByCode("NewGameWithPlayerSDesc");
+    ltDesc.visible = false;
     ltError.visible = false;
     bbAction.visible = true;
     bbAction.text = dict.getStringByCode("NewGameWithPlayerBtn1");
@@ -219,12 +223,15 @@ function prepareGameWithPlayer(l_data, dict) {
 }
 
 function prepareGameWithBot(l_data, dict) {
+    l_data.action = 'game_with_bot';
     bbSkipAction.font.underline = false;
     bbSkipAction.gradient = gDef;
+    bbSkipAction.transparent = false;
     bbSkipAction.font.pixelSize = 42 * mainWindow.ratioFont;
     bbSkipAction.height = 96 * ratioObject;
     ltTitle.text = dict.getStringByCode("NewGameWithBotTitle");
     ltShortDesc.text = dict.getStringByCode("NewGameWithBotSDesc");
+    ltDesc.visible = false;
     ltError.visible = false;
     bbAction.visible = true;
     bbAction.text = dict.getStringByCode("NewGameWithBotBtn1");

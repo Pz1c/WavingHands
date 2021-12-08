@@ -175,8 +175,6 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("NewGameWithBotBtn2", "", "", "Friend");
     fillDictionary("NewGameWithBotBtn3", "", "", "Find a warlock by name");
 
-
-
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");
     fillDictionary("hint_1_1", "", "", "Hint: Start by picking the 'S' gesture with both hands");
