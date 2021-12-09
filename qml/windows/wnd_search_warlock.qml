@@ -56,14 +56,17 @@ InfoWindow {
             anchors.right: iiCSend.left
             anchors.rightMargin: 5 * mainWindow.ratioObject
             height: 128 * mainWindow.ratioObject
-            marginPrc: 0
+            marginPrcLeft: 0
             //width: dialogWindow.width
+            fontTitle.pixelSize: 28 * mainWindow.ratioFont
+            fontEdit.pixelSize: 28 * mainWindow.ratioFont
             title: dict.getStringByCode("SearchWizardInputTitle")
             title_color: "#E7FFFF"
             border_color: "#E7FFFF"
-            //text_color: "black"
+            text_color: "#E7FFFF"
             transparent: true
-            placeholderText: "Warlock"
+            placeholderText: "e.g. Galbarad"
+            placeholderTextColor: "#544653"
             regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
         }
 
@@ -77,7 +80,7 @@ InfoWindow {
             anchors.right: parent.right
             anchors.rightMargin: 20 * mainWindow.ratioObject
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 50 * mainWindow.ratioObject
+            anchors.bottomMargin: 17 * mainWindow.ratioObject
             active: true
             color: "transparent"
             //text_color: "#E7FFFF"
@@ -128,6 +131,5 @@ InfoWindow {
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
         initErrFields();
-        ltiMsg.setFontSize(0.20 * dialogWindow.height);
     }
 }

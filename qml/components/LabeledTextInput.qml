@@ -11,25 +11,27 @@ Item {
     property alias text_color: tiMain.color
     property alias text: tiMain.text
     property alias fontSizeMode: ltiTitle.fontSizeMode
+    property alias fontTitle: ltiTitle.font
+    property alias fontEdit: tiMain.font
     property alias regularExpression: revValidator.regularExpression
     property alias title: ltiTitle.text
     property alias title_color: ltiTitle.color
-    //property alias placeholderText: tiMain.placeholderText
-    //property alias placeholderTextColor: tiMain.placeholderTextColor
-    property string placeholderText: ""
-    property string placeholderTextColor: ""
+    property alias placeholderText: tPlaceHolder.text
+    property alias placeholderTextColor: tPlaceHolder.color
     property alias horizontalAlignment: ltiTitle.horizontalAlignment
     property alias verticalAlignment: ltiTitle.verticalAlignment
     property string bg_color: "snow"
     property string border_color: "black"
     property alias validator: tiMain.validator
+    property int marginPrcLeft: 5
+    property int marginPrcTop: 5
 
     LargeText {
         id: ltiTitle
         anchors.top: parent.top
-        anchors.topMargin: 0.05 * parent.height
+        anchors.topMargin: marginPrcTop / 100 * parent.height
         anchors.left: parent.left
-        anchors.leftMargin: 0.05 * parent.width
+        anchors.leftMargin: marginPrcLeft / 100 * parent.width
         height: 0.45 * parent.height
         width: 0.9 * parent.width
         color: "black"
@@ -42,31 +44,40 @@ Item {
         height: ltiTitle.height
         width: 0.9 * parent.width
         anchors.top: ltiTitle.bottom
-        anchors.topMargin: 0.05 * parent.height
+        anchors.topMargin: marginPrcTop / 100 * parent.height
         anchors.left: parent.left
-        anchors.leftMargin: 0.05 * parent.width
+        anchors.leftMargin: marginPrcLeft / 100 * parent.width
         radius: 5
         color: transparent ? "transparent" : bg_color
         border.color: border_color
+        z: 10
 
         //TextField {
         TextInput {
             id: tiMain
-            anchors.centerIn: parent
-            height: 0.95 * parent.height
+            anchors.top: parent.top
+            anchors.topMargin: 0.3 * parent.height
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 0.2 * parent.height
+            anchors.horizontalCenter: parent.horizontalCenter
             width: 0.95 * parent.width
             inputMethodHints: Qt.ImhNoPredictiveText
             validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
             color: "black"
             echoMode: isPassword ? TextInput.Password : TextInput.Normal
-            //font.pointSize: 20
             font.pixelSize: 0.3 * parent.height
+            z: 11
 
-            /*background: Rectangle {
-             color: transparent ? "transparent" : bg_color
-             border.color: border_color
-            }*/
+            Text {
+                id: tPlaceHolder
+                anchors.fill: parent
+                visible: tiMain.text.length === 0
+                font.pixelSize: tiMain.font.pixelSize
+                z:10
+            }
         }
+
+
     }
 
     function setFontSize(real_height) {
