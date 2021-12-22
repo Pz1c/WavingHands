@@ -17,6 +17,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _isAI = false;
     _botIdx = 0;
     _isScanForced = false;
+    _newChallengeCreated = false;
 
     _played = 0;
     _won = 0;
@@ -53,7 +54,8 @@ void QWarloksDuelCore::aiCreateNewChallenge() {
     }
 }
 
-void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description) { Q_UNUSED(Fast);
+void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock) {
+    Q_UNUSED(Fast);
     setIsLoading(true);
 
     // QNetworkRequest request;
@@ -71,6 +73,11 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
         desc.prepend("Maladroit ");
     }
     p_data.append(QUrl::toPercentEncoding(desc));
+    if (!Warlock.isEmpty() && _playerStats.contains(Warlock.toLower())) {
+        _inviteToBattle = Warlock;
+    } else {
+        _inviteToBattle.clear();
+    }
 
     qDebug() << p_data;
     sendPostRequest(GAME_SERVER_URL_NEW_CHALLENGE, p_data.toUtf8());
@@ -268,8 +275,10 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
         _errorMsg = "{\"type\":10}";
         emit errorOccurred();
         return false;
-    } else {
-        emit challengeSubmitedChanged();
+    } else if (!_inviteToBattle.isEmpty()) {
+        _newChallengeCreated = true;
+        //sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, ))
+        //emit challengeSubmitedChanged();
     }
     return true;
 }
@@ -1216,6 +1225,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         }
     }
     //if (!changed) {
+        int max_w_battle_id = 0;
         int curre_time_spec = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
         foreach(int bid, _waiting_in_battles) {
             if (_battleState[bid] == 1) {
@@ -1231,6 +1241,14 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
                 _battleWait[bid] -= 30 * 60;
                 getBattle(bid, 1); // try force surrender
             }
+            if (_newChallengeCreated && (max_w_battle_id < bid)) {
+                max_w_battle_id = bid;
+            }
+        }
+        if ((max_w_battle_id > 0) && !_inviteToBattle.isEmpty()) {
+            sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, intToStr(max_w_battle_id)));
+            _newChallengeCreated = false;
+            _inviteToBattle.clear();
         }
     //}
     if (!changed) {
@@ -2053,15 +2071,16 @@ void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Va
 
 QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName) {
     QString stmp;
-    if (_playerStats.contains(WarlockName.toLower())) {
+    bool found = _playerStats.contains(WarlockName.toLower());
+    if (found) {
         stmp = _playerStats[WarlockName.toLower()].toString();
     } else {
-        stmp = QString("{0,%1,0,0,0,0,0,1500,0}").arg(WarlockName);
+        stmp = QString("0,%1,0,0,0,0,0,1500,0").arg(WarlockName);
     }
     // boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), intToStr(_active)
     QStringList sltmp = stmp.split(",");
-    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6}").
-            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6));
+    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7}").
+            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found));
 }
 
 void QWarloksDuelCore::getSharableLink(const QString &game_level) {

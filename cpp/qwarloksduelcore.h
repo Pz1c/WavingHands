@@ -126,7 +126,7 @@ public slots:
     void forceSurrender(int battle_id, int turn);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
-    void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description);
+    void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock = "");
     void aiCreateNewChallenge();
     void regNewUser(const QString &Login, const QString &Email, const QString &Pass = "");
     void getBattle(int battle_id, int battle_type);
@@ -244,7 +244,8 @@ private:
     QMap<QString, QWarlockStat> _playerStats;
     QMap<int, QStringList> _battleHistory;
     QMap<int, QStringList> _battleChat;
-
+    QString _inviteToBattle;
+    bool _newChallengeCreated;
 
     // current battle
     int _loadedBattleID;

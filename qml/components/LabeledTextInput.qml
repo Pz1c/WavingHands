@@ -6,6 +6,8 @@ Item {
 
     //property bool active: true
 
+    signal inputChanged
+
     property bool transparent: true
     property bool isPassword: false
     property alias text_color: tiMain.color
@@ -68,16 +70,23 @@ Item {
             font.pixelSize: 0.3 * parent.height
             z: 11
 
+            onTextChanged: {
+                lbiMain.inputChanged();
+            }
+
             Text {
                 id: tPlaceHolder
-                anchors.fill: parent
+                //anchors.fill: parent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.topMargin: -0.20 * parent.height
+                height: 0.8 * parent.height
                 visible: tiMain.text.length === 0
                 font.pixelSize: tiMain.font.pixelSize
                 z:10
             }
         }
-
-
     }
 
     function setFontSize(real_height) {

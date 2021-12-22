@@ -31,6 +31,7 @@
 #define GAME_SERVER_URL_SENDMESS "https://games.ravenblack.net/sendmess"
 #define GAME_SERVER_URL_GET_FINISHED_BATTLE "https://games.visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&show_data=1"
 #define GAME_SERVER_URL_LOGOUT "https://games.ravenblack.net/logout"
+#define GAME_SERVER_URL_INVITE_TO_CHALLENGE "https://games.ravenblack.net/chalplayer?victim=%1&num=%2"
 
 
 #define SPELL_TYPE_SUMMON_MONSTER 0

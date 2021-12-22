@@ -763,8 +763,9 @@ ApplicationWindow {
         WNDU.showErrorWnd(data);
     }
 
-    function showSearchWarlockWnd() {
-        WNDU.showSearchWarlockWindow();
+    function showSearchWarlockWnd(battle_friendly_level) {
+        WNDU.showErrorWnd({type:101,bfl:battle_friendly_level,close_all:1});
+        //WNDU.showSearchWarlockWindow();
     }
 
     function showErrorMessage() {

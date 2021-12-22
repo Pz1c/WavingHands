@@ -226,6 +226,9 @@ function showErrorWnd(error, chat) {
     if (error.close_current !== 1) {
         error.close_current = 0;
     }
+    if (error.close_all !== 1) {
+        error.close_all = 0;
+    }
     mainWindow.gERROR = error;
 
     var wnd_name;
@@ -236,6 +239,9 @@ function showErrorWnd(error, chat) {
     case 4:
         wnd_name = wnd_spell;
         break;
+    case 101:
+        wnd_name = wnd_search_warlock;
+        break;
     default:
         if (error.type >= 7) {
             wnd_name = wnd_spell;
@@ -245,7 +251,7 @@ function showErrorWnd(error, chat) {
         break;
     }
     console.log(JSON.stringify(error));
-    showWnd(wnd_name, error.close_current, 0, 1);
+    showWnd(wnd_name, error.close_current, error.close_all, 1);
 }
 
 function showNewUserMenu() {
