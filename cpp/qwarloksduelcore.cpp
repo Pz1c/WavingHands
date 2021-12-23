@@ -17,7 +17,6 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     _isAI = false;
     _botIdx = 0;
     _isScanForced = false;
-    _newChallengeCreated = false;
 
     _played = 0;
     _won = 0;
@@ -55,7 +54,8 @@ void QWarloksDuelCore::aiCreateNewChallenge() {
 }
 
 void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock) {
-    Q_UNUSED(Fast);
+    qDebug() << "QWarloksDuelCore::createNewChallenge" << Fast << Private << ParaFC << Maladroid << Count << FriendlyLevel << Description << Warlock;
+    //Q_UNUSED(Fast);
     setIsLoading(true);
 
     // QNetworkRequest request;
@@ -270,14 +270,18 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
 }
 
 bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl) {
-    qDebug() << "finishCreateChallenge " << StatusCode << NewUrl << Data;
+    qDebug() << "finishCreateChallenge " << StatusCode << NewUrl << Data << _inviteToBattle;
     if (NewUrl.isEmpty()) {
         _errorMsg = "{\"type\":10}";
         emit errorOccurred();
         return false;
     } else if (!_inviteToBattle.isEmpty()) {
-        _newChallengeCreated = true;
-        //sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, ))
+        QString url = NewUrl.toString();
+        int pos = 0;
+        QString created_id =  QWarlockUtils::getStringFromData(url, "num", "=", "&", pos);
+        if (!created_id.isEmpty()) {
+            sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
+        }
         //emit challengeSubmitedChanged();
     }
     return true;
@@ -1225,7 +1229,6 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         }
     }
     //if (!changed) {
-        int max_w_battle_id = 0;
         int curre_time_spec = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
         foreach(int bid, _waiting_in_battles) {
             if (_battleState[bid] == 1) {
@@ -1241,14 +1244,6 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
                 _battleWait[bid] -= 30 * 60;
                 getBattle(bid, 1); // try force surrender
             }
-            if (_newChallengeCreated && (max_w_battle_id < bid)) {
-                max_w_battle_id = bid;
-            }
-        }
-        if ((max_w_battle_id > 0) && !_inviteToBattle.isEmpty()) {
-            sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, intToStr(max_w_battle_id)));
-            _newChallengeCreated = false;
-            _inviteToBattle.clear();
         }
     //}
     if (!changed) {
@@ -1263,6 +1258,21 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         _battleWait.remove(bid);
         if (_battleState[bid] < 2) {
             _battleState[bid] = 2;
+        }
+    }
+    if (_reg_in_app && !_process_refferer) {
+        _process_refferer = true;
+        QString reff;
+        #ifdef Q_OS_ANDROID
+        QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "get_refferer", "()Ljava/lang/String;");
+        reff = string.toString();
+        #endif
+        if (!reff.isEmpty()) {
+            QStringList sl = reff.split(",");
+            if (sl.size() == 2) {
+                int bfl = sl.at(0).indexOf("vf") != -1 ? 2 : 1;
+                createNewChallenge(true, true, true, true, 2, bfl, "Join to fun)", sl.at(1));
+            }
         }
     }
 
@@ -1619,6 +1629,7 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("show_hint", _show_hint);
     settings->setValue("feedback", _feedback);
     settings->setValue("rate_us", _rateus);
+    settings->setValue("reffrer_processed", _process_refferer);
     settings->setValue("last_players_scan", _lastPlayersScan);
 
     settings->beginWriteArray("bd");
@@ -1706,6 +1717,7 @@ void QWarloksDuelCore::loadGameParameters() {
     _show_hint = settings->value("show_hint", "false").toBool();
     _feedback = settings->value("feedback", "false").toBool();
     _rateus = settings->value("rate_us", "false").toBool();
+    _process_refferer = settings->value("reffrer_processed", "false").toBool();
     _lastPlayersScan = settings->value("last_players_scan", "0").toInt();
     accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());
     QStringList fbl = settings->value("finished_battles", "").toString().split(",");

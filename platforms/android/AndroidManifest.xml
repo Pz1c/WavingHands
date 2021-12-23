@@ -14,7 +14,7 @@
             <meta-data android:name="android.app.extract_android_style" android:value="minimal"/>
         </activity>
         <receiver
-            android:name="fr.simon.marquis.installreferrer.ReferrerReceiver"
+            android:name="org.qtproject.example.androidnotifier.CustomBR"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

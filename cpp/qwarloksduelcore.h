@@ -228,6 +228,7 @@ private:
     bool _rateus;
     bool _show_hint;
     bool _reg_in_app;
+    bool _process_refferer;
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
@@ -245,7 +246,6 @@ private:
     QMap<int, QStringList> _battleHistory;
     QMap<int, QStringList> _battleChat;
     QString _inviteToBattle;
-    bool _newChallengeCreated;
 
     // current battle
     int _loadedBattleID;

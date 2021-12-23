@@ -10,7 +10,10 @@ import android.graphics.Color;
 import android.graphics.BitmapFactory;
 import android.app.NotificationChannel;
 import net.is.games.WarlocksDuel.R;
-
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
 
 public class NotificationClient
 {
@@ -56,6 +59,16 @@ public class NotificationClient
           context.startActivity(shareIntent);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    public static String get_refferer(Context context) {
+        try {
+          SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+          return sharedPreferences.getString("referrer", "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
     }
 }
