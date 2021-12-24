@@ -586,7 +586,7 @@ BaseWindow {
                 arrGesture[i].color = "snow";
                 arrGesture[i].gradient = gActiveButton;
             } else {
-                arrGesture[i].color = "#A8F4F4";
+                arrGesture[i].color = "#544653";//"#A8F4F4";
                 arrGesture[i].gradient = undefined;
             }
         }

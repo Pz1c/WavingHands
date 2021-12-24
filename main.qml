@@ -939,7 +939,7 @@ ApplicationWindow {
         }
         if (uncompleted_cnt > 0) {
             if (new_gesture !== '') {
-                res.push({gp:"?",n:"Uncompleted spells",choose:0,t:0,cast_type:100,row_type:2});
+                res.push({gp:"?",n:"Incomplete Spells",choose:0,t:0,cast_type:100,row_type:2});
             }
             res = res.concat(arr_cast_later);
         }

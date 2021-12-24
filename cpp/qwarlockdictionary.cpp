@@ -242,7 +242,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("DFFDD", "Блискавка", "Молния", "Lightning Bolt");
     fillDictionary("DFPW", "Лікувати тяжкі рани", "Лечить тяжелые ранения", "Cure Heavy Wounds");
     fillDictionary("DFW", "Лікувати легкі рани", "Лечить легкие ранения", "Cure Light Wounds");
-    fillDictionary("DFWFd", "Сліпота", "Слепота", "Blindness");
+    fillDictionary("DWFWd", "Сліпота", "Слепота", "Blindness");
     fillDictionary("DWFFd", "Сліпота", "Слепота", "Blindness");
     fillDictionary("DPP", "Амнезія", "Амнезия", "Amnesia");
     fillDictionary("DSF", "Незграбність", "Неуклюжесть", "Maladroitness");
@@ -313,7 +313,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("cDPW_short_desc", "", "", "Counter all spells, Destroy all monsters and enchantments. Also acts as a shield");
     fillDictionary("PDWP_short_desc", "", "", "Destroy an enchantment (Amensia, Fear, etc.) or a monster");
     fillDictionary("PPws_short_desc", "", "", "You cannot be seen or targeted for 3 turns");
-    fillDictionary("DFWFd_short_desc", "", "", "Target cannot see or aim for 3 turns");
+    fillDictionary("DWFWd_short_desc", "", "", "Target cannot see or aim for 3 turns");
     fillDictionary("DWFFd_short_desc", "", "", "Target cannot see or aim for 3 turns");
     fillDictionary("SPFP_short_desc", "", "", "Cut opponent's gestures, making him start a new chain of gestures");
     fillDictionary("SPFPSDW_short_desc", "", "", "Make an enchantment that you cast in the following 3 turns permanent");
@@ -385,7 +385,7 @@ void QWarlockDictionary::fillGameDictionary() {
                    "Ціль цього закляття негайно захворіває смертельною (не заразною) хворобою, яке вб'є його наприкінці шостого раунду після захворювання. Лічильник в рядку чорнокнижника показуватиме кількість ходів до смерті. Коли лічильник досягне нуля, чорнокнижник вмирає. Хвороба лікується Видаленням Чар або Вилікувати Важкі Рани або Розсіювання Магії. Якщо предметом заклинання це чудовисько, він відразу ж помирає, але все ще може атакувати в цьому ході.",
                    "Цель этого заклинания немедленно заболевает смертельной (не заразно) болезнью, которое убьет его в конце шестого раунда после заболевания. Счетчик в строке чернокнижника показывать количество ходов до смерти. Когда счетчик достигнет нуля, чернокнижник умирает. Болезнь лечится Удалением Чар или Вылечить Тяжелые Раны или Рассеивание Магии. Если предметом заклинание это чудовище, он сразу же умирает, но все еще может атаковать в этом ходу.",
                    "The subject of this spell immediately contracts a deadly (non contagious) disease which will kill him at the end of the sixth turn following the one upon which the spell is cast. A counter in the warlock's status bar indicates the number of turns he has left to live. When the counter reaches zero, the warlock dies. The malady is cured by Remove Enchantment or Cure Heavy Wounds or Dispel Magic in the meantime. If the subject of the spell is a monster, it dies immediately, but still gets to attack that turn.");
-    fillDictionary("DFWFd_desc",
+    fillDictionary("DWFWd_desc",
                    "Протягом наступних 3 ходів не рахуючи того, в якій було закляття, об'єкт не в змозі бачити. Якщо він Чернокнижник, він не може бачити, що жести своїх опонентів, хоча він буде поінформований про наслідки заклинань. Він може контролювати своїх монстри, але він не може направити свої заклинання на цілі, які він не може бачити. Засліплені монстри (включаючи Елементалів) миттєво знищується і не можуть атакувати в цьому ходу.",
                    "В течение следующих 3 ходов кроме того, в котором было заклятие, объект не в состоянии видеть. Если он Чернокнижник, он не может видеть, что жесты своих оппонентов, хотя он будет проинформирован о последствиях заклинаний. Он может контролировать своих монстры, но он не может направить свои заклинания на цели, которые он не может видеть. Ослепленные монстры (включая элементалей) мгновенно уничтожается и не могут атаковать в этом ходу.",
                    "For the next 3 turns not including the one in which the spell was cast, the subject is unable to see. If he is a Warlock, he cannot tell what his opponents' gestures are, although he will be informed of the effects of spells cast. He can control his monsters (he can say 'Attack that cursed Zarquon'), but he cannot direct his spells at things that he cannot see. Blinded monsters (including Elementals) are instantly destroyed and cannot attack in that turn.");
