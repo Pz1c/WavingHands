@@ -1260,13 +1260,20 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             _battleState[bid] = 2;
         }
     }
+    //_process_refferer = false;
     if (_reg_in_app && !_process_refferer) {
         _process_refferer = true;
         QString reff;
         #ifdef Q_OS_ANDROID
-        QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "get_refferer", "()Ljava/lang/String;");
+        QJniObject val = QJniObject::fromString("Try to get reffereerrre");
+        //QJniObject string = QJniObject::callStaticMethod<QJniObject>("org/qtproject/example/androidnotifier/NotificationClient", "get_refferer", "()V");
+        //QJniObject string = QJniObject::callStaticObjectMethod<jstring>("org/qtproject/example/androidnotifier/NotificationClient", "get_refferer");
+        QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "get_refferer",
+                                                               "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
+                                                               QNativeInterface::QAndroidApplication::context(), val.object<jstring>());
         reff = string.toString();
         #endif
+        qDebug() << "CheckReffereef" << reff;
         if (!reff.isEmpty()) {
             QStringList sl = reff.split(",");
             if (sl.size() == 2) {

@@ -89,4 +89,5 @@ DISTFILES += \
     platforms/android/res/values/libs.xml \
     platforms/android/src/com/kdab/training/MyBroadcastReceiver.java \
     platforms/android/src/com/kdab/training/MyService.java \
+    platforms/android/src/org/qtproject/example/androidnotifier/CustomBR.java \
     platforms/android/src/org/qtproject/example/androidnotifier/NotificationClient.java

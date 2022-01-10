@@ -62,9 +62,10 @@ public class NotificationClient
         }
     }
     
-    public static String get_refferer(Context context) {
+    public static String get_refferer(Context context, String message) {
         try {
-          SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+          SharedPreferences sharedPreferences = context.getSharedPreferences("referrer", 0);
+          //SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
           return sharedPreferences.getString("referrer", "");
         } catch (Exception e) {
             e.printStackTrace();

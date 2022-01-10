@@ -1,8 +1,13 @@
+import android.util.Log;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+import android.content.Context;
+import android.content.Intent;
+import android.content.BroadcastReceiver;
+import net.is.games.WarlocksDuel.R;
 
 public class CustomBR extends BroadcastReceiver {
 
@@ -16,12 +21,13 @@ public class CustomBR extends BroadcastReceiver {
             String referrer = intent.getStringExtra("referrer");
             Log.d(D_TAG, referrer);
             
-            SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+            SharedPreferences sharedPreferences = context.getSharedPreferences("referrer", 0);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("referrer", referrer);
             editor.commit();
             
-            Toast.makeText(getApplicationContext(), "referrer = " + referrer, Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "referrer = " + referrer, Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "referrer = " + referrer, Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             e.printStackTrace();
         }
