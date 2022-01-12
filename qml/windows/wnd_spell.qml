@@ -60,9 +60,20 @@ InfoWindow {
                 anchors.right: parent.right
                 font.pixelSize: 28 * mainWindow.ratioFont
                 color: "#10C9F5"
-                text: "Details:"
+                text: "Details"
                 horizontalAlignment: Text.AlignLeft
                 //fontSizeMode: Text.VerticalFit
+                visible: false
+            }
+
+            Rectangle {
+                id: rDesc
+                visible: true//!ltDesc.visible
+                anchors.verticalCenter: ltDesc.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#10C9F5"
+                width: 0.7 * parent.width
+                height: 3 * mainWindow.ratioObject
             }
 
             ScrollView {
@@ -126,15 +137,12 @@ InfoWindow {
                         mainWindow.gameCore.acceptChallenge(l_data.id, true);
                     } else if (l_data.action === "rate_us") {
                         Qt.openUrlExternally("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel");
-                        mainWindow.processEscape();
                     } else if (l_data.action === "feedback") {
                         Qt.openUrlExternally("https://forms.gle/vW3tBW8595KtREZe8");
-                        mainWindow.processEscape();
                     } else if (l_data.action === "joinus") {
                         Qt.openUrlExternally("https://www.facebook.com/WarlocksDuel");
                     } else if (l_data.action === "leave") {
                         mainWindow.gameCore.leaveBattle(l_data.id);
-                        mainWindow.processEscape();
                     } else if (l_data.action === "reg_info") {
                         Qt.openUrlExternally("https://games.ravenblack.net/rules/0/register.html");
                     } else if (l_data.action === "force") {

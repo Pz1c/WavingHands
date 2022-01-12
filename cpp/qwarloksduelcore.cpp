@@ -240,7 +240,7 @@ void QWarloksDuelCore::aiLogin() {
 
 void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl) {
     QString list = QWarlockUtils::parseChallengesList(Data);
-    qDebug() << "finishChallengeList" << StatusCode << NewUrl << _challengeList << list;
+    qDebug() << "finishChallengeList" << StatusCode << NewUrl;// << _challengeList << list;
     if (_challengeList.compare(list) != 0) {
         _challengeList = list;
         qDebug() << list;
@@ -1456,12 +1456,12 @@ void QWarloksDuelCore::slotReadyRead() {
     QString data = reply->readAll();
     _httpResponceCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     saveRequest(data);
-    int statusCode = _httpResponceCode;
+
     QUrl new_url;
-    if ((statusCode >= 500) && (statusCode < 600))  {
+    if ((_httpResponceCode >= 500) && (_httpResponceCode < 600))  {
         QTimer::singleShot(5000, this, SLOT(resendLastRequest));
         return;
-    } else if ((statusCode >= 300) && (statusCode < 400))  {
+    } else if ((_httpResponceCode >= 300) && (_httpResponceCode < 400))  {
         new_url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
     }
 
@@ -1471,7 +1471,13 @@ void QWarloksDuelCore::slotReadyRead() {
         return;
     }
 
-    processData(data, statusCode, url, new_url.toString());
+    if (url.indexOf("/chalplayer") != -1) {
+        setIsLoading(false);
+        scanState();
+        return;
+    }
+
+    processData(data, _httpResponceCode, url, new_url.toString());
     setIsLoading(false);
 }
 

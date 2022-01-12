@@ -617,7 +617,7 @@ ApplicationWindow {
                                             obj.action = "private_challenge";
                                             showErrorWnd(obj);
                                         } else {
-                                            core.getBattle(lvActiveBattle.model[index].id, lvActiveBattle.model[index].s);
+                                            core.getBattle(lvActiveBattle.model[index].id, Math.max(lvActiveBattle.model[index].s, 0));
                                         }
                                     }
                                 }
