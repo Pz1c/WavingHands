@@ -38,9 +38,11 @@ function prepareDataType12(l_data, dict) {
             ltError.text += "Join to start battle<br>";
         }
     }
-    ltError.text += dict.getStringByCode('DefNotStartDesc');
-    bbAction.text = "Leave";
+    ltError.text += "<br><font size=\"-1\">" + dict.getStringByCode('DefNotStartDesc') + "</font>";
+    bbAction.text = "Keep Waiting";
     bbAction.visible = true;
+    bbSkipAction.text = "Leave";
+    bbSkipAction.visible = true;
 }
 
 function prepareDataType11(l_data, dict) {

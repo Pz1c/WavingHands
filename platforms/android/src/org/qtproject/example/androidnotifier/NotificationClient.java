@@ -66,7 +66,10 @@ public class NotificationClient
         try {
           SharedPreferences sharedPreferences = context.getSharedPreferences("referrer", 0);
           //SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-          return sharedPreferences.getString("referrer", "");
+          String res = sharedPreferences.getString("referrer", "");
+          SharedPreferences.Editor editor = sharedPreferences.edit();
+          editor.putString("referrer", "");
+          editor.commit();
         } catch (Exception e) {
             e.printStackTrace();
             return "";

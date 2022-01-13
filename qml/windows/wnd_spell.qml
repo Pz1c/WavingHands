@@ -116,13 +116,13 @@ InfoWindow {
                 radius: 30
                 visible: false
                 z: 30
-                font.pixelSize: 42 * mainWindow.ratioFont
+                font.pixelSize: 49 * mainWindow.ratioFont
                 gradient: gDef
 
                 width: 366 * ratioObject
                 height: 96 * ratioObject
                 anchors.bottom: bbSkipAction.top
-                anchors.bottomMargin: 60 * ratioObject
+                anchors.bottomMargin: 50 * ratioObject
                 anchors.horizontalCenter: parent.horizontalCenter
 
 
@@ -142,7 +142,7 @@ InfoWindow {
                     } else if (l_data.action === "joinus") {
                         Qt.openUrlExternally("https://www.facebook.com/WarlocksDuel");
                     } else if (l_data.action === "leave") {
-                        mainWindow.gameCore.leaveBattle(l_data.id);
+                        // do nothing
                     } else if (l_data.action === "reg_info") {
                         Qt.openUrlExternally("https://games.ravenblack.net/rules/0/register.html");
                     } else if (l_data.action === "force") {
@@ -176,7 +176,9 @@ InfoWindow {
                 onClicked: {
                     console.log("skip feedback action");
                     mainWindow.processEscape();
-                    if (l_data.action === "game_with_player") {
+                    if (l_data.action === "leave") {
+                        mainWindow.gameCore.leaveBattle(l_data.id);
+                    } else if (l_data.action === "game_with_player") {
                         mainWindow.showShareWnd("f");
                     } else if (l_data.action === "game_with_bot") {
                         mainWindow.showShareWnd("vf");

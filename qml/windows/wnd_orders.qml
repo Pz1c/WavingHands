@@ -122,21 +122,24 @@ BaseWindow {
                                     gradient: ((lvOrderList.model[index].type === "LH") || (lvOrderList.model[index].type === "RH")) ? gGesture : undefined
                                 }
 
-                                Text {
-                                    id: rdbiGesture
+                                ScrollView {
+                                    id: rdbiSVGesture
                                     anchors.left: idRoot.left
                                     anchors.leftMargin: 126 * mainWindow.ratioObject
                                     anchors.right: rdbiAction.left
                                     anchors.rightMargin: 24 * mainWindow.ratioObject
                                     anchors.verticalCenter: parent.verticalCenter
-                                    color: "#FEE2D6"
-                                    horizontalAlignment: Text.AlignLeft
-                                    text: lvOrderList.model[index].v
-                                    font.pixelSize: 28 * mainWindow.ratioFont
-                                    wrapMode: Text.WordWrap
-
-                                    //width: 0.9 * parent.width
                                     height: 0.9 * parent.height
+
+                                    Text {
+                                        id: rdbiGesture
+                                        color: "#FEE2D6"
+                                        horizontalAlignment: Text.AlignLeft
+                                        text: lvOrderList.model[index].v
+                                        font.pixelSize: 28 * mainWindow.ratioFont
+                                        wrapMode: Text.WordWrap
+                                        anchors.fill: parent
+                                    }
                                 }
 
                                 LargeText {
