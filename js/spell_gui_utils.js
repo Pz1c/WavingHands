@@ -1,5 +1,6 @@
 function cleanUpWindow(ratioObject) {
     //ltDesc.visible = true;
+    rDesc.visible = true;
     bbAction.visible = false;
     ltShortDesc.visible = true;
     bbBtn3.visible = false;
@@ -64,7 +65,7 @@ function prepareDataType10(l_data, dict) {
 }
 
 function prepareDataType9(l_data, dict) {
-    //ltDesc.visible = false;
+    rDesc.visible = false;
     svMain.anchors.topMargin = 0;
     ltTitle.text = l_data.t;
     ltShortDesc.text = l_data.st ? l_data.st : "";
@@ -153,7 +154,7 @@ function prepareFeedback(l_data, dict) {
     bbAction.text = dict.getStringByCode("Feedback");
     bbSkipAction.visible = true;
     bbSkipAction.text = dict.getStringByCode("Skip");
-    //ltDesc.visible = false;
+    rDesc.visible = false;
     ltTitle.text = dict.getStringByCode("FeedbackTitle");
     ltShortDesc.text = dict.getStringByCode("Feedback_short_desc");
     ltError.text = "";
@@ -164,7 +165,7 @@ function prepareRateUs(l_data, dict) {
     bbAction.text = dict.getStringByCode("RateUsAction");
     bbSkipAction.visible = true;
     bbSkipAction.text = dict.getStringByCode("SendFeedback");
-    //ltDesc.visible = false;
+    rDesc.visible = false;
     ltTitle.text = dict.getStringByCode("RateUs");
     ltShortDesc.text = dict.getStringByCode("RateUs_short_desc");
     ltError.text = "";
@@ -182,7 +183,7 @@ function replaceAll(str, find, replace) {
 }
 
 function prepareBattleHistory(l_data, dict) {
-    //ltDesc.visible = false;
+    rDesc.visible = false;
     ltTitle.visible = true;
     ltTitle.text = dict.getStringByCode("BattleHistoryTitle");
     ltShortDesc.visible = false;
@@ -216,7 +217,7 @@ function prepareGameWithPlayer(l_data, dict) {
     bbSkipAction.height = 96 * ratioObject;
     ltTitle.text = dict.getStringByCode("NewGameWithPlayerTitle");
     ltShortDesc.text = dict.getStringByCode("NewGameWithPlayerSDesc");
-    //ltDesc.visible = false;
+    rDesc.visible = false;
     ltError.visible = false;
     bbAction.visible = true;
     bbAction.text = dict.getStringByCode("NewGameWithPlayerBtn1");
@@ -235,7 +236,7 @@ function prepareGameWithBot(l_data, dict) {
     bbSkipAction.height = 96 * ratioObject;
     ltTitle.text = dict.getStringByCode("NewGameWithBotTitle");
     ltShortDesc.text = dict.getStringByCode("NewGameWithBotSDesc");
-    //ltDesc.visible = false;
+    rDesc.visible = false;
     ltError.visible = false;
     bbAction.visible = true;
     bbAction.text = dict.getStringByCode("NewGameWithBotBtn1");

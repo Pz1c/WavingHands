@@ -50,6 +50,7 @@ function newBattleList() {
     G_BATTLE_LIST = JSON.parse(bl);
     lvActiveBattle.model = G_BATTLE_LIST[0];
     lvFinishedBattle.model = G_BATTLE_LIST[1];
+    ltFinishedBattle.visible = G_BATTLE_LIST[1].length > 0;
 }
 
 function loadBattleList(filter) {

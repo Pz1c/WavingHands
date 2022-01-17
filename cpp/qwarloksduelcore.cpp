@@ -1163,7 +1163,7 @@ void QWarloksDuelCore::generateBattleList() {
 
 void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     qDebug() << "QWarloksDuelCore::parsePlayerInfo" << _login;
-    QList<int> old_read(_ready_in_battles), old_wait(_waiting_in_battles);
+    QList<int> old_read(_ready_in_battles), old_wait(_waiting_in_battles), old_fin(_finished_battles);
     _challenge.clear();
     int Idx = 0;
     _played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>", Idx);
@@ -1249,6 +1249,14 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     if (!changed) {
         foreach(int bid, old_wait) {
             if (_waiting_in_battles.indexOf(bid) == -1) {
+                changed = true;
+                break;
+            }
+        }
+    }
+    if (!changed) {
+        foreach(int bid, old_fin) {
+            if (_finished_battles.indexOf(bid) == -1) {
                 changed = true;
                 break;
             }

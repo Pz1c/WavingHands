@@ -130,6 +130,9 @@ BaseWindow {
                                     anchors.rightMargin: 24 * mainWindow.ratioObject
                                     anchors.verticalCenter: parent.verticalCenter
                                     height: 0.9 * parent.height
+                                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                                    contentWidth: -1
 
                                     Text {
                                         id: rdbiGesture

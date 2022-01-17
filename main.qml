@@ -492,7 +492,7 @@ ApplicationWindow {
             anchors.leftMargin: 24 * ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 10 * ratioObject
-            visible: core.allowedAdd || true
+            visible: true//core.allowedAdd || true
             contentHeight: iMainScrollBody.height
             contentWidth: -1
 
@@ -623,16 +623,16 @@ ApplicationWindow {
                                 }
                         }
 
-                            Rectangle {
-                                                            id: rdBattleItemBg
-                                                            color: "#544653"
-                                                            opacity: 0.39
-                                                            radius: 30
-                                                            anchors.top: parent.top
-                                                            anchors.left: parent.left
-                                                            anchors.right: parent.right
-                                                            anchors.bottom: parent.bottom
-                                                            anchors.bottomMargin: 12 * ratioObject
+                        Rectangle {
+                            id: rdBattleItemBg
+                            color: "#544653"
+                            opacity: 0.39
+                            radius: 30
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 12 * ratioObject
                         }
                     }
                 }
