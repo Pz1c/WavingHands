@@ -70,6 +70,7 @@ public class NotificationClient
           SharedPreferences.Editor editor = sharedPreferences.edit();
           editor.putString("referrer", "");
           editor.commit();
+          return res;
         } catch (Exception e) {
             e.printStackTrace();
             return "";
