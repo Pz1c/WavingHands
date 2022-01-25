@@ -4,7 +4,6 @@
         <file>html/spelllist_en.htm</file>
         <file>img/reg.png</file>
         <file>js/ai_utils.js</file>
-        <file>js/main_utils.js</file>
         <file>js/user_profile_utils.js</file>
         <file>js/wnd_utils.js</file>
         <file>qml/windows/wnd_new_user.qml</file>

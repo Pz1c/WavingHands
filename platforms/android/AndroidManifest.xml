@@ -18,7 +18,7 @@
                 <action android:name="com.android.vending.INSTALL_REFERRER"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".MyBroadcastReceiver">
+        <receiver android:name="com.kdab.training.service.MyBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>

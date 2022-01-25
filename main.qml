@@ -56,7 +56,7 @@ ApplicationWindow {
         }
     }
 
-    property int timerCounter: 0
+    /*property int timerCounter: 0
     Timer {
         id: tScanTimer
         interval: core.isAI ? 30000 : 60000
@@ -70,7 +70,7 @@ ApplicationWindow {
                 tScanTimer.interval = core.isAI ? 30000 : 60000;
             }
         }
-    }
+    }*/
 
     property alias gameCore: core
     property alias mainContainer: iWndContainer
@@ -87,7 +87,7 @@ ApplicationWindow {
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onRegisterNewUserChanged: GUI.newUserRegistered(core)
-        onTimerStateChanged: changeTimerState()
+        //onTimerStateChanged: changeTimerState()
         onChallengeListChanged: GUI.loadChallengeList()
         onAllowedAcceptChanged: {
             console.log("onAllowedAcceptChanged");
@@ -1089,7 +1089,7 @@ ApplicationWindow {
         GUI.linkActivated(link)
     }
 
-    function changeTimerState() {
+    /*function changeTimerState() {
         timerCounter = 0;
         if (core.timerState) {
             if (!tScanTimer.running) {
@@ -1100,7 +1100,7 @@ ApplicationWindow {
                 tScanTimer.stop();
             }
         }
-    }
+    }*/
 
     /*function changeGesture(Gesture, Left) {
         MUtils.changeGesture(Gesture, Left);

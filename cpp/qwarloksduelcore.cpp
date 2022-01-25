@@ -1,9 +1,12 @@
 #include "qwarloksduelcore.h"
 
 
-QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
+QWarloksDuelCore::QWarloksDuelCore(QObject *parent, const QString &RequestCode) :
     QGameCore(parent)
 {
+    if (!RequestCode.isEmpty()) {
+        _request_code = RequestCode;
+    }
     QString ini_path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     qDebug() << "QWarloksDuelCore::QWarloksDuelCore" << ini_path;
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, ini_path);
@@ -11,6 +14,10 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent) :
     init();
     GameDictionary->setCurrentLang("en");
     SpellChecker = QWarlockSpellChecker::getInstance();
+    _timerCount = 0;
+    _timerInterval = 0;
+    connect(&timer, SIGNAL(timeout()), this, SLOT(timerFired()));
+
 
     //_lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
     _isLogined = false;
@@ -1059,8 +1066,17 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
 
 
 void QWarloksDuelCore::setTimeState(bool State) {
+    //timer.s
     _isTimerActive = State;
-    emit timerStateChanged();
+    if (_isTimerActive) {
+        if (timer.isActive()) {
+            timer.stop();
+        }
+        timer.start(_isAI ? 30000 : 60000);
+    } else {
+        timer.stop();
+    }
+    //emit timerStateChanged();
 }
 
 int QWarloksDuelCore::getLoadedBattleTurn()
@@ -2167,4 +2183,16 @@ void QWarloksDuelCore::logout() {
 
     saveParameters();
     sendGetRequest(GAME_SERVER_URL_LOGOUT);
+}
+
+void QWarloksDuelCore::setTimerInterval(int count, int msec) {
+    _timerCount = count;
+    timer.setInterval(msec);
+    setTimeState(true);
+}
+
+void QWarloksDuelCore::timerFired() {
+    if ((_timerCount > 0) && (--_timerCount <= 0)) {
+        timer.setInterval(_isAI ? 30000 : 60000);
+    }
 }

@@ -1,3 +1,5 @@
+package com.kdab.training.service;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.BroadcastReceiver;

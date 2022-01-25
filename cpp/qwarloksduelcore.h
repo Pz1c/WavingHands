@@ -57,7 +57,7 @@ class QWarloksDuelCore : public QGameCore
     Q_PROPERTY(QString battleList READ battleList NOTIFY battleListChanged)
 
 public:
-    explicit QWarloksDuelCore(QObject *parent = nullptr);
+    explicit QWarloksDuelCore(QObject *parent = nullptr, const QString &RequestCode = "");
     ~QWarloksDuelCore();
 
     bool isNeedLogin();
@@ -139,6 +139,7 @@ public slots:
     void setParamValue(const QString &Parameter, const QString &Value);
     QString getWarlockStats(const QString &WarlockName);
     void getSharableLink(const QString &game_level = "vf");
+    void setTimerInterval(int count, int msec);
 
 
     void slotReadyRead() override;
@@ -156,6 +157,7 @@ public slots:
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
 protected slots:
     void loginToSite();
+    void timerFired();
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -289,6 +291,11 @@ private:
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;
+
+    //time
+    int _timerCount;
+    int _timerInterval;
+    QTimer timer;
 
 };
 

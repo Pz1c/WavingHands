@@ -22,14 +22,14 @@ int main(int argc, char *argv[])
     qDebug() << s1;
     qDebug() << s2;
 
-    if (argc > 1 && strcmp(argv[1], "-service") == 0) {
+    if (argc > 1 && qstrcmp(argv[1], "-service") == 0) {
         qDebug() << "Service starting with from the same .so file";
+        QWarloksDuelCore *wdc = new QWarloksDuelCore(nullptr, "asc");
         #ifdef Q_OS_ANDROID
         QAndroidService app(argc, argv);
         return app.exec();
-        #else
-        return 1;
         #endif
+        return 0;
     } else {
         QGuiApplication app(argc, argv);
         qint32 fontId = QFontDatabase::addApplicationFont(":/res/AgencyFB.ttf");
