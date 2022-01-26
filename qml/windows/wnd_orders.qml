@@ -98,14 +98,14 @@ BaseWindow {
                     anchors.top: rLine.bottom
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: lvOrderList.model.length * 102 * mainWindow.ratioObject
+                    height: lvOrderList.model.length * 130 * mainWindow.ratioObject
 
                     contentWidth: -1
 
                     delegate: Item {
                             id: idRoot
                             width: lvOrderList.width
-                            height: 102 * mainWindow.ratioObject
+                            height: Math.max(rdbiGesture.contentHeight + 12 * mainWindow.ratioObject, 102 * mainWindow.ratioObject)
 
                                 IconInfo {
                                     id: rdbiIcon
@@ -122,14 +122,30 @@ BaseWindow {
                                     gradient: ((lvOrderList.model[index].type === "LH") || (lvOrderList.model[index].type === "RH")) ? gGesture : undefined
                                 }
 
-                                ScrollView {
+                                Text {
+                                    id: rdbiGesture
+                                    color: "#FEE2D6"
+                                    horizontalAlignment: Text.AlignLeft
+                                    text: lvOrderList.model[index].v
+                                    font.pixelSize: 28 * mainWindow.ratioFont
+                                    wrapMode: Text.WordWrap
+                                    anchors.left: idRoot.left
+                                    anchors.leftMargin: 126 * mainWindow.ratioObject
+                                    anchors.right: rdbiAction.left
+                                    anchors.rightMargin: 24 * mainWindow.ratioObject
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 5 * mainWindow.ratioObject
+                                    height: 92 * mainWindow.ratioObject
+                                }
+
+                                /*ScrollView {
                                     id: rdbiSVGesture
                                     anchors.left: idRoot.left
                                     anchors.leftMargin: 126 * mainWindow.ratioObject
                                     anchors.right: rdbiAction.left
                                     anchors.rightMargin: 24 * mainWindow.ratioObject
                                     anchors.verticalCenter: parent.verticalCenter
-                                    height: 0.9 * parent.height
+                                    height: 92 * mainWindow.ratioObject
                                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                                     ScrollBar.vertical.policy: ScrollBar.AsNeeded
                                     contentWidth: -1
@@ -143,7 +159,7 @@ BaseWindow {
                                         wrapMode: Text.WordWrap
                                         anchors.fill: parent
                                     }
-                                }
+                                }*/
 
                                 LargeText {
                                     id: rdbiAction

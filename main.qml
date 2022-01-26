@@ -106,7 +106,8 @@ ApplicationWindow {
                 rBody.visible = false;
                 showNewUserMenu();
             } else {
-                core.scanState();
+                //core.scanState();
+                core.setTimerInterval(1, 100);
                 GUI.prepareLoginMenu(core.accountMenu);
             }
         }

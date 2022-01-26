@@ -1,11 +1,12 @@
 #include "qwarloksduelcore.h"
 
 
-QWarloksDuelCore::QWarloksDuelCore(QObject *parent, const QString &RequestCode) :
+QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     QGameCore(parent)
 {
-    if (!RequestCode.isEmpty()) {
-        _request_code = RequestCode;
+    _isAsService = AsService;
+    if (_isAsService) {
+        _request_code = "ass";
     }
     QString ini_path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     qDebug() << "QWarloksDuelCore::QWarloksDuelCore" << ini_path;
@@ -17,7 +18,6 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, const QString &RequestCode) 
     _timerCount = 0;
     _timerInterval = 0;
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerFired()));
-
 
     //_lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
     _isLogined = false;
@@ -1068,13 +1068,11 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
 void QWarloksDuelCore::setTimeState(bool State) {
     //timer.s
     _isTimerActive = State;
-    if (_isTimerActive) {
-        if (timer.isActive()) {
-            timer.stop();
-        }
-        timer.start(_isAI ? 30000 : 60000);
-    } else {
+    if ((_isTimerActive && timer.isActive()) || !_isTimerActive) {
         timer.stop();
+    }
+    if (_isTimerActive) {
+        timer.start(_isAI ? 30000 : 60000);
     }
     //emit timerStateChanged();
 }
@@ -1271,8 +1269,8 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         }
     }
     if (!changed) {
-        foreach(int bid, old_fin) {
-            if (_finished_battles.indexOf(bid) == -1) {
+        foreach(int bid, _finished_battles) {
+            if (old_fin.indexOf(bid) == -1) {
                 changed = true;
                 break;
             }
@@ -1757,14 +1755,14 @@ void QWarloksDuelCore::loadGameParameters() {
     _process_refferer = settings->value("reffrer_processed", "false").toBool();
     _lastPlayersScan = settings->value("last_players_scan", "0").toInt();
     accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());
-    QStringList fbl = settings->value("finished_battles", "").toString().split(",");
+    /*QStringList fbl = settings->value("finished_battles", "").toString().split(",");
     foreach(QString fb, fbl) {
         int fbid = fb.toInt();
         if ((fbid == 0) || (_finished_battles.indexOf(fbid) != -1)) {
             continue;
         }
         _finished_battles.append(fbid);
-    }
+    }*/
     /*_shown_battles = settings->value("shown_battles", "").toStringList();
     if ((_shown_battles.isEmpty() || ((_shown_battles.size() == 1) && (_shown_battles.at(0).isEmpty()))) && !fbl.isEmpty()) {
         _shown_battles.append(fbl);
@@ -2132,6 +2130,22 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName) {
             arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found));
 }
 
+void QWarloksDuelCore::showNotification(const QString &msg) {
+    qDebug() << "QWarloksDuelCore::showNotification" << msg;
+    #ifdef Q_OS_ANDROID
+    QJniObject javaNotification = QJniObject::fromString(msg);
+    QJniObject::callStaticMethod<void>(
+        "org/qtproject/example/androidnotifier/NotificationClient",
+        "notify",
+        "(Landroid/content/Context;Ljava/lang/String;)V",
+        QNativeInterface::QAndroidApplication::context(),
+        javaNotification.object<jstring>());
+    #else
+    //_errorMsg = QString("{\"id\":-1,\"type\":18,\"action\":\"play_with_friends\",\"link\":\"%1\"}").arg(s);
+    emit errorOccurred();
+    #endif
+}
+
 void QWarloksDuelCore::getSharableLink(const QString &game_level) {
     QString s = QString("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel&utm_source=invite_from_app&referrer=%1,%2").arg(game_level, _login);
     qDebug() << "QWarloksDuelCore::getSharableLink" << s;
@@ -2142,7 +2156,7 @@ void QWarloksDuelCore::getSharableLink(const QString &game_level) {
         "share",
         "(Landroid/content/Context;Ljava/lang/String;)V",
         QNativeInterface::QAndroidApplication::context(),
-    javaNotification.object<jstring>());
+        javaNotification.object<jstring>());
     #else
     QClipboard *cp = QGuiApplication::clipboard();
     if (cp) {
@@ -2186,13 +2200,23 @@ void QWarloksDuelCore::logout() {
 }
 
 void QWarloksDuelCore::setTimerInterval(int count, int msec) {
-    _timerCount = count;
-    timer.setInterval(msec);
+    qDebug() << "QWarloksDuelCore::setTimerInterval" << count << msec;
+    if (count > 0) {
+        _timerCount = count;
+    }
+    if (msec > 0) {
+        timer.setInterval(msec);
+    }
     setTimeState(true);
+    if (msec == 0) {
+        timerFired();
+    }
 }
 
 void QWarloksDuelCore::timerFired() {
+    qDebug() << "QWarloksDuelCore::timerFired" << _timerCount;
     if ((_timerCount > 0) && (--_timerCount <= 0)) {
-        timer.setInterval(_isAI ? 30000 : 60000);
+        timer.setInterval((_isAI && !_isAsService) ? 30000 : 60000);
     }
+    scanState(true);
 }

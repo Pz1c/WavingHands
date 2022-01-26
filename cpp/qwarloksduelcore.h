@@ -57,7 +57,7 @@ class QWarloksDuelCore : public QGameCore
     Q_PROPERTY(QString battleList READ battleList NOTIFY battleListChanged)
 
 public:
-    explicit QWarloksDuelCore(QObject *parent = nullptr, const QString &RequestCode = "");
+    explicit QWarloksDuelCore(QObject *parent = nullptr, bool AsService = false);
     ~QWarloksDuelCore();
 
     bool isNeedLogin();
@@ -205,6 +205,8 @@ protected:
     QString getHintArray(int hint_id);
     QString getBattleHint(int battle_id, int battle_turn);
 
+    void showNotification(const QString &msg);
+
 private:
     // user login
     bool _isLogined;
@@ -288,6 +290,7 @@ private:
     // management
     bool _isTimerActive;
     bool _isScanForced;
+    bool _isAsService;
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;

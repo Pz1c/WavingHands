@@ -210,7 +210,11 @@ function startGame(actionIdx) {
              startGameWithPlayer();
              break;
          case 'bot':
-             startGameWithBot();
+             if ((G_PROFILE.finished_game_count < 3) || (G_PROFILE.elo <= 1500)) {
+                startGameWithBotEx();
+             } else {
+                startGameWithBot();
+             }
              break;
     }
     core.setTimerInterval(10, 10000);
