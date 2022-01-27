@@ -33,9 +33,9 @@ public class NotificationClient
                 m_builder = new Notification.Builder(context);
             }
 
-            //Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
-            m_builder/*.setSmallIcon(R.drawable.icon)
-                    .setLargeIcon(icon)*/
+            Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
+            m_builder.setSmallIcon(R.drawable.icon)
+                    .setLargeIcon(icon)
                     .setContentTitle("Warlock duel need your attention")
                     .setContentText(message)
                     .setDefaults(Notification.DEFAULT_SOUND)

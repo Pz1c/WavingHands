@@ -158,6 +158,7 @@ public slots:
 protected slots:
     void loginToSite();
     void timerFired();
+    void processServiceTimer();
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -181,6 +182,7 @@ protected:
     void setPossibleSpell(const QString &Data);
     void calcBattleDecision();
     void prepareBattleChatAndHistory(QString &Data);
+    void processRefferer();
 
     bool parseReadyBattle(QString &Data);
     void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
@@ -291,6 +293,7 @@ private:
     bool _isTimerActive;
     bool _isScanForced;
     bool _isAsService;
+    QSettings *_serviceSettings;
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;
@@ -298,7 +301,8 @@ private:
     //time
     int _timerCount;
     int _timerInterval;
-    QTimer timer;
+    QTimer _timer;
+    QTimer _serviceTimer;
 
 };
 
