@@ -18,12 +18,12 @@
                 <action android:name="com.android.vending.INSTALL_REFERRER"/>
             </intent-filter>
         </receiver>
-        <receiver android:name="com.kdab.training.service.MyBroadcastReceiver">
+        <receiver android:name="com.kdab.training.MyBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
-        <service android:name=".MyService" android:process=":qt">
+        <service android:name="com.kdab.training.MyService" android:process=":qt" android:enabled="true">
             <!-- Background running -->
             <meta-data android:name="android.app.background_running" android:value="true"/>
             <!-- Background running -->

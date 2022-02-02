@@ -2271,14 +2271,16 @@ void QWarloksDuelCore::processServiceTimer() {
         _serviceSettings->setValue("app_last_call", curr_time);
         if ((last_srv_time == 0) || (curr_time - last_srv_time > 60 * 3)) {
             _serviceSettings->setValue("srv_last_call", curr_time);
-            qDebug() << "QWarloksDuelCore::processServiceTimer" << "try to start services";
             // try to start service
             #ifdef Q_OS_ANDROID
-            QAndroidIntent serviceIntent(QtAndroid::androidActivity().object(), "com/kdab/training/MyService");
-            QAndroidJniObject result = QtAndroid::androidActivity().callObjectMethod(
-                        "startService",
-                        "(Landroid/content/Intent;)Landroid/content/ComponentName;",
-                        serviceIntent.handle().object());
+            qDebug() << "QWarloksDuelCore::processServiceTimer" << "try to start services";
+            QJniObject javaNotification = QJniObject::fromString("try to start android service");
+            QJniObject::callStaticMethod<void>(
+                "com/kdab/training/MyBroadcastReceiver",
+                "startService",
+                "(Landroid/content/Context;Ljava/lang/String;)V",
+                QNativeInterface::QAndroidApplication::context(),
+                javaNotification.object<jstring>());
             #endif
         }
     }
