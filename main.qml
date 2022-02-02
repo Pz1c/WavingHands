@@ -107,7 +107,7 @@ ApplicationWindow {
                 showNewUserMenu();
             } else {
                 //core.scanState();
-                core.setTimerInterval(1, 100);
+                core.setTimerInterval(1, 0);
                 GUI.prepareLoginMenu(core.accountMenu);
             }
         }

@@ -87,6 +87,9 @@ DISTFILES += \
     platforms/android/gradlew \
     platforms/android/gradlew.bat \
     platforms/android/res/values/libs.xml \
+    platforms/android/src/com/kdab/training/AlarmReceiver.java \
+    platforms/android/src/com/kdab/training/CheckStatus.java \
+    platforms/android/src/com/kdab/training/MainActivity.java \
     platforms/android/src/com/kdab/training/MyBroadcastReceiver.java \
     platforms/android/src/com/kdab/training/MyService.java \
     platforms/android/src/org/qtproject/example/androidnotifier/CustomBR.java \

@@ -40,6 +40,20 @@ BaseWindow {
             anchors.right: parent.right
             anchors.bottom: bfAll.top
 
+            Rectangle {
+                id: rTutOverlay
+                anchors.fill: parent
+                color: "black"
+                opacity: 0.5
+                visible: ltTutorial.visible
+                z:1000
+
+                MouseArea {
+                    id: maTutOver
+                    anchors.fill: parent
+                }
+            }
+
             Item {
                 id: iWarlocks
                 anchors.top: parent.top
@@ -310,6 +324,7 @@ BaseWindow {
                 anchors.leftMargin: 24 * mainWindow.ratioObject
                 anchors.right: parent.right
                 anchors.rightMargin: 24 * mainWindow.ratioObject
+                z:2000
                 visible: false
                 color: "#FEE2D6"
                 radius: 10
@@ -345,7 +360,6 @@ BaseWindow {
                     anchors.leftMargin: 6 * mainWindow.ratioObject
                     anchors.right: ltTTTNext.left
                     anchors.rightMargin: 6 * mainWindow.ratioObject
-
                     font.pixelSize: 21 * mainWindow.ratioFont
                     text: "test hint 01"
                     color: "#210430"
