@@ -228,6 +228,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
             url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
         }
         qDebug() << "final url " << url;
+        setCheckUrl(QString(GAME_SERVER_URL_GET_PROFILE).arg(_login));
         sendGetRequest(url);
         processRefferer();
         return false;
@@ -2266,6 +2267,15 @@ void QWarloksDuelCore::processServiceTimer() {
             showNotification("We missed you");
         }
     } else {
+        #ifdef Q_OS_ANDROID
+        QJniObject javaNotification = QJniObject::fromString("try to set last activity");
+        QJniObject::callStaticMethod<void>(
+            "org/qtproject/example/androidnotifier/NotificationClient",
+            "setLastActivity",
+            "(Landroid/content/Context;Ljava/lang/String;)V",
+            QNativeInterface::QAndroidApplication::context(),
+            javaNotification.object<jstring>());
+        #endif
         uint last_srv_time = _serviceSettings->value("srv_last_call", "0").toUInt();
         qDebug() << "QWarloksDuelCore::processServiceTimer last_srv_time" << last_srv_time;
         _serviceSettings->setValue("app_last_call", curr_time);
@@ -2285,4 +2295,16 @@ void QWarloksDuelCore::processServiceTimer() {
         }
     }
     _serviceSettings->sync();
+}
+
+void QWarloksDuelCore::setCheckUrl(const QString &check_url) {
+    #ifdef Q_OS_ANDROID
+    QJniObject javaNotification = QJniObject::fromString(check_url);
+    QJniObject::callStaticMethod<void>(
+        "org/qtproject/example/androidnotifier/NotificationClient",
+        "setCheckUrl",
+        "(Landroid/content/Context;Ljava/lang/String;)V",
+        QNativeInterface::QAndroidApplication::context(),
+        javaNotification.object<jstring>());
+    #endif
 }

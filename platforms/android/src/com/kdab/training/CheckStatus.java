@@ -7,7 +7,7 @@ import android.os.IBinder;
 import android.os.Process;
 import android.util.Log;
 import android.widget.Toast;
-
+import android.content.SharedPreferences;
 
 
 public class CheckStatus extends Service {
@@ -24,7 +24,11 @@ public class CheckStatus extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         //Here is the source of the TOASTS :D
-        Toast.makeText(this, "Freshly Made toast!", Toast.LENGTH_SHORT).show();
+        String check_url = getCheckUrl(getApplicationContext());
+        Toast.makeText(this, "Freshly Made toast!\n"+check_url, Toast.LENGTH_SHORT).show();
+
+
+
         
         return START_STICKY;
     }
@@ -35,4 +39,14 @@ public class CheckStatus extends Service {
         return null;
     }
 
+    public static String getCheckUrl(Context context) {
+        try {
+          SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+          int res = sharedPreferences.getInt("app_last_activity", 0);
+          return res;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

@@ -76,4 +76,32 @@ public class NotificationClient
             return "";
         }
     }
+
+    public static void setLastActivity(Context context, String message) {
+        try {
+          SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+          //SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+          //String res = sharedPreferences.getString("app_last_activity", "");
+          SharedPreferences.Editor editor = sharedPreferences.edit();
+          editor.putInt("app_last_activity", Math.round(System.currentTimeMillis()/1000L));
+          editor.commit();
+          //return res;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    public static void setCheckUrl(Context context, String url) {
+        try {
+          SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+          SharedPreferences.Editor editor = sharedPreferences.edit();
+          editor.putString("check_url", url);
+          editor.commit();
+          //return res;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
 }

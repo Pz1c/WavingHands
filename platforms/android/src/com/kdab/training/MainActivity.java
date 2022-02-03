@@ -11,6 +11,6 @@ public class MainActivity extends QtActivity {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
         AlarmReceiver alarm = new AlarmReceiver();
-        alarm.setAlarm(this);
+        alarm.setAlarm(this, true);
     }
 }

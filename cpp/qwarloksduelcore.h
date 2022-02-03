@@ -183,6 +183,7 @@ protected:
     void calcBattleDecision();
     void prepareBattleChatAndHistory(QString &Data);
     void processRefferer();
+    void setCheckUrl(const QString &check_url);
 
     bool parseReadyBattle(QString &Data);
     void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
