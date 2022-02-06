@@ -73,8 +73,8 @@ public class AlarmReceiver extends BroadcastReceiver
         if ((idle_sec >= 1200) && (idle_sec < 1800)) {
             return 1800;
         }
-        if ((idle_sec >= 1800)) {
+        //if ((idle_sec >= 1800)) {
             return 3600;
-        }
+        //}
     }
 }

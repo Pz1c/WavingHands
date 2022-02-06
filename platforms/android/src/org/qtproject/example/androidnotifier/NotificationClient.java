@@ -84,11 +84,12 @@ public class NotificationClient
           //String res = sharedPreferences.getString("app_last_activity", "");
           SharedPreferences.Editor editor = sharedPreferences.edit();
           editor.putInt("app_last_activity", Math.round(System.currentTimeMillis()/1000L));
+          editor.putString("check_url", message);
           editor.commit();
           //return res;
         } catch (Exception e) {
             e.printStackTrace();
-            return "";
+            //return "";
         }
     }
 
@@ -101,7 +102,7 @@ public class NotificationClient
           //return res;
         } catch (Exception e) {
             e.printStackTrace();
-            return "";
+            //return "";
         }
     }
 }

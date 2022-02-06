@@ -12,6 +12,7 @@
 #include <cpp/qgameconstant.h>
 #include "cpp/qwarloksduelcore.h"
 #include "cpp/qwarlockdictionary.h"
+#include "cpp/nativeforjava.cpp"
 
 
 int main(int argc, char *argv[])
@@ -21,12 +22,13 @@ int main(int argc, char *argv[])
     QString s2 = QString("loading embedded \"ISRG Root X1\" CA cert: %1").arg(add_cert);
     qDebug() << s1;
     qDebug() << s2;
+    qDebug() << NATIVE_JAVA_INCLUDED;
 
     if (argc > 1 && qstrcmp(argv[1], "-service") == 0) {
         qDebug() << "Service starting with from the same .so file";
         #ifdef Q_OS_ANDROID
         QAndroidService app(argc, argv);
-        QWarloksDuelCore *wdc = new QWarloksDuelCore(&app, true);
+        //QWarloksDuelCore *wdc = new QWarloksDuelCore(&app, true);
         //wdc->
         return app.exec();
         #endif

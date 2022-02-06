@@ -8,7 +8,24 @@ import android.os.Process;
 import android.util.Log;
 import android.widget.Toast;
 import android.content.SharedPreferences;
+import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.BitmapFactory;
+import android.app.NotificationChannel;
+import net.is.games.WarlocksDuel.R;
+import android.os.Bundle;
+import android.view.View;
 
+class MyJavaNatives
+{
+    // declare the native method
+    public static native void checkWarlockProfile(String url);
+}
 
 public class CheckStatus extends Service {
 
@@ -26,10 +43,8 @@ public class CheckStatus extends Service {
         //Here is the source of the TOASTS :D
         String check_url = getCheckUrl(getApplicationContext());
         Toast.makeText(this, "Freshly Made toast!\n"+check_url, Toast.LENGTH_SHORT).show();
+        MyJavaNatives.checkWarlockProfile(check_url);
 
-
-
-        
         return START_STICKY;
     }
 
@@ -42,11 +57,11 @@ public class CheckStatus extends Service {
     public static String getCheckUrl(Context context) {
         try {
           SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
-          int res = sharedPreferences.getInt("app_last_activity", 0);
+          String res = sharedPreferences.getString("check_url", "");
           return res;
         } catch (Exception e) {
             e.printStackTrace();
-            return 0;
+            return "";
         }
     }
 }

@@ -27,6 +27,7 @@ HEADERS += \
     ../library/game/qlevelmanager.h \
 
 SOURCES += main.cpp \
+    cpp/nativeforjava.cpp \
     cpp/qmonster.cpp \
     cpp/qwarlock.cpp \
     cpp/qwarlockdictionary.cpp \

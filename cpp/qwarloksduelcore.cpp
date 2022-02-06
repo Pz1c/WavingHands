@@ -2219,6 +2219,8 @@ void QWarloksDuelCore::logout() {
     settings->remove("");
     settings->endGroup();
 
+    setCheckUrl("");
+
     saveParameters();
     sendGetRequest(GAME_SERVER_URL_LOGOUT);
 }
@@ -2268,7 +2270,8 @@ void QWarloksDuelCore::processServiceTimer() {
         }
     } else {
         #ifdef Q_OS_ANDROID
-        QJniObject javaNotification = QJniObject::fromString("try to set last activity");
+        QString url = _isLogined ? QString(GAME_SERVER_URL_GET_PROFILE).arg(_login) : "";
+        QJniObject javaNotification = QJniObject::fromString(url);
         QJniObject::callStaticMethod<void>(
             "org/qtproject/example/androidnotifier/NotificationClient",
             "setLastActivity",
@@ -2279,20 +2282,20 @@ void QWarloksDuelCore::processServiceTimer() {
         uint last_srv_time = _serviceSettings->value("srv_last_call", "0").toUInt();
         qDebug() << "QWarloksDuelCore::processServiceTimer last_srv_time" << last_srv_time;
         _serviceSettings->setValue("app_last_call", curr_time);
-        if ((last_srv_time == 0) || (curr_time - last_srv_time > 60 * 3)) {
-            _serviceSettings->setValue("srv_last_call", curr_time);
-            // try to start service
-            #ifdef Q_OS_ANDROID
-            qDebug() << "QWarloksDuelCore::processServiceTimer" << "try to start services";
-            QJniObject javaNotification = QJniObject::fromString("try to start android service");
-            QJniObject::callStaticMethod<void>(
-                "com/kdab/training/MyBroadcastReceiver",
-                "startService",
-                "(Landroid/content/Context;Ljava/lang/String;)V",
-                QNativeInterface::QAndroidApplication::context(),
-                javaNotification.object<jstring>());
-            #endif
-        }
+//        if ((last_srv_time == 0) || (curr_time - last_srv_time > 60 * 3)) {
+//            _serviceSettings->setValue("srv_last_call", curr_time);
+//            // try to start service
+//            #ifdef Q_OS_ANDROID
+//            qDebug() << "QWarloksDuelCore::processServiceTimer" << "try to start services";
+//            QJniObject javaNotification = QJniObject::fromString("try to start android service");
+//            QJniObject::callStaticMethod<void>(
+//                "com/kdab/training/MyBroadcastReceiver",
+//                "startService",
+//                "(Landroid/content/Context;Ljava/lang/String;)V",
+//                QNativeInterface::QAndroidApplication::context(),
+//                javaNotification.object<jstring>());
+//            #endif
+//        }
     }
     _serviceSettings->sync();
 }
