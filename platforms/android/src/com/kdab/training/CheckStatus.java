@@ -64,7 +64,9 @@ public class CheckStatus extends Service {
                 } else {
                     notify(getApplicationContext(), "You got an invite, see invitation");
                 }
+
                 try {
+                  Context context = getApplicationContext();
                   SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
                   SharedPreferences.Editor editor = sharedPreferences.edit();
                   editor.putInt("last_notification", Math.round(System.currentTimeMillis()/1000L));
