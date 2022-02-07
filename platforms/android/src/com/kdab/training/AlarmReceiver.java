@@ -41,7 +41,19 @@ public class AlarmReceiver extends BroadcastReceiver
 
     public static int getNextAlertTimeoutSec(Context context, boolean Initial) {
         int curr_time = Math.round(System.currentTimeMillis()/1000L);
-        int last_activity = getLastActivity(context);
+        int last_activity, last_notification;
+        try {
+          SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+          last_activity = sharedPreferences.getInt("app_last_activity", 0);
+          last_notification = sharedPreferences.getInt("last_notification", 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+        if ((last_notification != 0) && (last_activity != 0) && (last_notification > last_activity)) {
+            return 30 * 60;
+        }
+
         if (Initial || (last_activity == 0)) {
             return 60;
         }

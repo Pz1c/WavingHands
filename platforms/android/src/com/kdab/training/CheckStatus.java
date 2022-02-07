@@ -20,6 +20,18 @@ import android.app.NotificationChannel;
 import net.is.games.WarlocksDuel.R;
 import android.os.Bundle;
 import android.view.View;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import javax.net.ssl.HttpsURLConnection;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.BitmapFactory;
+import android.app.NotificationChannel;
 
 class MyJavaNatives
 {
@@ -42,8 +54,30 @@ public class CheckStatus extends Service {
 
         //Here is the source of the TOASTS :D
         String check_url = getCheckUrl(getApplicationContext());
-        Toast.makeText(this, "Freshly Made toast!\n"+check_url, Toast.LENGTH_SHORT).show();
-        MyJavaNatives.checkWarlockProfile(check_url);
+        Toast.makeText(this, "Try check url:\n"+check_url, Toast.LENGTH_SHORT).show();
+        try {
+            String data = getContent(check_url);
+            boolean ready = (data.indexOf("Ready in battles:") != -1);
+            if (ready || (data.indexOf("Challenged to battles:") != -1)) {
+                if (ready) {
+                    notify(getApplicationContext(), "Your turn, open the game list");
+                } else {
+                    notify(getApplicationContext(), "You got an invite, see invitation");
+                }
+                try {
+                  SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+                  SharedPreferences.Editor editor = sharedPreferences.edit();
+                  editor.putInt("last_notification", Math.round(System.currentTimeMillis()/1000L));
+                  editor.commit();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //return "";
+                }
+            }
+        } catch (IOException ex){
+            Toast.makeText(getApplicationContext(), "Error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        //MyJavaNatives.checkWarlockProfile(check_url);
 
         return START_STICKY;
     }
@@ -54,6 +88,38 @@ public class CheckStatus extends Service {
         return null;
     }
 
+    private String getContent(String path) throws IOException {
+            BufferedReader reader=null;
+            InputStream stream = null;
+            HttpsURLConnection connection = null;
+            try {
+                URL url=new URL(path);
+                connection =(HttpsURLConnection)url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setReadTimeout(10000);
+                connection.connect();
+                stream = connection.getInputStream();
+                reader= new BufferedReader(new InputStreamReader(stream));
+                StringBuilder buf=new StringBuilder();
+                String line;
+                while ((line=reader.readLine()) != null) {
+                    buf.append(line).append("\n");
+                }
+                return(buf.toString());
+            }
+            finally {
+                if (reader != null) {
+                    reader.close();
+                }
+                if (stream != null) {
+                    stream.close();
+                }
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }
+
     public static String getCheckUrl(Context context) {
         try {
           SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
@@ -62,6 +128,37 @@ public class CheckStatus extends Service {
         } catch (Exception e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    public static void notify(Context context, String message) {
+        try {
+            NotificationManager m_notificationManager = (NotificationManager)
+                    context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            Notification.Builder m_builder;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                NotificationChannel notificationChannel;
+                notificationChannel = new NotificationChannel("WarlockDuel", "Warlock Duel", importance);
+                m_notificationManager.createNotificationChannel(notificationChannel);
+                m_builder = new Notification.Builder(context, notificationChannel.getId());
+            } else {
+                m_builder = new Notification.Builder(context);
+            }
+
+            Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
+            m_builder.setSmallIcon(R.drawable.icon)
+                    .setLargeIcon(icon)
+                    .setContentTitle(message)
+                    .setContentText("Warlock duel need your attention")
+                    .setDefaults(Notification.DEFAULT_SOUND)
+                    .setColor(Color.GREEN)
+                    .setAutoCancel(true);
+
+            m_notificationManager.notify(0, m_builder.build());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
