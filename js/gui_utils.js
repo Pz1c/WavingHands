@@ -61,6 +61,7 @@ function loadChallengeList() {
     var str = core.challengeList, i, Ln;
     //console.log("loadChallengeList", core.isAI, str);
     var arr = JSON.parse(str);
+    var first_call = !(G_CHALLENGE_LIST.length > 0);
     G_CHALLENGE_LIST = [];
     for(i = 0, Ln = arr.length; i < Ln; ++i) {
         if (!arr[i].active || (arr[i].total_count !== 2)) {
@@ -68,7 +69,9 @@ function loadChallengeList() {
         }
         G_CHALLENGE_LIST.push(arr[i]);
     }
-    //console.log("loadChallengeList", JSON.stringify(G_CHALLENGE_LIST));
+    if (first_call) {
+        console.log("loadChallengeList", JSON.stringify(G_CHALLENGE_LIST));
+    }
 
     if (!core.isAI) {
         return;
@@ -147,6 +150,10 @@ function startGameWithPlayerEx() {
         }
 
         if ((battle.friendly === 1) && (battle.need === 1)) {
+            var creator = JSON.parse(core.getWarlockStats(battle.logins, 1));
+            if (creator.found && (G_PROFILE.elo > creator.elo + 200)) {
+                continue;
+            }
             core.acceptChallenge(battle.battle_id, false);
             return;
         } else if (i !== best_idx) {
@@ -168,7 +175,11 @@ function startGameWithPlayerEx() {
         }
     }
     //if (best_idx === -1) {
-        core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
+        var desc = "Created with android app Warlock's Duel.";
+        if (G_PROFILE.elo >= 1700) {
+            desc += " Elo " + (G_PROFILE.elo - 200) + " or more please.";
+        }
+        core.createNewChallenge(1, 0, 1, 1, 2, 1, desc);
     /*} else {
         V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;
         mdNoGesture.text = getJoinDialogText(G_CHALLENGE_LIST[best_idx]);

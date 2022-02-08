@@ -1,8 +1,9 @@
+#define NATIVE_JAVA_INCLUDED "NATIVE_JAVA_INCLUDED"
+#ifdef Q_OS_ANDROID
 #include <jni.h>
 #include <QDebug>
 //#include <QJniObject>
 
-#define NATIVE_JAVA_INCLUDED "NATIVE_JAVA_INCLUDED"
 
 void checkStateFromJava(const QString &url) {
     qDebug() << "checkStateFromJava:" << url;
@@ -77,3 +78,4 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
     qDebug() << "JNI_OnLoad point4";
     return JNI_VERSION_1_6;
 }
+#endif

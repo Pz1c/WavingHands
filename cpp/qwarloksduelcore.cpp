@@ -2140,13 +2140,17 @@ void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Va
     }
 }
 
-QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName) {
+QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool DirtyLogin) {
+    QString clean_login = WarlockName.toLower();
+    if (DirtyLogin && (clean_login.indexOf("(") != -1)) {
+        clean_login = clean_login.mid(0, clean_login.indexOf("(") - 1);
+    }
     QString stmp;
-    bool found = _playerStats.contains(WarlockName.toLower());
+    bool found = _playerStats.contains(clean_login);
     if (found) {
-        stmp = _playerStats[WarlockName.toLower()].toString();
+        stmp = _playerStats[clean_login].toString();
     } else {
-        stmp = QString("0,%1,0,0,0,0,0,1500,0").arg(WarlockName);
+        stmp = QString("0,%1,0,0,0,0,0,1500,0").arg(DirtyLogin ? clean_login : WarlockName);
     }
     // boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), intToStr(_active)
     QStringList sltmp = stmp.split(",");
