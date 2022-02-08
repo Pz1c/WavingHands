@@ -55,30 +55,40 @@ public class CheckStatus extends Service {
         //Here is the source of the TOASTS :D
         String check_url = getCheckUrl(getApplicationContext());
         Toast.makeText(this, "Try check url:\n"+check_url, Toast.LENGTH_SHORT).show();
-        try {
-            String data = getContent(check_url);
-            boolean ready = (data.indexOf("Ready in battles:") != -1);
-            if (ready || (data.indexOf("Challenged to battles:") != -1)) {
-                if (ready) {
-                    notify(getApplicationContext(), "Your turn, open the game list");
-                } else {
-                    notify(getApplicationContext(), "You got an invite, see invitation");
-                }
+        new Thread(new Runnable() {
+            public void run() {
+                try{
+                    String data = getContent(check_url);
+                    boolean ready = (data.indexOf("Ready in battles:") != -1);
+                    if (ready || (data.indexOf("Challenged to battles:") != -1)) {
+                        if (ready) {
+                            notify(getApplicationContext(), "Your turn, open the game list");
+                        } else {
+                            notify(getApplicationContext(), "You got an invite, see invitation");
+                        }
 
-                try {
-                  Context context = getApplicationContext();
-                  SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
-                  SharedPreferences.Editor editor = sharedPreferences.edit();
-                  editor.putInt("last_notification", Math.round(System.currentTimeMillis()/1000L));
-                  editor.commit();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    //return "";
+                        try {
+                          Context context = getApplicationContext();
+                          SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+                          SharedPreferences.Editor editor = sharedPreferences.edit();
+                          editor.putInt("last_notification", Math.round(System.currentTimeMillis()/1000L));
+                          editor.commit();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            //return "";
+                        }
+                    }
+                }
+                catch (IOException ex){
+                    contentView.post(new Runnable() {
+                        public void run() {
+                            contentView.setText("Ошибка: " + ex.getMessage());
+                            Toast.makeText(getApplicationContext(), "Ошибка", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
-        } catch (IOException ex){
-            Toast.makeText(getApplicationContext(), "Error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+        }).start();
         //MyJavaNatives.checkWarlockProfile(check_url);
 
         return START_STICKY;
