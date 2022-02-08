@@ -6,9 +6,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 public class AlarmReceiver extends BroadcastReceiver
 {
+    private static final String TAG = "WarlockDuel.AlarmReceiver";
+
     @Override
     public void onReceive(Context context, Intent intent)
     {
@@ -19,13 +22,16 @@ public class AlarmReceiver extends BroadcastReceiver
 
     public void setAlarm(Context context, boolean Initial)
     {
+        Log.d(TAG, "setAlarm");
         AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, AlarmReceiver.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
         assert am != null;
         int next_alert_in_sec = getNextAlertTimeoutSec(context, Initial);
+        Log.d(TAG, "next_alert_in_sec = " + next_alert_in_sec);
         am.cancel(pi); // https://developer.android.com/reference/android/app/AlarmManager#cancel(android.app.PendingIntent)
         am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (System.currentTimeMillis()/1000L + 60L) *1000L, pi); //Next alarm in 15s
+        Log.d(TAG, "finish");
     }
 
     public static int getLastActivity(Context context) {

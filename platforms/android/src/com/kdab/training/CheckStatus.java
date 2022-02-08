@@ -40,39 +40,49 @@ class MyJavaNatives
 }
 
 public class CheckStatus extends Service {
+    private static final String TAG = "WarlockDuel.CheckStatus";
 
     // This method run only one time. At the first time of service created and running
     @Override
     public void onCreate() {
         HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
-        Log.d("CheckStatus.onCreate()", "After service created");
+        Log.d(TAG, "After service created");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        Log.d(TAG, "onStartCommand");
         //Here is the source of the TOASTS :D
         String check_url = getCheckUrl(getApplicationContext());
-        Toast.makeText(this, "Try check url:\n"+check_url, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "check_url = " + check_url);
+        //Toast.makeText(this, "Try check url:\n"+check_url, Toast.LENGTH_SHORT).show();
         new Thread(new Runnable() {
             public void run() {
                 try{
                     String data = getContent(check_url);
+                    Log.d(TAG, "getContent: " + check_url + " datalength " + data.length());
                     boolean ready = (data.indexOf("Ready in battles:") != -1);
                     if (ready || (data.indexOf("Challenged to battles:") != -1)) {
+                        Log.d(TAG, "need notif");
+                        Context context = getApplicationContext();
+                        String msg = "You got an invite, see invitation";
                         if (ready) {
-                            notify(getApplicationContext(), "Your turn, open the game list");
+                            msg = "Your turn, open the game list";
+                            //notify(context, "Your turn, open the game list");
                         } else {
-                            notify(getApplicationContext(), "You got an invite, see invitation");
+                            //notify(context, "You got an invite, see invitation");
                         }
+                        Log.d(TAG, msg);
+                        CheckStatus.notify(context, msg);
 
                         try {
-                          Context context = getApplicationContext();
                           SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
                           SharedPreferences.Editor editor = sharedPreferences.edit();
-                          editor.putInt("last_notification", Math.round(System.currentTimeMillis()/1000L));
+                          int last_notification = Math.round(System.currentTimeMillis()/1000L);
+                          editor.putInt("last_notification", last_notification);
                           editor.commit();
+                          Log.d(TAG, "last_notification = " + last_notification);
                         } catch (Exception e) {
                             e.printStackTrace();
                             //return "";
@@ -80,12 +90,7 @@ public class CheckStatus extends Service {
                     }
                 }
                 catch (IOException ex){
-                    contentView.post(new Runnable() {
-                        public void run() {
-                            contentView.setText("Ошибка: " + ex.getMessage());
-                            Toast.makeText(getApplicationContext(), "Ошибка", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    Toast.makeText(getApplicationContext(), "Error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         }).start();

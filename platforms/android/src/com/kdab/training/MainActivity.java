@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.os.Bundle;
+import android.net.Uri;
 
 public class MainActivity extends QtActivity {
     private static final int STORAGE_PERMISSION_CODE = 1;
@@ -23,7 +24,11 @@ public class MainActivity extends QtActivity {
         Uri data = intent.getData();
         Bundle bundle = intent.getExtras();
         Log.d(TAG, "check intent");
-        Log.d(TAG, "data: " + data.toString());
-        Log.d(TAG, "extras: " + bundle.toString());
+        if (data != null) {
+            Log.d(TAG, "data: " + data.toString());
+        }
+        if (bundle != null) {
+            Log.d(TAG, "extras: " + bundle.toString());
+        }
     }
 }
