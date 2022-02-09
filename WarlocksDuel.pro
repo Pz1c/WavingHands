@@ -11,6 +11,7 @@ QT += qml quick network
 INCLUDEPATH += ../library/game/
 
 HEADERS += \
+    cpp/qbattleinfo.h \
     cpp/qgameconstant.h \
     cpp/qmonster.h \
     cpp/qwarlock.h \
@@ -28,6 +29,7 @@ HEADERS += \
 
 SOURCES += main.cpp \
     cpp/nativeforjava.cpp \
+    cpp/qbattleinfo.cpp \
     cpp/qmonster.cpp \
     cpp/qwarlock.cpp \
     cpp/qwarlockdictionary.cpp \
