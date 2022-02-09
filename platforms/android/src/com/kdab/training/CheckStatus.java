@@ -32,6 +32,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.BitmapFactory;
 import android.app.NotificationChannel;
+import android.app.PendingIntent;
+import com.kdab.training.MainActivity;
+import android.net.Uri;
 
 class MyJavaNatives
 {
@@ -67,6 +70,7 @@ public class CheckStatus extends Service {
                         Log.d(TAG, "need notif");
                         Context context = getApplicationContext();
                         String msg = "You got an invite, see invitation";
+                        String data ;
                         if (ready) {
                             msg = "Your turn, open the game list";
                             //notify(context, "Your turn, open the game list");
@@ -148,7 +152,7 @@ public class CheckStatus extends Service {
         }
     }
 
-    public static void notify(Context context, String message) {
+    public static void notify(Context context, String message, Bundle data) {
         try {
             NotificationManager m_notificationManager = (NotificationManager)
                     context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -164,14 +168,22 @@ public class CheckStatus extends Service {
                 m_builder = new Notification.Builder(context);
             }
 
+            Intent resultIntent = new Intent(this, MainActivity.class);
+            if (data != null) {
+                resultIntent.putExtras(data);
+            }
+            PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
             Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
-            m_builder.setSmallIcon(R.drawable.icon)
-                    .setLargeIcon(icon)
+            m_builder.setSmallIcon(icon)
+                    //.setSmallIcon(R.drawable.icon)
+                    //.setLargeIcon(icon)
                     .setContentTitle(message)
                     .setContentText("Warlock duel need your attention")
                     .setDefaults(Notification.DEFAULT_SOUND)
-                    .setColor(Color.GREEN)
-                    .setAutoCancel(true);
+                    //.setColor(Color.GREEN)
+                    .setAutoCancel(true)
+                    .setContentIntent(resultPendingIntent);
 
             m_notificationManager.notify(0, m_builder.build());
         } catch (Exception e) {
