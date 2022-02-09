@@ -70,7 +70,7 @@ public class CheckStatus extends Service {
                         Log.d(TAG, "need notif");
                         Context context = getApplicationContext();
                         String msg = "You got an invite, see invitation";
-                        String data ;
+                        Bundle msg_data = null;
                         if (ready) {
                             msg = "Your turn, open the game list";
                             //notify(context, "Your turn, open the game list");
@@ -78,7 +78,7 @@ public class CheckStatus extends Service {
                             //notify(context, "You got an invite, see invitation");
                         }
                         Log.d(TAG, msg);
-                        CheckStatus.notify(context, msg);
+                        CheckStatus.notify(context, msg, msg_data);
 
                         try {
                           SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
@@ -168,16 +168,16 @@ public class CheckStatus extends Service {
                 m_builder = new Notification.Builder(context);
             }
 
-            Intent resultIntent = new Intent(this, MainActivity.class);
+            Intent resultIntent = new Intent(context, MainActivity.class);
             if (data != null) {
                 resultIntent.putExtras(data);
             }
-            PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
-            m_builder.setSmallIcon(icon)
-                    //.setSmallIcon(R.drawable.icon)
-                    //.setLargeIcon(icon)
+            m_builder//.setSmallIcon(icon)
+                    .setSmallIcon(R.drawable.icon)
+                    .setLargeIcon(icon)
                     .setContentTitle(message)
                     .setContentText("Warlock duel need your attention")
                     .setDefaults(Notification.DEFAULT_SOUND)
