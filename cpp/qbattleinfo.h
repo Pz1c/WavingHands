@@ -15,6 +15,7 @@ private:
     int _status; //-1, 0, 1 ready, 2 finished
     int _size; // 2-6
     int _level; // 0 Ladder, 1 Friendly, 2 V.Friendly
+    int _turn;
     bool _maladroit;
     bool _parafc;
     bool _parafdf;

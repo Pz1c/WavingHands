@@ -29,6 +29,28 @@ public class MainActivity extends QtActivity {
         }
         if (bundle != null) {
             Log.d(TAG, "extras: " + bundle.toString());
+            int action_type = bundle.getInt("action_type");
+            int battle_id = bundle.getInt("battle_id");
+            Log.d(TAG, "action_type: " + action_type);
+            Log.d(TAG, "battle_id: " + battle_id);
+        }
+    }
+
+    @Override
+    public void onResume () {
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+        Bundle bundle = intent.getExtras();
+        Log.d(TAG, "onResume check intent");
+        if (data != null) {
+            Log.d(TAG, "onResume data: " + data.toString());
+        }
+        if (bundle != null) {
+            Log.d(TAG, "onResume extras: " + bundle.toString());
+            int action_type = bundle.getInt("action_type");
+            int battle_id = bundle.getInt("battle_id");
+            Log.d(TAG, "onResume action_type: " + action_type);
+            Log.d(TAG, "onResume battle_id: " + battle_id);
         }
     }
 }
