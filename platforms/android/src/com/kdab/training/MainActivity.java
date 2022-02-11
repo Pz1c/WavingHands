@@ -38,6 +38,8 @@ public class MainActivity extends QtActivity {
 
     @Override
     public void onResume () {
+        super.onResume();
+
         Intent intent = getIntent();
         Uri data = intent.getData();
         Bundle bundle = intent.getExtras();

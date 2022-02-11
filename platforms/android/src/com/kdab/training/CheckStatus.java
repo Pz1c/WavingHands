@@ -26,9 +26,11 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.BitmapFactory;
 import android.app.NotificationChannel;
+import android.app.Notification.Action;
 import android.app.PendingIntent;
 import com.kdab.training.MainActivity;
 import android.net.Uri;
+import java.util.Arrays;
 
 class MyJavaNatives
 {
@@ -52,7 +54,7 @@ public class CheckStatus extends Service {
         Log.d(TAG, "onStartCommand");
         //Here is the source of the TOASTS :D
         //String check_url = getCheckUrl(getApplicationContext());
-        Log.d(TAG, "check_url = " + check_url);
+        //Log.d(TAG, "check_url = " + check_url);
         //Toast.makeText(this, "Try check url:\n"+check_url, Toast.LENGTH_SHORT).show();
         new Thread(new Runnable() {
             public void run() {
@@ -61,8 +63,8 @@ public class CheckStatus extends Service {
                     Context context = getApplicationContext();
                     SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    String[] arr_finished_old = sharedPreferences.getString("finished_games", "").split(",");
-                    String check_url = sharedPreferences.getString("check_url");
+                    String[] arr_finished_old = (sharedPreferences.getString("finished_games", "")).split(",");
+                    String check_url = sharedPreferences.getString("check_url", "");
                     if (check_url.isEmpty()) {
                         return;
                     }
@@ -71,7 +73,6 @@ public class CheckStatus extends Service {
 
                     String data = getContent(check_url);
                     Log.d(TAG, "getContent: " + check_url + " datalength " + data.length());
-
                     String[] arr_ready = parseBattlesFromData(data, "Ready in battles:").split(",");
                     String[] arr_challenge = parseBattlesFromData(data, "Challenged to battles:").split(",");
                     String finished_new = parseBattlesFromData(data, "Finished battles:");
@@ -79,13 +80,13 @@ public class CheckStatus extends Service {
                     String[] arr_finished = finished_new.split(",");
                     String[] arr_finished_clean;
                     boolean app_inactive = ((last_notification - app_last_activity) >= 60);
-                    boolean ready = (arr_ready.length > 0) && app_inactive;
-                    boolean challenge = arr_challenge.length > 0;
+                    boolean ready = (arr_ready.length > 0) && (!(arr_ready[0]).isEmpty()) && app_inactive;
+                    boolean challenge = (arr_challenge.length > 0) && (!arr_challenge[0].isEmpty());
                     boolean finished = false;
                     int finished_id = 0;
                     if (app_inactive) {
                         for (String battleId : arr_finished) {
-                           if(arr_finished_old.indexOf(battleId) == -1) {
+                           if(java.util.Arrays.asList(arr_finished_old).indexOf(battleId) == -1) {
                                finished = true;
                                if (finished_id == 0) {
                                    finished_id = Integer.parseInt(battleId);
@@ -103,25 +104,31 @@ public class CheckStatus extends Service {
                         if (challenge) {
                             msg = "You got an invite, see invitation";
                             msg_data.putInt("action_type", 1);
-                            if (arr_challenge.length = 1) {
+                            editor.putInt("notification_action_type", 1);
+                            if ((arr_challenge.length == 1) && (!arr_challenge[0].isEmpty())) {
                                 msg_data.putInt("battle_id", Integer.parseInt(arr_challenge[0]));
+                                editor.putInt("notification_battle_id", Integer.parseInt(arr_challenge[0]));
                             }
                         } else if (ready) {
                             msg = "Good news, you've got a new turn to play!";
                             msg_data.putInt("action_type", 2);
-                            if (arr_ready.length = 1) {
+                            editor.putInt("notification_action_type", 2);
+                            if ((arr_ready.length == 1) && (!arr_ready[0].isEmpty())) {
                                 msg_data.putInt("battle_id", Integer.parseInt(arr_ready[0]));
+                                editor.putInt("notification_battle_id", Integer.parseInt(arr_ready[0]));
                             }
                         } else {
                             msg = "Your battle is over!";
                             msg_data.putInt("action_type", 3);
+                            editor.putInt("notification_action_type", 3);
                             btn_title = "Show me";
                             if ((finished_id != 0) && (finished_id != -2)) {
                                 msg_data.putInt("battle_id", finished_id);
+                                editor.putInt("notification_battle_id", finished_id);
                             }
                         }
                         Log.d(TAG, msg);
-                        CheckStatus.notify(context, msg, msg_data);
+                        CheckStatus.notify(context, msg, btn_title, msg_data);
                         editor.putInt("last_notification", last_notification);
                     }
                     editor.commit();
@@ -188,7 +195,7 @@ public class CheckStatus extends Service {
     }
 
     public static String parseBattlesFromData(String data, String search) {
-        String result;
+        String result = "";
         int idx1 = data.indexOf(search);
         if (idx1 == -1) {
             return "";
@@ -209,9 +216,9 @@ public class CheckStatus extends Service {
             idx2 = idx5;
             String res = data.substring(idx4, idx5);
             if (!result.isEmpty()) {
-                result.append(",");
+                result += ",";
             }
-            result.append(res);
+            result += res;
         }
 
         return result;
@@ -234,9 +241,9 @@ public class CheckStatus extends Service {
             }
 
             Intent resultIntent = new Intent(context, MainActivity.class);
-            if (data != null) {
+            //if (data != null) {
                 resultIntent.putExtras(data);
-            }
+            //}
             PendingIntent resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
@@ -251,8 +258,8 @@ public class CheckStatus extends Service {
                     .setContentIntent(resultPendingIntent);
 
             if (!btn_title.isEmpty()) {
-                NotificationCompat.Action action =
-                       new NotificationCompat.Action.Builder(android.R.drawable.star_on,
+                Notification.Action action =
+                       new Notification.Action.Builder(android.R.drawable.star_on,
                                btn_title, resultPendingIntent)
                                //.addRemoteInput(remoteInput)
                                .build();
