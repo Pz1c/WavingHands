@@ -63,28 +63,36 @@ public class CheckStatus extends Service {
                     Context context = getApplicationContext();
                     SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    String[] arr_finished_old = (sharedPreferences.getString("finished_games", "")).split(",");
+                    String arr_finished_old_str = sharedPreferences.getString("finished_games", "");
+                    String[] arr_finished_old = arr_finished_old_str.split(",");
                     String check_url = sharedPreferences.getString("check_url", "");
                     if (check_url.isEmpty()) {
                         return;
                     }
+                    int last_sent_notif = sharedPreferences.getInt("last_notification", 0);
                     int app_last_activity = sharedPreferences.getInt("app_last_activity", 0);
                     int last_notification = Math.round(System.currentTimeMillis()/1000L);
 
                     String data = getContent(check_url);
                     Log.d(TAG, "getContent: " + check_url + " datalength " + data.length());
-                    String[] arr_ready = parseBattlesFromData(data, "Ready in battles:").split(",");
-                    String[] arr_challenge = parseBattlesFromData(data, "Challenged to battles:").split(",");
+                    String arr_ready_str = parseBattlesFromData(data, "Ready in battles:");
+                    String[] arr_ready = arr_ready_str.split(",");
+                    String arr_challenge_str = parseBattlesFromData(data, "Challenged to battles:");
+                    String[] arr_challenge = arr_challenge_str.split(",");
                     String finished_new = parseBattlesFromData(data, "Finished battles:");
                     editor.putString("finished_games", finished_new);
                     String[] arr_finished = finished_new.split(",");
                     String[] arr_finished_clean;
+                    Log.d(TAG, "r=" + arr_ready_str + ", c=" + arr_challenge_str + ", fn=" + finished_new + ", fo=" + arr_finished_old_str);
+                    Log.d(TAG, "last_sent_notif=" + last_sent_notif + ", app_last_activity=" + app_last_activity + ", last_notification=" + last_notification);
+                    boolean need_send = (last_sent_notif == 0) || (last_sent_notif < app_last_activity) ||
+                                        ((last_sent_notif > 0) && ((last_notification - last_sent_notif) > 60 * 60 * 8));
                     boolean app_inactive = ((last_notification - app_last_activity) >= 60);
-                    boolean ready = (arr_ready.length > 0) && (!(arr_ready[0]).isEmpty()) && app_inactive;
-                    boolean challenge = (arr_challenge.length > 0) && (!arr_challenge[0].isEmpty());
+                    boolean ready = need_send && (arr_ready.length > 0) && (!(arr_ready[0]).isEmpty()) && app_inactive;
+                    boolean challenge = need_send && (arr_challenge.length > 0) && (!arr_challenge[0].isEmpty());
                     boolean finished = false;
                     int finished_id = 0;
-                    if (app_inactive) {
+                    if (app_inactive && need_send) {
                         for (String battleId : arr_finished) {
                            if(java.util.Arrays.asList(arr_finished_old).indexOf(battleId) == -1) {
                                finished = true;

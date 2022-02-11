@@ -30,7 +30,7 @@ public class AlarmReceiver extends BroadcastReceiver
         int next_alert_in_sec = getNextAlertTimeoutSec(context, Initial);
         Log.d(TAG, "next_alert_in_sec = " + next_alert_in_sec);
         am.cancel(pi); // https://developer.android.com/reference/android/app/AlarmManager#cancel(android.app.PendingIntent)
-        am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (System.currentTimeMillis()/1000L + 60L) *1000L, pi); //Next alarm in 15s
+        am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (System.currentTimeMillis()/1000L + next_alert_in_sec) *1000L, pi); //Next alarm in 15s
         Log.d(TAG, "finish");
     }
 
