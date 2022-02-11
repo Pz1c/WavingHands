@@ -290,14 +290,14 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
         _errorMsg = "{\"type\":10}";
         emit errorOccurred();
         return false;
-    } else if (!_inviteToBattle.isEmpty()) {
-        QString url = NewUrl.toString();
-        int pos = 0;
-        QString created_id =  QWarlockUtils::getStringFromData(url, "num", "=", "&", pos);
-        if (!created_id.isEmpty()) {
-            sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
-        }
-        //emit challengeSubmitedChanged();
+    }
+
+    QString url = NewUrl.toString();
+    int pos = 0;
+    QString created_id = QWarlockUtils::getStringFromData(url, "num", "=", "&", pos);
+
+    if (!_inviteToBattle.isEmpty() && !created_id.isEmpty()) {
+       sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
     }
     return true;
 }

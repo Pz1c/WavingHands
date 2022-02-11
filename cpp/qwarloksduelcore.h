@@ -25,6 +25,7 @@
 #include "qgameconstant.h"
 #include "qwarlock.h"
 #include "qwarlockstat.h"
+#include "qbattleinfo.h"
 
 
 class QWarloksDuelCore : public QGameCore
