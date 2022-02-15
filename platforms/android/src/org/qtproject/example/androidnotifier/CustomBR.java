@@ -21,7 +21,7 @@ public class CustomBR extends BroadcastReceiver {
             String referrer = intent.getStringExtra("referrer");
             Log.d(D_TAG, referrer);
             
-            SharedPreferences sharedPreferences = context.getSharedPreferences("referrer", 0);
+            SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString("referrer", referrer);
             editor.commit();

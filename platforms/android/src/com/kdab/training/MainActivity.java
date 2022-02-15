@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 import android.os.Bundle;
 import android.net.Uri;
+import android.content.SharedPreferences;
 
 public class MainActivity extends QtActivity {
     private static final int STORAGE_PERMISSION_CODE = 1;
@@ -53,6 +54,17 @@ public class MainActivity extends QtActivity {
             int battle_id = bundle.getInt("battle_id");
             Log.d(TAG, "onResume action_type: " + action_type);
             Log.d(TAG, "onResume battle_id: " + battle_id);
+            if (battle_id > 0) {
+                try {
+                    SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("action_type", action_type);
+                    editor.putInt("battle_id", battle_id);
+                    editor.commit();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

@@ -295,7 +295,6 @@ private:
     bool _isTimerActive;
     bool _isScanForced;
     bool _isAsService;
-    QSettings *_serviceSettings;
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;

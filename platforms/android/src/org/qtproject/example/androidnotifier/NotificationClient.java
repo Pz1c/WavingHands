@@ -64,13 +64,24 @@ public class NotificationClient
     
     public static String get_refferer(Context context, String message) {
         try {
-          SharedPreferences sharedPreferences = context.getSharedPreferences("referrer", 0);
+          SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
           //SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
           String res = sharedPreferences.getString("referrer", "");
           SharedPreferences.Editor editor = sharedPreferences.edit();
-          editor.putString("referrer", "");
-          editor.commit();
-          return res;
+          if (!res.isEmpty()) {
+            editor.putString("referrer", "");
+            editor.commit();
+            return "create_battle,"+res;
+          }
+          int action_type = sharedPreferences.getInt("action_type", 0);
+          int battle_id = sharedPreferences.getInt("battle_id", 0);
+          if (battle_id > 0) {
+              editor.putInt("action_type", 0);
+              editor.putInt("battle_id", 0);
+              editor.commit();
+              return "show_battle,"+battle_id+","+action_type;
+          }
+          return "";
         } catch (Exception e) {
             e.printStackTrace();
             return "";
@@ -97,6 +108,7 @@ public class NotificationClient
         try {
           SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
           SharedPreferences.Editor editor = sharedPreferences.edit();
+          editor.putInt("app_last_activity", Math.round(System.currentTimeMillis()/1000L));
           editor.putString("check_url", url);
           editor.commit();
           //return res;

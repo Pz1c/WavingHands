@@ -13,14 +13,13 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, ini_path);
     setOrganization(ORGANIZATION_NAME, APPLICATION_NAME);
     init();
-    _serviceSettings = new QSettings("sync_srv.ini", QSettings::IniFormat, this);
     GameDictionary->setCurrentLang("en");
     SpellChecker = QWarlockSpellChecker::getInstance();
     _timerCount = 0;
     _timerInterval = 0;
     connect(&_timer, SIGNAL(timeout()), this, SLOT(timerFired()));
     connect(&_serviceTimer, SIGNAL(timeout()), this, SLOT(processServiceTimer()));
-    _serviceTimer.setInterval(60000);
+    _serviceTimer.setInterval(10000);
     _serviceTimer.start();
 
     //_lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
@@ -1326,12 +1325,18 @@ void QWarloksDuelCore::processRefferer() {
     reff = string.toString();
     #endif
     qDebug() << "CheckReffereef" << reff;
-    if (!reff.isEmpty()) {
-        QStringList sl = reff.split(",");
-        if (sl.size() == 2) {
-            int bfl = sl.at(0).indexOf("vf") != -1 ? 2 : 1;
-            createNewChallenge(true, true, true, true, 2, bfl, "Join to fun)", sl.at(1));
-        }
+    if (reff.isEmpty()) {
+        return;
+    }
+    QStringList sl = reff.split(",");
+    if (sl.size() != 3) {
+        return;
+    }
+    if (sl.at(0).compare("create_battle") == 0) {
+        int bfl = sl.at(1).indexOf("vf") != -1 ? 2 : 1;
+        createNewChallenge(true, true, true, true, 2, bfl, "Join to fun)", sl.at(2));
+    } else if (sl.at(0).compare("show_battle") == 0) {
+        getBattle(sl.at(1).toInt(), 2);
     }
 }
 
@@ -2254,54 +2259,14 @@ void QWarloksDuelCore::timerFired() {
 void QWarloksDuelCore::processServiceTimer() {
     uint curr_time = QDateTime::currentSecsSinceEpoch();
     qDebug() << "QWarloksDuelCore::processServiceTimer" << _isAsService << curr_time << _isAI;
-    if (_isAI) {
+    if (_isAI || _isAsService) {
         _serviceTimer.stop();
         return;
     }
-    if (_isAsService) {
-        uint last_app_time = _serviceSettings->value("app_last_call", "0").toUInt();
-        uint last_mis_time = _serviceSettings->value("last_miss_time", "0").toUInt();
-        qDebug() << "QWarloksDuelCore::processServiceTimer last_app_time" << last_app_time;
-        _serviceSettings->setValue("srv_last_call", curr_time);
-        if ((last_app_time != 0) && (curr_time - last_app_time > 60 * 2)) {
-            qDebug() << "QWarloksDuelCore::processServiceTimer" << "run ScanState";
-            scanState(true);
-        }
-        if ((last_app_time != 0) && (curr_time - last_app_time >= 7 * 24 * 60 * 60) &&
-             ((last_mis_time == 0) || (curr_time - last_mis_time >= 7 * 24 * 60 * 60))) {
-            _serviceSettings->setValue("last_miss_time", curr_time);
-            showNotification("We missed you");
-        }
-    } else {
-        #ifdef Q_OS_ANDROID
-        QString url = _isLogined ? QString(GAME_SERVER_URL_GET_PROFILE).arg(_login) : "";
-        QJniObject javaNotification = QJniObject::fromString(url);
-        QJniObject::callStaticMethod<void>(
-            "org/qtproject/example/androidnotifier/NotificationClient",
-            "setLastActivity",
-            "(Landroid/content/Context;Ljava/lang/String;)V",
-            QNativeInterface::QAndroidApplication::context(),
-            javaNotification.object<jstring>());
-        #endif
-        uint last_srv_time = _serviceSettings->value("srv_last_call", "0").toUInt();
-        qDebug() << "QWarloksDuelCore::processServiceTimer last_srv_time" << last_srv_time;
-        _serviceSettings->setValue("app_last_call", curr_time);
-//        if ((last_srv_time == 0) || (curr_time - last_srv_time > 60 * 3)) {
-//            _serviceSettings->setValue("srv_last_call", curr_time);
-//            // try to start service
-//            #ifdef Q_OS_ANDROID
-//            qDebug() << "QWarloksDuelCore::processServiceTimer" << "try to start services";
-//            QJniObject javaNotification = QJniObject::fromString("try to start android service");
-//            QJniObject::callStaticMethod<void>(
-//                "com/kdab/training/MyBroadcastReceiver",
-//                "startService",
-//                "(Landroid/content/Context;Ljava/lang/String;)V",
-//                QNativeInterface::QAndroidApplication::context(),
-//                javaNotification.object<jstring>());
-//            #endif
-//        }
+    setCheckUrl(_isLogined ? QString(GAME_SERVER_URL_GET_PROFILE).arg(_login) : "");
+    if (_isLogined) {
+        processRefferer();
     }
-    _serviceSettings->sync();
 }
 
 void QWarloksDuelCore::setCheckUrl(const QString &check_url) {
