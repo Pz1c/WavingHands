@@ -51,8 +51,6 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
 
 QWarloksDuelCore::~QWarloksDuelCore() {
     saveParameters(true, true, true, true, true);
-    _serviceSettings->sync();
-    _serviceSettings->deleteLater();
 }
 
 void QWarloksDuelCore::aiCreateNewChallenge() {
