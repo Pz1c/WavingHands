@@ -47,7 +47,7 @@ public:
     static QString getBattleShortTitle(const QString &Title, int State, int BattleID);
     static int strValueToInt(QString val);
     static void appendSeparatedList(QString &list, const QString &data, const QString &separator = ",");
-    static QString parseBattleHistory(QString &history, QString &title, int &battle_id);
+    static QString parseBattleHistory(QString &history, const QString &title, int &battle_id);
     static QString parseBattleTurn(QString &turn_text, QString &title, bool first_turn, bool last_turn);
     static int getStrengthByMonsterName(QString val);
 };

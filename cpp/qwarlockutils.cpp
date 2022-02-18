@@ -622,7 +622,7 @@ QString QWarlockUtils::parseBattleTurn(QString &turn_text, QString &title, bool 
     return result;
 }
 
-QString QWarlockUtils::parseBattleHistory(QString &history, QString &title, int &battle_id) {
+QString QWarlockUtils::parseBattleHistory(QString &history, const QString &title, int &battle_id) {
     bool first = true;
     QString l_title, turn_txt;
     QString d, line1;

@@ -700,11 +700,10 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
                     .replace("<BR><BR>", "").replace("\n", " ").replace("RH:", "Right hand:").replace("LH:", "Left hand:");
             _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":%2,\"id\":%3}").arg(_finishedBattle, ForceSurrenderTurn, intToStr(_loadedBattleID));
         } else if (_loadedBattleType == -1) {
-            _finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(_battleDesc[_loadedBattleID], intToStr(_loadedBattleID));
+            _finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(battleInfo->getInListDescription(_login.toLower()), intToStr(_loadedBattleID));
         } else if (_loadedBattleType == 2) {
             _finishedBattle = _finishedBattle/*.replace('"', "''")*/.replace("\n", " ");
-            _finishedBattle = QWarlockUtils::parseBattleHistory(_finishedBattle, _battleDesc[_loadedBattleID], _loadedBattleID);
-                    //QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\"}").arg(_finishedBattle, intToStr(_loadedBattleID), _battleDesc[_loadedBattleID]);
+            _finishedBattle = QWarlockUtils::parseBattleHistory(_finishedBattle, battleInfo->getInListDescription(_login.toLower()), _loadedBattleID);
         }
         emit finishedBattleChanged();
         return false;
