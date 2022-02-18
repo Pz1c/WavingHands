@@ -210,6 +210,7 @@ protected:
     QString getBattleHint(int battle_id, int battle_turn);
 
     void showNotification(const QString &msg);
+    QBattleInfo *getBattleInfo(int battleId);
 
 private:
     // user login

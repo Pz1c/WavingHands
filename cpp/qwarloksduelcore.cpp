@@ -539,6 +539,15 @@ void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
     sendGetRequest(QString(GAME_SERVER_URL_GET_PROFILE).arg(Login));
 }
 
+QBattleInfo *QWarloksDuelCore::getBattleInfo(int battleId) {
+    if (!_battleInfo.contains(battleId)) {
+        _battleInfo.insert(battleId, new QBattleInfo());
+        _battleInfo[battleId]->setBattleID(battleId);
+        _battleInfo[battleId]->addParticipant(_login);
+    }
+    return _battleInfo[battleId];
+}
+
 int QWarloksDuelCore::parseBattleDescription(QString &Data) {
     int idx_action = Data.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=");
     qDebug() << "parseBattleDescription" << _loadedBattleID << _loadedBattleType << idx_action;
@@ -554,98 +563,40 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
     }
 
     int res = _loadedBattleType;
-    QString curr_desc = _battleDesc.contains(_loadedBattleID) ? _battleDesc[_loadedBattleID] : "";
-    QString new_desc = curr_desc;
-
+    QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
+    QString search_key = "<a href=\"/player";
     if (_loadedBattleType == 0) {
         int idx = Data.indexOf("has not yet begun.");
         if (idx != -1) {
             // unstarted
             res = -1;
-            int cnt = 0, last_found= 0;
-            new_desc.clear();
-            while(idx != -1) {
-                QString wl = QWarlockUtils::getStringFromData(Data, "<A HREF=\"/player", "/", ".html", idx);
-                if (!wl.isEmpty()) {
-                    ++cnt;
-                    last_found = idx;
-                    if (wl.compare(login(), Qt::CaseInsensitive) != 0) {
-                        if (!new_desc.isEmpty()) {
-                            new_desc.append(",");
-                        }
-                        new_desc.append(wl);
-                    }
-                }
-            }
-            if (new_desc.length() > 15) {
-                new_desc = new_desc.mid(0, 12);
-                new_desc.append("...");
-            }
+            search_key = "<A HREF=\"/player";
+            int last_found = 0;
             int need = QWarlockUtils::getIntFromPlayerData(Data, "Battle for", " ", "<HR>", last_found);
-            new_desc.append(QString(" %1/%2").arg(intToStr(cnt), intToStr(need)));
+            battleInfo->setSize(need);
         } else {
             // wait
             res = 0;
-            new_desc.clear();
-            idx = 0;
-            while(idx != -1) {
-                QString wl = QWarlockUtils::getStringFromData(Data, "<a href=\"/player", "/", ".html", idx);
-                if (!wl.isEmpty()) {
-                    if (wl.compare(login(), Qt::CaseInsensitive) != 0) {
-                        if (!new_desc.isEmpty()) {
-                            new_desc.append(",");
-                        }
-                        new_desc.append(wl);
-                    }
-                }
-            }
-            if (new_desc.length() > 12) {
-                new_desc = new_desc.mid(0, 10);
-                new_desc.append("...");
-            }
         }
-    } else if ((_loadedBattleType == 1) && curr_desc.isEmpty()) {
+    } else if (_loadedBattleType == 1) {
         // ready
         res = 1;
-        new_desc.clear();
-        int idx = 0;
-        while(idx != -1) {
-            QString wl = QWarlockUtils::getStringFromData(Data, "<a href=\"/player", "/", ".html", idx);
-            if (!wl.isEmpty()) {
-                if (wl.compare(login(), Qt::CaseInsensitive) != 0) {
-                    if (!new_desc.isEmpty()) {
-                        new_desc.append(",");
-                    }
-                    new_desc.append(wl);
-                }
-            }
-        }
-        if (new_desc.length() > 12) {
-            new_desc = new_desc.mid(0, 10);
-            new_desc.append("...");
-        }
     } else if ((_loadedBattleType == 2) && (prev_battle_type != 2)) {
         // finished
         res = 2;
-        new_desc = QWarlockUtils::getFinishedBattleDescription(Data, _login);
-        /*new_desc = "No one win";
-        int idx = Data.indexOf(" is victorious!");
-        if (idx != -1) {
-            int idx2 = idx - 13; // max login length is 10
-            idx2 = Data.indexOf("<B>", idx2);
-            idx2 += 3;
-            new_desc = Data.mid(idx2, idx - idx2);
-            new_desc.append(" win!");
-        }*/
+        QString winner = QWarlockUtils::getFinishedBattleDescription(Data, _login);
+        battleInfo->setWinner(winner);
+    }
+    int idx = 0;
+    while(idx != -1) {
+        QString wl = QWarlockUtils::getStringFromData(Data, search_key, "/", ".html", idx);
+        if (!wl.isEmpty()) {
+            battleInfo->addParticipant(wl);
+        }
+    }
 
-    }
-    if (!new_desc.isEmpty() && (new_desc.compare(curr_desc) != 0)) {
-        _battleDesc[_loadedBattleID] = new_desc;
-    }
-    if (_battleState[_loadedBattleID] < 2) {
-        _battleState[_loadedBattleID] = res;
-    }
-    qDebug() << res << curr_desc << new_desc;
+    qDebug() << res;
+    battleInfo->setStatus(res);
     return res;
 }
 
@@ -653,8 +604,8 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
     int old_state = _loadedBattleType;
     _loadedBattleType = parseBattleDescription(Data);
+    QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
     if (_loadedBattleType == -2) { // finished but deleted
-        _battleDesc.remove(_loadedBattleID);
         if (_finished_battles.indexOf(_loadedBattleID) != -1) {
             _finished_battles.removeAt(_finished_battles.indexOf(_loadedBattleID));
         }
@@ -665,24 +616,16 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         emit finishedBattleChanged();
         return false;
     } else if (_loadedBattleType == -1) { // unstarted
-
-        _finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(_battleDesc[_loadedBattleID], intToStr(_loadedBattleID));
-                //"Battle not start yet:<br>" + _battleDesc[_loadedBattleID];
+        _finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(battleInfo->getInListDescription(_login.toLower()), intToStr(_loadedBattleID));
         emit finishedBattleChanged();
         return false;
     }
 
     if ((old_state == 1) && (_loadedBattleType == 2)) {
-        QString d = _battleDesc[_loadedBattleID].toUpper();
-        qDebug() << "finishGetFinishedBattle" << "check rate us" << d << _finished_battles.count();
-        if (!_rateus && (d.indexOf("WON VS. ") != -1)) {
-            bool vsbot = false;
-            foreach(QString bot_name, _lstAI) {
-                if (d.indexOf(bot_name) != -1) {
-                    vsbot = true;
-                    break;
-                }
-            }
+        //QString d = _battleDesc[_loadedBattleID].toUpper();
+        qDebug() << "finishGetFinishedBattle" << "check rate us" << _finished_battles.count();
+        if (!_rateus && battleInfo->isWinner(_login)) {
+            bool vsbot = battleInfo->withBot();
             if (!vsbot || (_finished_battles.count() >= 7)) {
                 _rateus = true;
                 _errorMsg = "{\"type\":14,\"id\":-1,\"action\":\"rate_us\"}";
@@ -1704,73 +1647,6 @@ void QWarloksDuelCore::saveGameParameters() {
         settings->setValue("v",  bii.value()->toString());
     }
     settings->endArray();
-
-    /*settings->beginWriteArray("bd");
-    QMap<int, QString>::iterator bdi;
-    int i = 0;
-    for (bdi = _battleDesc.begin(); bdi != _battleDesc.end(); ++bdi, ++i) {
-        settings->setArrayIndex(i);
-        settings->setValue("id", bdi.key());
-        settings->setValue("d", bdi.value());
-    }
-    settings->endArray();
-
-    settings->beginWriteArray("bh");
-    QMap<int, int>::iterator bhi;
-    i = 0;
-    for (bhi = _battleHint.begin(); bhi != _battleHint.end(); ++bhi, ++i) {
-        settings->setArrayIndex(i);
-        settings->setValue("id", bhi.key());
-        settings->setValue("h",  bhi.value());
-    }
-    settings->endArray();
-
-    settings->beginWriteArray("bs");
-    i = 0;
-    for (bhi = _battleState.begin(); bhi != _battleState.end(); ++bhi, ++i) {
-        settings->setArrayIndex(i);
-        settings->setValue("id", bhi.key());
-        settings->setValue("s",  bhi.value());
-    }
-    settings->endArray();
-
-    settings->beginWriteArray("bw");
-    i = 0;
-    for (bhi = _battleWait.begin(); bhi != _battleWait.end(); ++bhi, ++i) {
-        settings->setArrayIndex(i);
-        settings->setValue("id", bhi.key());
-        settings->setValue("w",  bhi.value());
-    }
-    settings->endArray();
-
-    QMap<QString, QWarlockStat>::iterator psi;
-    settings->beginWriteArray("ps");
-    i = 0;
-    for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi, ++i) {
-        settings->setArrayIndex(i);
-        settings->setValue("n", psi.key());
-        settings->setValue("v",  psi.value().toString());
-    }
-    settings->endArray();
-
-    QMap<int, QStringList>::iterator bhsi;
-    settings->beginWriteArray("bhs");
-    i = 0;
-    for (bhsi = _battleHistory.begin(); bhsi != _battleHistory.end(); ++bhsi, ++i) {
-        settings->setArrayIndex(i);
-        settings->setValue("k", bhsi.key());
-        settings->setValue("v",  bhsi.value());
-    }
-    settings->endArray();
-
-    settings->beginWriteArray("bc");
-    i = 0;
-    for (bhsi = _battleChat.begin(); bhsi != _battleChat.end(); ++bhsi, ++i) {
-        settings->setArrayIndex(i);
-        settings->setValue("k", bhsi.key());
-        settings->setValue("v",  bhsi.value());
-    }
-    settings->endArray();*/
 }
 
 void QWarloksDuelCore::loadGameParameters() {

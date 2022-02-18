@@ -11,20 +11,35 @@ public:
 
     const QString toJSON();
     const QString toString();
+    const QString getInListDescription(const QString &Login);
+    const bool isWinner(const QString &Login);
+    const bool withBot();
+
     int hint() const;
-    void setHint(int newHint, bool only_not_set = false);
+    void setHint(int newHint);
 
     int status() const;
-    void setStatus(int newStatus, bool only_not_set = false);
+    void setStatus(int newStatus);
 
     int wait_from() const;
-    void setWaitFrom(int newWait_from, bool only_not_set = false);
+    void setWaitFrom(int newWait_from);
+
+    int battleID() const;
+    void setBattleID(int newBattleID);
+
+    void addParticipant(const QString &login);
+
+    int size() const;
+    void setSize(int newSize);
+
+    const QString &winner() const;
+    void setWinner(const QString &newWinner);
 
 protected:
     const QString prepareToPrint(QString str);
     void parseString(const QString &battle_info);
     void init();
-
+    const QString getEnemy(const QString &Login);
 
 private:
     int _battleID;
@@ -38,9 +53,9 @@ private:
     bool _parafc;
     bool _parafdf;
     QString _description;
-    QString _participant;
-    QString _chat;
-    QString _history;
+    QStringList _participant;
+    QStringList _chat;
+    QStringList _history;
     QString _winner;
 };
 

@@ -24,16 +24,43 @@ void QBattleInfo::init() {
     _parafdf = false;
 }
 
+const QString &QBattleInfo::winner() const
+{
+    return _winner;
+}
+
+void QBattleInfo::setWinner(const QString &newWinner)
+{
+    _winner = newWinner.toLower();
+}
+
+int QBattleInfo::size() const
+{
+    return _size;
+}
+
+void QBattleInfo::setSize(int newSize)
+{
+    _size = newSize;
+}
+
+int QBattleInfo::battleID() const
+{
+    return _battleID;
+}
+
+void QBattleInfo::setBattleID(int newBattleID)
+{
+    _battleID = newBattleID;
+}
+
 int QBattleInfo::wait_from() const
 {
     return _wait_from;
 }
 
-void QBattleInfo::setWaitFrom(int newWait_from, bool only_not_set)
+void QBattleInfo::setWaitFrom(int newWait_from)
 {
-    if (only_not_set && (_wait_from != -1)) {
-        return;
-    }
     _wait_from = newWait_from;
 }
 
@@ -42,11 +69,8 @@ int QBattleInfo::status() const
     return _status;
 }
 
-void QBattleInfo::setStatus(int newStatus, bool only_not_set)
+void QBattleInfo::setStatus(int newStatus)
 {
-    if (only_not_set && (_status != -3)) {
-        return;
-    }
      _status = newStatus;
 }
 
@@ -55,12 +79,93 @@ int QBattleInfo::hint() const
     return _hint;
 }
 
-void QBattleInfo::setHint(int newHint, bool only_not_set)
+void QBattleInfo::setHint(int newHint)
 {
-    if (only_not_set && (_hint != -1)) {
-        return;
-    }
     _hint = newHint;
+}
+
+void QBattleInfo::addParticipant(const QString &login) {
+    if (_participant.indexOf(login.toLower()) == -1) {
+        _participant.append(login.toLower());
+    }
+}
+
+const QString QBattleInfo::getEnemy(const QString &Login) {
+    foreach(QString lp, _participant) {
+        if (lp.compare(Login) != 0) {
+            return lp;
+        }
+    }
+    return "";
+}
+
+const QString QBattleInfo::getInListDescription(const QString &Login) {
+    if (_status == -3) {
+        return QString("Battle #%1 no info").arg(intToStr(_battleID));
+    } else if (_status == -2) {
+        return QString("Battle #%1 deleted").arg(intToStr(_battleID));
+    } else if (_status == -1) {
+        return "Waiting to start...";
+        //return QString("Waiting to start...").arg(intToStr(_battleID));
+    } else if (_status == 0) {
+        if (_size == _participant.size()) {
+            // looks like already started
+            QString enemy = getEnemy(Login);
+            if (enemy.isEmpty()) {
+                return QString("Waiting opponent #%1").arg(intToStr(_battleID));
+            } else {
+                return QString("Waiting for %1").arg(enemy);
+            }
+        } else {
+            // not started perhaps
+            return QString("Waiting opponent #%1").arg(intToStr(_battleID));
+        }
+    } else if (_status == 1) {
+        QString enemy = getEnemy(Login);
+        if (enemy.isEmpty()) {
+            return QString("Ready #%1").arg(intToStr(_battleID));
+        } else {
+            return QString("Ready vs. %1").arg(enemy);
+        }
+    } else if (_status == 2) {
+        QString enemy = getEnemy(Login);
+        if (enemy.isEmpty()) {
+            if (_winner.isEmpty()) {
+                return QString("Finished #%1").arg(intToStr(_battleID));
+            } else if (_winner.compare("no") == 0) {
+                return QString("Draw #%1").arg(intToStr(_battleID));
+            } else if (Login.compare(_winner, Qt::CaseInsensitive) == 0) {
+                return QString("Win #%1").arg(intToStr(_battleID));
+            } else {
+                return QString("Lose #%1").arg(intToStr(_battleID));
+            }
+        } else {
+            if (_winner.isEmpty()) {
+                return QString("Finished vs. %1").arg(enemy);
+            } else if (_winner.compare("no") == 0) {
+                return QString("Draw vs. %1").arg(enemy);
+            } else if (Login.compare(_winner, Qt::CaseInsensitive) == 0) {
+                return QString("Win vs. %1").arg(enemy);
+            } else {
+                return QString("Lose vs. %1").arg(enemy);
+            }
+        }
+    }
+
+    return QString("Battle #%1").arg(intToStr(_battleID));
+}
+
+const bool QBattleInfo::isWinner(const QString &Login) {
+    return _winner.compare(Login.toLower());
+}
+
+const bool QBattleInfo::withBot() {
+    foreach(QString bot, _lstAI) {
+        if (_participant.indexOf(bot.toLower()) == 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 const QString QBattleInfo::prepareToPrint(QString str) {
@@ -71,14 +176,14 @@ const QString QBattleInfo::toJSON() {
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
                    ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15}")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
-            .arg(prepareToPrint(_description), prepareToPrint(_participant), prepareToPrint(_chat), prepareToPrint(_history), _winner, intToStr(_hint));
+            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint));
 }
 
 const QString QBattleInfo::toString() {
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
-            .arg(prepareToPrint(_description), _participant, prepareToPrint(_chat), prepareToPrint(_history), _winner, intToStr(_hint));
+            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint));
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -112,11 +217,11 @@ void QBattleInfo::parseString(const QString &battle_info) {
         } else if (key.compare("description") == 0) {
             _description = value;
         } else if (key.compare("participant") == 0) {
-            _participant = value;
+            _participant = value.split(",");
         } else if (key.compare("chat") == 0) {
-            _chat = value;
+            _chat = value.split("#END_TURN#");
         } else if (key.compare("history") == 0) {
-            _history = value;
+            _history = value.split("#END_TURN#");
         } else if (key.compare("winner") == 0) {
             _winner = value;
         } else if (key.compare("hint") == 0) {

@@ -533,41 +533,10 @@ QString QWarlockUtils::getFinishedBattleDescription(const QString &Data, const Q
         idx2 = Data.indexOf("<B>", idx2);
         idx2 += 3;
         winner = Data.mid(idx2, idx1 - idx2);
-    }
-
-    while((idx1 = Data.indexOf("<TD CLASS=lightbg WIDTH=\"50%\"><a href=\"/player/", idx1)) != -1) {
-        ++count;
-        idx1 += 47;
-        idx2 = Data.indexOf(".html", idx1);
-        tmp = Data.mid(idx1, idx2  - idx1);
-        if (enemy.isEmpty() && (tmp.compare(Login, Qt::CaseInsensitive) != 0)) {
-            enemy = tmp;
-        }
-        idx1 = Data.indexOf("</TD></TR>", idx2);
-        idx3 = Data.indexOf("Dead.", idx2);
-        if ((idx3 != -1) && (idx3 < idx2)) {
-            ++dead;
-        } else {
-            idx3 = Data.indexOf("Surrendered.", idx2);
-            if ((idx3 != -1) && (idx3 < idx2)) {
-                ++surrender;
-            } else if (winner.isEmpty()) {
-                winner = tmp;
-            }
-        }
-    }
-    if (!winner.isEmpty()) {
-        if (winner.compare(Login, Qt::CaseInsensitive) == 0) {
-            res = "Won vs. ";
-        } else {
-            res = "Lost vs. ";
-        }
+        return winner;
     } else {
-        res = "Draw vs. ";
+        return " ";
     }
-    res.append(enemy);
-
-    return res;
 }
 
 QString QWarlockUtils::getBattleShortTitle(const QString &Title, int State, int BattleID) {
