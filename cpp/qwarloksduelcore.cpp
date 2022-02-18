@@ -1672,6 +1672,7 @@ QString QWarloksDuelCore::defaultSpellListHtml() {
 }
 
 void QWarloksDuelCore::saveGameParameters() {
+    //settings->remove("");
     settings->setValue("login", _login);
     settings->setValue("password", _password);
     settings->setValue("reg_in_app", _reg_in_app);
@@ -1694,7 +1695,17 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("reffrer_processed", _process_refferer);
     settings->setValue("last_players_scan", _lastPlayersScan);
 
-    settings->beginWriteArray("bd");
+    settings->beginWriteArray("battle_info");
+    QMap<int, QBattleInfo *>::iterator bii;
+    int i = 0;
+    for (bii = _battleInfo.begin(); bii != _battleInfo.end(); ++bii, ++i) {
+        settings->setArrayIndex(i);
+        settings->setValue("k", bii.key());
+        settings->setValue("v",  bii.value()->toString());
+    }
+    settings->endArray();
+
+    /*settings->beginWriteArray("bd");
     QMap<int, QString>::iterator bdi;
     int i = 0;
     for (bdi = _battleDesc.begin(); bdi != _battleDesc.end(); ++bdi, ++i) {
@@ -1759,7 +1770,7 @@ void QWarloksDuelCore::saveGameParameters() {
         settings->setValue("k", bhsi.key());
         settings->setValue("v",  bhsi.value());
     }
-    settings->endArray();
+    settings->endArray();*/
 }
 
 void QWarloksDuelCore::loadGameParameters() {
@@ -1782,77 +1793,13 @@ void QWarloksDuelCore::loadGameParameters() {
     _process_refferer = settings->value("reffrer_processed", "false").toBool();
     _lastPlayersScan = settings->value("last_players_scan", "0").toInt();
     accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());
-    /*QStringList fbl = settings->value("finished_battles", "").toString().split(",");
-    foreach(QString fb, fbl) {
-        int fbid = fb.toInt();
-        if ((fbid == 0) || (_finished_battles.indexOf(fbid) != -1)) {
-            continue;
-        }
-        _finished_battles.append(fbid);
-    }*/
-    /*_shown_battles = settings->value("shown_battles", "").toStringList();
-    if ((_shown_battles.isEmpty() || ((_shown_battles.size() == 1) && (_shown_battles.at(0).isEmpty()))) && !fbl.isEmpty()) {
-        _shown_battles.append(fbl);
-    }*/
-    int size = settings->beginReadArray("bd");
-    for (int i = 0; i < size; ++i) {
-        settings->setArrayIndex(i);
-        _battleDesc[settings->value("id").toInt()] = settings->value("d").toString();
-    }
-    settings->endArray();
 
-    size = settings->beginReadArray("bh");
+    int size  = settings->beginReadArray("battle_info");
+    int battle_id;
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
-        _battleHint[settings->value("id").toInt()] = settings->value("h").toInt();
-    }
-    settings->endArray();
-
-    size = settings->beginReadArray("bs");
-    for (int i = 0; i < size; ++i) {
-        settings->setArrayIndex(i);
-        _battleState[settings->value("id").toInt()] = settings->value("s").toInt();
-    }
-    settings->endArray();
-
-    size = settings->beginReadArray("bw");
-    for (int i = 0; i < size; ++i) {
-        settings->setArrayIndex(i);
-        _battleWait[settings->value("id").toInt()] = settings->value("w").toInt();
-    }
-    settings->endArray();
-
-    size = settings->beginReadArray("ps");
-    for (int i = 0; i < size; ++i) {
-        settings->setArrayIndex(i);
-        if (settings->value("n").toString().toLower().compare(settings->value("n").toString()) != 0) {
-            _lastPlayersScan = 0;
-            _playerStats.clear();
-            break;
-        }
-        _playerStats[settings->value("n").toString()] = QWarlockStat(settings->value("v").toString(), true);
-    }
-    settings->endArray();
-
-    size = settings->beginReadArray("bhs");
-    for (int i = 0; i < size; ++i) {
-        settings->setArrayIndex(i);
-        int battle_id = settings->value("k").toInt();
-        if (!_battleState.contains(battle_id) || (_battleState[battle_id] == 2)) {
-            continue;
-        }
-        _battleHistory[battle_id] = settings->value("v").toStringList();
-    }
-    settings->endArray();
-
-    size = settings->beginReadArray("bc");
-    for (int i = 0; i < size; ++i) {
-        settings->setArrayIndex(i);
-        int battle_id = settings->value("k").toInt();
-        if (!_battleState.contains(battle_id) || (_battleState[battle_id] == 2)) {
-            continue;
-        }
-        _battleChat[battle_id] = settings->value("v").toStringList();
+        battle_id = settings->value("k").toInt();
+        _battleInfo.insert(battle_id, new QBattleInfo(settings->value("v").toString()));
     }
     settings->endArray();
 }

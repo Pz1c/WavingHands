@@ -7,14 +7,24 @@ class QBattleInfo
 {
 public:
     QBattleInfo();
+    QBattleInfo(const QString &battle_info);
 
     const QString toJSON();
     const QString toString();
-    void parseString(const QString &battle_info);
+    int hint() const;
+    void setHint(int newHint, bool only_not_set = false);
+
+    int status() const;
+    void setStatus(int newStatus, bool only_not_set = false);
+
+    int wait_from() const;
+    void setWaitFrom(int newWait_from, bool only_not_set = false);
 
 protected:
     const QString prepareToPrint(QString str);
-    //const QString restoreromPrint(QString str);
+    void parseString(const QString &battle_info);
+    void init();
+
 
 private:
     int _battleID;
@@ -23,6 +33,7 @@ private:
     int _level; // 0 Ladder, 1 Friendly, 2 V.Friendly
     int _turn;
     int _wait_from;
+    int _hint;
     bool _maladroit;
     bool _parafc;
     bool _parafdf;

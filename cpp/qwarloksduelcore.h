@@ -243,17 +243,18 @@ private:
     //QStringList _shown_battles;
     QString _finishedBattle;
     QStringList _challenge;
-    QMap<int, QString> _battleDesc;
-    QMap<int, int> _battleHint;
-    QMap<int, int> _battleState; // -2 deleted, -1 not started, 0 wait, 1 ready, 2 finished
-    QMap<int, int> _battleWait;
+    //QMap<int, QString> _battleDesc;
+    //QMap<int, int> _battleHint;
+    //QMap<int, int> _battleState; // -2 deleted, -1 not started, 0 wait, 1 ready, 2 finished
+    //QMap<int, int> _battleWait;
     QStringList _msg;
     QList<QValueName> _accounts;
     qint64 _lastPlayersScan;
     QMap<QString, QWarlockStat> _playerStats;
-    QMap<int, QStringList> _battleHistory;
-    QMap<int, QStringList> _battleChat;
+    //QMap<int, QStringList> _battleHistory;
+    //QMap<int, QStringList> _battleChat;
     QString _inviteToBattle;
+    QMap<int, QBattleInfo *> _battleInfo;
 
     // current battle
     int _loadedBattleID;
