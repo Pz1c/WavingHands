@@ -526,7 +526,7 @@ int QWarlockUtils::strValueToInt(QString val) {
 
 QString QWarlockUtils::getFinishedBattleDescription(const QString &Data, const QString &Login) {
     QString res, winner, enemy, tmp;
-    int idx1 = 0, idx2, idx3, count = 0, dead = 0, surrender = 0;
+    int idx1 = 0, idx2;//, idx3, count = 0, dead = 0, surrender = 0;
     idx1 = Data.indexOf(" is victorious!");
     if (idx1 != -1) {
         idx2 = idx1 - 13; // max login length is 10 + 3 for <b>

@@ -207,7 +207,7 @@ protected:
     int parseBattleDescription(QString &Data);
 
     QString getHintArray(int hint_id);
-    QString getBattleHint(int battle_id, int battle_turn);
+    QString getBattleHint(QBattleInfo *battle_info);
 
     void showNotification(const QString &msg);
     QBattleInfo *getBattleInfo(int battleId);

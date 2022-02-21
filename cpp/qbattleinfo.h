@@ -3,6 +3,8 @@
 
 #include "qgameconstant.h"
 
+#include <QDateTime>
+
 class QBattleInfo
 {
 public:
@@ -14,6 +16,7 @@ public:
     const QString getInListDescription(const QString &Login);
     const bool isWinner(const QString &Login);
     const bool withBot();
+    const bool canForceSurrendering();
 
     int hint() const;
     void setHint(int newHint);
@@ -28,12 +31,19 @@ public:
     void setBattleID(int newBattleID);
 
     void addParticipant(const QString &login);
+    void addChat(int battle_turn, const QString &chat_msg);
+    const QString getChat();
+    void addHistory(int battle_turn, const QString &hist_msg);
+    const QString getHistory();
 
     int size() const;
     void setSize(int newSize);
 
     const QString &winner() const;
     void setWinner(const QString &newWinner);
+
+    int turn() const;
+    void setTurn(int newTurn);
 
 protected:
     const QString prepareToPrint(QString str);

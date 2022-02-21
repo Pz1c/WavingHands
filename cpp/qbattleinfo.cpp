@@ -71,7 +71,21 @@ int QBattleInfo::status() const
 
 void QBattleInfo::setStatus(int newStatus)
 {
+     if (_status == newStatus) {
+         return;
+     }
+    if (newStatus == BATTLE_INFO_STATUS_READY) {
+        _wait_from = -1;
+    }
+    if ((_status == BATTLE_INFO_STATUS_READY) && (newStatus == BATTLE_INFO_STATUS_WAIT)) {
+        _wait_from = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+    }
      _status = newStatus;
+}
+
+const bool QBattleInfo::canForceSurrendering() {
+    int curr_time = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+    return ((_wait_from > 0) && ((curr_time - _wait_from) > 75 * 60 * 60));
 }
 
 int QBattleInfo::hint() const
@@ -98,6 +112,38 @@ const QString QBattleInfo::getEnemy(const QString &Login) {
     }
     return "";
 }
+
+int QBattleInfo::turn() const
+{
+    return _turn;
+}
+
+void QBattleInfo::setTurn(int newTurn)
+{
+    _turn = newTurn;
+}
+
+/*
+    if (Title.isEmpty()) {
+        switch(State) {
+        case -2: return QString("Battle #%1 deleted").arg(intToStr(BattleID));
+        case -1: return "Waiting to start...";//QString("#%1 waiting to start...").arg(intToStr(BattleID));
+        case 0: return QString("Waiting opponent #%1...").arg(intToStr(BattleID));
+        case 1: return QString("Battle #%1 is ready").arg(intToStr(BattleID));
+        case 2: return QString("Battle #%1 finished").arg(intToStr(BattleID));
+        default: return QString("Battle #%1 in %2 state").arg(intToStr(BattleID), intToStr(State));
+        }
+    } else {
+        switch(State) {
+        //case -2: return QString("Battle #%1 deleted").arg(intToStr(BattleID));
+        case -1: return "Waiting to start...";//QString("Not started, %1").arg(Title);
+        case 0: return QString("Waiting for %1...").arg(Title);
+        //case 1: return QString("Battle #%1 is ready").arg(Title);
+        //case 2: return QString("Battle #%1 finished").arg(Title);
+        default: return Title;
+        }
+    }
+*/
 
 const QString QBattleInfo::getInListDescription(const QString &Login) {
     if (_status == -3) {
@@ -166,6 +212,57 @@ const bool QBattleInfo::withBot() {
         }
     }
     return false;
+}
+
+void QBattleInfo::addChat(int battle_turn, const QString &chat_msg) {
+    qDebug() << "QBattleInfo::addChat" << battle_turn << chat_msg << _chat.size() << _chat;
+    if (_turn < battle_turn) {
+        _turn = battle_turn;
+    }
+    while(_chat.count() <= battle_turn) {
+        _chat.append("");
+    }
+    _chat.replace(battle_turn, chat_msg);
+}
+
+const QString QBattleInfo::getChat() {
+    QString tmpBC;
+    int turn_idx = -1;
+    foreach(QString s, _chat) {
+        if (++turn_idx == 0) {
+            continue;
+        }
+        if (s.isEmpty()) {
+            continue;
+        }
+        tmpBC.append(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(turn_idx)));
+        tmpBC.append(prepareToPrint(s));
+    }
+    return tmpBC;
+}
+
+void QBattleInfo::addHistory(int battle_turn, const QString &hist_msg) {
+    qDebug() << "QBattleInfo::addHistory" << battle_turn << hist_msg << _history;
+    if (_turn < battle_turn) {
+        _turn = battle_turn;
+    }
+    while(_history.size() <= battle_turn) {
+        _history.append("");
+    }
+    _history.replace(battle_turn, hist_msg);
+}
+
+const QString QBattleInfo::getHistory() {
+    QString tmpBH;
+    int turn_idx = -1;
+    foreach(QString s, _history) {
+        if (++turn_idx == 0) {
+            continue;
+        }
+        tmpBH.append(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(turn_idx)));
+        tmpBH.append(prepareToPrint(s));
+    }
+    return tmpBH;
 }
 
 const QString QBattleInfo::prepareToPrint(QString str) {
