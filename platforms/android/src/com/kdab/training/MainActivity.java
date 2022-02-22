@@ -56,6 +56,7 @@ public class MainActivity extends QtActivity {
             Log.d(TAG, "onResume battle_id: " + battle_id);
             if (battle_id > 0) {
                 try {
+                    Context context = getApplicationContext();
                     SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putInt("action_type", action_type);
