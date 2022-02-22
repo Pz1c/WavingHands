@@ -14,6 +14,7 @@
 #define QSpellDayCnt QPair<QString, int>
 
 #include "qgameconstant.h"
+#include "qbattleinfo.h"
 
 class QWarlock;
 class QMonster;
@@ -34,9 +35,9 @@ public:
     static bool parseMonsterCommad(QString &Data, QList<QMonster *> &result);
     static QString getCharmedPersonList(QString &Data);
     static QString getParalyseList(QString &Data);
-    static QString parseChallengesList(QString &Data);
+    static QList<QBattleInfo *> parseChallengesList(QString &Data);
     static QString parseTopList(QString &Data);
-    static QString parseChallenge(QString &Data);
+    static QBattleInfo *parseChallenge(QString &Data);
     static QString parsePlayerTop(QString &Data);
     static QString parseChallengePart0(QString &Data);
     static QString parseChallengePart1(QString &Data);

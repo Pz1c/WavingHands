@@ -11,12 +11,12 @@ public:
     QBattleInfo();
     QBattleInfo(const QString &battle_info);
 
-    const QString toJSON();
-    const QString toString();
-    const QString getInListDescription(const QString &Login);
-    const bool isWinner(const QString &Login);
-    const bool withBot();
-    const bool canForceSurrendering();
+    QString toJSON(const QString &Login = "") const;
+    QString toString(const QString &Login = "") const;
+    QString getInListDescription(const QString &Login) const;
+    bool isWinner(const QString &Login) const;
+    bool withBot() const;
+    bool canForceSurrendering() const;
 
     int hint() const;
     void setHint(int newHint);
@@ -32,9 +32,11 @@ public:
 
     void addParticipant(const QString &login);
     void addChat(int battle_turn, const QString &chat_msg);
-    const QString getChat();
+    QString getChat() const;
     void addHistory(int battle_turn, const QString &hist_msg);
-    const QString getHistory();
+    QString getHistory() const;
+
+    bool active(const QString &login) const;
 
     int size() const;
     void setSize(int newSize);
@@ -45,11 +47,35 @@ public:
     int turn() const;
     void setTurn(int newTurn);
 
+    int level() const;
+    void setLevel(int newLevel);
+
+    bool maladroit() const;
+    void setMaladroit(bool newMaladroit);
+
+    bool parafc() const;
+    void setParafc(bool newParafc);
+
+    bool parafdf() const;
+    void setParafdf(bool newParafdf);
+
+    bool fast() const;
+    void setFast(bool newFast);
+
+    bool for_bot() const;
+    void setForBot(bool newFor_bot);
+
+    bool with_bot() const;
+    void setWithBot(bool newWith_bot);
+
+    const QString &description() const;
+    void setDescription(const QString &newDescription);
+
 protected:
-    const QString prepareToPrint(QString str);
+    QString prepareToPrint(QString str) const;
     void parseString(const QString &battle_info);
     void init();
-    const QString getEnemy(const QString &Login);
+    QString getEnemy(const QString &Login) const;
 
 private:
     int _battleID;
@@ -62,6 +88,9 @@ private:
     bool _maladroit;
     bool _parafc;
     bool _parafdf;
+    bool _fast;
+    bool _for_bot;
+    bool _with_bot;
     QString _description;
     QStringList _participant;
     QStringList _chat;

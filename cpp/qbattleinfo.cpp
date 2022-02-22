@@ -22,6 +22,9 @@ void QBattleInfo::init() {
     _maladroit = false;
     _parafc = false;
     _parafdf = false;
+    _fast = false;
+    _for_bot = false;
+    _with_bot = false;
 }
 
 const QString &QBattleInfo::winner() const
@@ -83,7 +86,7 @@ void QBattleInfo::setStatus(int newStatus)
      _status = newStatus;
 }
 
-const bool QBattleInfo::canForceSurrendering() {
+bool QBattleInfo::canForceSurrendering() const {
     int curr_time = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
     return ((_wait_from > 0) && ((curr_time - _wait_from) > 75 * 60 * 60));
 }
@@ -99,18 +102,104 @@ void QBattleInfo::setHint(int newHint)
 }
 
 void QBattleInfo::addParticipant(const QString &login) {
-    if (_participant.indexOf(login.toLower()) == -1) {
-        _participant.append(login.toLower());
+    QString clean_login = login.toLower();
+    int idx1 = clean_login.indexOf("(");
+    if (idx1 != -1) {
+        clean_login = clean_login.mid(0, idx1 - 1);
+    }
+
+    if (_participant.indexOf(clean_login) == -1) {
+        _participant.append(clean_login);
     }
 }
 
-const QString QBattleInfo::getEnemy(const QString &Login) {
+QString QBattleInfo::getEnemy(const QString &Login) const {
     foreach(QString lp, _participant) {
         if (lp.compare(Login) != 0) {
             return lp;
         }
     }
     return "";
+}
+
+const QString &QBattleInfo::description() const
+{
+    return _description;
+}
+
+void QBattleInfo::setDescription(const QString &newDescription)
+{
+    _description = newDescription;
+}
+
+bool QBattleInfo::with_bot() const
+{
+    return _with_bot;
+}
+
+void QBattleInfo::setWithBot(bool newWith_bot)
+{
+    _with_bot = newWith_bot;
+}
+
+bool QBattleInfo::for_bot() const
+{
+    return _for_bot;
+}
+
+void QBattleInfo::setForBot(bool newFor_bot)
+{
+    _for_bot = newFor_bot;
+}
+
+bool QBattleInfo::fast() const
+{
+    return _fast;
+}
+
+void QBattleInfo::setFast(bool newFast)
+{
+    _fast = newFast;
+}
+
+bool QBattleInfo::parafdf() const
+{
+    return _parafdf;
+}
+
+void QBattleInfo::setParafdf(bool newParafdf)
+{
+    _parafdf = newParafdf;
+}
+
+bool QBattleInfo::parafc() const
+{
+    return _parafc;
+}
+
+void QBattleInfo::setParafc(bool newParafc)
+{
+    _parafc = newParafc;
+}
+
+bool QBattleInfo::maladroit() const
+{
+    return _maladroit;
+}
+
+void QBattleInfo::setMaladroit(bool newMaladroit)
+{
+    _maladroit = newMaladroit;
+}
+
+int QBattleInfo::level() const
+{
+    return _level;
+}
+
+void QBattleInfo::setLevel(int newLevel)
+{
+    _level = newLevel;
 }
 
 int QBattleInfo::turn() const
@@ -145,7 +234,7 @@ void QBattleInfo::setTurn(int newTurn)
     }
 */
 
-const QString QBattleInfo::getInListDescription(const QString &Login) {
+QString QBattleInfo::getInListDescription(const QString &Login) const  {
     if (_status == -3) {
         return QString("Battle #%1 no info").arg(intToStr(_battleID));
     } else if (_status == -2) {
@@ -201,11 +290,15 @@ const QString QBattleInfo::getInListDescription(const QString &Login) {
     return QString("Battle #%1").arg(intToStr(_battleID));
 }
 
-const bool QBattleInfo::isWinner(const QString &Login) {
+bool QBattleInfo::active(const QString &login) const {
+    return _participant.indexOf(login.toLower()) != -1;
+}
+
+bool QBattleInfo::isWinner(const QString &Login) const {
     return _winner.compare(Login.toLower());
 }
 
-const bool QBattleInfo::withBot() {
+bool QBattleInfo::withBot() const {
     foreach(QString bot, _lstAI) {
         if (_participant.indexOf(bot.toLower()) == 0) {
             return true;
@@ -225,7 +318,7 @@ void QBattleInfo::addChat(int battle_turn, const QString &chat_msg) {
     _chat.replace(battle_turn, chat_msg);
 }
 
-const QString QBattleInfo::getChat() {
+QString QBattleInfo::getChat() const {
     QString tmpBC;
     int turn_idx = -1;
     foreach(QString s, _chat) {
@@ -252,7 +345,7 @@ void QBattleInfo::addHistory(int battle_turn, const QString &hist_msg) {
     _history.replace(battle_turn, hist_msg);
 }
 
-const QString QBattleInfo::getHistory() {
+QString QBattleInfo::getHistory() const {
     QString tmpBH;
     int turn_idx = -1;
     foreach(QString s, _history) {
@@ -265,22 +358,26 @@ const QString QBattleInfo::getHistory() {
     return tmpBH;
 }
 
-const QString QBattleInfo::prepareToPrint(QString str) {
+QString QBattleInfo::prepareToPrint(QString str) const {
     return str.replace("\n","<br>").replace("\r", "").replace('"', "&quot;");
 }
 
-const QString QBattleInfo::toJSON() {
+QString QBattleInfo::toJSON(const QString &Login) const {
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
-                   ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15}")
+                   ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15,"
+                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19}")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
-            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint));
+            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
+            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)));
 }
 
-const QString QBattleInfo::toString() {
+QString QBattleInfo::toString(const QString &Login) const {
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
-                   "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15")
+                   "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
+                   "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^active#=#%19")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
-            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint));
+            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
+            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)));
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -323,6 +420,12 @@ void QBattleInfo::parseString(const QString &battle_info) {
             _winner = value;
         } else if (key.compare("hint") == 0) {
             _hint = value.toInt();
+        } else if (key.compare("fast") == 0) {
+            _fast = value.compare("true") == 0;
+        } else if (key.compare("with_bot") == 0) {
+            _with_bot = value.compare("true") == 0;
+        } else if (key.compare("for_bot") == 0) {
+            _for_bot = value.compare("true") == 0;
         }
     }
 }

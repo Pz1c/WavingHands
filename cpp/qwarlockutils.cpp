@@ -290,7 +290,7 @@ QString QWarlockUtils::parseChallengePart0(QString &Data) {
         if (first) {
             first = false;
         } else {
-            res.append(", ");
+            res.append(",");
         }
         res.append(str);
         idx1 = idx2;
@@ -348,15 +348,16 @@ QString QWarlockUtils::parseChallengePart3(QString &Data) {
     return Data.mid(idx1, idx2 - idx1);
 }
 
-QString QWarlockUtils::parseChallenge(QString &Data) {
+QBattleInfo * QWarlockUtils::parseChallenge(QString &Data) {
     //qDebug() << "parseChallenge" << Data;
-    QString res;
-    bool is_active = Data.indexOf(">Accept</A>") != -1;
+    QBattleInfo *res = nullptr;
+    //bool is_active = Data.indexOf(">Accept</A>") != -1;
     QString search1 = "<TD";
     QString search2 = "</TD>";
-    QStringList tmp;
-    QString logins, description, battle_id;
-    int need_more = 0, fast = 0, friendly = -1, parafc = 0, maladroit = 0, total_count = 0;
+    QStringList tmp, logins;
+    QString description, battle_id;
+    int friendly = -1, total_count = 0;
+    bool parafdf = false, parafc = false, maladroit = false, fast = false;
     int idx1 = 0, idx2, idx = -1;
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
@@ -367,22 +368,23 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
             case 0:
                 challenge_part = parseChallengePart0(part);
                 tmp = challenge_part.split("#!#");
-                logins = tmp.at(0);
-                need_more = tmp.at(1).toInt();
-                if (need_more > 1) {
+                logins = tmp.at(0).split(",");
+                //need_more = tmp.at(1).toInt();
+                /*if (need_more > 1) {
                     logins.append(QString(QWarlockDictionary::getInstance()->getStringByCode("NeedMore")).arg(intToStr(need_more)));
-                }
+                }*/
                 total_count = tmp.at(2).toInt();
                 break;
             case 1:
                 challenge_part = parseChallengePart1(part);
                 tmp = challenge_part.split("#!#");
-                fast = tmp.at(0).toInt();
+                fast = tmp.at(0).toInt() == 1;
                 friendly = tmp.at(1).toInt();
                 break;
             case 2:
-                parafc = part.indexOf("ParaFC", 0, Qt::CaseInsensitive) == -1 ? 0 : 1;
-                maladroit = part.indexOf("Maladroit", 0, Qt::CaseInsensitive) == -1 ? 0 : 1;
+                parafc = part.indexOf("ParaFC", 0, Qt::CaseInsensitive) != -1;
+                maladroit = part.indexOf("Maladroit", 0, Qt::CaseInsensitive) != -1;
+                parafdf = part.indexOf("ParaFDF", 0, Qt::CaseInsensitive) != -1;
                 description = parseChallengeDescription(part);
                 break;
             case 3:
@@ -391,56 +393,47 @@ QString QWarlockUtils::parseChallenge(QString &Data) {
         }
         //res.append(challenge_part);
     }
-    //res.append("#&#");
-    QString level, level_color;
-    switch (friendly) {
-    case 0:
-        level = need_more > 1 ? QWarlockDictionary::getInstance()->getStringByCode("Melee"): QWarlockDictionary::getInstance()->getStringByCode("Ladder");
-        level_color = "#ffcccb";
-        break;
-    case 1:
-        level = QWarlockDictionary::getInstance()->getStringByCode("Friendly");
-        level_color = "#ffffe0";
-        break;
-    case 2:
-        level = QWarlockDictionary::getInstance()->getStringByCode("VFriendly");
-        level_color = "#c6e5bc";
-        break;
-    }
     bool for_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("NO BOT") == -1);
     bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
-    //qDebug() << "for_bot" << level << total_count << description << for_bot;
-    res = QString("{\"is_new_btn\":0,\"logins\":\"%1\",\"fast\":%2,\"level\":\"%3\",\"parafc\":%4,\"maladroit\":%5,\"desc\":\"%6\",\"battle_id\":%7,\"for_bot\":%8,\"level_color\":\"%9\""
-                  ",\"friendly\":%10,\"with_bot\":%11,\"need\":%12,\"active\":%13,\"total_count\":%14}")
-            .arg(logins, intToStr(fast), level, intToStr(parafc), intToStr(maladroit), description, battle_id, boolToStr(for_bot), level_color)
-            .arg(intToStr(friendly), boolToStr(with_bot), intToStr(need_more), boolToStr(is_active), intToStr(total_count));
-    //qDebug() << res;
+    int bid = battle_id.toInt();
+    if (bid > 0) {
+        res = new QBattleInfo();
+        res->setBattleID(bid);
+        res->setStatus(BATTLE_INFO_STATUS_NO_START);
+        res->setLevel(friendly);
+        res->setSize(total_count);
+        res->setFast(fast);
+        res->setMaladroit(maladroit);
+        res->setParafc(parafc);
+        res->setParafdf(parafdf);
+        res->setDescription(description);
+        res->setForBot(for_bot);
+        res->setWithBot(with_bot);
+        foreach(QString l, logins) {
+            res->addParticipant(l);
+        }
+    }
     return res;
 }
 
-QString QWarlockUtils::parseChallengesList(QString &Data) {
+QList<QBattleInfo *> QWarlockUtils::parseChallengesList(QString &Data) {
     qDebug() << "parseChallengesList";
-
-    QString res = "[";
+    QList<QBattleInfo *> res;
     QString search1 = "<TR><TD><A HREF=\"/player";
     QString search2 = "</TR> <TR><TD COLSPAN=4><HR></TD></TR>";
     int idx1 = 0, idx2;
-    int count = 0;
 
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += 4; // !! remove <TR> only
         idx2 = Data.indexOf(search2, idx1);
         QString challenge = Data.mid(idx1, idx2 - idx1);
 
-        QString parsed = parseChallenge(challenge);
-        if (!parsed.isEmpty()) {
-            if (++count > 1) {
-                res.append(",");
-            }
+        QBattleInfo *parsed = parseChallenge(challenge);
+        if (parsed != nullptr) {
             res.append(parsed);
         }
     }
-    return res.append("]");
+    return res;
 }
 
 QString QWarlockUtils::parseTopList(QString &Data) {

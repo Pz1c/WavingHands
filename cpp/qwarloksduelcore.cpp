@@ -51,6 +51,12 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
 
 QWarloksDuelCore::~QWarloksDuelCore() {
     saveParameters(true, true, true, true, true);
+
+    // clean up
+    QMap<int, QBattleInfo *>::iterator bii;
+    for (bii = _battleInfo.begin(); bii != _battleInfo.end(); ++bii) {
+        delete bii.value();
+    }
 }
 
 void QWarloksDuelCore::aiCreateNewChallenge() {
@@ -251,10 +257,20 @@ void QWarloksDuelCore::aiLogin() {
 }
 
 void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl) {
-    QString list = QWarlockUtils::parseChallengesList(Data);
+    QList<QBattleInfo*> list = QWarlockUtils::parseChallengesList(Data);
     qDebug() << "finishChallengeList" << StatusCode << NewUrl;// << _challengeList << list;
-    if (_challengeList.compare(list) != 0) {
-        _challengeList = list;
+    QString list_str;
+    foreach(QBattleInfo*bi, list) {
+        list_str.append(intToStr(bi->battleID())).append(";");
+        if (_battleInfo.contains(bi->battleID())) {
+            delete _battleInfo[bi->battleID()];
+            _battleInfo.remove(bi->battleID());
+        }
+        _battleInfo.insert(bi->battleID(), bi);
+    }
+
+    if (_challengeList.compare(list_str) != 0) {
+        _challengeList = list_str;
         qDebug() << list;
         emit challengeListChanged();
     } else if (_isAI) {
@@ -1836,7 +1852,23 @@ int QWarloksDuelCore::challengeSubmited() {
 }
 
 QString QWarloksDuelCore::challengeList() {
-    return _challengeList;
+    QString res = "[";
+    bool first = true;
+    QStringList sl = _challengeList.split(",");
+    foreach(QString s, sl) {
+        int bid = s.toInt();
+        if ((bid <= 0) || !_battleInfo.contains(bid)) {
+            continue;
+        }
+        if (first) {
+            first = false;
+        } else {
+            res.append(",");
+        }
+        res.append(_battleInfo[bid]->toJSON(_login));
+    }
+
+    return res;
 }
 
 QString QWarloksDuelCore::topList() {
