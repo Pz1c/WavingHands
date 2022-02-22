@@ -234,6 +234,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         setCheckUrl(QString(GAME_SERVER_URL_GET_PROFILE).arg(_login));
         sendGetRequest(url);
         processRefferer();
+        saveParameters(true, true, true, true, true);
         return false;
     }
     return true;
@@ -1280,7 +1281,11 @@ void QWarloksDuelCore::processRefferer() {
         int bfl = sl.at(1).indexOf("vf") != -1 ? 2 : 1;
         createNewChallenge(true, true, true, true, 2, bfl, "Join to fun)", sl.at(2));
     } else if (sl.at(0).compare("show_battle") == 0) {
-        getBattle(sl.at(1).toInt(), 2);
+        int type = sl.at(2).toInt();
+        if (type > 1) {
+            // 2 ready, 3 finished
+            getBattle(sl.at(1).toInt(), type - 1);
+        }
     }
 }
 
@@ -2073,6 +2078,8 @@ void QWarloksDuelCore::timerFired() {
         _timer.setInterval((_isAI && !_isAsService) ? 30000 : 60000);
     }
     scanState(true);
+    saveParameters(false, false, true, false, false);
+    //settings->sync();
 }
 
 void QWarloksDuelCore::processServiceTimer() {

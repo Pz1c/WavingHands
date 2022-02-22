@@ -256,7 +256,7 @@ public class CheckStatus extends Service {
 
             Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
             m_builder//.setSmallIcon(icon)
-                    .setSmallIcon(R.drawable.icon)
+                    .setSmallIcon(R.drawable.notification_icon)
                     .setLargeIcon(icon)
                     .setContentTitle(message)
                     //.setContentText("Warlock duel need your attention")

@@ -245,7 +245,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
     } else if (_status == 0) {
         if (_size == _participant.size()) {
             // looks like already started
-            QString enemy = getEnemy(Login);
+            QString enemy = getEnemy(Login.toLower());
             if (enemy.isEmpty()) {
                 return QString("Waiting opponent #%1").arg(intToStr(_battleID));
             } else {
@@ -256,14 +256,14 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
             return QString("Waiting opponent #%1").arg(intToStr(_battleID));
         }
     } else if (_status == 1) {
-        QString enemy = getEnemy(Login);
+        QString enemy = getEnemy(Login.toLower());
         if (enemy.isEmpty()) {
             return QString("Ready #%1").arg(intToStr(_battleID));
         } else {
             return QString("Ready vs. %1").arg(enemy);
         }
     } else if (_status == 2) {
-        QString enemy = getEnemy(Login);
+        QString enemy = getEnemy(Login.toLower());
         if (enemy.isEmpty()) {
             if (_winner.isEmpty()) {
                 return QString("Finished #%1").arg(intToStr(_battleID));
