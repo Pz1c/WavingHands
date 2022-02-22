@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.is.games.WarlocksDuel" android:installLocation="auto" android:versionCode="272" android:versionName="1.9.5.2">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.is.games.WarlocksDuel" android:installLocation="auto" android:versionCode="277" android:versionName="1.9.6">
     <!-- %%INSERT_PERMISSIONS -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- %%INSERT_FEATURES -->
