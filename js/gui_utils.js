@@ -59,7 +59,7 @@ function loadBattleList(filter) {
 
 function loadChallengeList() {
     var str = core.challengeList, i, Ln;
-    //console.log("loadChallengeList", core.isAI, str);
+    console.log("loadChallengeList", core.isAI, str);
     var arr = JSON.parse(str);
     var first_call = !(G_CHALLENGE_LIST.length > 0);
     G_CHALLENGE_LIST = [];

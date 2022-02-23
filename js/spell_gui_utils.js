@@ -27,16 +27,16 @@ function prepareDataType12(l_data, dict) {
     if (l_data.d) {
         var tarr = l_data.d.split(" ");
         if (!tarr[0] || (tarr[0] === '')) {
-            ltError.text = "No one other warlock in then circle<br>";
+            ltError.text = "";//"No one other warlock in then circle<br>";
         } else {
             ltError.text = "Warlocks waiting in the circle: " + tarr[0].replace(",", ", ") + "<br>";
         }
         var tarr2 = tarr[1].split("/");
         var need_cnt = tarr2[1] * 1 - tarr2[0] * 1;
         if (need_cnt > 1) {
-            ltError.text += "Waiting for: " + (need_cnt) + " warlocks<br><br>";
+            ltError.text += "Waiting for " + (need_cnt) + " more warlocks to join<br><br>";
         } else if (need_cnt === 1) {
-            ltError.text += "Join to start battle<br>";
+            //ltError.text += "Join to start battle<br>";
         }
     }
     ltError.text += "<br><font size=\"-1\">" + dict.getStringByCode('DefNotStartDesc') + "</font>";

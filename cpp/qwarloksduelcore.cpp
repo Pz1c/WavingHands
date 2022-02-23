@@ -1872,6 +1872,7 @@ QString QWarloksDuelCore::challengeList() {
         }
         res.append(_battleInfo[bid]->toJSON(_login));
     }
+    res.append("]");
 
     return res;
 }

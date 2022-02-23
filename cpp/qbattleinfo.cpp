@@ -102,20 +102,20 @@ void QBattleInfo::setHint(int newHint)
 }
 
 void QBattleInfo::addParticipant(const QString &login) {
-    QString clean_login = login.toLower();
+    QString clean_login = login;
     int idx1 = clean_login.indexOf("(");
     if (idx1 != -1) {
         clean_login = clean_login.mid(0, idx1 - 1);
     }
 
-    if (_participant.indexOf(clean_login) == -1) {
+    if (_participant.indexOf(clean_login, Qt::CaseInsensitive) == -1) {
         _participant.append(clean_login);
     }
 }
 
 QString QBattleInfo::getEnemy(const QString &Login) const {
     foreach(QString lp, _participant) {
-        if (lp.compare(Login) != 0) {
+        if (lp.compare(Login, Qt::CaseInsensitive) != 0) {
             return lp;
         }
     }
@@ -291,7 +291,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
 }
 
 bool QBattleInfo::active(const QString &login) const {
-    return _participant.indexOf(login.toLower()) != -1;
+    return _participant.indexOf(login, Qt::CaseInsensitive) == -1;
 }
 
 bool QBattleInfo::isWinner(const QString &Login) const {
@@ -300,7 +300,7 @@ bool QBattleInfo::isWinner(const QString &Login) const {
 
 bool QBattleInfo::withBot() const {
     foreach(QString bot, _lstAI) {
-        if (_participant.indexOf(bot.toLower()) == 0) {
+        if (_participant.indexOf(bot, Qt::CaseInsensitive) == 0) {
             return true;
         }
     }
