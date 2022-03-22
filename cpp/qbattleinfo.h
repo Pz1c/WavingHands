@@ -31,6 +31,7 @@ public:
     void setBattleID(int newBattleID);
 
     void addParticipant(const QString &login);
+    void cleanParticipant();
     void addChat(int battle_turn, const QString &chat_msg);
     QString getChat() const;
     void addHistory(int battle_turn, const QString &hist_msg);

@@ -877,8 +877,13 @@ bool QWarloksDuelCore::prepareMonsterHtml() {
 bool QWarloksDuelCore::prepareWarlockHtml() {
     qDebug() << "QWarloksDuelCore::prepareWarlockHtml";
     _WarlockHtml.clear();
+    QBattleInfo *bi = getBattleInfo(_loadedBattleID);
+    bi->cleanParticipant();
+    int size = 0;
     foreach(QWarlock *m, _Warlock) {
         bool Player = m->name().compare(_login, Qt::CaseInsensitive) == 0;
+        ++size;
+        bi->addParticipant(m->name());
         //QString ps = SpellChecker.checkSpells(m->leftGestures(), m->rightGestures(), false, !Player);
         if (Player) {
             _leftGestures = m->leftGestures();
@@ -892,6 +897,7 @@ bool QWarloksDuelCore::prepareWarlockHtml() {
         qDebug() << "added" << m->name();
     }
     _WarlockHtml.prepend("[").append("]");
+    bi->setSize(size);
     return true;
 }
 

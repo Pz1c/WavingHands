@@ -78,7 +78,7 @@ contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
         D:/Android/sdk/android_openssl/latest/x86_64/libssl_1_1.so
 }
 
-android: include(D:/Android/sdk/android_openssl/openssl.pri)
+#android: include(D:/Android/sdk/android_openssl/openssl.pri)
 
 DISTFILES += \
     platforms/android/AndroidManifest.xml \

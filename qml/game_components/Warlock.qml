@@ -83,10 +83,17 @@ Item {
         height: 78 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+        contentWidth: iMonsters.width
+        contentHeight: iMonsters.height
 
         Item {
             id: iMonsters
-            anchors.fill: parent
+            //anchors.left: parent.left
+            //anchors.top: parent.top
+            //anchors.fill: parent
+            height: 78 * l_ratio
+            x:0
+            y:0
         }
     }
 
@@ -95,14 +102,22 @@ Item {
         anchors.top: iiHP.bottom
         anchors.topMargin: 12 * l_ratio
         anchors.right: parent.right
+        //anchors.left: svMonsters.right
         width: 0.5 * parent.width
         height: 78 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+        contentWidth: iCharm.width
+        contentHeight: iCharm.height
 
         Item {
             id: iCharm
-            anchors.fill: parent
+            //anchors.right: parent.right
+            //anchors.top: parent.top
+            //anchors.fill: parent
+            height: 78 * l_ratio
+            //x:0
+            y:0
         }
     }
 
@@ -367,6 +382,10 @@ Item {
             curr_x += incerment * (sprite.width + 18 * l_ratio);
             total_width += sprite.width + 18 * l_ratio;
         }
+        parent.width = total_width;
+        //parent.height = total_height;
+        //parent.parent.contentWidth = total_width;
+        //console.log("prepareDynamic", total_width, parent.width, parent.parent.contentWidth, parent.parent.width);
     }
 
     function prepareMonsters() {
@@ -374,7 +393,7 @@ Item {
     }
 
     function prepareState() {
-        prepareDynamic("s", l_warlock.statusIcons, iCharm, "value", iCharm.width - iCharm.height, -1);
+        prepareDynamic("s", l_warlock.statusIcons, iCharm, "value", svCharm.width - svCharm.height, -1);
     }
 
     function prepareHands() {
@@ -408,12 +427,37 @@ Item {
     }
 
     //function setGesture:
+    function setMonsterWidth() {
+        var m_w = iMonsters.width;
+        var c_w = iCharm.width;
+        var t_w = rWarlock.width;
+        var t_w_h = 0.5 * t_w;
+        console.log("setMonsterWidth", l_warlock.name, m_w, c_w, t_w, t_w_h);
+        if ((m_w < t_w_h) && (c_w < t_w_h)) {
+            console.log("setMonsterWidth", l_warlock.name, "point1");
+            return;
+        }
+        if ((m_w + c_w <= t_w) || ((m_w < t_w_h))) {
+            svMonsters.width = m_w;
+            svCharm.width = t_w - m_w;
+            console.log("setMonsterWidth", l_warlock.name, "point2");
+            return;
+        }
+        if (c_w < t_w_h) {
+            svMonsters.width = t_w - c_w;
+            svCharm.width = c_w;
+            console.log("setMonsterWidth", l_warlock.name, "point3");
+            return;
+        }
+    }
 
     function finishWarlockCreation() {
         console.log("finishWarlockCreation", JSON.stringify(l_warlock));
         scrollGestures();
         prepareMonsters();
         prepareState();
+        setMonsterWidth();
+
         if (l_warlock.control_paralyze) {
             l_control_icon = "qrc:/res/paralized.png";
         } else if (l_warlock.control_charmed) {

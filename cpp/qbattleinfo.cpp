@@ -101,6 +101,10 @@ void QBattleInfo::setHint(int newHint)
     _hint = newHint;
 }
 
+void QBattleInfo::cleanParticipant() {
+    _participant.clear();
+}
+
 void QBattleInfo::addParticipant(const QString &login) {
     QString clean_login = login;
     int idx1 = clean_login.indexOf("(");
