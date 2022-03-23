@@ -718,3 +718,18 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
         }
     }
 }
+
+void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
+    int pos = 0;
+    QString title = getStringFromData(Data, "<H2><U", ">", "</U>", pos);
+    bi->setMaladroit(title.indexOf("(Maladroit)") != -1);
+    bi->setParafc(title.indexOf("(ParaFC)") != -1);
+    bi->setParafdf(title.indexOf("(ParaFDF)") != -1);
+    if (title.indexOf("Very") != -1) {
+        bi->setLevel(2);
+    } else if (title.indexOf("Friendly") != -1) {
+        bi->setLevel(1);
+    } else {
+        bi->setLevel(0);
+    }
+}

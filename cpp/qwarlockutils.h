@@ -51,6 +51,7 @@ public:
     static QString parseBattleHistory(QString &history, const QString &title, int &battle_id);
     static QString parseBattleTurn(QString &turn_text, QString &title, bool first_turn, bool last_turn);
     static int getStrengthByMonsterName(QString val);
+    static void parseUnstartedBattle(QString &Data, QBattleInfo *bi);
 };
 
 #endif // QWARLOCKUTILS_H

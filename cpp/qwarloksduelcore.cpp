@@ -639,6 +639,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         emit finishedBattleChanged();
         return false;
     } else if (_loadedBattleType == -1) { // unstarted
+        if (battleInfo->size() == 0) {
+
+        }
         _finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(battleInfo->getInListDescription(_login.toLower()), intToStr(_loadedBattleID));
         emit finishedBattleChanged();
         return false;
