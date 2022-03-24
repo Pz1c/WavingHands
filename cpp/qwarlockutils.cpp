@@ -706,7 +706,7 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
         while((idx1 = s.indexOf("<A HREF=\"/player/", idx1)) != -1) {
             idx1 += 17;
             idx2 = s.indexOf('.', idx1);
-            tmp = s.mid(idx1, idx2 - idx1);
+            tmp = s.mid(idx1, idx2 - idx1 +1);
             if (!logins.isEmpty()) {
                 logins.append(",");
             }
@@ -720,8 +720,9 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
 }
 
 void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
-    int pos = 0;
-    QString title = getStringFromData(Data, "<H2><U", ">", "</U>", pos);
+    int idx1 = 0, idx2;
+    // parse title
+    QString title = getStringFromData(Data, "<H2><U", ">", "</U>", idx1);
     bi->setMaladroit(title.indexOf("(Maladroit)") != -1);
     bi->setParafc(title.indexOf("(ParaFC)") != -1);
     bi->setParafdf(title.indexOf("(ParaFDF)") != -1);
@@ -731,5 +732,28 @@ void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
         bi->setLevel(1);
     } else {
         bi->setLevel(0);
+    }
+    // parse paricipant
+    bi->cleanParticipant();
+    while ((idx1 = Data.indexOf("<A HREF=\"/player/", idx1)) != -1) {
+        idx1 += 17;
+        idx2 = Data.indexOf('.', idx1);
+        QString tmp = Data.mid(idx1, idx2 - idx1 + 1);
+        bi->addParticipant(tmp);
+    }
+
+    // parse description
+    QString description = getStringFromData(Data, "<TD ALIGN=CENTER>", "<BR>", "</TD>", idx2);
+    QStringList sl1 = description.split("<HR>");
+    bi->setFast(sl1.at(0).indexOf("fast", Qt::CaseInsensitive) != -1);
+    if (sl1.size() > 1) {
+        bi->setDescription(sl1.at(1));
+    }
+    QStringList sl2 = sl1.at(0).split(" ");
+    QString size_s = sl2.last();
+    bool ok;
+    int size_i = size_s.toInt(&ok);
+    if (ok) {
+        bi->setSize(size_i);
     }
 }

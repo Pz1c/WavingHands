@@ -64,7 +64,7 @@ function loadChallengeList() {
     var first_call = !(G_CHALLENGE_LIST.length > 0);
     G_CHALLENGE_LIST = [];
     for(i = 0, Ln = arr.length; i < Ln; ++i) {
-        if (!arr[i].active || (arr[i].total_count !== 2)) {
+        if (!arr[i].active || (arr[i].size !== 2)) {
             continue;
         }
         G_CHALLENGE_LIST.push(arr[i]);
@@ -145,16 +145,16 @@ function startGameWithPlayerEx() {
     var best_idx = -1, battle, bb;
     for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
         battle = G_CHALLENGE_LIST[i];
-        if (!battle.active || (battle.total_count > 2)) {
+        if (!battle.active || (battle.size > 2)) {
             continue;
         }
 
         if ((battle.friendly === 1) && (battle.need === 1)) {
-            var creator = JSON.parse(core.getWarlockStats(battle.logins, 1));
+            var creator = JSON.parse(core.getWarlockStats(battle.participant, 1));
             if (creator.found && (G_PROFILE.elo > creator.elo + 200)) {
                 continue;
             }
-            core.acceptChallenge(battle.battle_id, false);
+            core.acceptChallenge(battle.id, false);
             return;
         } else if (i !== best_idx) {
             if (best_idx === -1) {

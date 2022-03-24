@@ -27,6 +27,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _isAI = false;
     _botIdx = 0;
     _isScanForced = false;
+    _newBattle = nullptr;
 
     _played = 0;
     _won = 0;
@@ -57,6 +58,9 @@ QWarloksDuelCore::~QWarloksDuelCore() {
     for (bii = _battleInfo.begin(); bii != _battleInfo.end(); ++bii) {
         delete bii.value();
     }
+    if (_newBattle) {
+        delete _newBattle;
+    }
 }
 
 void QWarloksDuelCore::aiCreateNewChallenge() {
@@ -76,6 +80,16 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
 
     // QNetworkRequest request;
     // request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_CHALLENGE)));
+    if (!_newBattle) {
+        _newBattle = new QBattleInfo();
+    }
+    _newBattle->setFast(Fast); // ture by default
+    _newBattle->setDescription(Description);
+    _newBattle->setParafc(ParaFC);
+    _newBattle->setParafdf(false);
+    _newBattle->setMaladroit(Maladroid);
+    _newBattle->setSize(Count);
+    _newBattle->setLevel(FriendlyLevel);
     QString p_data = "fast=1&";
     if (Private) {
         p_data.append("private=1&");
@@ -311,7 +325,12 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
     QString created_id = QWarlockUtils::getStringFromData(url, "num", "=", "&", pos);
     int bid = created_id.toInt();
     if (bid > 0) {
-        QBattleInfo *battle_info = getBattleInfo(bid);
+        if (_newBattle) {
+            _newBattle->setBattleID(bid);
+            _battleInfo.insert(bid, _newBattle);
+            _newBattle = nullptr;
+        }
+        QBattleInfo* battle_info = getBattleInfo(bid);
         battle_info->addParticipant(_login);
         battle_info->setStatus(BATTLE_INFO_STATUS_NO_START);
 
@@ -1664,6 +1683,16 @@ void QWarloksDuelCore::saveGameParameters() {
         settings->setValue("v",  bii.value()->toString());
     }
     settings->endArray();
+
+    QMap<QString, QWarlockStat>::iterator psi;
+    settings->beginWriteArray("ps");
+    i = 0;
+    for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi, ++i) {
+        settings->setArrayIndex(i);
+        settings->setValue("n", psi.key());
+        settings->setValue("v", psi.value().toString());
+    }
+    settings->endArray();
 }
 
 void QWarloksDuelCore::loadGameParameters() {
@@ -1693,6 +1722,18 @@ void QWarloksDuelCore::loadGameParameters() {
         settings->setArrayIndex(i);
         battle_id = settings->value("k").toInt();
         _battleInfo.insert(battle_id, new QBattleInfo(settings->value("v").toString()));
+    }
+    settings->endArray();
+
+    size = settings->beginReadArray("ps");
+    for (int i = 0; i < size; ++i) {
+        settings->setArrayIndex(i);
+        if (settings->value("n").toString().toLower().compare(settings->value("n").toString()) != 0) {
+            _lastPlayersScan = 0;
+            _playerStats.clear();
+            break;
+        }
+        _playerStats[settings->value("n").toString()] = QWarlockStat(settings->value("v").toString(), true);
     }
     settings->endArray();
 }
@@ -1868,7 +1909,7 @@ int QWarloksDuelCore::challengeSubmited() {
 QString QWarloksDuelCore::challengeList() {
     QString res = "[";
     bool first = true;
-    QStringList sl = _challengeList.split(",");
+    QStringList sl = _challengeList.split(";");
     foreach(QString s, sl) {
         int bid = s.toInt();
         if ((bid <= 0) || !_battleInfo.contains(bid)) {

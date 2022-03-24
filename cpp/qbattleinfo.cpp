@@ -109,7 +109,7 @@ void QBattleInfo::addParticipant(const QString &login) {
     QString clean_login = login;
     int idx1 = clean_login.indexOf("(");
     if (idx1 != -1) {
-        clean_login = clean_login.mid(0, idx1 - 1);
+        clean_login = clean_login.mid(0, idx1);
     }
 
     if (_participant.indexOf(clean_login, Qt::CaseInsensitive) == -1) {
@@ -369,10 +369,12 @@ QString QBattleInfo::prepareToPrint(QString str) const {
 QString QBattleInfo::toJSON(const QString &Login) const {
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
                    ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15,"
-                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19}")
+                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"total_count\":%20,\"need\":%21,"
+                   "\"friendly\":%22}")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
-            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)));
+            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size), intToStr(_size - _participant.size()))
+            .arg(intToStr(_level));
 }
 
 QString QBattleInfo::toString(const QString &Login) const {

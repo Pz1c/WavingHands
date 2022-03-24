@@ -256,6 +256,7 @@ private:
     //QMap<int, QStringList> _battleChat;
     QString _inviteToBattle;
     QMap<int, QBattleInfo *> _battleInfo;
+    QBattleInfo* _newBattle;
 
     // current battle
     int _loadedBattleID;
