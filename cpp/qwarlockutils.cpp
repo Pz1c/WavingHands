@@ -2,6 +2,8 @@
 #include "qwarlockdictionary.h"
 #include "qwarlock.h"
 #include "qmonster.h"
+#include "qbattleinfo.h"
+
 
 QWarlockUtils::QWarlockUtils()
 {
@@ -336,7 +338,7 @@ QString QWarlockUtils::parseChallengeDescription(QString &Data) {
         ++idx1;
         res.append(Data.mid(idx1, Data.length() - idx1));
     }
-    res = res.replace('"', "&quot;").replace("\r", "").replace("\n","<br>").replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive).trimmed();
+    res = res.replace('"', "&quot;").replace("\r", "").replace("\n","<br>")/*.replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive)*/.trimmed();
     return res;
 }
 
@@ -554,9 +556,10 @@ QString QWarlockUtils::getBattleShortTitle(const QString &Title, int State, int 
     }
 }
 
-QString QWarlockUtils::parseBattleTurn(QString &turn_text, QString &title, bool first_turn, bool last_turn) {
-    QString result, line, def_color = "#FEE2D6", current_color = def_color, sub_line, ssln, sssline, last_line, red_desc;
+void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int current_turn, bool last_turn) {
+    QString result_c, result_h, line, def_color = "#FEE2D6", current_color = def_color, sub_line, ssln, sssline, last_line, red_desc;
     int idx1;
+    bool first_turn = current_turn == 0;
     QStringList lst = turn_text.split("<FONT "), sslines, ssslines;
     for (int i = 0, Ln = lst.length(); i < Ln; ++i) {
         line = lst.at(i).trimmed();
@@ -582,23 +585,29 @@ QString QWarlockUtils::parseBattleTurn(QString &turn_text, QString &title, bool 
             }
             ssslines = ssln.split("<BR>");
             for(int k = 0, LnK = ssslines.length(); k < LnK; ++k) {
-                sssline = ssslines.at(k).trimmed();
+                sssline = ssslines.at(k).trimmed().replace("<p>", "").replace("</p>", "");
                 if (sssline.isEmpty()) {
                     continue;
                 }
                 if ((current_color.compare("#CCCCCC") != 0) || first_turn) {
-                    result.append("<font color=''");
-                    result.append(current_color);
-                    result.append("''>");
-                    result.append(sssline.replace('"', "&quot;"));
-                    result.append("</font><br>");
+                    if (sssline.indexOf(" say ") != -1) {
+                        if (!result_c.isEmpty()) {
+                            result_c.append("<br>");
+                        }
+                        result_c.append(QString("<font color=''%1''>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
+                    } else {
+                        if (!result_h.isEmpty()) {
+                            result_h.append("<br>");
+                        }
+                        result_h.append(QString("<font color=''%1''>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
+                    }
                 } else {
                     continue;
                 }
                 if (last_turn) {
                     last_line = sssline;
                 }
-                if (last_turn && (current_color.compare("#FF6666") == 0)) {
+                if (last_turn && (current_color.compare("#FF6666") == 0) && !bi->containParticipant(sssline).isEmpty()) {
                     red_desc.append(sssline);
                     red_desc.append("<br>");
                 }
@@ -607,15 +616,21 @@ QString QWarlockUtils::parseBattleTurn(QString &turn_text, QString &title, bool 
         }
     }
     if (last_turn && !last_line.isEmpty()) {
-        title = last_line;
+        QString sub_title = last_line;
         if (!red_desc.isEmpty()) {
-            title.append("<br>").append(red_desc);
+            sub_title.append("<br>").append(red_desc);
+        }
+        bi->setSubTitle(sub_title);
+        if (last_line.indexOf("is victorious") != -1) {
+            bi->setWinner(bi->containParticipant(last_line));
         }
     }
-    return result;
+    bi->addChat(current_turn, result_c);
+    bi->addHistory(current_turn, result_h);
+    //return result;
 }
 
-QString QWarlockUtils::parseBattleHistory(QString &history, const QString &title, int &battle_id) {
+void QWarlockUtils::parseBattleHistory(QString &history, QBattleInfo* bi) {
     bool first = true;
     QString l_title, turn_txt;
     QString d, line1;
@@ -643,15 +658,12 @@ QString QWarlockUtils::parseBattleHistory(QString &history, const QString &title
         }
 
         curr_turn = line1.mid(0, idx1).toInt();
-        d.append("<font color=''#10C9F5''>Turn ");
-        d.append(intToStr(curr_turn));
-        d.append(":</font><br>");
         idx1 += 4;
         turn_txt = line1.mid(idx1);
-        d.append(parseBattleTurn(turn_txt, l_title, curr_turn == 0, curr_turn == last_turn));
+        parseBattleTurn(turn_txt, bi, curr_turn, curr_turn == last_turn);
     }
 
-    return QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\"}").arg(d, intToStr(battle_id), title, l_title);
+    //return QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\"}").arg(d, intToStr(bi->battleID()), bi->getInListDescription(login), l_title);
 }
 
 int QWarlockUtils::getStrengthByMonsterName(QString val) {
@@ -706,7 +718,7 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
         while((idx1 = s.indexOf("<A HREF=\"/player/", idx1)) != -1) {
             idx1 += 17;
             idx2 = s.indexOf('.', idx1);
-            tmp = s.mid(idx1, idx2 - idx1 +1);
+            tmp = s.mid(idx1, idx2 - idx1);
             if (!logins.isEmpty()) {
                 logins.append(",");
             }
@@ -735,11 +747,13 @@ void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
     }
     // parse paricipant
     bi->cleanParticipant();
+    qDebug() << "QWarlockUtils::parseUnstartedBattle" << idx1;
     while ((idx1 = Data.indexOf("<A HREF=\"/player/", idx1)) != -1) {
         idx1 += 17;
         idx2 = Data.indexOf('.', idx1);
-        QString tmp = Data.mid(idx1, idx2 - idx1 + 1);
+        QString tmp = Data.mid(idx1, idx2 - idx1);
         bi->addParticipant(tmp);
+        qDebug() << "QWarlockUtils::parseUnstartedBattle" << idx1 << idx2 << tmp;
     }
 
     // parse description

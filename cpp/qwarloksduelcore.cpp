@@ -569,8 +569,16 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
         loginToSite();
         return;
     }
-    setIsLoading(true);
+    if (_loadedBattleType == 2) {
+        QBattleInfo* bi = getBattleInfo(_loadedBattleID);
+        if (bi->fullParsed()) {
+            _finishedBattle = bi->getFullHist(_login);
+            emit finishedBattleChanged();
+            return;
+        }
+    }
 
+    setIsLoading(true);
     sendGetRequest(QString(_loadedBattleType == 2 ? GAME_SERVER_URL_GET_FINISHED_BATTLE : GAME_SERVER_URL_GET_BATTLE).arg(QString::number(_loadedBattleID)));
 }
 
@@ -658,10 +666,10 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         emit finishedBattleChanged();
         return false;
     } else if (_loadedBattleType == -1) { // unstarted
-        if (battleInfo->size() == 0) {
-
-        }
-        _finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(battleInfo->getInListDescription(_login.toLower()), intToStr(_loadedBattleID));
+        //if (battleInfo->size() == 0) {
+            QWarlockUtils::parseUnstartedBattle(Data, battleInfo);
+        //}
+        _finishedBattle = QString("{\"type\":12,\"d\":\"\",\"id\":%1,\"battle_data\":%2}").arg(intToStr(_loadedBattleID), battleInfo->toJSON(_login));
         emit finishedBattleChanged();
         return false;
     }
@@ -745,10 +753,13 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
                     .replace("<BR><BR>", "").replace("\n", " ").replace("RH:", "Right hand:").replace("LH:", "Left hand:");
             _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":%2,\"id\":%3}").arg(_finishedBattle, ForceSurrenderTurn, intToStr(_loadedBattleID));
         } else if (_loadedBattleType == -1) {
-            _finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(battleInfo->getInListDescription(_login.toLower()), intToStr(_loadedBattleID));
+            //_finishedBattle = QString("{\"type\":12,\"d\":\"%1\",\"id\":%2}").arg(battleInfo->getInListDescription(_login.toLower()), intToStr(_loadedBattleID));
+            _finishedBattle = QString("{\"type\":12,\"d\":\"\",\"id\":%1,\"battle_data\":%2}").arg(intToStr(_loadedBattleID), battleInfo->toJSON(_login));
         } else if (_loadedBattleType == 2) {
-            _finishedBattle = _finishedBattle/*.replace('"', "''")*/.replace("\n", " ");
-            _finishedBattle = QWarlockUtils::parseBattleHistory(_finishedBattle, battleInfo->getInListDescription(_login.toLower()), _loadedBattleID);
+            battleInfo->parseAllTurns(Data);
+            _finishedBattle = battleInfo->getFullHist(_login);
+            //_finishedBattle = _finishedBattle/*.replace('"', "''")*/.replace("\n", " ");
+            //_finishedBattle = QWarlockUtils::parseBattleHistory(_finishedBattle, battleInfo, _login);
         }
         emit finishedBattleChanged();
         return false;

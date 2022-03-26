@@ -36,6 +36,8 @@ public:
     QString getChat() const;
     void addHistory(int battle_turn, const QString &hist_msg);
     QString getHistory() const;
+    QString getFullHist(const QString &Login) const;
+    void parseAllTurns(QString& Data);
 
     bool active(const QString &login) const;
 
@@ -72,6 +74,12 @@ public:
     const QString &description() const;
     void setDescription(const QString &newDescription);
 
+    QString containParticipant(const QString& line);
+
+    void setSubTitle(const QString &newSub_title);
+
+    bool fullParsed() const;
+
 protected:
     QString prepareToPrint(QString str) const;
     void parseString(const QString &battle_info);
@@ -92,11 +100,13 @@ private:
     bool _fast;
     bool _for_bot;
     bool _with_bot;
+    bool _fullParsed;
     QString _description;
     QStringList _participant;
     QStringList _chat;
     QStringList _history;
     QString _winner;
+    QString _sub_title;
 };
 
 #endif // QBATTLEINFO_H

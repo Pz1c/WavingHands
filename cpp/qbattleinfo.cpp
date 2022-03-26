@@ -1,4 +1,5 @@
 #include "qbattleinfo.h"
+#include "qwarlockutils.h"
 
 QBattleInfo::QBattleInfo()
 {
@@ -25,6 +26,7 @@ void QBattleInfo::init() {
     _fast = false;
     _for_bot = false;
     _with_bot = false;
+    _fullParsed = false;
 }
 
 const QString &QBattleInfo::winner() const
@@ -117,6 +119,15 @@ void QBattleInfo::addParticipant(const QString &login) {
     }
 }
 
+QString QBattleInfo::containParticipant(const QString& line) {
+    foreach(QString lp, _participant) {
+        if (line.indexOf(lp, Qt::CaseInsensitive) != 0) {
+            return lp;
+        }
+    }
+    return "";
+}
+
 QString QBattleInfo::getEnemy(const QString &Login) const {
     foreach(QString lp, _participant) {
         if (lp.compare(Login, Qt::CaseInsensitive) != 0) {
@@ -124,6 +135,11 @@ QString QBattleInfo::getEnemy(const QString &Login) const {
         }
     }
     return "";
+}
+
+bool QBattleInfo::fullParsed() const
+{
+    return _fullParsed;
 }
 
 const QString &QBattleInfo::description() const
@@ -366,24 +382,41 @@ QString QBattleInfo::prepareToPrint(QString str) const {
     return str.replace("\n","<br>").replace("\r", "").replace('"', "&quot;");
 }
 
+QString QBattleInfo::getFullHist(const QString& Login) const {
+    QString fh, tmp;
+    if (!_description.isEmpty()) {
+        fh.append("<p><font color=&quot;#10C9F5&quot; size=+1>Turn 0</font></p>");
+        fh.append(_description);
+    }
+    for (int i = 1, Ln = _history.size(); i < Ln; ++i) {
+        tmp.clear();
+        tmp.append(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(i)));
+        tmp.append(prepareToPrint(_chat.at(i)));
+        if (!_chat.at(i).isEmpty() && !_history.at(i).isEmpty()) {
+            tmp.append("<br>");
+        }
+        tmp.append(prepareToPrint(_history.at(i)));
+        fh.prepend(tmp);
+    }
+    return QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\"}").arg(fh, intToStr(_battleID), getInListDescription(Login), _sub_title);
+}
+
 QString QBattleInfo::toJSON(const QString &Login) const {
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
                    ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15,"
-                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"total_count\":%20,\"need\":%21,"
-                   "\"friendly\":%22}")
+                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"need\":%20,\"player\":\"%21\"}")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
-            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size), intToStr(_size - _participant.size()))
-            .arg(intToStr(_level));
+            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login);
 }
 
 QString QBattleInfo::toString(const QString &Login) const {
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
-                   "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^active#=#%19")
+                   "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
-            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)));
+            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title);
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -432,6 +465,33 @@ void QBattleInfo::parseString(const QString &battle_info) {
             _with_bot = value.compare("true") == 0;
         } else if (key.compare("for_bot") == 0) {
             _for_bot = value.compare("true") == 0;
+        } else if (key.compare("full_parsed") == 0) {
+            _fullParsed = value.compare("true") == 0;
+        } else if (key.compare("sub_title") == 0) {
+            _sub_title = value;
         }
     }
+}
+
+void QBattleInfo::parseAllTurns(QString& Data) {
+    _fullParsed = true;
+    cleanParticipant();
+    int idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="), last_idx = idx, first_idx = Data.indexOf("<U>Turn 0</U>");
+    while (true) {
+        QString warlock = QWarlockUtils::getStringFromData(Data, "<a href=\"/player/", ">", "<", idx);
+        if (warlock.isEmpty()) {
+            break;
+        }
+        addParticipant(warlock);
+    }
+    setSize(_participant.size());
+    QString hist = Data.mid(first_idx, last_idx - first_idx).replace("<a href=\"/player", "<b atr=\"")
+        .replace("<A CLASS=amonoturn HREF=\"/warlocks", "<b atr=\"").replace("</A>", "</b>").replace("</a>", "</b>")
+        .replace("BLOCKQUOTE", "p").replace("WIDTH=\"100%\"", "").replace("WIDTH=\"50%\"", "").replace("<H2>", "").replace("</H2>", "")
+        .replace("<p>", "").replace("</p>", "").replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
+    QWarlockUtils::parseBattleHistory(hist, this);
+}
+void QBattleInfo::setSubTitle(const QString &newSub_title)
+{
+    _sub_title = newSub_title;
 }

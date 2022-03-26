@@ -7,17 +7,15 @@
 #include <QPair>
 #include <QDebug>
 #include <QTextDocumentFragment>
-//#include "qwarlock.h"
-//#include "qmonster.h"
 
 #define QValueName QPair<QString, QString>
 #define QSpellDayCnt QPair<QString, int>
 
 #include "qgameconstant.h"
-#include "qbattleinfo.h"
 
 class QWarlock;
 class QMonster;
+class QBattleInfo;
 
 class QWarlockUtils
 {
@@ -48,8 +46,8 @@ public:
     static QString getBattleShortTitle(const QString &Title, int State, int BattleID);
     static int strValueToInt(QString val);
     static void appendSeparatedList(QString &list, const QString &data, const QString &separator = ",");
-    static QString parseBattleHistory(QString &history, const QString &title, int &battle_id);
-    static QString parseBattleTurn(QString &turn_text, QString &title, bool first_turn, bool last_turn);
+    static void parseBattleHistory(QString &history, QBattleInfo* bi);
+    static void parseBattleTurn(QString &turn_text, QBattleInfo* bi, int current_turn, bool last_turn);
     static int getStrengthByMonsterName(QString val);
     static void parseUnstartedBattle(QString &Data, QBattleInfo *bi);
 };

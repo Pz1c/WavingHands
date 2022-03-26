@@ -24,17 +24,39 @@ function prepareDataType12(l_data, dict) {
     ltTitle.text = dict.getStringByCode('DefNotStartTitle');
     ltShortDesc.text = dict.getStringByCode('DefNotStartSTitle');
     ltError.text = "";
-    if (l_data.d) {
-        var tarr = l_data.d.split(" ");
-        if (!tarr[0] || (tarr[0] === '')) {
+    if (l_data.battle_data) {
+        ltShortDesc.text = "Multi player game for " + l_data.battle_data.size + " players";
+        if (!l_data.battle_data.participant || (l_data.battle_data.participant === '')) {
             ltError.text = "";//"No one other warlock in then circle<br>";
+            if (!l_data.battle_data.active) {
+                ltError.text = "Warlocks accepted: only you(";
+            }
         } else {
-            ltError.text = "Warlocks waiting in the circle: " + tarr[0].replace(",", ", ") + "<br>";
+            ltError.text = "Warlocks accepted: ";
+            var arr_p = l_data.battle_data.participant.split(",");
+            var first = true;
+            for(var i = 0, Ln = arr_p.length; i < Ln; ++i) {
+                if (arr_p[i].toLowerCase() === l_data.battle_data.player.toLowerCase()) {
+                    continue;
+                }
+                if (first) {
+                    first = false;
+                } else {
+                    ltError.text += ', ';
+                }
+                ltError.text += arr_p[i];
+            }
+            if (!l_data.battle_data.active) {
+                ltError.text += " and you";
+            }
+            ltError.text += "<br>";
+
+            //ltError.text = "Warlocks accepted: " + replaceAll(l_data.battle_data.participant, ",", ", ") + "<br>";
         }
-        var tarr2 = tarr[1].split("/");
-        var need_cnt = tarr2[1] * 1 - tarr2[0] * 1;
+        //var tarr2 = tarr[1].split("/");
+        var need_cnt = l_data.battle_data.need;
         if (need_cnt > 1) {
-            ltError.text += "Waiting for " + (need_cnt) + " more warlocks to join<br><br>";
+            ltError.text += "Waiting for " + (need_cnt) + " more warlocks to join<br>";
         } else if (need_cnt === 1) {
             //ltError.text += "Join to start battle<br>";
         }

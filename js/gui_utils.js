@@ -81,7 +81,7 @@ function loadChallengeList() {
         cli = G_CHALLENGE_LIST[i];
         if (cli.for_bot) {
             console.log("loadChallengeList", "accept", JSON.stringify(cli));
-            core.aiAcceptChallenge(cli.battle_id);
+            core.aiAcceptChallenge(cli.id);
             // battle item example
             // {"is_new_btn":0,"logins":"Galbarad(2)","fast":1,"level":"Very friendly","parafc":1,"maladroit":1,"desc":"TRANING BOT ONLY",
             // "battle_id":86536,"for_bot":true,"level_color":"#c6e5bc","friendly":2,"with_bot":false,"need":1,"active":true,"total_count":2}
@@ -133,9 +133,9 @@ function getJoinDialogText(b) {
     if (b.need === 1) {
         txt = txt.replace("#NEED", b.need - 1);
     }
-    txt = txt.replace("#ID", '#' + b.battle_id);
+    txt = txt.replace("#ID", '#' + b.id);
     txt = txt.replace("#FL", b.level);
-    txt = txt.replace("#LOGINS", b.logins);
+    txt = txt.replace("#LOGINS", b.participants);
     txt += "\n" + b.desc;
     return txt;
 }
@@ -149,7 +149,7 @@ function startGameWithPlayerEx() {
             continue;
         }
 
-        if ((battle.friendly === 1) && (battle.need === 1)) {
+        if ((battle.level === 1) && (battle.need === 1)) {
             var creator = JSON.parse(core.getWarlockStats(battle.participant, 1));
             if (creator.found && (G_PROFILE.elo > creator.elo + 200)) {
                 continue;
@@ -165,7 +165,7 @@ function startGameWithPlayerEx() {
             if (bb.need > battle.need) {
                 continue;
             }
-            if (bb.friendly < battle.friendly) {
+            if (bb.level < battle.level) {
                 continue;
             }
             if (bb.fast && !battle.fast) {
