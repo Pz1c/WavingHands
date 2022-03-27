@@ -12,7 +12,7 @@ public:
     QBattleInfo(const QString &battle_info);
 
     QString toJSON(const QString &Login = "") const;
-    QString toString(const QString &Login = "") const;
+    QString toString() const;
     QString getInListDescription(const QString &Login) const;
     bool isWinner(const QString &Login) const;
     bool withBot() const;

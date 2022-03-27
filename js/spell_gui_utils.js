@@ -91,7 +91,7 @@ function prepareDataType9(l_data, dict) {
     svMain.anchors.topMargin = 0;
     ltTitle.text = l_data.t;
     ltShortDesc.text = l_data.st ? l_data.st : "";
-    ltError.text = replaceAll(l_data.d, "''", '"');
+    ltError.text = replaceAll(replaceAll(l_data.d, "''", '"'), '&quot;', '"');
 }
 
 function prepareDataType8(l_data, dict) {

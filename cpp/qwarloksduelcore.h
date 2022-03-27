@@ -212,6 +212,7 @@ protected:
     void showNotification(const QString &msg);
     QBattleInfo *getBattleInfo(int battleId);
 
+    void storeFullParsedBattle(QBattleInfo *bi);
 private:
     // user login
     bool _isLogined;

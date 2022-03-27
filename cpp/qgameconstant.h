@@ -29,7 +29,8 @@
 #define GAME_SERVER_URL_NEW_CHALLENGE "https://games.ravenblack.net/newchallenge"
 #define GAME_SERVER_URL_NEW_PLAYER "https://games.ravenblack.net/newplayer?action=new"
 #define GAME_SERVER_URL_SENDMESS "https://games.ravenblack.net/sendmess"
-#define GAME_SERVER_URL_GET_FINISHED_BATTLE "https://games.visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&show_data=1"
+#define GAME_SERVER_URL_GET_FINISHED_BATTLE "https://visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&show_data=1"
+#define GAME_SERVER_URL_STORE_FINISHED_BATTLE "https://visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&store_json=1"
 #define GAME_SERVER_URL_LOGOUT "https://games.ravenblack.net/logout"
 #define GAME_SERVER_URL_INVITE_TO_CHALLENGE "https://games.ravenblack.net/chalplayer?victim=%1&num=%2"
 

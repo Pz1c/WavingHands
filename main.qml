@@ -695,7 +695,7 @@ ApplicationWindow {
 
                             Image {
                                 id: rdbiIcon
-                                source: lvFinishedBattle.model[index].d.indexOf("Won vs. ") === -1 ? "res/RIP2.png" : "res/stars.png"
+                                source: lvFinishedBattle.model[index].d.indexOf("Won ") !== 0 ? "res/RIP2.png" : "res/stars.png"
                                 width: 24 * ratioObject
                                 height: 24 * ratioObject
                                 anchors.verticalCenter: parent.verticalCenter

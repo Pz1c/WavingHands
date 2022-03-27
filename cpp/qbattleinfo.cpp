@@ -120,8 +120,11 @@ void QBattleInfo::addParticipant(const QString &login) {
 }
 
 QString QBattleInfo::containParticipant(const QString& line) {
+    qDebug() << "QBattleInfo::containParticipant" << line;
     foreach(QString lp, _participant) {
-        if (line.indexOf(lp, Qt::CaseInsensitive) != 0) {
+        qDebug() << "QBattleInfo::containParticipant" << lp;
+        if (line.indexOf(lp, Qt::CaseInsensitive) != -1) {
+            qDebug() << "QBattleInfo::containParticipant" << "true";
             return lp;
         }
     }
@@ -290,7 +293,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
             } else if (_winner.compare("no") == 0) {
                 return QString("Draw #%1").arg(intToStr(_battleID));
             } else if (Login.compare(_winner, Qt::CaseInsensitive) == 0) {
-                return QString("Win #%1").arg(intToStr(_battleID));
+                return QString("Won #%1").arg(intToStr(_battleID));
             } else {
                 return QString("Lose #%1").arg(intToStr(_battleID));
             }
@@ -300,7 +303,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
             } else if (_winner.compare("no") == 0) {
                 return QString("Draw vs. %1").arg(enemy);
             } else if (Login.compare(_winner, Qt::CaseInsensitive) == 0) {
-                return QString("Win vs. %1").arg(enemy);
+                return QString("Won vs. %1").arg(enemy);
             } else {
                 return QString("Lose vs. %1").arg(enemy);
             }
@@ -315,7 +318,7 @@ bool QBattleInfo::active(const QString &login) const {
 }
 
 bool QBattleInfo::isWinner(const QString &Login) const {
-    return _winner.compare(Login.toLower());
+    return _winner.compare(Login, Qt::CaseInsensitive);
 }
 
 bool QBattleInfo::withBot() const {
@@ -390,7 +393,7 @@ QString QBattleInfo::getFullHist(const QString& Login) const {
     }
     for (int i = 1, Ln = _history.size(); i < Ln; ++i) {
         tmp.clear();
-        tmp.append(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(i)));
+        tmp.append(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(i)));
         tmp.append(prepareToPrint(_chat.at(i)));
         if (!_chat.at(i).isEmpty() && !_history.at(i).isEmpty()) {
             tmp.append("<br>");
@@ -410,7 +413,7 @@ QString QBattleInfo::toJSON(const QString &Login) const {
             .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login);
 }
 
-QString QBattleInfo::toString(const QString &Login) const {
+QString QBattleInfo::toString() const {
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
                    "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20")
@@ -476,7 +479,7 @@ void QBattleInfo::parseString(const QString &battle_info) {
 void QBattleInfo::parseAllTurns(QString& Data) {
     _fullParsed = true;
     cleanParticipant();
-    int idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="), last_idx = idx, first_idx = Data.indexOf("<U>Turn 0</U>");
+    int idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="), last_idx = idx, first_idx = Data.indexOf("<U>Turn");
     while (true) {
         QString warlock = QWarlockUtils::getStringFromData(Data, "<a href=\"/player/", ">", "<", idx);
         if (warlock.isEmpty()) {

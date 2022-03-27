@@ -557,6 +557,7 @@ QString QWarlockUtils::getBattleShortTitle(const QString &Title, int State, int 
 }
 
 void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int current_turn, bool last_turn) {
+    qDebug() << "QWarlockUtils::parseBattleTurn" << current_turn << last_turn;
     QString result_c, result_h, line, def_color = "#FEE2D6", current_color = def_color, sub_line, ssln, sssline, last_line, red_desc;
     int idx1;
     bool first_turn = current_turn == 0;
@@ -590,16 +591,16 @@ void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int cur
                     continue;
                 }
                 if ((current_color.compare("#CCCCCC") != 0) || first_turn) {
-                    if (sssline.indexOf(" say ") != -1) {
+                    if (sssline.indexOf(" says ") != -1) {
                         if (!result_c.isEmpty()) {
                             result_c.append("<br>");
                         }
-                        result_c.append(QString("<font color=''%1''>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
+                        result_c.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
                     } else {
                         if (!result_h.isEmpty()) {
                             result_h.append("<br>");
                         }
-                        result_h.append(QString("<font color=''%1''>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
+                        result_h.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
                     }
                 } else {
                     continue;

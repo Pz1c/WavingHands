@@ -8,7 +8,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     if (_isAsService) {
         _request_code = "ass";
     }
-    QString ini_path = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QString ini_path = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     qDebug() << "QWarloksDuelCore::QWarloksDuelCore" << ini_path;
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, ini_path);
     setOrganization(ORGANIZATION_NAME, APPLICATION_NAME);
@@ -112,6 +112,15 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     qDebug() << p_data;
     sendPostRequest(GAME_SERVER_URL_NEW_CHALLENGE, p_data.toUtf8());
     setTimeState(true);
+}
+
+void QWarloksDuelCore::storeFullParsedBattle(QBattleInfo *bi) {
+    if (bi->status() != 2) {
+        return;
+    }
+    QString p_data = "json=";
+    p_data.append(QUrl::toPercentEncoding(bi->toString()));
+    sendPostRequest(QString(GAME_SERVER_URL_STORE_FINISHED_BATTLE).arg(intToStr(bi->battleID())), p_data.toUtf8());
 }
 
 void QWarloksDuelCore::sendMessage(const QString &Msg) {
@@ -652,9 +661,23 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
 
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
+    QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
+    if ((_loadedBattleType == 2) && (Data.indexOf("id#=#") == 0)) {
+        QBattleInfo *bi = new QBattleInfo(Data);
+        if (bi->battleID() != _loadedBattleID) {
+            delete bi;
+            _finishedBattle = "Sorry, wrong answer, please contact with viskgameua@gmail.com";
+        } else {
+            _battleInfo[_loadedBattleID] = bi;
+            delete battleInfo;
+            battleInfo = bi;
+            _finishedBattle = battleInfo->getFullHist(_login);
+        }
+        emit finishedBattleChanged();
+        return false;
+    }
     int old_state = _loadedBattleType;
     _loadedBattleType = parseBattleDescription(Data);
-    QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
     if (_loadedBattleType == -2) { // finished but deleted
         if (_finished_battles.indexOf(_loadedBattleID) != -1) {
             _finished_battles.removeAt(_finished_battles.indexOf(_loadedBattleID));
@@ -758,6 +781,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         } else if (_loadedBattleType == 2) {
             battleInfo->parseAllTurns(Data);
             _finishedBattle = battleInfo->getFullHist(_login);
+            storeFullParsedBattle(battleInfo);
             //_finishedBattle = _finishedBattle/*.replace('"', "''")*/.replace("\n", " ");
             //_finishedBattle = QWarlockUtils::parseBattleHistory(_finishedBattle, battleInfo, _login);
         }
@@ -1443,6 +1467,10 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
 
     if (url.indexOf("/warlocksubmit") != -1) {
         return !finishOrderSubmit(data, statusCode, new_url);
+    }
+
+    if ((url.indexOf("robot_gateway/wh/") != -1) && (url.indexOf("store_json") != -1)) {
+        return true;
     }
 
     if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1) || (url.indexOf("robot_gateway/wh/") != -1)) {
