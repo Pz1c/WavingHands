@@ -77,6 +77,9 @@ int QBattleInfo::status() const
 void QBattleInfo::setStatus(int newStatus)
 {
      if (_status == newStatus) {
+         if ((newStatus == BATTLE_INFO_STATUS_WAIT) && (_wait_from <= 0)) {
+             _wait_from = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+         }
          return;
      }
     if (newStatus == BATTLE_INFO_STATUS_READY) {

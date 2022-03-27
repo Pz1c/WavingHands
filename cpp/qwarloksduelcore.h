@@ -121,7 +121,7 @@ public slots:
     void getChallengeList(bool Silent = false);
     void getTopList();
     void acceptChallenge(int battle_id, bool from_card = false);
-    void aiAcceptChallenge(int battle_id);
+    bool aiAcceptChallenge(int battle_id, bool changeAI = true);
     void rejectChallenge(int battle_id);
     void deleteMsg(QString msg_from);
     void forceSurrender(int battle_id, int turn);
@@ -213,6 +213,7 @@ protected:
     QBattleInfo *getBattleInfo(int battleId);
 
     void storeFullParsedBattle(QBattleInfo *bi);
+    QString prepareBattleOrders();
 private:
     // user login
     bool _isLogined;

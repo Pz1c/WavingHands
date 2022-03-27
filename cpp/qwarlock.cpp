@@ -315,6 +315,11 @@ int QWarlock::getTurnToCastBySpellID(int spell_id, int def_value, int hand) cons
     return _turnToCast[spell_id]->turnToCast();
 }
 
+int QWarlock::forcedHand() const
+{
+    return _forcedHand;
+}
+
 int QWarlock::paralized() const
 {
     return _paralized;
@@ -1105,6 +1110,30 @@ QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, 
 
     return ""; // default target
 }
+
+QString QWarlock::printOrders(QMap<QString, QString> &name_to_id) const {
+    QString res = QString("LH$%1#").arg(_gestureL);
+    res.append(QString("RH$%1#").arg(_gestureR));
+    res.append(QString("LHS$%1#").arg(_spellL));
+    res.append(QString("RHS$%1#").arg(_spellR));
+    res.append(QString("LHT$%1#").arg(name_to_id[_targetL]));//to id
+    res.append(QString("RHT$%1#").arg(name_to_id[_targetR]));//to id
+
+    return res;
+}
+
+/*
+    post_request += "LH$"+actions.L.g+"#";
+    post_request += "RH$"+actions.R.g+"#";
+    console.log("prepareOrder", "point2", post_request);
+    post_request += "LHS$"+getSpellNameForOrder(actions.L)+"#";
+    post_request += "RHS$"+getSpellNameForOrder(actions.R)+"#";
+    console.log("prepareOrder", "point3", post_request);
+    post_request += "LHT$"+getSpellTargetForOrder(actions.L, battle.targetsMap)+"#";
+    post_request += "RHT$"+getSpellTargetForOrder(actions.R, battle.targetsMap)+"#";
+    console.log("prepareOrder", "point4", post_request);
+
+*/
 
 void QWarlock::targetSpell(const QWarlock *enemy, const QList<QMonster *> &monsters) {
     _targetL.clear();

@@ -56,6 +56,10 @@ public:
 
     int paralized() const;
 
+    QString printOrders(QMap<QString, QString> &name_to_id) const;
+
+    int forcedHand() const;
+
 protected:
     void analyzeMonster(QList<QMonster *> &monsters, QWarlock *enemy);
     void processMonster(QList<QMonster *> &monsters, QWarlock *enemy);

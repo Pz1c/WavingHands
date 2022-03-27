@@ -282,23 +282,38 @@ void QWarloksDuelCore::aiLogin() {
 
 void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl) {
     QList<QBattleInfo*> list = QWarlockUtils::parseChallengesList(Data);
-    qDebug() << "finishChallengeList" << StatusCode << NewUrl;// << _challengeList << list;
+    qDebug() << "finishChallengeList" << StatusCode << NewUrl << _isAI;// << _challengeList << list;
     QString list_str;
+    bool working = false;
+    int with_bot = 0;
     foreach(QBattleInfo*bi, list) {
         list_str.append(intToStr(bi->battleID())).append(";");
         if (_battleInfo.contains(bi->battleID())) {
             delete _battleInfo[bi->battleID()];
             _battleInfo.remove(bi->battleID());
         }
+        qDebug() << "finishChallengeList" << bi->toJSON(_login);
         _battleInfo.insert(bi->battleID(), bi);
+        if (_isAI) {
+            if (bi->for_bot()) {
+                working = aiAcceptChallenge(bi->battleID(), false) || working;
+            }
+            if (bi->with_bot()) {
+                with_bot++;
+            }
+        }
     }
 
-    if (_challengeList.compare(list_str) != 0) {
+    if (!_isAI && (_challengeList.compare(list_str) != 0)) {
         _challengeList = list_str;
         qDebug() << list;
         emit challengeListChanged();
-    } else if (_isAI) {
-        aiLogin();
+    } else if (_isAI && !working) {
+        if (with_bot < 2) {
+            aiCreateNewChallenge();
+        } else {
+            aiLogin();
+        }
     }
 }
 
@@ -346,6 +361,8 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
         if (!_inviteToBattle.isEmpty() && !created_id.isEmpty()) {
            sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
         }
+
+        scanState();
     }
     return true;
 }
@@ -359,11 +376,7 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
         emit errorOccurred();
         return false;
     }
-    if (Data.isEmpty()) {
-
-    }
     if (!NewUrl.isEmpty()) {
-        _isLogined = true;
         QString url = NewUrl.toString().toLower();
         qDebug() << "accept sucessfull redirect to " << url;
         if (url.indexOf("http://") == -1) {
@@ -371,6 +384,8 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
         }
         qDebug() << "final url " << url;
         sendGetRequest(url);
+    } else {
+        scanState();
     }
     return true;
 }
@@ -482,12 +497,15 @@ void QWarloksDuelCore::getTopList() {
     _lastPlayersScan = udt;
 }
 
-void QWarloksDuelCore::aiAcceptChallenge(int battle_id) {
+bool QWarloksDuelCore::aiAcceptChallenge(int battle_id, bool changeAI) {
     if (_waiting_in_battles.count() + _ready_in_battles.count() < 5) {
         acceptChallenge(battle_id, false);
-    } else {
+        return true;
+    } else if (changeAI) {
         aiLogin();
+        return true;
     }
+    return false;
 }
 
 void QWarloksDuelCore::leaveBattle(int battle_id) {
@@ -820,9 +838,62 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
         prepareBattleChatAndHistory(Data);
 
-        setTimeState(false);
-        emit readyBattleChanged();
+        if (_isAI) {
+            sendOrders(prepareBattleOrders());
+        } else {
+            setTimeState(false);
+            emit readyBattleChanged();
+        }
     }
+    return res;
+}
+
+/*
+    QString msg = "";
+    if (_isAI) {
+        QString msg_code = QString("BotSay_%1").arg(intToStr(_loadedBattleTurn));
+        msg = GameDictionary->getStringByCode(msg_code);
+        if (msg_code.compare(msg) == 0) {
+            // not found
+            msg.clear();
+        }
+    }
+    QString tmpBH = battle_info->getHistory();
+    QString tmpBC = battle_info->getChat();
+
+    return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
+                   "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\",\"battle_hist\":\"%21\",\"battle_chat\":\"%22\"}")
+            .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
+            .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
+            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
+            .arg(tmpBH, tmpBC); // 21-22
+*/
+QString QWarloksDuelCore::prepareBattleOrders() {
+    QString res = "say$";
+    QString msg = "";
+    QString msg_code = QString("BotSay_%1").arg(intToStr(_loadedBattleTurn));
+    msg = GameDictionary->getStringByCode(msg_code);
+    if (msg_code.compare(msg) == 0) {
+        // not found
+        msg.clear();
+    }
+    res.append(msg.replace("$", "sign:dollar").replace("#", "sign:pos_number"));
+    res.append("#");
+    res.append(_player->printOrders(_WarlockID));
+    foreach(QMonster *m, _Monsters) {
+        res.append(QString("%1$%2#").arg(_WarlockID[m->name()].replace(" ", "+"), _WarlockID[m->newTarget()].replace(" ", "+")));
+    }
+    foreach(QWarlock *w, _Warlock) {
+        if (_paralyzeList.indexOf(w->id() + ";") != -1) {
+            res.append(QString("PARALYZE%1$%2#").arg(w->id(), intToStr(w->forcedHand())));
+        }
+        if (_charmPersonList.indexOf(w->id() + ";") != -1) {
+            res.append(QString("DIRECTHAND%1$%2#").arg(w->id(), intToStr(w->forcedHand())));
+            res.append(QString("DIRECTGESTURE%1$-#").arg(w->id()));
+        }
+    }
+
     return res;
 }
 
@@ -913,7 +984,8 @@ bool QWarloksDuelCore::parseTargetList(QString &Data) {
     }
     //foreach(QValueName vn, _Targets) {
     for(int i = 0, Ln = _Targets.size(); i < Ln; ++i) {
-        _WarlockID[_Targets.at(i).second] = _Targets.at(i).first;
+        _WarlockID[_Targets.at(i).second] = _Targets.at(i).first; // name to id
+        //_WarlockID[_Targets.at(i).second] = _Targets.at(i).first; // id to name
     }
     qDebug() << "QWarloksDuelCore::parseTargetList" << _Targets << _WarlockID;
     return true;
@@ -1209,17 +1281,6 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     }
     parseMessages(Data);
 
-    if (_isAsService) {
-        if (_ready_in_battles.count() > 0) {
-            showNotification("Your turn, open the game list");
-        }
-        if (!challendge.isEmpty()) {
-            showNotification("You got an invite, see invitation");
-        }
-
-        return;
-    }
-
     if (!_allowedAccept && ((_finished_battles.count() > 0) || (_played > 0))) {
         _allowedAccept = true;
         _allowedAdd = true;
@@ -1253,9 +1314,6 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         foreach(int bid, _ready_in_battles) {
             battle_info = getBattleInfo(bid);
             battle_info->setStatus(BATTLE_INFO_STATUS_READY);
-            //battle_info->setWaitFrom(-1);
-            //_battleWait.remove(bid);
-            //_battleState[bid] = 1;
             if (!changed && (old_read.indexOf(bid) == -1)) {
                 changed = true;
                 //break;
@@ -1271,10 +1329,10 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         }
     }
     //if (!changed) {
-        int curre_time_spec = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+        //int curre_time_spec = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
         foreach(int bid, _waiting_in_battles) {
             battle_info = getBattleInfo(bid);
-            if (battle_info->status() == BATTLE_INFO_STATUS_READY) {
+            if (battle_info->status() != BATTLE_INFO_STATUS_NO_START) {
                 battle_info->setStatus(BATTLE_INFO_STATUS_WAIT);
             }
             if (!changed && (old_wait.indexOf(bid) == -1)) {
