@@ -81,6 +81,7 @@ public class CheckStatus extends Service {
                     String[] arr_challenge = arr_challenge_str.split(",");
                     String finished_new = parseBattlesFromData(data, "Finished battles:");
                     editor.putString("finished_games", finished_new);
+                    editor.commit();
                     String[] arr_finished = finished_new.split(",");
                     String[] arr_finished_clean;
                     Log.d(TAG, "r=" + arr_ready_str + ", c=" + arr_challenge_str + ", fn=" + finished_new + ", fo=" + arr_finished_old_str);

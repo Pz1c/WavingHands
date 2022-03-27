@@ -981,7 +981,7 @@ ApplicationWindow {
 
     function chooseMonsterTarget(title) {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false, title);
-        WNDU.processEscape();
+        //WNDU.processEscape();
     }
 
     function setSpellTarget(TargetName, Permanent, Delay, OperationType) {
