@@ -410,7 +410,7 @@ QBattleInfo * QWarlockUtils::parseChallenge(QString &Data) {
         res->setParafdf(parafdf);
         res->setDescription(description);
         res->setForBot(for_bot);
-        res->setWithBot(with_bot);
+        //res->setWithBot(with_bot);
         foreach(QString l, logins) {
             res->addParticipant(l);
         }

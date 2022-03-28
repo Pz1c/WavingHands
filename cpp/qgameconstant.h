@@ -7,6 +7,7 @@
 #define SALT "(casdDasfa4242323f$CKASDf*0#2222@*$Y&_(a)-FAASS23"
 #define ORGANIZATION_NAME "Steel Programming"
 #define APPLICATION_NAME "WarloksDuel"
+#define APPLICATION_NAME_SERVICE "WarloksDuelService"
 #define APPLICATION_TITLE "Warloks Duel"
 #define APPLICATION_VERSION_PRINT "0.1"
 #define APPLICATION_VERSION       "1"

@@ -143,7 +143,7 @@ public class CheckStatus extends Service {
                     editor.commit();
                 }
                 catch (IOException ex){
-                    Toast.makeText(getApplicationContext(), "Error: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

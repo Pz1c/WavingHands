@@ -204,7 +204,7 @@ function startGameWithBotEx() {
     console.log("startGameWithBot", JSON.stringify(G_CHALLENGE_LIST));
     for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
         if (G_CHALLENGE_LIST[i].active && G_CHALLENGE_LIST[i].with_bot) {
-            core.acceptChallenge(G_CHALLENGE_LIST[i].battle_id, false);
+            core.acceptChallenge(G_CHALLENGE_LIST[i].id, false);
             return;
         }
     }

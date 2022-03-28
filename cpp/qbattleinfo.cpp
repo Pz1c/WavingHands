@@ -108,6 +108,7 @@ void QBattleInfo::setHint(int newHint)
 
 void QBattleInfo::cleanParticipant() {
     _participant.clear();
+    _with_bot = false;
 }
 
 void QBattleInfo::addParticipant(const QString &login) {
@@ -120,6 +121,7 @@ void QBattleInfo::addParticipant(const QString &login) {
     if (_participant.indexOf(clean_login, Qt::CaseInsensitive) == -1) {
         _participant.append(clean_login);
     }
+    _with_bot = _with_bot || (_lstAI.indexOf(clean_login.toUpper()) != -1);
 }
 
 QString QBattleInfo::containParticipant(const QString& line) {
@@ -156,16 +158,12 @@ const QString &QBattleInfo::description() const
 void QBattleInfo::setDescription(const QString &newDescription)
 {
     _description = newDescription;
+    _for_bot = newDescription.indexOf("TRANING BOT ONLY") != -1;
 }
 
 bool QBattleInfo::with_bot() const
 {
     return _with_bot;
-}
-
-void QBattleInfo::setWithBot(bool newWith_bot)
-{
-    _with_bot = newWith_bot;
 }
 
 bool QBattleInfo::for_bot() const
@@ -322,15 +320,6 @@ bool QBattleInfo::active(const QString &login) const {
 
 bool QBattleInfo::isWinner(const QString &Login) const {
     return _winner.compare(Login, Qt::CaseInsensitive);
-}
-
-bool QBattleInfo::withBot() const {
-    foreach(QString bot, _lstAI) {
-        if (_participant.indexOf(bot, Qt::CaseInsensitive) == 0) {
-            return true;
-        }
-    }
-    return false;
 }
 
 void QBattleInfo::addChat(int battle_turn, const QString &chat_msg) {

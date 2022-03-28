@@ -17,6 +17,7 @@
 #include <QGuiApplication>
 #include <QJniObject>
 #include <QTimer>
+#include <QThread>
 
 #include <qcore.h>
 //#include "qwarlockutils.h"
@@ -113,6 +114,8 @@ signals:
     void warlockInfoChanged();
     void accountMenuChanged();
     void battleListChanged();
+    void needAIAnswer(QString Login);
+    void readyAIAnswer();
 
 public slots:
 
@@ -160,6 +163,8 @@ protected slots:
     void loginToSite();
     void timerFired();
     void processServiceTimer();
+    void doAIAnswer(QString Login);
+    void checkAIAnswer();
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -309,6 +314,10 @@ private:
     int _timerInterval;
     QTimer _timer;
     QTimer _serviceTimer;
+
+    // AI service
+    QWarloksDuelCore *_aiCore;
+    QThread _aiThread;
 
 };
 

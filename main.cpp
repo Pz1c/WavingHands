@@ -1,7 +1,9 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QtNetwork/QSslConfiguration>
-#include <QtNetwork/QSslSocket>
+//#include <QtNetwork/QSslConfiguration>
+//#include <QtNetwork/QSslSocket>
+#include <QSslConfiguration>
+#include <QSslSocket>
 #include <QtGlobal>
 #include <QtQml>
 #include <QDebug>

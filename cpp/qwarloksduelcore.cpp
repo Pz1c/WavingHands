@@ -11,18 +11,22 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     QString ini_path = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     qDebug() << "QWarloksDuelCore::QWarloksDuelCore" << ini_path;
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, ini_path);
-    setOrganization(ORGANIZATION_NAME, APPLICATION_NAME);
+    setOrganization(ORGANIZATION_NAME, _isAsService ? APPLICATION_NAME_SERVICE : APPLICATION_NAME);
     init();
+    if (_isAsService) {
+        _login = "";
+        _password = "xsw2#EDC";
+    }
     GameDictionary->setCurrentLang("en");
     SpellChecker = QWarlockSpellChecker::getInstance();
     _timerCount = 0;
     _timerInterval = 0;
-    connect(&_timer, SIGNAL(timeout()), this, SLOT(timerFired()));
-    connect(&_serviceTimer, SIGNAL(timeout()), this, SLOT(processServiceTimer()));
-    _serviceTimer.setInterval(10000);
-    _serviceTimer.start();
-
-    //_lstAI << "CONSTRUCT" << "EARTHGOLEM" << "IRONGOLEM";
+    if (!_isAsService) {
+        connect(&_timer, SIGNAL(timeout()), this, SLOT(timerFired()));
+        connect(&_serviceTimer, SIGNAL(timeout()), this, SLOT(processServiceTimer()));
+        _serviceTimer.setInterval(10000);
+        _serviceTimer.start();
+    }
     _isLogined = false;
     _isAI = false;
     _botIdx = 0;
@@ -48,6 +52,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
     prepareSpellHtmlList();
+
+    // AI service
+    _aiCore = nullptr;
 }
 
 QWarloksDuelCore::~QWarloksDuelCore() {
@@ -60,6 +67,11 @@ QWarloksDuelCore::~QWarloksDuelCore() {
     }
     if (_newBattle) {
         delete _newBattle;
+    }
+
+    if (!_isAsService) {
+        _aiThread.quit();
+        _aiThread.wait();
     }
 }
 
@@ -264,18 +276,25 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
 }
 
 void QWarloksDuelCore::aiLogin() {
-    qDebug() << "QWarloksDuelCore::aiLogin" << _isAI << _ready_in_battles.count() << _lstAI.count() << _botIdx;
+    qDebug() << "QWarloksDuelCore::aiLogin" << _isAI << _ready_in_battles.count() << _lstAI.count() << _botIdx << _isAsService;
 
-    if (!_isAI) {
+    if (!_isAI && !_isAsService) {
         return;
     }
 
     if (_ready_in_battles.count() == 0) {
         _isLogined = false;
+        if (_botIdx < 0) {
+            _botIdx = _lstAI.count();
+        }
         if (++_botIdx >= _lstAI.count()) {
             _botIdx = 0;
         }
         _login = _lstAI.at(_botIdx);
+        if (_isAsService) {
+            // no timer
+            scanState(true);
+        }
         //_challengeList.clear();
     }
 }
@@ -299,7 +318,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
                 working = aiAcceptChallenge(bi->battleID(), false) || working;
             }
             if (bi->with_bot()) {
-                with_bot++;
+                ++with_bot;
             }
         }
     }
@@ -311,7 +330,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
     } else if (_isAI && !working) {
         if (with_bot < 2) {
             aiCreateNewChallenge();
-        } else {
+        } else if (!_isAsService) {
             aiLogin();
         }
     }
@@ -339,9 +358,13 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
 bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl) {
     qDebug() << "finishCreateChallenge " << StatusCode << NewUrl << Data << _inviteToBattle;
     if (NewUrl.isEmpty()) {
-        _errorMsg = "{\"type\":10}";
-        emit errorOccurred();
-        return false;
+        if (_isAsService) {
+            aiLogin();
+        } else {
+            _errorMsg = "{\"type\":10}";
+            emit errorOccurred();
+            return false;
+        }
     }
 
     QString url = NewUrl.toString();
@@ -360,6 +383,9 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
 
         if (!_inviteToBattle.isEmpty() && !created_id.isEmpty()) {
            sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
+        } else if (!_isAsService && battle_info->for_bot()) {
+            qDebug() << "emit needAIAnswer";
+            emit needAIAnswer("");
         }
 
         scanState();
@@ -384,6 +410,14 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
         }
         qDebug() << "final url " << url;
         sendGetRequest(url);
+        if (!_isAsService && (_loadedBattleID > 0)) {
+            QBattleInfo *bi = getBattleInfo(_loadedBattleID);
+            qDebug() << "QWarloksDuelCore::finishOrderSubmit" << bi->getEnemy(_login) << bi->toJSON(_login);
+            if (bi->for_bot() || bi->with_bot()) {
+                qDebug() << "emit needAIAnswer" << bi->getEnemy(_login);
+                emit needAIAnswer(bi->getEnemy(_login));
+            }
+        }
     } else {
         scanState();
     }
@@ -403,11 +437,20 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     }
 
     QString url = NewUrl.toString().toLower();
-    qDebug() << "finishOrderSubmit sucessfull redirect to " << url;
+    qDebug() << "finishOrderSubmit sucessfull redirect to" << url;
     if (url.indexOf("http://") == -1) {
         url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
     }
-    qDebug() << "final url " << url;
+    qDebug() << "final url" << url << _loadedBattleID;
+    if (!_isAsService && (_loadedBattleID > 0)) {
+        QBattleInfo *bi = getBattleInfo(_loadedBattleID);
+        qDebug() << "QWarloksDuelCore::finishOrderSubmit" << bi->getEnemy(_login) << bi->toJSON(_login);
+        if (!_isAsService && (bi->for_bot() || bi->with_bot())) {
+            qDebug() << "emit needAIAnswer" << bi->getEnemy(_login);
+            emit needAIAnswer(bi->getEnemy(_login));
+        }
+    }
+
     sendGetRequest(url);
     setIsLoading(true);
 
@@ -719,7 +762,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         //QString d = _battleDesc[_loadedBattleID].toUpper();
         qDebug() << "finishGetFinishedBattle" << "check rate us" << _finished_battles.count();
         if (!_rateus && battleInfo->isWinner(_login)) {
-            bool vsbot = battleInfo->withBot();
+            bool vsbot = battleInfo->with_bot();
             if (!vsbot || (_finished_battles.count() >= 7)) {
                 _rateus = true;
                 _errorMsg = "{\"type\":14,\"id\":-1,\"action\":\"rate_us\"}";
@@ -936,9 +979,11 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
 }
 
 void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
+    if (_isAsService) qDebug() << "QWarloksDuelCore::setPossibleSpell";
     _player = nullptr;
     _enemy = nullptr;
     foreach(QWarlock *w, _Warlock) {
+        if (_isAsService) qDebug() << "QWarloksDuelCore::setPossibleSpell" << w->name() << w->player() << _player << _enemy;
         if (w->player()) {
             _player = w;
         } else if (!_enemy) {
@@ -958,7 +1003,7 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         }
         w->setPossibleSpells(SpellChecker->getSpellsList(w));
     }
-
+    if (_isAsService) qDebug() << "QWarloksDuelCore::setPossibleSpell" << _player << _enemy;
     //_enemy->setPossibleSpells(SpellChecker->getSpellsList(_enemy, false), _player, _Monsters);
     //_player->setPossibleSpells(SpellChecker->getSpellsList(_player, false));
 }
@@ -1330,6 +1375,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     }
     //if (!changed) {
         //int curre_time_spec = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+        bool ask_ai = false;
         foreach(int bid, _waiting_in_battles) {
             battle_info = getBattleInfo(bid);
             if (battle_info->status() != BATTLE_INFO_STATUS_NO_START) {
@@ -1338,6 +1384,12 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             if (!changed && (old_wait.indexOf(bid) == -1)) {
                 changed = true;
                 //break;
+            }
+            qDebug() << "finishScan waiting" << battle_info->toJSON(_login);
+            if (!_isAsService && !ask_ai && (battle_info->for_bot() || battle_info->with_bot())) {
+                ask_ai = true;
+                qDebug() << "emit needAIAnswer"  << battle_info->getEnemy(_login);
+                emit needAIAnswer(battle_info->getEnemy(_login));
             }
 
             if (_isAI && (_ready_in_battles.size() == 0) && battle_info->canForceSurrendering()) {
@@ -1629,6 +1681,7 @@ void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {
 QString QWarloksDuelCore::getSpellList(QString left, QString right, bool Enemy) {
     return SpellChecker->checkSpells(left, right, Enemy);
 }
+
 QString QWarloksDuelCore::getSpellBook() {
     bool separate_spellbook = !_isAI && _reg_in_app && (_exp_lv < 1);
     if (separate_spellbook) {
@@ -2221,13 +2274,23 @@ void QWarloksDuelCore::setTimerInterval(int count, int msec) {
 }
 
 void QWarloksDuelCore::timerFired() {
-    qDebug() << "QWarloksDuelCore::timerFired" << _timerCount;
+    qDebug() << "QWarloksDuelCore::timerFired" << _timerCount << _isAsService;
     if ((_timerCount > 0) && (--_timerCount <= 0)) {
         _timer.setInterval((_isAI && !_isAsService) ? 30000 : 60000);
     }
     scanState(true);
     saveParameters(false, false, true, false, false);
     //settings->sync();
+
+    if (!_aiCore && !_isAsService) {
+        qDebug() << "QWarloksDuelCore::timerFired" << "set AI SERVICE";
+        _aiCore = new QWarloksDuelCore(nullptr, true);
+        _aiCore->moveToThread(&_aiThread);
+        connect(&_aiThread, &QThread::finished, _aiCore, &QObject::deleteLater);
+        connect(this, &QWarloksDuelCore::needAIAnswer, _aiCore, &QWarloksDuelCore::doAIAnswer);
+        connect(_aiCore, &QWarloksDuelCore::readyAIAnswer, this, &QWarloksDuelCore::checkAIAnswer);
+        _aiThread.start();
+    }
 }
 
 void QWarloksDuelCore::processServiceTimer() {
@@ -2253,4 +2316,17 @@ void QWarloksDuelCore::setCheckUrl(const QString &check_url) {
         QNativeInterface::QAndroidApplication::context(),
         javaNotification.object<jstring>());
     #endif
+}
+
+void QWarloksDuelCore::doAIAnswer(QString Login) {
+    qDebug() << "QWarloksDuelCore::doAIAnswer" << Login << _isAsService;
+    if (!Login.isEmpty()) {
+        _botIdx = _lstAI.indexOf(Login.toUpper()) - 1;
+    }
+    aiLogin();
+}
+
+void QWarloksDuelCore::checkAIAnswer() {
+    qDebug() << "QWarloksDuelCore::checkAIAnswer" << _isAsService;
+    scanState(true);
 }

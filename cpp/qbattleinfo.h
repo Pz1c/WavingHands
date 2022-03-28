@@ -15,7 +15,6 @@ public:
     QString toString() const;
     QString getInListDescription(const QString &Login) const;
     bool isWinner(const QString &Login) const;
-    bool withBot() const;
     bool canForceSurrendering() const;
 
     int hint() const;
@@ -69,7 +68,6 @@ public:
     void setForBot(bool newFor_bot);
 
     bool with_bot() const;
-    void setWithBot(bool newWith_bot);
 
     const QString &description() const;
     void setDescription(const QString &newDescription);
@@ -80,11 +78,11 @@ public:
 
     bool fullParsed() const;
 
+    QString getEnemy(const QString &Login) const;
 protected:
     QString prepareToPrint(QString str) const;
     void parseString(const QString &battle_info);
     void init();
-    QString getEnemy(const QString &Login) const;
 
 private:
     int _battleID;
