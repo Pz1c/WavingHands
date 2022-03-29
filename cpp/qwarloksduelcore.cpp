@@ -1440,17 +1440,25 @@ void QWarloksDuelCore::processRefferer() {
     if (_isAsService) {
         return;
     }
-    QString reff;
+    QString full_reff;
     #ifdef Q_OS_ANDROID
     QJniObject val = QJniObject::fromString("Try to get reffereerrre");
     QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "get_refferer",
                                                            "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
                                                            QNativeInterface::QAndroidApplication::context(), val.object<jstring>());
-    reff = string.toString();
+    full_reff = string.toString();
     #endif
-    qDebug() << "CheckReffereef" << reff;
-    if (reff.isEmpty()) {
+    qDebug() << "CheckReffereef" << full_reff;
+    if (full_reff.isEmpty()) {
         return;
+    }
+    QString reff;
+    int idx1 = full_reff.indexOf("referrer=");
+    if (idx1 != -1) {
+        idx1 += 9;
+        reff = full_reff.mid(idx1);
+    } else {
+        reff = full_reff;
     }
     QStringList sl = reff.split(",");
     if (sl.size() != 3) {
