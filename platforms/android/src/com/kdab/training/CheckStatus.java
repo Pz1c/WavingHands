@@ -142,9 +142,7 @@ public class CheckStatus extends Service {
                     }
                     editor.commit();
                 }
-                catch (IOException ex){
-                    e.printStackTrace();
-                } catch (Exception e) {
+                 catch (Exception e) {
                     e.printStackTrace();
                 }
             }

@@ -34,7 +34,7 @@ function prepareDataType12(l_data, dict) {
         } else {
             ltError.text = "Warlocks accepted: ";
             var arr_p = l_data.battle_data.participant.split(",");
-            var first = true;
+            var first = true, not_empty = false;
             for(var i = 0, Ln = arr_p.length; i < Ln; ++i) {
                 if (arr_p[i].toLowerCase() === l_data.battle_data.player.toLowerCase()) {
                     continue;
@@ -45,9 +45,10 @@ function prepareDataType12(l_data, dict) {
                     ltError.text += ', ';
                 }
                 ltError.text += arr_p[i];
+                not_empty = true;
             }
             if (!l_data.battle_data.active) {
-                ltError.text += " and you";
+                ltError.text += not_empty ? " and you" : " only you";
             }
             ltError.text += "<br>";
 

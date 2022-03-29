@@ -387,9 +387,8 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
             qDebug() << "emit needAIAnswer";
             emit needAIAnswer("");
         }
-
-        scanState();
     }
+    scanState(true);
     return true;
 }
 
@@ -412,7 +411,7 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
         sendGetRequest(url);
         if (!_isAsService && (_loadedBattleID > 0)) {
             QBattleInfo *bi = getBattleInfo(_loadedBattleID);
-            qDebug() << "QWarloksDuelCore::finishOrderSubmit" << bi->getEnemy(_login) << bi->toJSON(_login);
+            qDebug() << "QWarloksDuelCore::finishAccept" << bi->getEnemy(_login) << bi->toJSON(_login);
             if (bi->for_bot() || bi->with_bot()) {
                 qDebug() << "emit needAIAnswer" << bi->getEnemy(_login);
                 emit needAIAnswer(bi->getEnemy(_login));
@@ -442,12 +441,15 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
         url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
     }
     qDebug() << "final url" << url << _loadedBattleID;
-    if (!_isAsService && (_loadedBattleID > 0)) {
+    if (_loadedBattleID > 0) {
         QBattleInfo *bi = getBattleInfo(_loadedBattleID);
         qDebug() << "QWarloksDuelCore::finishOrderSubmit" << bi->getEnemy(_login) << bi->toJSON(_login);
         if (!_isAsService && (bi->for_bot() || bi->with_bot())) {
             qDebug() << "emit needAIAnswer" << bi->getEnemy(_login);
             emit needAIAnswer(bi->getEnemy(_login));
+        } else if (_isAsService) {
+            qDebug() << "emit readyAIAnswer";
+            emit readyAIAnswer();
         }
     }
 
