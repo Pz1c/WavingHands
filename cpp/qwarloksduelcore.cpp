@@ -270,6 +270,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         sendGetRequest(url);
         processRefferer();
         saveParameters(true, true, true, true, true);
+        setTimeState(true);
         return false;
     }
     return true;
@@ -1256,7 +1257,7 @@ void QWarloksDuelCore::generateBattleList() {
         }
         battle_info = getBattleInfo(bid);
         battle_info->setStatus(BATTLE_INFO_STATUS_READY);
-        _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\"}").arg(intToStr(bid), battle_info->getInListDescription(_login)));
+        _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
     }
     QString wait_str = "";
     for(i = _waiting_in_battles.size()- 1; i >= 0; --i) {
@@ -1389,9 +1390,12 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             }
             qDebug() << "finishScan waiting" << battle_info->toJSON(_login);
             if (!_isAsService && !ask_ai && (battle_info->for_bot() || battle_info->with_bot())) {
-                ask_ai = true;
-                qDebug() << "emit needAIAnswer"  << battle_info->getEnemy(_login);
-                emit needAIAnswer(battle_info->getEnemy(_login));
+                QString enemy = battle_info->getEnemy(_login);
+                if (_lstAI.indexOf(enemy.toUpper()) != -1) {
+                    ask_ai = true;
+                    qDebug() << "emit needAIAnswer"  << enemy;
+                    emit needAIAnswer(battle_info->getEnemy(_login));
+                }
             }
 
             if (_isAI && (_ready_in_battles.size() == 0) && battle_info->canForceSurrendering()) {
@@ -2188,12 +2192,12 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
     if (found) {
         stmp = _playerStats[clean_login].toString();
     } else {
-        stmp = QString("0,%1,0,0,0,0,0,1500,0").arg(DirtyLogin ? clean_login : WarlockName);
+        stmp = QString("0,%1,0,0,0,0,0,1500,0,#000000,0").arg(DirtyLogin ? clean_login : WarlockName);
     }
     // boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), intToStr(_active)
     QStringList sltmp = stmp.split(",");
-    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7}").
-            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found));
+    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7,\"online\":%8}").
+            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), boolToStr(sltmp.at(10).toInt() == 1));
 }
 
 void QWarloksDuelCore::showNotification(const QString &msg) {
@@ -2275,15 +2279,7 @@ void QWarloksDuelCore::setTimerInterval(int count, int msec) {
     }
 }
 
-void QWarloksDuelCore::timerFired() {
-    qDebug() << "QWarloksDuelCore::timerFired" << _timerCount << _isAsService;
-    if ((_timerCount > 0) && (--_timerCount <= 0)) {
-        _timer.setInterval((_isAI && !_isAsService) ? 30000 : 60000);
-    }
-    scanState(true);
-    saveParameters(false, false, true, false, false);
-    //settings->sync();
-
+void QWarloksDuelCore::setupAIServer() {
     if (!_aiCore && !_isAsService) {
         qDebug() << "QWarloksDuelCore::timerFired" << "set AI SERVICE";
         _aiCore = new QWarloksDuelCore(nullptr, true);
@@ -2293,6 +2289,16 @@ void QWarloksDuelCore::timerFired() {
         connect(_aiCore, &QWarloksDuelCore::readyAIAnswer, this, &QWarloksDuelCore::checkAIAnswer);
         _aiThread.start();
     }
+}
+
+void QWarloksDuelCore::timerFired() {
+    qDebug() << "QWarloksDuelCore::timerFired" << _timerCount << _isAsService << _login;
+    if ((_timerCount > 0) && (--_timerCount <= 0)) {
+        _timer.setInterval((_isAI && !_isAsService) ? 30000 : 60000);
+    }
+    //if (_login.isEmpty())
+    scanState(true);
+    saveParameters(false, false, true, false, false);
 }
 
 void QWarloksDuelCore::processServiceTimer() {

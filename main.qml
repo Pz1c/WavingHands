@@ -101,6 +101,7 @@ ApplicationWindow {
 
         Component.onCompleted: {
             console.log("Core.completed");
+            core.setupAIServer();
             if (core.login === '') {
                 tbTop.visible = false;
                 rBody.visible = false;
@@ -564,19 +565,35 @@ ApplicationWindow {
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 12 * ratioObject
 
-                                LargeText {
+                                Text {
                                     id: rdbiText2
                                     anchors.verticalCenter: rdBattleItem.verticalCenter
-                                    height: 48 * ratioObject
+                                    //height: 48 * ratioObject
                                     font.pixelSize: 28 * ratioFont
                                     anchors.left: rdBattleItem.left
                                     anchors.leftMargin: 36 * ratioObject
-                                    anchors.right: rdbifIcon.left
-                                    anchors.rightMargin: 5 * ratioObject
+                                    //anchors.right: rdbifIcon.left
+                                    //anchors.rightMargin: 5 * ratioObject
                                     color: "#FEE2D6"
                                     horizontalAlignment: Text.AlignLeft
 
                                     text: lvActiveBattle.model[index].d
+                                }
+                                Text {
+                                    id: rdbiText3
+                                    anchors.baseline: rdbiText2.baseline// rdBattleItem.verticalCenter
+                                    //height: 48 * ratioObject
+                                    font.pixelSize: 21 * ratioFont
+                                    anchors.left: rdbiText2.right
+                                    anchors.leftMargin: 5 * ratioObject
+                                    anchors.right: rdbifIcon.left
+                                    anchors.rightMargin: 5 * ratioObject
+                                    color: "#2DA0A5"
+                                    font.italic: true
+                                    horizontalAlignment: Text.AlignLeft
+                                    visible: lvActiveBattle.model[index].online
+
+                                    text: "ONLINE"
                                 }
 
                                 Rectangle {

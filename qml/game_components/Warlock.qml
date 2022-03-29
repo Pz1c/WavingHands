@@ -289,7 +289,7 @@ Item {
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
             if (IsSpell && l_warlock.player && ((item.l_data.action === "permanency") || (item.l_data.action === "delay"))) {
-                item.animate(Enable ? 0 : -1);
+                item.animate(Enable ? 1 : -1);
             } else {
                 item.opacity = opacity;
                 //item.active = !Enable;

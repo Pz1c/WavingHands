@@ -104,8 +104,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("SendOrders", "", "", "Submit");
     fillDictionary("TitleAction_charmed", "", "", "Choose gesture for Charmed warlock");
     fillDictionary("TitleAction_paralized", "", "", "Choose paralyzed hand");
-    fillDictionary("TitleAction_D", "", "", "Try to bank the spell casted by ");
-    fillDictionary("TitleAction_P", "", "", "Try do permanent spell casted by ");
+    fillDictionary("TitleAction_D", "", "", "Try to bank the spell cast by ");
+    fillDictionary("TitleAction_P", "", "", "Try do permanent spell cast by ");
     fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
     fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
     fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P) - raising a white flag");

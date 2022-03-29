@@ -159,6 +159,7 @@ public slots:
     QString playerJson();
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
+    void setupAIServer();
 protected slots:
     void loginToSite();
     void timerFired();

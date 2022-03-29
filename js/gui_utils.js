@@ -44,10 +44,26 @@ function newUserRegistered() {
     logEvent("registration_finished", {login: l_login});
 }
 
+function fixActivBattleDesc(arr) {
+    for (var i = 0, Ln = arr.length; i < Ln; ++i) {
+        var item = arr[i];
+        if (!item || !item.el || (item.el.length < 2)) {
+            arr[i].online = false;
+            continue;
+        }
+        var str = core.getWarlockStats(item.el);
+        //console.log("fixActivBattleDesc", item.el, str);
+        var wd = JSON.parse(str);
+        arr[i].online = wd.online;
+
+    }
+}
+
 function newBattleList() {
     var bl = core.battleList;
     console.log("newBattleList", bl);
     G_BATTLE_LIST = JSON.parse(bl);
+    fixActivBattleDesc(G_BATTLE_LIST[0]);
     lvActiveBattle.model = G_BATTLE_LIST[0];
     lvFinishedBattle.model = G_BATTLE_LIST[1];
     ltFinishedBattle.visible = G_BATTLE_LIST[1].length > 0;

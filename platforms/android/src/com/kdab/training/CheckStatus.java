@@ -73,7 +73,13 @@ public class CheckStatus extends Service {
                     int app_last_activity = sharedPreferences.getInt("app_last_activity", 0);
                     int last_notification = Math.round(System.currentTimeMillis()/1000L);
 
-                    String data = getContent(check_url);
+                    String data;
+                    try {
+                        data = getContent(check_url);
+                    } catch (IOException ex){
+                        ex.printStackTrace();
+                        return;
+                    }
                     Log.d(TAG, "getContent: " + check_url + " datalength " + data.length());
                     String arr_ready_str = parseBattlesFromData(data, "Ready in battles:");
                     String[] arr_ready = arr_ready_str.split(",");

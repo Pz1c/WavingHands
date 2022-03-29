@@ -7,7 +7,7 @@ class QWarlockStat
 {
 public:
     QWarlockStat();
-    QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, int Active);
+    QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color);
     QWarlockStat(QString Raw, bool FromIni = false);
 
     QString toString() const;
@@ -30,11 +30,13 @@ public:
 
     int active() const;
 
+    bool online() const;
+
     void parseAndInit(QString Raw);
     void parseIniAndInit(QString Raw);
 
 protected:
-    void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, int Active);
+    void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color);
 
 private:
     QString _name;
@@ -46,6 +48,8 @@ private:
     int _died;
     int _elo;
     int _active;
+    int _online;
+    QString _color;
 };
 
 #endif // QWARLOCKSTAT_H

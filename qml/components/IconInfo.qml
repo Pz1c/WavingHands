@@ -27,13 +27,15 @@ Rectangle {
     property alias iconAnchors: iIcon.anchors
     //property alias paddingLeft: anchors.leftMargin
     //property alias paddingRignt: anchors.rightMargin
+    property string bg_color: "#551470"
+    property string bg_color_checked: "#A8F4F4"
 
     property var l_data: ({})
 
     signal clicked(var data)
     signal doubleClicked(var data)
 
-    color: "#551470"
+    color: bg_color
     radius: 10
     border.color: "snow"
     border.width: 0
@@ -61,14 +63,19 @@ Rectangle {
         running: false
 
         ColorAnimation {
-            from: button.color
+            from: button.color;
             to: "snow"
             duration: 200
         }
         ColorAnimation {
             from: "snow"
-            to: button.color
+            to: button.color;
             duration: 200
+        }
+        onRunningChanged: {
+            if (!saClick.running && checkbox) {
+                button.color = checked ? bg_color_checked : bg_color;
+            }
         }
     }
 
@@ -87,6 +94,7 @@ Rectangle {
                 if (checkbox) {
                     checked = !checked;
                     button.border.width = checked ? 3 : 0;
+                    button.color = checked ? bg_color_checked : bg_color;
                     l_data.checked = checked;
                 }
 
