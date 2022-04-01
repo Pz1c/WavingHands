@@ -190,6 +190,7 @@ InfoWindow {
             tMsgShow.text = "";
         }
         mainWindow.storeBattleChatMsg(txt);
+        tiTextEdit.text = "";
     }
 
     function initErrFields() {
@@ -197,7 +198,6 @@ InfoWindow {
         ltError.text = replaceAll(mainWindow.gERROR.text, "&quot;", '"');
         title_text = mainWindow.gERROR.title;
         setNewMsgText(mainWindow.gERROR.msg);
-        tiTextEdit.text = "";
 
         mainWindow.gERROR = {};
     }

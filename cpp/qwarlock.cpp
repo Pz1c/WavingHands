@@ -345,6 +345,8 @@ void QWarlock::setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monste
     qDebug() << "QWarlock::setSpellPriority start";
     int _coldproof_in = 999, _fireproof_in = 999;
     int paralysis_left = 3, paralysis_right = 3;
+    bool fff_now_left = (_leftGestures.replace(" ", "").right(3).compare("FFF") == 0);
+    bool fff_now_right = (_rightGestures.replace(" ", "").right(3).compare("FFF") == 0);
     bool clap_off_lighting_used = (_leftGestures.replace(" ", "").indexOf("WDDC") != -1) || (_rightGestures.replace(" ", "").indexOf("WDDC") != -1);
     qDebug() << "QWarlock::setSpellPriority" << "clap_off_lighting_used" << clap_off_lighting_used;
 
@@ -407,7 +409,9 @@ void QWarlock::setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monste
         case SPELL_PARALYSIS:
         case SPELL_PARALYSIS_FDF:
         case SPELL_PARALYSIS_FDFD:
-            if (((spell->hand() == WARLOCK_HAND_LEFT) && (paralysis_right < spell->turnToCast())) || ((spell->hand() == WARLOCK_HAND_RIGHT) && (paralysis_left < spell->turnToCast()))) {
+            if (((spell->hand() == WARLOCK_HAND_LEFT) && fff_now_left) || ((spell->hand() == WARLOCK_HAND_RIGHT) && fff_now_right)) {
+                spell->setPriority(-100);
+            } else if (((spell->hand() == WARLOCK_HAND_LEFT) && (paralysis_right < spell->turnToCast())) || ((spell->hand() == WARLOCK_HAND_RIGHT) && (paralysis_left < spell->turnToCast()))) {
                 spell->setPriority(-100);
             }
             break;

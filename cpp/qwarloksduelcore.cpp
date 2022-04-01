@@ -675,8 +675,9 @@ QBattleInfo *QWarloksDuelCore::getBattleInfo(int battleId) {
 }
 
 int QWarloksDuelCore::parseBattleDescription(QString &Data) {
+    int idx_wait = Data.indexOf("Your orders are in for this turn.");
     int idx_action = Data.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\" OnSubmit=");
-    qDebug() << "parseBattleDescription" << _loadedBattleID << _loadedBattleType << idx_action;
+    qDebug() << "parseBattleDescription" << _loadedBattleID << _loadedBattleType << idx_action << idx_wait;
     if ((_loadedBattleType == 2) && (Data.indexOf(QString("Battle %1 does not exist.").arg(intToStr(_loadedBattleID))) != -1)) {
         return -2;
     }
@@ -684,8 +685,12 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
 
     if ((_loadedBattleType == 0) && (idx_action != -1)) {
         _loadedBattleType = 1;
-    } else if ((_loadedBattleType == 1) && (idx_action == -1)) {
-        _loadedBattleType = 2;
+    } else if (_loadedBattleType == 1) {
+        if (idx_wait != -1) {
+            _loadedBattleType = 0;
+        } else if (idx_action == -1) {
+            _loadedBattleType = 2;
+        }
     }
 
     int res = _loadedBattleType;
@@ -1447,8 +1452,8 @@ void QWarloksDuelCore::processRefferer() {
         return;
     }
     if (sl.at(0).compare("create_battle") == 0) {
-        int bfl = sl.at(2).indexOf("vf") != -1 ? 2 : 1;
-        createNewChallenge(true, true, true, true, 2, bfl, "Join to fun)", sl.at(1));
+        int bfl = sl.at(1).indexOf("vf") != -1 ? 2 : 1;
+        createNewChallenge(true, true, true, true, 2, bfl, "Join to fun)", sl.at(2));
     } else if (sl.at(0).compare("show_battle") == 0) {
         int type = sl.at(2).toInt();
         if (type > 1) {
@@ -1596,7 +1601,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return finishAccept(data, statusCode, new_url);
     }
 
-    if ((url.indexOf("/refuse") != -1) || (url.indexOf("/leave") != -1)) {
+    if (/*(url.indexOf("/refuse") != -1) ||*/ (url.indexOf("/leave") != -1)) {
         scanState();
         return false;
     }
