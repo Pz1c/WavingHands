@@ -396,7 +396,7 @@ QBattleInfo * QWarlockUtils::parseChallenge(QString &Data) {
         //res.append(challenge_part);
     }
     bool for_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("NO BOT") == -1);
-    bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
+    //bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
     int bid = battle_id.toInt();
     if (bid > 0) {
         res = new QBattleInfo();
@@ -519,7 +519,7 @@ int QWarlockUtils::strValueToInt(QString val) {
     }
 }
 
-QString QWarlockUtils::getFinishedBattleDescription(const QString &Data, const QString &Login) {
+QString QWarlockUtils::getFinishedBattleDescription(const QString &Data) {
     QString res, winner, enemy, tmp;
     int idx1 = 0, idx2;//, idx3, count = 0, dead = 0, surrender = 0;
     idx1 = Data.indexOf(" is victorious!");

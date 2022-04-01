@@ -707,7 +707,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
     } else if ((_loadedBattleType == 2) && (prev_battle_type != 2)) {
         // finished
         res = 2;
-        QString winner = QWarlockUtils::getFinishedBattleDescription(Data, _login);
+        QString winner = QWarlockUtils::getFinishedBattleDescription(Data);
         battleInfo->setWinner(winner);
     }
     int idx = 0;
@@ -894,27 +894,6 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     return res;
 }
 
-/*
-    QString msg = "";
-    if (_isAI) {
-        QString msg_code = QString("BotSay_%1").arg(intToStr(_loadedBattleTurn));
-        msg = GameDictionary->getStringByCode(msg_code);
-        if (msg_code.compare(msg) == 0) {
-            // not found
-            msg.clear();
-        }
-    }
-    QString tmpBH = battle_info->getHistory();
-    QString tmpBC = battle_info->getChat();
-
-    return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
-                   "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\",\"battle_hist\":\"%21\",\"battle_chat\":\"%22\"}")
-            .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
-            .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
-            .arg(tmpBH, tmpBC); // 21-22
-*/
 QString QWarloksDuelCore::prepareBattleOrders() {
     QString res = "say$";
     QString msg = "";
@@ -1465,8 +1444,8 @@ void QWarloksDuelCore::processRefferer() {
         return;
     }
     if (sl.at(0).compare("create_battle") == 0) {
-        int bfl = sl.at(1).indexOf("vf") != -1 ? 2 : 1;
-        createNewChallenge(true, true, true, true, 2, bfl, "Join to fun)", sl.at(2));
+        int bfl = sl.at(2).indexOf("vf") != -1 ? 2 : 1;
+        createNewChallenge(true, true, true, true, 2, bfl, "Join to fun)", sl.at(1));
     } else if (sl.at(0).compare("show_battle") == 0) {
         int type = sl.at(2).toInt();
         if (type > 1) {

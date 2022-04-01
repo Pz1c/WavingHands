@@ -1018,6 +1018,14 @@ ApplicationWindow {
         }
     }
 
+    function cleanPermanency() {
+        gBattle.actions.P = -1;
+    }
+
+    function cleanDelay() {
+        gBattle.actions.D = -1;
+    }
+
     function chooseCharm(Action, H, G, data) {
         gERROR = {h:H,g:G,is_paralyze:Action === "paralized",title:warlockDictionary.getStringByCode("TitleAction_" + Action)};
         if (gERROR.is_paralyze) {

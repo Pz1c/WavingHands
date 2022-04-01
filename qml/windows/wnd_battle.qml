@@ -424,6 +424,17 @@ BaseWindow {
             mainWindow.showErrorWnd({type:4,text:"",title:"",data:data});
         } else */if (data.action === "banked") {
             mainWindow.gBattle.actions.F = data.checked ? 1 : 0;
+            if (data.checked) {
+                showShortHint("Banked "+data.value+" will be fired");
+            } else {
+                showShortHint("Do not fire banked spell: " + data.value);
+            }
+        } else if (data.action === "banked_info") {
+            showShortHint(data.warlock_name + " banked a " + data.value);
+        } else if (delay && (data.action === "delay")) {
+            mainWindow.cleanDelay();
+        } else if (permanency && (data.action === "permanency")) {
+            mainWindow.cleanPermanency()
         } else if (data.active) {
             console.log("DO some action", JSON.stringify(data));
             BU.battle.currentCharm = BU.getCharmDataByAction(data);
@@ -481,6 +492,12 @@ BaseWindow {
         mainWindow.showErrorWnd({type:msg_type,text:msg_text,title:msg_title,data:data,spell:spell_code});
     }
 
+    function showShortHint(msg) {
+        ltHint.text = msg;
+        ltHint.visible = true;
+        paHint.start();
+    }
+
     function setTargetingOnOff(Enable, IsSpell, Title) {
         if (!Enable) {
             battleChanged();
@@ -488,9 +505,19 @@ BaseWindow {
         } else {
             //bbSendOrders.active = false;
             if (Title) {
-                ltHint.visible = true;
-                ltHint.text = "Select target for " + Title + (IsSpell ? " spell" : "");
-                paHint.start();
+                var txt = "Select target for " + Title;
+                if (IsSpell) {
+                    if (mainWindow.gBattle.player_has_bank) {
+                        txt = "To bank a "+Title+", click the the bank icon, and then choose the spell's target";
+                    } else if (mainWindow.gBattle.player_has_permanent) {
+                        txt = "To do a "+Title+" permanent, click the the permanency icon, and then choose the spell's target";
+                    } else if (Title !== "Counter Spell") {
+                        txt += " spell";
+                    }
+                }
+
+                //
+                showShortHint(txt);
             }
         }
 

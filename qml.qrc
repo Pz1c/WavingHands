@@ -111,5 +111,6 @@
         <file>res/chat_pimple.png</file>
         <file>res/scroll.png</file>
         <file>qml/windows/wnd_search_warlock.qml</file>
+        <file>qml/components/TitledTextInput.qml</file>
     </qresource>
 </RCC>

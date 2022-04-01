@@ -172,6 +172,7 @@ void QWarlock::parseStatus() {
     _permanency = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Permanency", "(", ")", pos, true));
     _blindness = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Blindness", "(", ")", pos, true));
     _invisibility = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Invisibility", "(", ")", pos, true));
+    _banked_spell = QWarlockUtils::getStringFromData(_status, "(Banked", ":", ")", pos, true);
 }
 
 void QWarlock::checkPossibleGesture() {
@@ -289,7 +290,7 @@ QString QWarlock::separatedString() {
                    "\"amnesia\":%19,\"maladroit\":%20,\"summon_left\":%21,\"summon_right\":%22,\"active\":%23,\"mshield\":%24,\"delay\":%25,\"time_stop\":%26,"
                    "\"haste\":%27,\"permanency\":%28,\"blindness\":%29,\"invisibility\":%30,\"plg\":\"%31\",\"prg\":\"%32\",\"charm_left\":%33,\"charm_right\":%34,"
                    "\"lgL\":\"%35\",\"lgR\":\"%36\",\"smcL\":%37,\"smcR\":%38,\"changed_mind\":%39,"
-                   "\"pgL\":\"%40\",\"pgR\":\"%41\",\"ptL\":\"%42\",\"ptR\":\"%43\",\"psL\":\"%44\",\"psR\":\"%45\",\"id\":\"%46\",\"fh\":%47}").
+                   "\"pgL\":\"%40\",\"pgR\":\"%41\",\"ptL\":\"%42\",\"ptR\":\"%43\",\"psL\":\"%44\",\"psR\":\"%45\",\"id\":\"%46\",\"fh\":%47,\"bank\":\"%48\"}").
             arg(_name, _status, _leftGestures, _rightGestures, res, boolToStr(_player), sbsL, sbsR, intToStr(_hp)).
             arg(intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield),
                 intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_disease)).
@@ -297,7 +298,7 @@ QString QWarlock::separatedString() {
             arg(intToStr(_mshield), intToStr(_delay), intToStr(_time_stop), intToStr(_haste), intToStr(_permanency), intToStr(_blindness), intToStr(_invisibility),
                 _possibleLeftGestures, _possibleRightGestures, boolToStr(charmL), boolToStr(charmR)).
             arg(_leftGestures.trimmed().right(1), _rightGestures.trimmed().right(1), intToStr(spell_max_pass_left), intToStr(spell_max_pass_right), changed_mind).
-            arg(_gestureL, _gestureR, _targetL, _targetR, _spellL, _spellR, _id, intToStr(_forcedHand));
+            arg(_gestureL, _gestureR, _targetL, _targetR, _spellL, _spellR, _id, intToStr(_forcedHand), _banked_spell);
 }
 
 bool QWarlock::player() const

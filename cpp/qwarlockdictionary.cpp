@@ -152,7 +152,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("miRulesTitle", "", "", "Advanced Rules");
     fillDictionary("miLogoutTitle", "", "", "Sign Out");
     fillDictionary("BattleHistoryTitle", "", "", "Battle History");
-    fillDictionary("Say", "", "", "Your message for this turn");
+    fillDictionary("Say", "", "", "Add a message");
     fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");
     fillDictionary("PersonalChalengeSDesc", "", "", "You are invited for a private duel by ");
     fillDictionary("PersonalChalengeAccept", "", "", "Accept");

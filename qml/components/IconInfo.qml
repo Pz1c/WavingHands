@@ -154,6 +154,9 @@ Rectangle {
             iIcon.height = 0.9 * wh;
             iIcon.width = 0.9 * wh;
         }
+        if (l_data && l_data.hasOwnProperty("active")) {
+          active = l_data.active;
+        }
     }
 
     Component.onCompleted: onFinishCreation();

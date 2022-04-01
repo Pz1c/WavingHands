@@ -39,7 +39,7 @@ InfoWindow {
             anchors.left: parent.left
             anchors.leftMargin: 20 * mainWindow.ratioObject
             anchors.right: parent.right
-            anchors.bottom: ltiMsg.top
+            anchors.bottom: iAction.top
             contentWidth: -1
 
             Text {
@@ -60,42 +60,89 @@ InfoWindow {
             }
         }
 
-        LabeledTextInput {
-            id: ltiMsg
-            anchors.bottom: dialogWindow.bottom
-            anchors.bottomMargin: 0.02 * parent.height
+        Item {
+            id: iAction
+            anchors.bottom: iText.top
+            anchors.bottomMargin: 3 * mainWindow.ratioObject
             anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
-            anchors.right: iiCSend.left
-            anchors.rightMargin: 20 * mainWindow.ratioObject
-            height: 0.20 * dialogWindow.height
-            //width: dialogWindow.width
-            title: dict.getStringByCode("Say")
-            title_color: "lightgray"
-            //text_color: "black"
-            transparent: false
-            //placeholderText: "write your message there"
-            regularExpression: /.{0,256}$/
+            anchors.leftMargin: 3 * mainWindow.ratioObject
+            anchors.right: parent.right
+            anchors.rightMargin: 3 * mainWindow.ratioObject
+            height: tTitle.height + 67 * mainWindow.ratioObject
+
+            Text {
+                id: tTitle
+                anchors.bottom: rTextEdit.top
+                anchors.topMargin: 16 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: 16 * mainWindow.ratioObject
+                anchors.right: parent.right
+                anchors.rightMargin: 16 * mainWindow.ratioObject
+                //height: 0.20 * dialogWindow.height
+                font.pixelSize: 41 * mainWindow.ratioFont
+                //width: dialogWindow.width
+                text: dict.getStringByCode("Say")
+                color: "#E7FFFF"
+            }
+
+            Rectangle {
+                id: rTextEdit
+                height: 64 * mainWindow.ratioObject
+                anchors.bottom: parent.bottom
+                //anchors.bottomMargin: 3 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: 16 * mainWindow.ratioObject
+                anchors.right: iiCSend.left
+                anchors.rightMargin: 32 * mainWindow.ratioObject
+                radius: 10
+                color: "transparent"
+                border.color: "#E7FFFF"
+                border.width: 2 * mainWindow.ratioObject
+                z: 10
+
+                //TextField {
+                TextInput {
+                    id: tiTextEdit
+                    anchors.centerIn: parent
+                    width: 0.98 * parent.width
+                    height: 0.98 * parent.height
+                    inputMethodHints: Qt.ImhNoPredictiveText
+                    color: "#E7FFFF"
+                    font.pixelSize: 48 * mainWindow.ratioFont
+                    z: 15
+                }
+            }
+
+
+            IconInfo {
+                id: iiCSend
+                source: "qrc:/res/send_1.png"
+                textVisible: false
+
+                height: 64 * mainWindow.ratioObject
+                width: 64 * mainWindow.ratioObject
+                anchors.right: parent.right
+                anchors.rightMargin: 20 * mainWindow.ratioObject
+                anchors.bottom: parent.bottom
+                //anchors.bottomMargin: 3 * mainWindow.ratioObject
+                active: true
+                color: "transparent"
+
+                onClicked: {
+                    mainWindow.storeBattleChatMsg(tiTextEdit.text);
+                }
+            }
         }
 
-        IconInfo {
-            id: iiCSend
-            source: "qrc:/res/send_1.png"
-            textVisible: false
-
-            height: 64 * mainWindow.ratioObject
-            width: 64 * mainWindow.ratioObject
+        Item {
+            id: iText
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 3 * mainWindow.ratioObject
+            anchors.left: parent.left
+            anchors.leftMargin: 3 * mainWindow.ratioObject
             anchors.right: parent.right
-            anchors.rightMargin: 20 * mainWindow.ratioObject
-            anchors.verticalCenter: ltiMsg.verticalCenter
-            active: true
-            color: "transparent"
-            //text_color: "#E7FFFF"
-            //text: "Submit"
-
-            onClicked: {
-                mainWindow.storeBattleChatMsg(ltiMsg.text);
-            }
+            anchors.rightMargin: 3 * mainWindow.ratioObject
+            height: 0
         }
 
         z: 11
@@ -127,9 +174,9 @@ InfoWindow {
         ltError.text = replaceAll(mainWindow.gERROR.text, "&quot;", '"');
         title_text = mainWindow.gERROR.title;
         if (mainWindow.gERROR.msg && (mainWindow.gERROR.msg.length > 0)) {
-            ltiMsg.text = mainWindow.gERROR.msg;
+            tiTextEdit.text = mainWindow.gERROR.msg;
         } else {
-            ltiMsg.text = "";
+            tiTextEdit.text = "";
         }
 
         mainWindow.gERROR = {};
@@ -138,6 +185,6 @@ InfoWindow {
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem);
         initErrFields();
-        ltiMsg.setFontSize(0.20 * dialogWindow.height);
+        //ltiMsg.setFontSize(0.20 * dialogWindow.height);
     }
 }

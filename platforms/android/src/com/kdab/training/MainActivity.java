@@ -76,7 +76,7 @@ public class MainActivity extends QtActivity {
                                     SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
                                     SharedPreferences.Editor editor = sharedPreferences.edit();
                                     editor.putString("referrer", referrerUrl);
-                                    //editor.putInt("referrer_checked", 1);
+                                    editor.putInt("referrer_checked", 1);
                                     editor.commit();
                                 } catch (Exception e) {
                                     e.printStackTrace();

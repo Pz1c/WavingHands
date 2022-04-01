@@ -291,7 +291,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
         if (enemy.isEmpty()) {
             if (_winner.isEmpty()) {
                 return QString("Finished #%1").arg(intToStr(_battleID));
-            } else if (_winner.compare("no") == 0) {
+            } else if (_winner.compare(" ") == 0) {
                 return QString("Draw #%1").arg(intToStr(_battleID));
             } else if (Login.compare(_winner, Qt::CaseInsensitive) == 0) {
                 return QString("Won #%1").arg(intToStr(_battleID));
@@ -301,7 +301,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
         } else {
             if (_winner.isEmpty()) {
                 return QString("Finished vs. %1").arg(enemy);
-            } else if (_winner.compare("no") == 0) {
+            } else if (_winner.compare(" ") == 0) {
                 return QString("Draw vs. %1").arg(enemy);
             } else if (Login.compare(_winner, Qt::CaseInsensitive) == 0) {
                 return QString("Won vs. %1").arg(enemy);

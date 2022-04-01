@@ -19,7 +19,7 @@ JNIEXPORT void JNICALL
                                                     jobject obj,
                                                     jstring n)
 {
-    qDebug() << "Computed fibonacci is:" << n;
+    qDebug() << "Computed fibonacci is:" << n << (env ? "env not null" : "env null") << (obj ? "obj not null" : "obj null");
     checkStateFromJava("Point 1");
 }
 

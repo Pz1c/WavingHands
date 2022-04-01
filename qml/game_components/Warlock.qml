@@ -59,12 +59,18 @@ Item {
         anchors.topMargin: 12 * l_ratio
         anchors.right: parent.right
         anchors.rightMargin: 6 * l_ratio
-        visible: l_warlock.player && (l_warlock.banked_spell !== "")
-        checkbox: true
+        visible: l_warlock.banked_spell !== ""
+        checkbox: l_warlock.player
         checked: false
         l_data: ({action:"banked",value:l_warlock.banked_spell,checked:false})
 
         onClicked: {
+            if (l_warlock.player) {
+                l_data.action = "banked";
+            } else {
+                l_data.action = "banked_info";
+            }
+
             iconClick(l_data);
         }
 
@@ -288,8 +294,10 @@ Item {
         }*/
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
-            if (IsSpell && l_warlock.player && ((item.l_data.action === "permanency") || (item.l_data.action === "delay"))) {
+            var perm_or_del = ((item.l_data.action === "permanency") || (item.l_data.action === "delay"));
+            if (IsSpell && l_warlock.player && perm_or_del) {
                 item.animate(Enable ? 1 : -1);
+                item.active = Enable || (perm_or_del && item.l_data.checked);
             } else {
                 item.opacity = opacity;
                 //item.active = !Enable;
@@ -472,6 +480,7 @@ Item {
             setGesture(lh, SG.getIconByGesture(ng, true));
         }
 
-        iiBanked.visible = l_warlock.player && (l_warlock.banked_spell !== "");
+        iiBanked.visible = (l_warlock.banked_spell !== "");
+        //iiBanked.enabled = iiBanked.visible && l_warlock.player;
     }
 }

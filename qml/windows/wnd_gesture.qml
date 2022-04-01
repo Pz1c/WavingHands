@@ -597,6 +597,7 @@ BaseWindow {
         if (new_gesture === currGesture) {
             currGesture = "";
             new_gesture = "";
+            iiSend.active = false;
         }
         if (new_gesture !== "") {
             iiSend.active = true;

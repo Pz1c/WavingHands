@@ -27,7 +27,7 @@ function prepareWarlock(w) {
     w.control_paralyze = battle.paralyze.indexOf(w.id) !== -1;
     w.control_charmed  = battle.charm.indexOf(w.id) !== -1;
     w.statusIcons = prepareStatusIcon(w);
-    w.banked_spell = w.player && (battle.fire !== "") ? battle.fire : "";
+    w.banked_spell = w.bank;//player && */(battle.fire !== "") ? battle.fire : "";
     if (w.player) {
         battle.L = w.L;
         battle.R = w.R;
@@ -39,6 +39,8 @@ function prepareWarlock(w) {
         battle.player_target_R = w.ptR;
         battle.ngL = battle.player_gesture_L;
         battle.ngR = battle.player_gesture_R;
+        battle.player_has_bank = w.delay > 0;
+        battle.player_has_permanency = w.permanency > 0;
     }
 
     return w;
@@ -297,7 +299,7 @@ function prepareOrder() {
     console.log("prepareOrder", "point3", post_request);
     post_request += "LHT$"+getSpellTargetForOrder(actions.L, battle.targetsMap)+"#";
     post_request += "RHT$"+getSpellTargetForOrder(actions.R, battle.targetsMap)+"#";
-    console.log("prepareOrder", "point4", post_request);
+    console.log("prepareOrder", "point4", post_request, JSON.stringify(battle.targetsMap));
 
     var i, Ln, m_obj, pc_gv;
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
@@ -306,8 +308,14 @@ function prepareOrder() {
         /*if (m_obj.target === m_obj.old_target) {
             continue;
         }*/
+        var trg = battle.targetsMap[m_obj.target];
+        if (!trg) {
+            trg = "";
+        } else {
+            trg = replaceAll(trg, " ", "+");
+        }
 
-        post_request += m_obj.id + "$" + battle.targetsMap[m_obj.target].replace(" ", "+") + "#";
+        post_request += m_obj.id + "$" + trg + "#";
     }
     console.log("prepareOrder", "point5", post_request);
     for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
@@ -354,7 +362,7 @@ function getOrdersForReview(dictionary) {
     }
 
     if (actions.C !== "") {
-        res.push({type:"C",v:"Say: " + actions.C,c:"snow",icon:"",icon_text:""});
+        res.push({type:"C",v:"Say: " + actions.C,c:"snow",icon:"scroll",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
     }
     // gesture

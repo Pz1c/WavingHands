@@ -109,6 +109,7 @@ private:
     QString _rightGestures;
     QString _possibleLeftGestures;
     QString _possibleRightGestures;
+    QString _banked_spell;
     bool _AI;
     bool _player;
     QList<QSpell *> _possibleSpells;
