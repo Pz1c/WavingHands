@@ -25,12 +25,23 @@ function prepareDataType12(l_data, dict) {
     ltShortDesc.text = dict.getStringByCode('DefNotStartSTitle');
     ltError.text = "";
     if (l_data.battle_data) {
-        ltShortDesc.text = "Multi player game for " + l_data.battle_data.size + " players";
+        var data = l_data.battle_data;
+        if ((data.size === 2) && (data.level === 0)) {
+            if (data.with_bot || data.for_bot) {
+                ltShortDesc.text = "Training with a training bot";
+            } else {
+                ltShortDesc.text = "Training with another warlock";
+            }
+        } else if ((data.size === 2) && (data.level === 1)) {
+            ltShortDesc.text = "Warlock vs. warlock";
+        } else {
+            ltShortDesc.text = "Multi player game for " + l_data.battle_data.size + " players";
+        }
         if (!l_data.battle_data.participant || (l_data.battle_data.participant === '')) {
             ltError.text = "";//"No one other warlock in then circle<br>";
-            if (!l_data.battle_data.active) {
+            /*if (!l_data.battle_data.active) {
                 ltError.text = "Warlocks accepted: only you(";
-            }
+            }*/
         } else {
             ltError.text = "Warlocks accepted: ";
             var arr_p = l_data.battle_data.participant.split(",");
@@ -51,6 +62,9 @@ function prepareDataType12(l_data, dict) {
                 ltError.text += not_empty ? " and you" : " only you";
             }
             ltError.text += "<br>";
+            if (!not_empty) {
+                ltError.text = "";
+            }
 
             //ltError.text = "Warlocks accepted: " + replaceAll(l_data.battle_data.participant, ",", ", ") + "<br>";
         }

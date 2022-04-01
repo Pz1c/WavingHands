@@ -321,6 +321,9 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
             if (bi->with_bot()) {
                 ++with_bot;
             }
+        } else if (bi->for_bot() && !bi->active(_login)) {
+            qDebug() << "finishChallengeList" << "emit needAIAnswer";
+            emit needAIAnswer("");
         }
     }
 
@@ -1591,6 +1594,11 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
 
     if (url.indexOf("/accept") != -1) {
         return finishAccept(data, statusCode, new_url);
+    }
+
+    if ((url.indexOf("/refuse") != -1) || (url.indexOf("/leave") != -1)) {
+        scanState();
+        return false;
     }
 
     if (url.indexOf("/newplayer") != -1) {

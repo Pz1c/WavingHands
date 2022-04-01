@@ -812,7 +812,7 @@ ApplicationWindow {
 
     function storeBattleChatMsg(msg) {
         gBattle.actions.C = msg;
-        processEscape();
+        //processEscape();
     }
 
     function showFinishedBattle() {

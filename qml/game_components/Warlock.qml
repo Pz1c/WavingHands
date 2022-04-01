@@ -294,10 +294,11 @@ Item {
         }*/
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
-            var perm_or_del = ((item.l_data.action === "permanency") || (item.l_data.action === "delay"));
-            if (IsSpell && l_warlock.player && perm_or_del) {
+            if (IsSpell && l_warlock.player) {
+                var perm_or_del_checked = (item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action') && item.l_data.hasOwnProperty('checked') &&
+                                           ((item.l_data.action === "permanency") || (item.l_data.action === "delay")) && item.l_data.checked);
                 item.animate(Enable ? 1 : -1);
-                item.active = Enable || (perm_or_del && item.l_data.checked);
+                item.active = Enable || perm_or_del_checked;
             } else {
                 item.opacity = opacity;
                 //item.active = !Enable;
