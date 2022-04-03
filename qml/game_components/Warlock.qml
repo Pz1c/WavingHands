@@ -193,30 +193,41 @@ Item {
         }
     }
 
-    IconInfoR {
+    IconInfo {
         id: iiLeft
-        source: l_warlock.player ? "qrc:/res/stars_light.png" : "qrc:/res/g_=.png";
+        //source: l_warlock.player ? "qrc:/res/stars_light.png" : "qrc:/res/g_=.png";
+        source: "qrc:/res/stars_light.png"
         text: ""
         height: 120 * l_ratio
         width: 90 * l_ratio
-        iconHeight: 84 * l_ratio
-        iconWidth: 84 * l_ratio
+        iconHeight: (l_warlock.player ? 84 : 63) * l_ratio
+        iconWidth: (l_warlock.player ? 84 : 63) * l_ratio
         anchors.bottom: iiRight.top
         anchors.bottomMargin: 18 * l_ratio
         anchors.right: parent.right
-        visible: false
+        visible: true
         radius: 20
+        border.color: "#E7FFFF"
+        border.width: 3
         active: true
 
         onClicked: {
             if (l_warlock.player) {
-                mainWindow.showGesture(true, l_warlock.plg);
+                mainWindow.showGesture(true, l_warlock.plg, "normal", l_warlock.warlock_idx);
             } else if (l_warlock.control_paralyze) {
+                //mainWindow.showGesture(true, l_warlock.plg, "paralyze", l_warlock.warlock_idx);
                 l_paralyzeActionData.hand = "LH";
+                l_paralyzeActionData.plg = l_warlock.plg;
+                l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
                 iconClick(l_paralyzeActionData);
             } else if (l_warlock.control_charmed) {
+                //mainWindow.showGesture(true, l_warlock.plg, "charm", l_warlock.warlock_idx);
                 l_charmActionData.hand = "LH";
+                l_charmActionData.plg = l_warlock.plg;
+                l_charmActionData.warlock_idx = l_warlock.warlock_idx;
                 iconClick(l_charmActionData);
+            } else {
+                mainWindow.showGesture(true, l_warlock.plg, "enemy", l_warlock.warlock_idx);
             }
         }
 
@@ -227,30 +238,40 @@ Item {
         }
     }
 
-    IconInfoR {
+    IconInfo {
         id: iiRight
         source: "qrc:/res/stars_light.png";
         text: ""
         height: iiLeft.height
         width: iiLeft.width
-        iconHeight: 84 * l_ratio
-        iconWidth: 84 * l_ratio
+        iconHeight: (l_warlock.player ? 84 : 63) * l_ratio
+        iconWidth: (l_warlock.player ? 84 : 63) * l_ratio
         anchors.bottom: rBottomLine.top
         anchors.bottomMargin: 16 * l_ratio
         anchors.right: parent.right
-        visible: false
+        visible: true
         radius: 20
+        border.color: "#E7FFFF"
+        border.width: 3
         active: true
 
         onClicked: {
             if (l_warlock.player) {
-                mainWindow.showGesture(false, l_warlock.prg);
+                mainWindow.showGesture(false, l_warlock.prg, "normal", l_warlock.warlock_idx);
             } else if (l_warlock.control_paralyze) {
+                //mainWindow.showGesture(false, l_warlock.prg, "paralyze", l_warlock.warlock_idx);
                 l_paralyzeActionData.hand = "RH";
+                l_paralyzeActionData.plg = l_warlock.plg;
+                //l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
                 iconClick(l_paralyzeActionData);
             } else if (l_warlock.control_charmed) {
+                //mainWindow.showGesture(false, l_warlock.prg, "charm", l_warlock.warlock_idx);
                 l_charmActionData.hand = "RH";
+                l_charmActionData.plg = l_warlock.plg;
+                //l_charmActionData.warlock_idx = l_warlock.warlock_idx;
                 iconClick(l_charmActionData);
+            } else {
+                mainWindow.showGesture(false, l_warlock.prg, "enemy", l_warlock.warlock_idx);
             }
         }
 
@@ -294,11 +315,13 @@ Item {
         }*/
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
-            if (IsSpell && l_warlock.player) {
-                var perm_or_del_checked = (item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action') && item.l_data.hasOwnProperty('checked') &&
-                                           ((item.l_data.action === "permanency") || (item.l_data.action === "delay")) && item.l_data.checked);
-                item.animate(Enable ? 1 : -1);
-                item.active = Enable || perm_or_del_checked;
+            var perm_or_del_checked = (item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action') && item.l_data.hasOwnProperty('checked') &&
+                                       ((item.l_data.action === "permanency") || (item.l_data.action === "delay")) && item.l_data.checked);
+            if (IsSpell && l_warlock.player && perm_or_del_checked) {
+                if (Enable) {
+                    item.animate(1);
+                }
+                item.active = Enable;// || perm_or_del_checked;
             } else {
                 item.opacity = opacity;
                 //item.active = !Enable;
@@ -329,7 +352,12 @@ Item {
         console.log("iconClick", l_warlock.name, JSON.stringify(data));
         data.warlock_name = l_warlock.name;
         data.warlock_idx = l_warlock.warlock_idx;
-        clicked(data);
+        if (((data.action === "charmed") || (data.action === "paralized")) && !data.hand) {
+            iiLeft.animate(1);
+            iiRight.animate(1);
+        } else {
+            clicked(data);
+        }
     }
 
     function iconDoubleClick(data) {
@@ -410,12 +438,22 @@ Item {
         var lh_visible = hands_visible || (l_warlock.paralyzed_hand === "LH");
         var rh_visible = hands_visible || (l_warlock.paralyzed_hand === "RH");
         var ng;
-        iiLeft.visible = lh_visible;
-        iiRight.visible = rh_visible;
+        //iiLeft.visible = lh_visible;
+        //iiRight.visible = rh_visible;
         if (l_warlock.player) {
+            var arr_lg = l_warlock.plg.split(",");
+            if (arr_lg.length === 1) {
+                l_warlock.pgL = arr_lg[0];
+            }
+            var arr_rg = l_warlock.prg.split(",");
+            if (arr_rg.length === 1) {
+                l_warlock.pgR = arr_rg[0];
+            }
+
             if (l_warlock.pgL) {
                 setGesture("L", SG.getIconByGesture(l_warlock.pgL, true));
             }
+
             if (l_warlock.pgR) {
                 setGesture("R", SG.getIconByGesture(l_warlock.pgR, true));
             }
@@ -471,6 +509,8 @@ Item {
             l_control_icon = "qrc:/res/paralized.png";
         } else if (l_warlock.control_charmed) {
             l_control_icon = "qrc:/res/charmed.png";
+        } else {
+            l_control_icon = "qrc:/res/stars_light.png";
         }
 
         prepareHands();

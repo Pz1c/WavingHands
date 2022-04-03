@@ -98,6 +98,7 @@ InfoWindow {
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignJustify
 
+                    onLinkActivated: function (link) { errorLinkActivated(link) }
                 }
             }
 
@@ -236,6 +237,17 @@ InfoWindow {
 
     function replaceAll(str, find, replace) {
       return str.replace(new RegExp(find, 'g'), replace);
+    }
+
+    function errorLinkActivated(link) {
+        console.log("wnd_spell.onLinkActivated", link, l_data.type);
+        if (l_data.type === 12) {
+            // unstarted game
+            var arr_lnk = link.split("/");
+            console.log("wnd_spell.onLinkActivated", arr_lnk, l_data.id);
+            mainWindow.gameCore.leaveBattle(l_data.id, arr_lnk[2]);
+            mainWindow.processEscape();
+        }
     }
 
     function initErrFields() {

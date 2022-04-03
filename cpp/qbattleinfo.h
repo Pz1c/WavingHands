@@ -29,7 +29,7 @@ public:
     int battleID() const;
     void setBattleID(int newBattleID);
 
-    void addParticipant(const QString &login);
+    void addParticipant(const QString &login, bool Challenged = false);
     void cleanParticipant();
     void addChat(int battle_turn, const QString &chat_msg);
     QString getChat() const;
@@ -101,6 +101,7 @@ private:
     bool _fullParsed;
     QString _description;
     QStringList _participant;
+    QStringList _challenged;
     QStringList _chat;
     QStringList _history;
     QString _winner;

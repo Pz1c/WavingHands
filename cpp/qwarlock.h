@@ -36,7 +36,7 @@ public:
 
     bool isParaFDF() const;
     void setIsParaFDF(bool isParaFDF);
-    void setParalyzedHand(int Hand, const QString &Gesture = "");
+    void setParalyzedHand(int Hand, const QString &Gesture = "", bool SetPossibleGesture = true);
 
     bool isParaFC() const;
     void setIsParaFC(bool newIsParaFC);
@@ -122,6 +122,7 @@ private:
     QSpell *_bestSpellL;
     QSpell *_bestSpellR;
     int _forcedHand;
+    QString _forcedGesture;
     bool _isParaFDF;
     bool _isParaFC;
     bool _isMaladroit;

@@ -53,6 +53,7 @@ QWarlock::QWarlock(QWarlock *CopyFrom) {
     _blindness = CopyFrom->_blindness;
     _invisibility = CopyFrom->_invisibility;
     _forcedHand = CopyFrom->_forcedHand;
+    _forcedGesture = CopyFrom->_forcedGesture;
     _SpellChecker = CopyFrom->_SpellChecker;
 }
 
@@ -93,9 +94,13 @@ void QWarlock::setIsParaFDF(bool isParaFDF)
     _isParaFDF = isParaFDF;
 }
 
-void QWarlock::setParalyzedHand(int Hand, const QString &Gesture) {
-    qDebug() << "QWarlock::setParalyzedHand" << _name << Hand << Gesture;
+void QWarlock::setParalyzedHand(int Hand, const QString &Gesture, bool SetPossibleGesture) {
+    qDebug() << "QWarlock::setParalyzedHand" << _name << Hand << Gesture << SetPossibleGesture;
     _forcedHand = Hand;
+    _forcedGesture = Gesture;
+    if (!SetPossibleGesture) {
+        return ;
+    }
     QString lastGesture;
     switch(Hand) {
     case WARLOCK_HAND_LEFT:
@@ -127,6 +132,7 @@ void QWarlock::setParalyzedHand(int Hand, const QString &Gesture) {
         }
         break;
     }
+    qDebug() << "QWarlock::setParalyzedHand" << _possibleLeftGestures << _possibleRightGestures;
 }
 
 QString QWarlock::possibleRightGestures() const
@@ -232,7 +238,7 @@ QString QWarlock::separatedString() {
     } customOrder;
     std::sort(_possibleSpells.begin(), _possibleSpells.end(), customOrder);
     QSpell::setOrderType(0);*/
-    QSpell::sort(_possibleSpells,  _player ? 1 : 0);
+    QSpell::sort(_possibleSpells,  1);//_player ? 1 : 0);
     /*if (_name.compare("Galbarad") == 0) {
     logSpellList(_possibleSpells, "after sort");
     }*/
@@ -290,7 +296,7 @@ QString QWarlock::separatedString() {
                    "\"amnesia\":%19,\"maladroit\":%20,\"summon_left\":%21,\"summon_right\":%22,\"active\":%23,\"mshield\":%24,\"delay\":%25,\"time_stop\":%26,"
                    "\"haste\":%27,\"permanency\":%28,\"blindness\":%29,\"invisibility\":%30,\"plg\":\"%31\",\"prg\":\"%32\",\"charm_left\":%33,\"charm_right\":%34,"
                    "\"lgL\":\"%35\",\"lgR\":\"%36\",\"smcL\":%37,\"smcR\":%38,\"changed_mind\":%39,"
-                   "\"pgL\":\"%40\",\"pgR\":\"%41\",\"ptL\":\"%42\",\"ptR\":\"%43\",\"psL\":\"%44\",\"psR\":\"%45\",\"id\":\"%46\",\"fh\":%47,\"bank\":\"%48\"}").
+                   "\"pgL\":\"%40\",\"pgR\":\"%41\",\"ptL\":\"%42\",\"ptR\":\"%43\",\"psL\":\"%44\",\"psR\":\"%45\",\"id\":\"%46\",\"fh\":%47,\"bank\":\"%48\",\"fg\":\"%49\"}").
             arg(_name, _status, _leftGestures, _rightGestures, res, boolToStr(_player), sbsL, sbsR, intToStr(_hp)).
             arg(intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield),
                 intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_disease)).
@@ -298,7 +304,7 @@ QString QWarlock::separatedString() {
             arg(intToStr(_mshield), intToStr(_delay), intToStr(_time_stop), intToStr(_haste), intToStr(_permanency), intToStr(_blindness), intToStr(_invisibility),
                 _possibleLeftGestures, _possibleRightGestures, boolToStr(charmL), boolToStr(charmR)).
             arg(_leftGestures.trimmed().right(1), _rightGestures.trimmed().right(1), intToStr(spell_max_pass_left), intToStr(spell_max_pass_right), changed_mind).
-            arg(_gestureL, _gestureR, _targetL, _targetR, _spellL, _spellR, _id, intToStr(_forcedHand), _banked_spell);
+            arg(_gestureL, _gestureR, _targetL, _targetR, _spellL, _spellR, _id, intToStr(_forcedHand), _banked_spell, _forcedGesture);
 }
 
 bool QWarlock::player() const
@@ -764,14 +770,14 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
         danger_hand = WARLOCK_HAND_RIGHT;
     }
     if (paralyzed.indexOf(enemy->id()) != -1) {
-        enemy->setParalyzedHand(danger_hand);
+        enemy->setParalyzedHand(danger_hand, "", _AI);
         gesture_changed = true;
     }
     if (charmed.indexOf(enemy->id()) != -1) {
-        enemy->setParalyzedHand(danger_hand, "-");
+        enemy->setParalyzedHand(danger_hand, "-", _AI);
         gesture_changed = true;
     }
-    if (gesture_changed) {
+    if (_AI && gesture_changed) {
         enemy->setPossibleSpells(_SpellChecker->getSpellsList(enemy));
         analyzeEnemy(enemy, "", "");
     }

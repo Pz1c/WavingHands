@@ -130,6 +130,7 @@ InfoWindow {
 
                 onClicked: {
                     setNewMsgText(tiTextEdit.text);
+                    mainWindow.processEscape();
                     //mainWindow.storeBattleChatMsg(tiTextEdit.text);
                 }
             }

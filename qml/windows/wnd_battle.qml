@@ -438,7 +438,9 @@ BaseWindow {
         } else if (data.active) {
             console.log("DO some action", JSON.stringify(data));
             BU.battle.currentCharm = BU.getCharmDataByAction(data);
-            mainWindow.chooseCharm(data.action, BU.battle.currentCharm.h, BU.battle.currentCharm.g, data);
+            //mainWindow.showGesture(data.action, BU.battle.currentCharm.h, BU.battle.currentCharm.g, data);
+            var is_left = data.hand === "LH";
+            mainWindow.showGesture(is_left, data.plg, data.action, data.warlock_idx, is_left ? data.lgL : data.lgR);
         } else {
             iconDoubleClick(data);
         }

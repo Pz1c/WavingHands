@@ -23,6 +23,7 @@
 #define GAME_SERVER_URL_ACCEPT_CHALLENGE "https://games.ravenblack.net/accept?back=%1&num=%2"
 #define GAME_SERVER_URL_REFUSE_CHALLENGE "https://games.ravenblack.net/refuse?back=player&num=%1"
 #define GAME_SERVER_URL_LEAVE_GAME "https://games.ravenblack.net/leave?num=%1"
+#define GAME_SERVER_URL_LEAVE_GAME_OTHER "https://games.ravenblack.net/leave?num=%1&reject=%2"
 #define GAME_SERVER_URL_DELLMESS "https://games.ravenblack.net/delmess?from=%1"
 #define GAME_SERVER_URL_SUBMIT "https://games.ravenblack.net/warlocksubmit"
 #define GAME_SERVER_URL_GET_BATTLE "https://games.ravenblack.net/warlocks?num=%1"
@@ -148,7 +149,7 @@ static QList<int> ARR_PARALYZES = QList<int>({SPELL_PARALYSIS_FDF, SPELL_PARALYS
 static QList<int> ARR_COUNTER_SPELL = QList<int>({SPELL_COUNTER_SPELL1, SPELL_COUNTER_SPELL2});
 static QList<int> ARR_SUMMON = QList<int>({SPELL_SUMMON_GIANT, SPELL_SUMMON_GOBLIN, SPELL_SUMMON_OGRE, SPELL_SUMMON_TROLL});
 static QList<int> ARR_IGNORE_SPELL = QList<int>({SPELL_COUNTER_SPELL1, SPELL_COUNTER_SPELL2, SPELL_MAGIC_MIRROR, SPELL_REMOVE_ENCHANTMENT, SPELL_PROTECTION});
-static QStringList ARR_ACTIVE_COLOR = QStringList({"#FF0000", "#BB4400", "#996600", "#887700", "#778800", "#669900", "#55AA00", "#00FF00"});
+static QStringList ARR_ACTIVE_COLOR = QStringList({"#FF0000", "#BB4400", "#996600", "#887700", "#778800", "#669900", "#55AA00", "#00FF00", "#0DD2200"});
 static QStringList ARR_ONLINE_COLOR = QStringList({"#33CC00", "#11EE00"});
 
 #define intToStr QString::number

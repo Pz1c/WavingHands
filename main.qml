@@ -868,18 +868,28 @@ ApplicationWindow {
         showErrorWnd({type:16,history:txt});
     }
 
-    function showGesture(isLeft, possible_gestures) {
+    function showGesture(isLeft, possible_gestures, action_type, warlock_idx, last_gesture) {
+        console.log("wnd_main.showGesture", isLeft, possible_gestures, action_type, warlock_idx, last_gesture);
         var close_current = false;
         if (!possible_gestures) {
             possible_gestures = isLeft ? gBattle.warlocks[0].plg : gBattle.warlocks[0].prg;
             close_current = true;
         }
+        if (!action_type) {
+            action_type = "normal";
+        }
+        if (!warlock_idx) {
+            warlock_idx = 0;
+        }
 
-        gBattle.currentHand = isLeft ? "L" : "R";
-        gBattle.otherHand   = isLeft ? "R" : "L";
-        gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
-        gBattle.otherHandIdx = isLeft ? GC.WARLOCK_HAND_RIGHT : GC.WARLOCK_HAND_LEFT;
-        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","), g:gBattle["ng" + gBattle.currentHand]};
+        if (action_type === "normal") {
+            gBattle.currentHand = isLeft ? "L" : "R";
+            gBattle.otherHand   = isLeft ? "R" : "L";
+            gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
+            gBattle.otherHandIdx = isLeft ? GC.WARLOCK_HAND_RIGHT : GC.WARLOCK_HAND_LEFT;
+        }
+        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","),
+            g:gBattle["ng" + gBattle.currentHand], at: action_type, widx: warlock_idx, lg: last_gesture};
         if (close_current) {
             closeChild();
         }
@@ -891,15 +901,25 @@ ApplicationWindow {
         return JSON.parse(core.getSpellBook());
     }
 
-    function getSpellList(new_gesture) {
-        console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture);
-        gBattle["ng" + gBattle.currentHand] = new_gesture;
+    function getSpellList(new_gesture, warlock_idx, hand_idx) {
+        console.log("mainWindow.getSpellList", gBattle.currentHand, gBattle.currentHandIdx, new_gesture, warlock_idx, hand_idx);
+        if (!warlock_idx) {
+            warlock_idx = 0;
+        }
+        if (!hand_idx) {
+            hand_idx = gBattle.currentHandIdx;
+        }
+        var is_player = warlock_idx === 0;
+
+        if (is_player) {
+            gBattle["ng" + gBattle.currentHand] = new_gesture;
+        }
         var res = [], arr_cast_now = [], arr_cast_later = [];//[[],[],[],[],[],[],[],[],[]];
 
         console.log("mainWindow.getSpellList", gBattle.L, gBattle.R, gBattle.ngL, gBattle.ngR);
         //var str = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
         //console.log("mainWindow.getSpellList", str);
-        var arr = gBattle.warlocks[0].spells, s, idx;
+        var arr = gBattle.warlocks[warlock_idx].spells, s, idx;
         /*if (new_gesture !== '') {
             console.log("mainWindow.getSpellList", JSON.stringify(arr));
         }*/
@@ -908,7 +928,7 @@ ApplicationWindow {
             s = arr[i];
             s.choose = 0;
             s.row_type = 1;
-            if (s.h !== gBattle.currentHandIdx) {
+            if (s.h !== hand_idx) {
                 continue;
             }
 
@@ -941,10 +961,12 @@ ApplicationWindow {
         }
         //arr_cast_now.push();
 
-        gBattle["completed_spell_" + gBattle.currentHand] = arr_cast_now.length > 0 ? 1 : 0;
+        if (is_player) {
+            gBattle["completed_spell_" + gBattle.currentHand] = arr_cast_now.length > 0 ? 1 : 0;
+        }
         if (new_gesture !== '') {
             gBattle.spellIdx = arr_cast_now.length;
-            var def_or_none = ((gBattle.spellIdx > 0) || gBattle.player_changed_mind);
+            var def_or_none = (gBattle.spellIdx > 0) || (is_player && gBattle.player_changed_mind);
             if (def_or_none) {
                 gBattle.spellIdx = 1 + arr_cast_now.length;
             }

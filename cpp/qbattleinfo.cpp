@@ -108,20 +108,26 @@ void QBattleInfo::setHint(int newHint)
 
 void QBattleInfo::cleanParticipant() {
     _participant.clear();
+    _challenged.clear();
     _with_bot = false;
 }
 
-void QBattleInfo::addParticipant(const QString &login) {
+void QBattleInfo::addParticipant(const QString &login, bool Challenged) {
     QString clean_login = login;
     int idx1 = clean_login.indexOf("(");
     if (idx1 != -1) {
         clean_login = clean_login.mid(0, idx1);
     }
-
-    if (_participant.indexOf(clean_login, Qt::CaseInsensitive) == -1) {
-        _participant.append(clean_login);
+    if (Challenged) {
+        if (_challenged.indexOf(clean_login, Qt::CaseInsensitive) == -1) {
+            _challenged.append(clean_login);
+        }
+    } else {
+        if (_participant.indexOf(clean_login, Qt::CaseInsensitive) == -1) {
+            _participant.append(clean_login);
+        }
+        _with_bot = _with_bot || (_lstAI.indexOf(clean_login.toUpper()) != -1);
     }
-    _with_bot = _with_bot || (_lstAI.indexOf(clean_login.toUpper()) != -1);
 }
 
 QString QBattleInfo::containParticipant(const QString& line) {
@@ -338,13 +344,13 @@ QString QBattleInfo::getChat() const {
     int turn_idx = -1;
     foreach(QString s, _chat) {
         if (++turn_idx == 0) {
-            continue;
+            //continue;
         }
         if (s.isEmpty()) {
             continue;
         }
-        tmpBC.append(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(turn_idx)));
-        tmpBC.append(prepareToPrint(s));
+        tmpBC.prepend(prepareToPrint(s));
+        tmpBC.prepend(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(turn_idx)));
     }
     return tmpBC;
 }
@@ -365,10 +371,10 @@ QString QBattleInfo::getHistory() const {
     int turn_idx = -1;
     foreach(QString s, _history) {
         if (++turn_idx == 0) {
-            continue;
+            //continue;
         }
-        tmpBH.append(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(turn_idx)));
-        tmpBH.append(prepareToPrint(s));
+        tmpBH.prepend(prepareToPrint(s));
+        tmpBH.prepend(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(turn_idx)));
     }
     return tmpBH;
 }
@@ -399,19 +405,19 @@ QString QBattleInfo::getFullHist(const QString& Login) const {
 QString QBattleInfo::toJSON(const QString &Login) const {
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
                    ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15,"
-                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"need\":%20,\"player\":\"%21\"}")
+                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"need\":%20,\"player\":\"%21\",\"challenged\":\"%22\"}")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
-            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login);
+            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login, _challenged.join(","));
 }
 
 QString QBattleInfo::toString() const {
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
-                   "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20")
+                   "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
-            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title);
+            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","));
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -464,6 +470,8 @@ void QBattleInfo::parseString(const QString &battle_info) {
             _fullParsed = value.compare("true") == 0;
         } else if (key.compare("sub_title") == 0) {
             _sub_title = value;
+        } else if (key.compare("challenged") == 0) {
+            _challenged = value.split(",");
         }
     }
 }

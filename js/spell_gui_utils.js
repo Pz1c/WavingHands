@@ -65,8 +65,17 @@ function prepareDataType12(l_data, dict) {
             if (!not_empty) {
                 ltError.text = "";
             }
+        }
 
-            //ltError.text = "Warlocks accepted: " + replaceAll(l_data.battle_data.participant, ",", ", ") + "<br>";
+        if (!l_data.battle_data.challenged || (l_data.battle_data.challenged === '')) {
+
+        } else {
+            ltError.text = "Warlocks challenged:<br>";
+            var arr_c = l_data.battle_data.challenged.split(",");
+            for(var j = 0, LnJ = arr_c.length; j < LnJ; ++j) {
+                var arr_wr = arr_c[j].split(":");
+                ltError.text += arr_wr[0] + '&nbsp;&nbsp;&nbsp;<a href="/reject/'+arr_wr[1]+'"><font color="#10C9F5">Cancel</font></a><br>';
+            }
         }
         //var tarr2 = tarr[1].split("/");
         var need_cnt = l_data.battle_data.need;

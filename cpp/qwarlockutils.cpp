@@ -733,7 +733,8 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
 }
 
 void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
-    int idx1 = 0, idx2;
+    int idx1 = 0, idx2, idx3, idx4, idx5;
+    bool challenged;
     // parse title
     QString title = getStringFromData(Data, "<H2><U", ">", "</U>", idx1);
     bi->setMaladroit(title.indexOf("(Maladroit)") != -1);
@@ -752,9 +753,20 @@ void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
     while ((idx1 = Data.indexOf("<A HREF=\"/player/", idx1)) != -1) {
         idx1 += 17;
         idx2 = Data.indexOf('.', idx1);
-        QString tmp = Data.mid(idx1, idx2 - idx1);
-        bi->addParticipant(tmp);
-        qDebug() << "QWarlockUtils::parseUnstartedBattle" << idx1 << idx2 << tmp;
+        QString tmp_login = Data.mid(idx1, idx2 - idx1);
+        idx3 = Data.indexOf("<BR>", idx2);
+        idx4 = Data.indexOf("&reject=", idx2);
+        challenged = (idx4 != -1) && (idx4 < idx3);
+        if (challenged) {
+            idx4 += 8;
+            idx5 = Data.indexOf('"', idx4);
+            QString w_id = Data.mid(idx4, idx5 - idx4);
+            tmp_login.append(":");
+            tmp_login.append(w_id);
+        }
+        idx1 = idx3;
+        bi->addParticipant(tmp_login, challenged);
+        qDebug() << "QWarlockUtils::parseUnstartedBattle" << idx1 << idx2 << tmp_login << challenged;
     }
 
     // parse description

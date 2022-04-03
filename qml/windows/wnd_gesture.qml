@@ -4,6 +4,7 @@ import QtQuick.Controls 2.15
 import Qt.labs.qmlmodels 1.0
 
 import "qrc:/qml/components"
+import "qrc:/js/small_gui_utils.js" as SG
 
 BaseWindow {
     id: dMainItem
@@ -31,14 +32,15 @@ BaseWindow {
     }
 
     property string currGesture: ""
+    property string lastGesture: ""
     property var arrGesture: [iiGC,iiGD,iiGF,iiGS,iiGP,iiGW,iiGSt,iiGN]
     property var arrGestureVal: ["C","D","F","S","P","W",">","-"]
     property var mapGesture: ({"C":iiGC,"D":iiGD,"F":iiGF,"S":iiGS,"P":iiGP,"W":iiGW,">":iiGSt,"-":iiGN})
     property var arrPossibleGesture: []
-    //property var arrSpellFull: []
     property var arrSpell: []
-    //property var arrSpellLater: []
-
+    property int actionType: 0 // 0 normal, 1 enemy, 2 paralyze, 3 charm
+    property int warlockIdx: 0
+    property int handIdx: 0
     // This rectangle is the actual popup
     Item {
         id: dialogWindow
@@ -498,22 +500,35 @@ BaseWindow {
                     color: "transparent"
 
                     onClicked: {
-                        var spell = arrSpell[mainWindow.gBattle.spellIdx], s;
-                        var need_targeting = (spell.n === "Stab") || (mainWindow.gBattle.spellIdx !== 0);
-                        if (!need_targeting) {
-                            for(var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
-                                s = arrSpell[i];
-                                if ((s.ng === currGesture) && (s.t === 1) && (s.dt !== 0)) {
-                                    need_targeting = true;
-                                    break;
+                        if (actionType === 1) {
+                            // check enemy spells
+                            mainWindow.processEscape();
+                            return;
+                        } else if ((actionType === 2) || (actionType === 3)) {
+                            // paralyzed or charmed
+                            mainWindow.setCharm(handIdx === 1 ? "LH" : "RH", currGesture);
+                        } else {
+                            var spell = arrSpell[mainWindow.gBattle.spellIdx], s;
+                            var need_targeting = (spell.n === "Stab") || (mainWindow.gBattle.spellIdx !== 0);
+                            if (!need_targeting) {
+                                for(var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
+                                    s = arrSpell[i];
+                                    if ((s.ng === currGesture) && (s.t === 1) && (s.dt !== 0)) {
+                                        need_targeting = true;
+                                        break;
+                                    }
                                 }
                             }
-                        }
 
-                        mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], need_targeting);
+                            mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], need_targeting);
+                        }
                     }
 
                     onDoubleClicked: {
+                        if (actionType !== 0) {
+                            return;
+                        }
+
                         mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
                     }
                 }
@@ -538,6 +553,68 @@ BaseWindow {
 
             }
 
+            Item {
+                id: iCharm
+                anchors.left: parent.left
+                anchors.leftMargin: 30 * mainWindow.ratioObject
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.top: rLine.bottom
+                visible: false
+
+                Text {
+                    id: tCharmTitle
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    font.pixelSize: 35 * mainWindow.ratioFont
+                    text: "Charm opponent Left hand?"
+                    color: "#FEE2D6"
+                }
+
+                IconInfo {
+                    id: iiCharmRefuse
+                    source: "qrc:/res/target_nobody.png"
+                    textVisible: false
+                    height: 64 * mainWindow.ratioObject
+                    width: 64 * mainWindow.ratioObject
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.horizontalCenter
+                    anchors.rightMargin: 32 * mainWindow.ratioObject
+                    active: true
+                    color: "transparent"
+
+                    onClicked: {
+                        iCharm.visible = false;
+                        iiSend.visible = false;
+                        iGesture.visible = true;
+                    }
+                }
+
+                IconInfo {
+                    id: iiCharmAccept
+                    source: "qrc:/res/send_1.png"
+                    textVisible: false
+                    height: 64 * mainWindow.ratioObject
+                    width: 64 * mainWindow.ratioObject
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.horizontalCenter
+                    anchors.leftMargin: 32 * mainWindow.ratioObject
+                    active: true
+                    color: "transparent"
+
+                    onClicked: {
+                        if (actionType == 2) {
+                            // paralyze
+                            var ng = SG.getNextParalyzedGesture(lastGesture, mainWindow.gBattle.is_fc);
+                            arrPossibleGesture = [ng];
+                            setGesture(ng);
+                        }
+                        iCharm.visible = false;
+                        iiSend.visible = true;
+                        iGesture.visible = true;
+                    }
+                }
+            }
         }
 
     }
@@ -594,6 +671,7 @@ BaseWindow {
 
     function setGesture(new_gesture) {
         clearAll()
+        console.log("wnd_gesture.setGesture", new_gesture);
         if (new_gesture === currGesture) {
             currGesture = "";
             new_gesture = "";
@@ -614,7 +692,7 @@ BaseWindow {
             mapGesture[new_gesture].checked = true;
             currGesture = new_gesture;
         }
-        if ((new_gesture === "P") && (mainWindow.gBattle["ng" + mainWindow.gBattle.otherHand] === "P")) {
+        if ((actionType === 0) && (new_gesture === "P") && (mainWindow.gBattle["ng" + mainWindow.gBattle.otherHand] === "P")) {
             rpAlert.height = rpAlertH1.height + rpAlertH3.height + 30 * mainWindow.ratioObject;
             rpAlert.visible = true;
         } else {
@@ -623,34 +701,20 @@ BaseWindow {
         }
 
         if (new_gesture === "-") {
-            mainWindow.gBattle.spellIdx = 0;
+            if (actionType === 0) {
+                mainWindow.gBattle.spellIdx = 0;
+            }
             arrSpell = [{gp:"?",n:"Default",t:1,choose:1,row_type:1}];
             //arrSpellLater = [];
         } else if (new_gesture === ">") {
-            mainWindow.gBattle.spellIdx = 0;
+            if (actionType === 0) {
+                mainWindow.gBattle.spellIdx = 0;
+            }
             arrSpell = [{gp:">",n:"Stab",t:1,choose:1,row_type:1}];
             //arrSpellLater = [];
         } else {
-            arrSpell = mainWindow.getSpellList(new_gesture);
-        }/*if (new_gesture === "") {
-            if (arrSpellFull.length === 0) {
-                arrSpellFull = mainWindow.getSpellList("");
-                lvSpellList.model = arrSpellFull;
-            }
-            //svError.contentHeight = iSpellBook.height;
-            iCast.visible = false;
-            iSpellBook.visible = true;
-            return;
-        } else {
-            var tmp_arr = mainWindow.getSpellList(new_gesture);
-            arrSpell = tmp_arr[0];
-            arrSpellLater = tmp_arr[1];
-        }*/
-        //lvCast.model = arrSpell;
-        //lvCastNext.model = arrSpellLater;
-        //svError.contentHeight = iCast.height;
-        //iSpellBook.visible = false;
-        //iCast.visible = true;
+            arrSpell = mainWindow.getSpellList(new_gesture, warlockIdx, handIdx);
+        }
         console.log("FINAL ARRAY", JSON.stringify(arrSpell));
         lvSpellList.model = arrSpell;
     }
@@ -658,8 +722,36 @@ BaseWindow {
     function initGFields() {
         console.log("wnd_gesture.initGFields", JSON.stringify(mainWindow.gERROR));
         iiSend.active = false;
-        //iiSendTarget.active = false;
-        //title_text = mainWindow.gERROR.title;
+        if (!mainWindow.gERROR.g) {
+            mainWindow.gERROR.g = "";
+        }
+
+        if (mainWindow.gERROR.at) {
+            switch(mainWindow.gERROR.at) {
+            case "enemy":
+                actionType = 1;
+                mainWindow.gERROR.g = "";
+                break;
+            case "paralized":
+                actionType = 2;
+                lastGesture = mainWindow.gERROR.lg;
+                tCharmTitle.text = "Paralyze " + (mainWindow.gERROR.is_left ? "Left" : "Right") + " hand?"
+                break;
+            case "charmed":
+                actionType = 3;
+                tCharmTitle.text = "Charm " + (mainWindow.gERROR.is_left ? "Left" : "Right") + " hand?"
+                break;
+            default:
+                actionType = 0;
+            }
+        }
+        iiSend.visible = actionType !== 1;
+        iCharm.visible = (actionType === 2) || (actionType === 3);
+        iGesture.visible = (actionType === 1) || (actionType === 0);
+        if (mainWindow.gERROR.hasOwnProperty('widx')) {
+            warlockIdx = mainWindow.gERROR.widx;
+        }
+        handIdx = mainWindow.gERROR.is_left ? 1 : 2;
         arrPossibleGesture = mainWindow.gERROR.pga;
         setGesture(arrPossibleGesture.length === 1 ? arrPossibleGesture[0] : mainWindow.gERROR.g);
         mainWindow.gERROR = {};

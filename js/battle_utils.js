@@ -362,7 +362,7 @@ function getOrdersForReview(dictionary) {
     }
 
     if (actions.C !== "") {
-        res.push({type:"C",v:"Say: " + actions.C,c:"snow",icon:"scroll",icon_text:"",icon_visible:true,icon_width:60});
+        res.push({type:"C",v:"Say: " + actions.C,c:"snow",icon:"chat",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
     }
     // gesture

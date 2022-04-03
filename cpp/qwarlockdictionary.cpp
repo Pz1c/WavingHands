@@ -313,7 +313,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("cDPW_short_desc", "", "", "Counter all spells, Destroy all monsters and enchantments. Also acts as a shield");
     fillDictionary("PDWP_short_desc", "", "", "Destroy an enchantment (Amensia, Fear, etc.) or a monster");
     fillDictionary("PPws_short_desc", "", "", "You cannot be seen or targeted for 3 turns");
-    fillDictionary("DWFWd_short_desc", "", "", "Target cannot see or aim for 3 turns");
+    fillDictionary("DFWFd_short_desc", "", "", "Target cannot see or aim for 3 turns");
     fillDictionary("DWFFd_short_desc", "", "", "Target cannot see or aim for 3 turns");
     fillDictionary("SPFP_short_desc", "", "", "Cut opponent's gestures, making him start a new chain of gestures");
     fillDictionary("SPFPSDW_short_desc", "", "", "Make an enchantment that you cast in the following 3 turns permanent");

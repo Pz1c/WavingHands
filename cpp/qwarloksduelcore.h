@@ -139,7 +139,7 @@ public slots:
     void autoLogin(int Idx);
     void aiLogin();
     void logout();
-    void leaveBattle(int battle_id);
+    void leaveBattle(int battle_id, int warlock_id = 0);
     void setParamValue(const QString &Parameter, const QString &Value);
     QString getWarlockStats(const QString &WarlockName, bool DirtyLogin = false);
     void getSharableLink(const QString &game_level = "vf");
