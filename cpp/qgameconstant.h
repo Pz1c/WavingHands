@@ -33,6 +33,8 @@
 #define GAME_SERVER_URL_SENDMESS "https://games.ravenblack.net/sendmess"
 #define GAME_SERVER_URL_GET_FINISHED_BATTLE "https://visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&show_data=1"
 #define GAME_SERVER_URL_STORE_FINISHED_BATTLE "https://visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&store_json=1"
+#define GAME_SERVER_URL_WARLOCK_GET "https://visk.in.ua/robot_gateway/wh/warlock_get.php?wn=%1"
+#define GAME_SERVER_URL_WARLOCK_PUT "https://visk.in.ua/robot_gateway/wh/warlock_put.php?wn=%1"
 #define GAME_SERVER_URL_LOGOUT "https://games.ravenblack.net/logout"
 #define GAME_SERVER_URL_INVITE_TO_CHALLENGE "https://games.ravenblack.net/chalplayer?victim=%1&num=%2"
 
@@ -142,7 +144,7 @@
 static QStringList POSSIBLE_GESTURES {"C", "W", "S", "D", "F", "P", ">"};
 static QMap<QString, QString> gestureParaCFMap{{"C","F"},{"S","D"},{"W","P"}};
 static QMap<QString, QString> gestureParaFCMap{{"F","C"},{"S","D"},{"W","P"}};
-static QStringList _lstAI = QStringList({"CONSTRUCT", "EARTHGOLEM", "IRONGOLEM"});
+static QStringList _lstAI = QStringList({"CONSTRUCT", "EARTHGOLEM", "IRONGOLEM", "BEZOAR", "ENNEAD", "ADYVIO", "XAERO", "WAORALACKS", "UWULEKAI","STIOCILIA","ICRAEVERRA","DAELAZAR"});
 static QList<int> ARR_FIRE_SPELLS = QList<int>({SPELL_FIREBALL, SPELL_FIRE_STORM, SPELL_SUMMON_FIRE_ELEMENTAL});
 static QList<int> ARR_ICE_SPELLS = QList<int>({SPELL_ICE_STORM, SPELL_SUMMON_ICE_ELEMENTAL});
 static QList<int> ARR_PARALYZES = QList<int>({SPELL_PARALYSIS_FDF, SPELL_PARALYSIS_FDFD, SPELL_PARALYSIS});

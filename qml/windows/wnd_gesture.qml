@@ -585,7 +585,7 @@ BaseWindow {
 
                     onClicked: {
                         iCharm.visible = false;
-                        iiSend.visible = false;
+                        //iiSend.visible = false;
                         iGesture.visible = true;
                     }
                 }
@@ -610,7 +610,7 @@ BaseWindow {
                             setGesture(ng);
                         }
                         iCharm.visible = false;
-                        iiSend.visible = true;
+                        //iiSend.visible = true;
                         iGesture.visible = true;
                     }
                 }
@@ -641,7 +641,7 @@ BaseWindow {
     }
 
     function clearAll() {
-        var set_enable = arrPossibleGesture.length > 0;
+        var set_enable = (arrPossibleGesture.length > 0);
         for (var i = 0; i < 8; ++i) {
             arrGesture[i].height = 78 * mainWindow.ratioObject;
             arrGesture[i].width = 60 * mainWindow.ratioObject;
@@ -653,7 +653,9 @@ BaseWindow {
             }
             //arrGesture[i].anchors.leftMargin = 12 * mainWindow.ratioObject;
             //arrGesture[i].anchors.rightMargin = 12 * mainWindow.ratioObject;
-            if (set_enable && ((i < 6) || (arrPossibleGesture.length === 1))) {
+            if (actionType === 1) {
+                arrGesture[i].active = false;
+            } else if (set_enable && ((i < 6) || (arrPossibleGesture.length === 1))) {
                 arrGesture[i].active = arrPossibleGesture.indexOf(arrGestureVal[i]) !== -1;
             } else {
                 arrGesture[i].active = true;
@@ -675,7 +677,7 @@ BaseWindow {
         if (new_gesture === currGesture) {
             currGesture = "";
             new_gesture = "";
-            iiSend.active = false;
+            iiSend.active = actionType === 1;
         }
         if (new_gesture !== "") {
             iiSend.active = true;
@@ -731,6 +733,8 @@ BaseWindow {
             case "enemy":
                 actionType = 1;
                 mainWindow.gERROR.g = "";
+                iiSend.active = true;
+                //mainWindow.gERROR.pga = ["X", "Y"];
                 break;
             case "paralized":
                 actionType = 2;
@@ -745,7 +749,7 @@ BaseWindow {
                 actionType = 0;
             }
         }
-        iiSend.visible = actionType !== 1;
+        //iiSend.visible = actionType !== 1;
         iCharm.visible = (actionType === 2) || (actionType === 3);
         iGesture.visible = (actionType === 1) || (actionType === 0);
         if (mainWindow.gERROR.hasOwnProperty('widx')) {

@@ -218,13 +218,18 @@ function joinBattleDialogResult(accept) {
 
 function startGameWithBotEx() {
     console.log("startGameWithBot", JSON.stringify(G_CHALLENGE_LIST));
-    for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
-        if (G_CHALLENGE_LIST[i].active && G_CHALLENGE_LIST[i].with_bot) {
-            core.acceptChallenge(G_CHALLENGE_LIST[i].id, false);
-            return;
+    var bot_battle_id = core.getBotBattle();
+    if (bot_battle_id) {
+        showErrorWnd({id:-1,type:21});
+    } else {
+        for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
+            if (G_CHALLENGE_LIST[i].active && G_CHALLENGE_LIST[i].with_bot) {
+                core.acceptChallenge(G_CHALLENGE_LIST[i].id, false);
+                return;
+            }
         }
+        core.createNewChallenge(1, 0, 1, 1, 2, 2, "TRANING BOT ONLY");
     }
-    core.createNewChallenge(1, 0, 1, 1, 2, 2, "TRANING BOT ONLY");
 }
 
 function startGameWithBot() {

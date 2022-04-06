@@ -292,3 +292,8 @@ function prepareGameWithBot(l_data, dict) {
     bbBtn3.visible = true;
 }
 
+function prepareTooMuchBotBattles(l_data, dict) {
+    ltTitle.text = dict.getStringByCode("TooMuchBotBatleWndTitle");
+    ltShortDesc.text = dict.getStringByCode("TooMuchBotBatleWndSDesc");
+    //ltError.text = dict.getStringByCode("ShareWndDesc") + l_data.link;
+}

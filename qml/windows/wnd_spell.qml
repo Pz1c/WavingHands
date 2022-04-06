@@ -267,7 +267,9 @@ InfoWindow {
 
         if (l_data && (l_data.action || (l_data.type && (l_data.type >= 8)))) {
             icon.visible = false;
-            if (l_data.type && (l_data.type === 20)) {
+            if (l_data.type && (l_data.type === 21)) {
+                SGU.prepareTooMuchBotBattles(l_data, dict);
+            } else if (l_data.type && (l_data.type === 20)) {
                 SGU.prepareGameWithBot(l_data, dict);
             } else if (l_data.type && (l_data.type === 19)) {
                 SGU.prepareGameWithPlayer(l_data, dict);

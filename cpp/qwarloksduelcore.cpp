@@ -271,7 +271,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         sendGetRequest(url);
         processRefferer();
         saveParameters(true, true, true, true, true);
-        setTimeState(true);
+        setTimeState(!_isAsService);
         return false;
     }
     return true;
@@ -364,7 +364,8 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
     qDebug() << "finishCreateChallenge " << StatusCode << NewUrl << Data << _inviteToBattle;
     if (NewUrl.isEmpty()) {
         if (_isAsService) {
-            aiLogin();
+            //aiLogin();
+            //do nothing
         } else {
             _errorMsg = "{\"type\":10}";
             emit errorOccurred();
@@ -455,6 +456,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
         } else if (_isAsService) {
             qDebug() << "emit readyAIAnswer";
             emit readyAIAnswer();
+            processWarlockPut();
         }
     }
 
@@ -1588,7 +1590,11 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return !finishOrderSubmit(data, statusCode, new_url);
     }
 
-    if ((url.indexOf("robot_gateway/wh/") != -1) && (url.indexOf("store_json") != -1)) {
+    if (url.indexOf("robot_gateway/wh/warlock_get") != -1) {
+        processWarlockGet(data);
+    }
+
+    if ((url.indexOf("robot_gateway/wh/") != -1) && ((url.indexOf("store_json") != -1) || (url.indexOf("warlock_put") != -1))) {
         return true;
     }
 
@@ -2336,13 +2342,74 @@ void QWarloksDuelCore::setCheckUrl(const QString &check_url) {
 
 void QWarloksDuelCore::doAIAnswer(QString Login) {
     qDebug() << "QWarloksDuelCore::doAIAnswer" << Login << _isAsService;
-    if (!Login.isEmpty()) {
-        _botIdx = _lstAI.indexOf(Login.toUpper()) - 1;
-    }
-    aiLogin();
+    //if (!Login.isEmpty()) {
+    //    _botIdx = _lstAI.indexOf(Login.toUpper()) - 1;
+    //}
+    //aiLogin();
+    sendGetRequest(QString(GAME_SERVER_URL_WARLOCK_GET).arg(Login));
 }
 
 void QWarloksDuelCore::checkAIAnswer() {
     qDebug() << "QWarloksDuelCore::checkAIAnswer" << _isAsService;
     scanState(true);
+}
+
+void QWarloksDuelCore::processWarlockPut() {
+    QString data = "json=";
+    foreach (int bid, _waiting_in_battles) {
+        QBattleInfo *bi = getBattleInfo(bid);
+        if ((bi->status() != BATTLE_INFO_STATUS_WAIT)) {
+            continue;
+        }
+        data.append(QUrl::toPercentEncoding(bi->toString(true)));
+        data.append(QUrl::toPercentEncoding("#SPLIT_POINT#"));
+    }
+    sendPostRequest(QString(GAME_SERVER_URL_WARLOCK_PUT).arg(_login), data.toUtf8());
+}
+
+void QWarloksDuelCore::processWarlockGet(QString &Data) {
+    QStringList sl = Data.split("#SPLIT_POINT#");
+    QString Login = sl.at(0);
+    _botIdx = _lstAI.indexOf(Login.toUpper()) - 1;
+    for(int i = 1; i < sl.size(); ++i) {
+        if (sl.at(i).indexOf("id#=#") == -1) {
+            continue;
+        }
+        QBattleInfo *bi = new QBattleInfo(sl.at(i));
+        if (bi->battleID() > 0) {
+            if (_battleInfo.contains(bi->battleID())) {
+                _battleInfo[bi->battleID()]->setWaitFrom(bi->wait_from());
+            } else {
+                _battleInfo.insert(bi->battleID(), bi);
+                continue;
+            }
+        }
+
+        delete bi;
+    }
+
+    aiLogin();
+}
+
+int QWarloksDuelCore::getBotBattle() {
+    QBattleInfo *battle_info;
+    foreach(int bid, _waiting_in_battles) {
+        battle_info = getBattleInfo(bid);
+        if (!_isAsService && (battle_info->for_bot() || battle_info->with_bot())) {
+            QString enemy = battle_info->getEnemy(_login);
+            if (_lstAI.indexOf(enemy.toUpper()) != -1) {
+                qDebug() << "emit needAIAnswer"  << enemy;
+                emit needAIAnswer(battle_info->getEnemy(_login));
+                return bid;
+            }
+        }
+    }
+    foreach(int bid, _ready_in_battles) {
+        battle_info = getBattleInfo(bid);
+        if (!_isAsService && (battle_info->for_bot() || battle_info->with_bot())) {
+            return bid;
+        }
+    }
+
+    return 0;
 }

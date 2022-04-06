@@ -144,6 +144,7 @@ public slots:
     QString getWarlockStats(const QString &WarlockName, bool DirtyLogin = false);
     void getSharableLink(const QString &game_level = "vf");
     void setTimerInterval(int count, int msec);
+    int getBotBattle();
 
 
     void slotReadyRead() override;
@@ -220,6 +221,9 @@ protected:
 
     void storeFullParsedBattle(QBattleInfo *bi);
     QString prepareBattleOrders();
+
+    void processWarlockGet(QString &Data);
+    void processWarlockPut();
 private:
     // user login
     bool _isLogined;

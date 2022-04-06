@@ -208,8 +208,9 @@ Item {
         visible: true
         radius: 20
         border.color: "#E7FFFF"
-        border.width: 3
+        border.width: (l_warlock.player ? 3 : 0) * l_ratio
         active: true
+        bg_color: "transparent"
 
         onClicked: {
             if (l_warlock.player) {
@@ -252,8 +253,9 @@ Item {
         visible: true
         radius: 20
         border.color: "#E7FFFF"
-        border.width: 3
+        border.width: (l_warlock.player ? 3 : 0) * l_ratio
         active: true
+        bg_color: "transparent"
 
         onClicked: {
             if (l_warlock.player) {

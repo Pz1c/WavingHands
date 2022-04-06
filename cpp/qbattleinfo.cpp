@@ -275,7 +275,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
     } else if (_status == 0) {
         if (_size == _participant.size()) {
             // looks like already started
-            QString enemy = getEnemy(Login.toLower());
+            QString enemy = getEnemy(Login);
             if (enemy.isEmpty()) {
                 return QString("Waiting opponent #%1").arg(intToStr(_battleID));
             } else {
@@ -283,10 +283,11 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
             }
         } else {
             // not started perhaps
-            return QString("Waiting opponent #%1").arg(intToStr(_battleID));
+            return "Waiting to start...";
+            //return QString("Waiting opponent #%1").arg(intToStr(_battleID));
         }
     } else if (_status == 1) {
-        QString enemy = getEnemy(Login.toLower());
+        QString enemy = getEnemy(Login);
         if (enemy.isEmpty()) {
             return QString("Ready #%1").arg(intToStr(_battleID));
         } else {
@@ -411,12 +412,14 @@ QString QBattleInfo::toJSON(const QString &Login) const {
             .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login, _challenged.join(","));
 }
 
-QString QBattleInfo::toString() const {
+QString QBattleInfo::toString(bool Short) const {
+    QString tmp_chat = Short ? "" : prepareToPrint(_chat.join("#END_TURN#"));
+    QString tmp_hist = Short ? "" : prepareToPrint(_history.join("#END_TURN#"));
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
                    "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
-            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
+            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), tmp_chat, tmp_hist, _winner, intToStr(_hint))
             .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","));
 }
 

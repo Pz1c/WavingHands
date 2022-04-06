@@ -174,6 +174,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("NewGameWithBotBtn1", "", "", "Training bot");
     fillDictionary("NewGameWithBotBtn2", "", "", "Friend");
     fillDictionary("NewGameWithBotBtn3", "", "", "Find a warlock by name");
+    fillDictionary("TooMuchBotBatleWndTitle", "", "", "Training battle limit");
+    fillDictionary("TooMuchBotBatleWndSDesc", "", "", "Please wait for your turn in current training battle");
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");

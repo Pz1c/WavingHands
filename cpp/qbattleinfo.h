@@ -12,7 +12,7 @@ public:
     QBattleInfo(const QString &battle_info);
 
     QString toJSON(const QString &Login = "") const;
-    QString toString() const;
+    QString toString(bool Short = false) const;
     QString getInListDescription(const QString &Login) const;
     bool isWinner(const QString &Login) const;
     bool canForceSurrendering() const;
