@@ -28,6 +28,7 @@ function prepareWarlock(w) {
     w.control_charmed  = battle.charm.indexOf(w.id) !== -1;
     w.statusIcons = prepareStatusIcon(w);
     w.banked_spell = w.bank;//player && */(battle.fire !== "") ? battle.fire : "";
+    w.turn_num = battle.turn_num;
     if (w.player) {
         battle.L = w.L;
         battle.R = w.R;
@@ -222,7 +223,7 @@ function prepareWarlocks() {
 }
 
 function finishPrepareWarlockList() {
-    console.log("finishPrepareWarlockList", battleWindow.height, battleWindow.width);
+    console.log("finishPrepareWarlockList", battleWindow.height, battleWindow.width, battle.turn_num);
     if (cWarlockObject.status === Component.Error || cWarlockObject.status !== Component.Ready) {
         console.log("Error loading component:", cWarlockObject.errorString());
         return ;
@@ -234,7 +235,8 @@ function finishPrepareWarlockList() {
             continue;
         }
         var arr_m = battle.warlocks[i];
-        arr_m.warlock_idx = i;
+        arr_m.warlock_idx = i;        
+        //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
         if (sprite === null) {
             console.log("Error creating object");

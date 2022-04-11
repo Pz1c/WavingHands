@@ -696,7 +696,7 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
             continue;
         }
         idx1 = s.indexOf('"');
-        tmp = s.mid(0, idx1 - 1);
+        tmp = s.mid(0, idx1);
         qDebug() << "QWarlockUtils::parsePersonalChallenge" << tmp << idx1;
         battle_id = tmp.toInt();
         idx1 = s.indexOf("</A>. ", idx1);

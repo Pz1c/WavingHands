@@ -316,11 +316,10 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
         qDebug() << "finishChallengeList" << bi->toJSON(_login);
         _battleInfo.insert(bi->battleID(), bi);
         if (_isAI) {
-            if (bi->for_bot()) {
+            if (bi->for_bot() && bi->active(_login)) {
                 working = aiAcceptChallenge(bi->battleID(), false) || working;
-            }
-            if (bi->with_bot()) {
-                ++with_bot;
+            } else if (bi->with_bot() && !bi->active(_login)) {
+                with_bot = 100;
             }
         } else if (bi->for_bot() && !bi->active(_login)) {
             qDebug() << "finishChallengeList" << "emit needAIAnswer";
@@ -1592,6 +1591,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
 
     if (url.indexOf("robot_gateway/wh/warlock_get") != -1) {
         processWarlockGet(data);
+        return true;
     }
 
     if ((url.indexOf("robot_gateway/wh/") != -1) && ((url.indexOf("store_json") != -1) || (url.indexOf("warlock_put") != -1))) {
@@ -2181,11 +2181,12 @@ QString QWarloksDuelCore::battleInfo() {
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
-                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\",\"battle_hist\":\"%21\",\"battle_chat\":\"%22\"}")
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
+                   "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
-            .arg(tmpBH, tmpBC); // 21-22
+            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn)); // 21-23
 }
 
 void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Value) {
@@ -2370,7 +2371,8 @@ void QWarloksDuelCore::processWarlockPut() {
 void QWarloksDuelCore::processWarlockGet(QString &Data) {
     QStringList sl = Data.split("#SPLIT_POINT#");
     QString Login = sl.at(0);
-    _botIdx = _lstAI.indexOf(Login.toUpper()) - 1;
+    _botIdx = _lstAI.indexOf(Login, Qt::CaseInsensitive) - 1;
+    qDebug() << "QWarloksDuelCore::processWarlockGet" << Login << _botIdx;
     for(int i = 1; i < sl.size(); ++i) {
         if (sl.at(i).indexOf("id#=#") == -1) {
             continue;

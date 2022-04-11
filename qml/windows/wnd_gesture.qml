@@ -41,6 +41,7 @@ BaseWindow {
     property int actionType: 0 // 0 normal, 1 enemy, 2 paralyze, 3 charm
     property int warlockIdx: 0
     property int handIdx: 0
+    property int disableAll: 0
     // This rectangle is the actual popup
     Item {
         id: dialogWindow
@@ -587,6 +588,8 @@ BaseWindow {
                         iCharm.visible = false;
                         //iiSend.visible = false;
                         iGesture.visible = true;
+                        disableAll = 1;
+                        clearAll();
                     }
                 }
 
@@ -653,7 +656,7 @@ BaseWindow {
             }
             //arrGesture[i].anchors.leftMargin = 12 * mainWindow.ratioObject;
             //arrGesture[i].anchors.rightMargin = 12 * mainWindow.ratioObject;
-            if (actionType === 1) {
+            if ((actionType === 1) || (disableAll === 1)) {
                 arrGesture[i].active = false;
             } else if (set_enable && ((i < 6) || (arrPossibleGesture.length === 1))) {
                 arrGesture[i].active = arrPossibleGesture.indexOf(arrGestureVal[i]) !== -1;
@@ -727,7 +730,7 @@ BaseWindow {
         if (!mainWindow.gERROR.g) {
             mainWindow.gERROR.g = "";
         }
-
+        disableAll = 0;
         if (mainWindow.gERROR.at) {
             switch(mainWindow.gERROR.at) {
             case "enemy":

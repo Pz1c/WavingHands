@@ -971,15 +971,15 @@ ApplicationWindow {
                 gBattle.spellIdx = 1 + arr_cast_now.length;
             }
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
-            res.push({gp:"?",n:"Completed spells",choose:0,t:0,cast_type:100,row_type:2});
+            res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
             res.push(def_spell);
         } else {
-            res.push({gp:"?",n:"Spellbook",choose:0,t:0,cast_type:100,row_type:3});
+            res.push({gp:"?",n:(warlock_idx === 0 ? "Spellbook" : "Spells opponent may cast"),choose:0,t:0,cast_type:100,row_type:3});
         }
         if (uncompleted_cnt > 0) {
             if (new_gesture !== '') {
-                res.push({gp:"?",n:"Incomplete Spells",choose:0,t:0,cast_type:100,row_type:2});
+                res.push({gp:"?",n:(warlock_idx === 0 ? "Incomplete Spells" : "Incomplete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
             }
             res = res.concat(arr_cast_later);
         }

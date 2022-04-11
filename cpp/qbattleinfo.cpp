@@ -322,7 +322,14 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
 }
 
 bool QBattleInfo::active(const QString &login) const {
-    return _participant.indexOf(login, Qt::CaseInsensitive) == -1;
+    QString check = login.toLower();
+    foreach(QString s, _participant) {
+        if (check.compare(s.toLower()) == 0) {
+            return false;
+        }
+    }
+    return true;
+    //return _participant.indexOf(login, Qt::CaseInsensitive) == -1;
 }
 
 bool QBattleInfo::isWinner(const QString &Login) const {

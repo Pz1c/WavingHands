@@ -200,12 +200,12 @@ Item {
         text: ""
         height: 120 * l_ratio
         width: 90 * l_ratio
-        iconHeight: (l_warlock.player ? 84 : 63) * l_ratio
-        iconWidth: (l_warlock.player ? 84 : 63) * l_ratio
+        iconHeight: (l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed ? 84 : 43) * l_ratio
+        iconWidth: (l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed ? 84 : 43) * l_ratio
         anchors.bottom: iiRight.top
         anchors.bottomMargin: 18 * l_ratio
         anchors.right: parent.right
-        visible: true
+        visible: l_warlock.player || (l_warlock.turn_num > 1)
         radius: 20
         border.color: "#E7FFFF"
         border.width: (l_warlock.player ? 3 : 0) * l_ratio
@@ -245,12 +245,12 @@ Item {
         text: ""
         height: iiLeft.height
         width: iiLeft.width
-        iconHeight: (l_warlock.player ? 84 : 63) * l_ratio
-        iconWidth: (l_warlock.player ? 84 : 63) * l_ratio
+        iconHeight: (l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed ? 84 : 43) * l_ratio
+        iconWidth: (l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed ? 84 : 43) * l_ratio
         anchors.bottom: rBottomLine.top
         anchors.bottomMargin: 16 * l_ratio
         anchors.right: parent.right
-        visible: true
+        visible: l_warlock.player || (l_warlock.turn_num > 1)
         radius: 20
         border.color: "#E7FFFF"
         border.width: (l_warlock.player ? 3 : 0) * l_ratio
