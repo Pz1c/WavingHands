@@ -14,8 +14,9 @@
 class QSpell
 {
 public:
-    QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget = SPELL_DEF_TARGER_NOBODY,
-           int Damage = 0, bool Active = true, bool Basic = false, int SpellGroup = SPELL_GROUP_UNDEFINED);
+    QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger,
+           int DefTarget = SPELL_DEF_TARGER_NOBODY, int Damage = 0, bool Active = true, bool Basic = false,
+           int SpellGroup = SPELL_GROUP_UNDEFINED, int SpellBookLevel = 0);
     QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy = false);
 
     int spellID() const;
@@ -67,6 +68,8 @@ public:
     int danger() const;
     bool checkValidSequence(const QSpell &s);
 
+    int spellBookLevel() const;
+
 protected:
 
     int calcPriority(bool Enemy);
@@ -88,6 +91,7 @@ private:
     bool _basic;
     qreal _realPriority;
     int _spellGroup;
+    int _spellBookLevel;
 
     static int _orderType;
 };

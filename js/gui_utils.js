@@ -2,7 +2,7 @@ var C_NG_PLAYER_CODE = 'player';
 var C_NG_BOT_CODE = 'bot';
 var G_BATTLE_LIST = [[],[]];
 var G_CHALLENGE_LIST = [];
-var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0};
+var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0,sbl:-1};
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
 var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
@@ -18,6 +18,7 @@ function getMainMenuList() {
 }
 
 function mainMenuActionEx(code) {
+    var def_type = 1013;
     switch(code) {
     case "refresh": return core.scanState(false);
     case "spellbook": return showWndSpellbook();
@@ -27,8 +28,11 @@ function mainMenuActionEx(code) {
     case "player_score": return showUserScoreWnd();
     case "battle_with_friend": return showShareWnd();
     case "logout": return core.logout();
+    case "spellbook_levelup":
+        def_type = 22;
+        break;
     }
-    showErrorWnd({id:-1,type:1013});
+    showErrorWnd({id:-1,type:def_type});
 }
 
 function mainMenuAction(code) {
@@ -142,6 +146,14 @@ function userProfileChanged() {
         prepareNewGameBtn(G_PROFILE.elo);
     }
     tbScoreText.text = G_PROFILE.elo;
+    var old_sbl = playerSpellbookLevel;
+    if (playerSpellbookLevel !== G_PROFILE.sbl) {
+        playerSpellbookLevel = G_PROFILE.sbl;
+        if (old_sbl < G_PROFILE.sbl) {
+            //showSBLWnd();
+            afterCloseAction = "spellbook_levelup";
+        }
+    }
 }
 
 function getJoinDialogText(b) {

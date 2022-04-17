@@ -25,6 +25,12 @@ ApplicationWindow {
     property real ratioObject: 1
     property real ratioFont: 1
     property string afterCloseAction: ""
+    property alias gameCore: core
+    property alias mainContainer: iWndContainer
+    property alias mainHeader: tbTop
+    property var gERROR: ({})
+    property var gBattle: ({})
+    property int playerSpellbookLevel: 6
 
     Dialog {
         id: mdNoGesture
@@ -55,28 +61,6 @@ ApplicationWindow {
             }
         }
     }
-
-    /*property int timerCounter: 0
-    Timer {
-        id: tScanTimer
-        interval: core.isAI ? 30000 : 60000
-        running: false
-        repeat: true
-
-        onTriggered: {
-            console.log("start scanning");
-            core.scanState(true);
-            if (--timerCounter <= 0) {
-                tScanTimer.interval = core.isAI ? 30000 : 60000;
-            }
-        }
-    }*/
-
-    property alias gameCore: core
-    property alias mainContainer: iWndContainer
-    property alias mainHeader: tbTop
-    property var gERROR: ({})
-    property var gBattle: ({})
 
     WarlocksDuelCore {
         id: core
@@ -798,6 +782,9 @@ ApplicationWindow {
                     // rate us action
                     afterCloseAction = "rateus";
                     return ;
+                } else if (obj.type === 22) {
+                    afterCloseAction = "spellbook_levelup";
+                    return ;
                 }
 
                 showErrorWnd(obj);
@@ -834,6 +821,10 @@ ApplicationWindow {
     }
 
     function showReadyBattle() {
+        if (WNDU.isSomeWndOpenned()) {
+            return;
+        }
+
         var battle_str = core.battleInfo();
         console.log("showReadyBattle", battle_str);
         gBattle = JSON.parse(battle_str);
@@ -923,12 +914,18 @@ ApplicationWindow {
         /*if (new_gesture !== '') {
             console.log("mainWindow.getSpellList", JSON.stringify(arr));
         }*/
-        var uncompleted_cnt = 0, i, Ln, charm_monster = 0;
+        var uncompleted_cnt = 0, i, Ln, charm_monster = 0, finished_high_lv_spell = 0;
         for (i = 0, Ln = arr.length; i < Ln; ++i) {
             s = arr[i];
             s.choose = 0;
             s.row_type = 1;
             if (s.h !== hand_idx) {
+                continue;
+            }
+            if (s.sbl > playerSpellbookLevel) {
+                if ((new_gesture !== '') && (s.ng === new_gesture) && (s.t === 1)) {
+                    ++finished_high_lv_spell;
+                }
                 continue;
             }
 
@@ -966,7 +963,8 @@ ApplicationWindow {
         }
         if (new_gesture !== '') {
             gBattle.spellIdx = arr_cast_now.length;
-            var def_or_none = (gBattle.spellIdx > 0) || (is_player && gBattle.player_changed_mind);
+            var def_or_none = (gBattle.spellIdx > 0) || (is_player && (gBattle.player_changed_mind ||
+                                                                       ((playerSpellbookLevel < 5) && (finished_high_lv_spell > 0))));
             if (def_or_none) {
                 gBattle.spellIdx = 1 + arr_cast_now.length;
             }
@@ -1082,6 +1080,10 @@ ApplicationWindow {
         return showErrorWnd({id:-1,type:14,action:"rate_us"});
     }
 
+    function showSBLWnd() {
+        return showErrorWnd({id:-1,type:22,sbl:playerSpellbookLevel});
+    }
+
     function showShareWnd(game_level) {
         if (!game_level) {
             game_level = "vf";
@@ -1101,6 +1103,7 @@ ApplicationWindow {
     function confirmOrdersEx() {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
         WNDU.closeChilds();
+        processAfterClose();
     }
 
     function startGameWithBotEx() {
@@ -1111,9 +1114,7 @@ ApplicationWindow {
         GUI.startGameWithPlayerEx();
     }
 
-    function processEscape() {
-        console.log("main.qml:processEscape", afterCloseAction);
-        WNDU.processEscape();
+    function processAfterClose() {
         if (afterCloseAction !== "") {
             var action_code = afterCloseAction;
             afterCloseAction = "";
@@ -1121,8 +1122,16 @@ ApplicationWindow {
         }
     }
 
-    function showWndSpellbook() {
-        WNDU.showSpellbook();
+    function processEscape() {
+        console.log("main.qml:processEscape", afterCloseAction);
+        WNDU.processEscape();
+        if (!WNDU.isSomeWndOpenned()) {
+            processAfterClose();
+        }
+    }
+
+    function showWndSpellbook(close_current, close_all) {
+        WNDU.showSpellbook(close_current, close_all);
     }
 
     function storeWnd(wnd) {

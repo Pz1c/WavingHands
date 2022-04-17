@@ -134,7 +134,7 @@ QString QBattleInfo::containParticipant(const QString& line) {
     qDebug() << "QBattleInfo::containParticipant" << line;
     foreach(QString lp, _participant) {
         qDebug() << "QBattleInfo::containParticipant" << lp;
-        if (line.indexOf(lp, Qt::CaseInsensitive) != -1) {
+        if (line.toLower().indexOf(lp.toLower()) != -1) {
             qDebug() << "QBattleInfo::containParticipant" << "true";
             return lp;
         }
@@ -143,8 +143,9 @@ QString QBattleInfo::containParticipant(const QString& line) {
 }
 
 QString QBattleInfo::getEnemy(const QString &Login) const {
+    QString tmp = Login.toLower();
     foreach(QString lp, _participant) {
-        if (lp.compare(Login, Qt::CaseInsensitive) != 0) {
+        if (tmp.compare(lp.toLower()) != 0) {
             return lp;
         }
     }
@@ -300,7 +301,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
                 return QString("Finished #%1").arg(intToStr(_battleID));
             } else if (_winner.compare(" ") == 0) {
                 return QString("Draw #%1").arg(intToStr(_battleID));
-            } else if (Login.compare(_winner, Qt::CaseInsensitive) == 0) {
+            } else if (_winner.compare(Login.toLower()) == 0) {
                 return QString("Won #%1").arg(intToStr(_battleID));
             } else {
                 return QString("Lose #%1").arg(intToStr(_battleID));
@@ -310,7 +311,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
                 return QString("Finished vs. %1").arg(enemy);
             } else if (_winner.compare(" ") == 0) {
                 return QString("Draw vs. %1").arg(enemy);
-            } else if (Login.compare(_winner, Qt::CaseInsensitive) == 0) {
+            } else if (_winner.compare(Login.toLower()) == 0) {
                 return QString("Won vs. %1").arg(enemy);
             } else {
                 return QString("Lose vs. %1").arg(enemy);
@@ -329,11 +330,10 @@ bool QBattleInfo::active(const QString &login) const {
         }
     }
     return true;
-    //return _participant.indexOf(login, Qt::CaseInsensitive) == -1;
 }
 
 bool QBattleInfo::isWinner(const QString &Login) const {
-    return _winner.compare(Login, Qt::CaseInsensitive);
+    return _winner.compare(Login.toLower()) == 0;
 }
 
 void QBattleInfo::addChat(int battle_turn, const QString &chat_msg) {

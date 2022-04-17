@@ -161,6 +161,8 @@ public slots:
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
     void setupAIServer();
+
+    void setSBL(int NewLevel);
 protected slots:
     void loginToSite();
     void timerFired();
@@ -256,6 +258,8 @@ private:
     //QStringList _shown_battles;
     QString _finishedBattle;
     QStringList _challenge;
+    int _win_vs_bot;
+    int _win_vs_warlock;
     //QMap<int, QString> _battleDesc;
     //QMap<int, int> _battleHint;
     //QMap<int, int> _battleState; // -2 deleted, -1 not started, 0 wait, 1 ready, 2 finished

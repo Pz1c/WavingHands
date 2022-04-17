@@ -860,6 +860,25 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         } else if (_loadedBattleType == 2) {
             battleInfo->parseAllTurns(Data);
             _finishedBattle = battleInfo->getFullHist(_login);
+            qDebug() << "after battleInfo->getFullHist" << _login << battleInfo->winner() << battleInfo->isWinner(_login) << battleInfo->with_bot();
+            if (battleInfo->isWinner(_login)) {
+                if (battleInfo->with_bot()) {
+                    switch(++_win_vs_bot) {
+                    case 1:
+                        setSBL(3);
+                        break;
+                    case 3:
+                        setSBL(4);
+                        break;
+                    case 10:
+                        setSBL(5);
+                        break;
+                    }
+                } else {
+                    ++_win_vs_warlock;
+                    setSBL(5);
+                }
+            }
             storeFullParsedBattle(battleInfo);
             //_finishedBattle = _finishedBattle/*.replace('"', "''")*/.replace("\n", " ");
             //_finishedBattle = QWarlockUtils::parseBattleHistory(_finishedBattle, battleInfo, _login);
@@ -885,6 +904,14 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     }
     bool res = parseReadyBattle(ReadyData);
     if (res) {
+        qDebug() << "Check spellbook levelup" << _loadedBattleTurn << battleInfo->with_bot();
+        if (_loadedBattleTurn >= 15) {
+            if (battleInfo->with_bot()) {
+                setSBL(2);
+            } else {
+                setSBL(5);
+            }
+        }
         setPossibleSpell(Data);
 
         calcBattleDecision();
@@ -1703,15 +1730,7 @@ QString QWarloksDuelCore::getSpellList(QString left, QString right, bool Enemy) 
 }
 
 QString QWarloksDuelCore::getSpellBook() {
-    bool separate_spellbook = !_isAI && _reg_in_app && (_exp_lv < 1);
-    if (separate_spellbook) {
-        QSpell::setOrderType(1);
-    }
-    QString res = SpellChecker->getSpellBook(_isParaFDF, true, !_isAI);
-    if (separate_spellbook) {
-        QSpell::setOrderType(0);
-    }
-    return res;
+    return SpellChecker->getSpellBook(_isParaFDF, true, !_isAI);
 }
 
 void QWarloksDuelCore::setLogin(QString Login, QString Password) {
@@ -1783,7 +1802,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
                 if (_spellListHtml.length() > 1) {
                     _spellListHtml.append(",");
                 }
-                _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(g, hint, spell->gesture(), GameDictionary->getStringByCode(spell->gesture())));
+                _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\",\"sbl\":%5}").arg(g, hint, spell->gesture(), GameDictionary->getStringByCode(spell->gesture()), intToStr(spell->spellBookLevel())));
 
                 found = true;
                 break;
@@ -1793,7 +1812,7 @@ void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
             if (_spellListHtml.length() > 1) {
                 _spellListHtml.append(",");
             }
-            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\"}").arg(spell->gesture(), "", spell->gesture(), GameDictionary->getStringByCode(spell->gesture())));
+            _spellListHtml.append(QString("{\"g\":\"%1\",\"h\":\"%2\",\"code\":\"%3\",\"n\":\"%4\",\"sbl\":%5}").arg(spell->gesture(), "", spell->gesture(), GameDictionary->getStringByCode(spell->gesture()), intToStr(spell->spellBookLevel())));
         }
     }
     _spellListHtml.append("]");
@@ -1817,7 +1836,6 @@ QString QWarloksDuelCore::defaultSpellListHtml() {
     }
     res.append("]");
     return res;
-    //return "<table><tr><th>Gestures</th><th>Spell name</th></tr><tr><td>cDPW</td><td>Dispel Magic</td></tr><tr><td>cSWWS</td><td>Summon Ice Elemental</td></tr><tr><td>cWSSW</td><td>Summon Fire Elemental</td></tr><tr><td>cw</td><td>Magic Mirror</td></tr><tr><td>DFFDD</td><td>Lightning Bolt</td></tr><tr><td>DFPW</td><td>Cure Heavy Wounds</td></tr><tr><td>DFW</td><td>Cure Light Wounds</td></tr><tr><td>DFWFd</td><td>Blindness</td></tr><tr><td>DPP</td><td>Amnesia</td></tr><tr><td>DSF</td><td>Confusion/Maladroitness</td></tr><tr><td>DSFFFc</td><td>Disease</td></tr><tr><td>DWFFd</td><td>Blindness</td></tr><tr><td>DWSSSP</td><td>Delay Effect</td></tr><tr><td>DWWFWD</td><td>Poison</td></tr><tr><td>FFF</td><td>Paralysis</td></tr><tr><td>WFPSFW</td><td>Summon Giant</td></tr><tr><td>FPSFW</td><td>Summon Troll</td></tr><tr><td>PSFW</td><td>Summon Ogre</td></tr><tr><td>SFW</td><td>Summon Goblin</td></tr><tr><td>FSSDD</td><td>Fireball</td></tr><tr><td>P</td><td>Shield</td></tr><tr><td>p</td><td>Surrender</td></tr><tr><td>PDWP</td><td>Remove Enchantment</td></tr><tr><td>PPws</td><td>Invisibility</td></tr><tr><td>PSDD</td><td>Charm Monster</td></tr><tr><td>PSDF</td><td>Charm Person</td></tr><tr><td>PWPFSSSD</td><td>Finger of Death</td></tr><tr><td>PWPWWc</td><td>Haste</td></tr><tr><td>SD</td><td>Magic Missile</td></tr><tr><td>SPFP</td><td>Anti-spell</td></tr><tr><td>SPFPSDW</td><td>Permanency</td></tr><tr><td>SPPc</td><td>Time Stop</td></tr><tr><td>SPPFD</td><td>Time Stop</td></tr><tr><td>SSFP</td><td>Resist Cold</td></tr><tr><td>SWD</td><td>Fear (No CFDS)</td></tr><tr><td>SWWc</td><td>Fire Storm</td></tr><tr><td>WDDc</td><td>Clap of Lightning</td></tr><tr><td>WFP</td><td>Cause Light Wounds</td></tr><tr><td>WPFD</td><td>Cause Heavy Wounds</td></tr><tr><td>WPP</td><td>Counter Spell</td></tr><tr><td>WSSc</td><td>Ice Storm</td></tr><tr><td>WWFP</td><td>Resist Heat</td></tr><tr><td>WWP</td><td>Protection</td></tr><tr><td>WWS</td><td>Counter Spell</td></tr></table>";
 }
 
 void QWarloksDuelCore::saveGameParameters() {
@@ -1837,6 +1855,8 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("ladder", _ladder);
     settings->setValue("melee", _melee);
     settings->setValue("elo", _elo);
+    settings->setValue("win_vs_bot", _win_vs_bot);
+    settings->setValue("win_vs_warlock", _win_vs_warlock);
     settings->setValue("hint1", _hint1);
     settings->setValue("show_hint", _show_hint);
     settings->setValue("feedback", _feedback);
@@ -1869,13 +1889,21 @@ void QWarloksDuelCore::loadGameParameters() {
     _login = settings->value("login", "").toString();
     _password = settings->value("password", "").toString();
     _reg_in_app = settings->value("reg_in_app", "false").toBool();
-    _exp_lv = settings->value("exp_lv", "0").toInt();
+    _exp_lv = settings->value("exp_lv", "1").toInt();
+    if (_exp_lv < 1) {
+        _exp_lv = 1;
+    }
+    if (!_reg_in_app) {
+        _exp_lv = 5;
+    }
     _played = settings->value("played", "0").toInt();
     _won = settings->value("won", "0").toInt();
     _died = settings->value("died", "0").toInt();
     _ladder = settings->value("ladder", "0").toInt();
     _melee = settings->value("melee", "0").toInt();
     _elo = settings->value("elo", "1500").toInt();
+    _win_vs_bot = settings->value("win_vs_bot", "0").toInt();
+    _win_vs_warlock = settings->value("win_vs_warlock", "0").toInt();
     _allowedAdd = settings->value("allowed_add", "true").toBool();
     _allowedAccept = settings->value("allowed_accept", "true").toBool();
     _hint1 = settings->value("hint1", "0").toInt();
@@ -1945,9 +1973,10 @@ QString QWarloksDuelCore::errorMsg() {
 }
 
 QString QWarloksDuelCore::playerJson() {
-    return QString("{\"name\":\"%1\",\"played\":%2,\"won\":%3,\"died\":%4,\"ladder\":%5,\"melee\":%6,\"elo\":%7,\"feedback\":%8,\"rate_us\":%9,\"finished_game_count\":%10}")
+    return QString("{\"name\":\"%1\",\"played\":%2,\"won\":%3,\"died\":%4,\"ladder\":%5,\"melee\":%6,\"elo\":%7,\"feedback\":%8,\"rate_us\":%9,"
+                   "\"finished_game_count\":%10,\"sbl\":%11}")
             .arg(_login, intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_ladder), intToStr(_melee), intToStr(_elo), boolToStr(_feedback), boolToStr(_rateus))
-            .arg(intToStr(_finished_battles.count()));
+            .arg(intToStr(_finished_battles.count()), intToStr(_exp_lv));
 }
 
 QString QWarloksDuelCore::playerInfo() {
@@ -2414,4 +2443,11 @@ int QWarloksDuelCore::getBotBattle() {
     }
 
     return 0;
+}
+
+void QWarloksDuelCore::setSBL(int NewLevel) {
+    if (_exp_lv < NewLevel) {
+        _exp_lv = NewLevel;
+        emit playerInfoChanged();
+    }
 }

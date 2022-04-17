@@ -10,9 +10,10 @@ var wnd_chat = "wnd_chat.qml";
 var wnd_gesture = "wnd_gesture.qml";
 var wnd_charm = "wnd_charm.qml";
 var wnd_orders = "wnd_orders.qml";
-var wnd_spellbook = "wnd_spellbook.qml";
+//var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_spell = "wnd_spell.qml";
 var wnd_search_warlock = "wnd_search_warlock.qml";
+var wnd_popup = "wnd_popup.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -38,6 +39,10 @@ function closeChilds(close_current) {
             break;
         }
     }
+}
+
+function isSomeWndOpenned() {
+    return arr_wnd_stack.length > 0;
 }
 
 var max_z_index = 0;
@@ -207,10 +212,6 @@ function showProfileWindow() {
     showWnd(wnd_profile, 0, 0, 1);
 }
 
-function showSpellbookWindow() {
-    showWnd(wnd_spellbook, 0, 0, 1);
-}
-
 function showSearchWarlockWindow() {
     showWnd(wnd_search_warlock, 0, 0, 1);
 }
@@ -238,6 +239,9 @@ function showErrorWnd(error, chat) {
         break;
     case 4:
         wnd_name = wnd_spell;
+        break;
+    case 22:
+        wnd_name = wnd_popup;
         break;
     case 101:
         wnd_name = wnd_search_warlock;
@@ -282,6 +286,13 @@ function showOrders() {
     showWnd(wnd_orders, 0, 0, 1);
 }
 
-function showSpellbook() {
-    showWnd(wnd_spellbook, 0, 0, 1);
+function showSpellbook(close_current, close_all) {
+    if (close_current !== 1) {
+        close_current = 0;
+    }
+    if (close_all !== 1) {
+        close_all = 0;
+    }
+
+    showWnd(wnd_spellbook, close_current, close_all, 1);
 }

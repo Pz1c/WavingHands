@@ -2,7 +2,8 @@
 
 int QSpell::_orderType = 0;
 
-QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget, int Damage, bool Active, bool Basic, int SpellGroup)
+QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget, int Damage,
+               bool Active, bool Basic, int SpellGroup, int SpellBookLevel)
 {
     _spellID = SpellID;
     _gesture = Gesture;
@@ -21,6 +22,7 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
     _basic = Basic;
     _realPriority = 0;
     _spellGroup = SpellGroup;
+    _spellBookLevel = SpellBookLevel;
 }
 
 int QSpell::calcPriority(bool Enemy) {
@@ -33,6 +35,11 @@ int QSpell::calcPriority(bool Enemy) {
     res *= prc;
     qDebug() << "QSpell::calcPriority result" << res;
     return static_cast<int>(res);
+}
+
+int QSpell::spellBookLevel() const
+{
+    return _spellBookLevel;
 }
 
 int QSpell::danger() const
@@ -136,6 +143,7 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _priority = calcPriority(Enemy);
     _realPriority = Spell->_realPriority;
     _spellGroup = Spell->_spellGroup;
+    _spellBookLevel = Spell->_spellBookLevel;
 }
 
 int QSpell::spellID() const
@@ -194,14 +202,15 @@ bool QSpell::checkValidSequence(const QSpell &s) {
 
 QString QSpell::json(bool Short) const {
     if (Short) {
-        return QString("{\"g\":\"%1\",\"id\":%2,\"ac\":%3,\"h\":%4,\"sg\":%5}").
-                arg(_gesture, intToStr(_spellID), intToStr(_alreadyCasted), intToStr(_hand), intToStr(_spellGroup));
+        return QString("{\"g\":\"%1\",\"id\":%2,\"ac\":%3,\"h\":%4,\"sg\":%5,\"sbl\":%6}").
+                arg(_gesture, intToStr(_spellID), intToStr(_alreadyCasted), intToStr(_hand), intToStr(_spellGroup), intToStr(_spellBookLevel));
     } else {
     QString ng = nextGesture();
-    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\",\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14,\"basic\":%15,\"rp\":%16,\"sg\":%17}").
+    return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\","
+                   "\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14,\"basic\":%15,\"rp\":%16,\"sg\":%17,\"sbl\":%18}").
             arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).
             arg(ng.toUpper(), boolToIntS(ng.compare(ng.toUpper()) != 0), intToStr(_defTarget), boolToIntS(_active), intToStr(_damage), boolToStr(_basic), QString::number(_realPriority)).
-            arg(intToStr(_spellGroup));
+            arg(intToStr(_spellGroup), intToStr(_spellBookLevel));
     }
 }
 

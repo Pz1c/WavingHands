@@ -317,8 +317,11 @@ Item {
         }*/
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
+
             var perm_or_del_checked = (item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action') && item.l_data.hasOwnProperty('checked') &&
-                                       ((item.l_data.action === "permanency") || (item.l_data.action === "delay")) && item.l_data.checked);
+                                       ((item.l_data.action === "permanency") || (item.l_data.action === "delay")) && (item.l_data.checked || Enable));
+            console.log(JSON.stringify(item.l_data), perm_or_del_checked);
+
             if (IsSpell && l_warlock.player && perm_or_del_checked) {
                 if (Enable) {
                     item.animate(1);
@@ -400,6 +403,10 @@ Item {
             is_checkbox = false;
             if (type === "s") {
                 is_checkbox = (arr_m.action === "permanency") || (arr_m.action === "delay");
+                if (is_checkbox) {
+                    arr_m.checked = false;
+                }
+
                 if (arr_m.action === "paralized") {
                     l_paralyzeActionData = arr_m;
                 }
