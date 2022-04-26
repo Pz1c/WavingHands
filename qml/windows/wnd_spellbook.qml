@@ -38,6 +38,7 @@ InfoWindow {
         ,{t:4,sbl:0}]
     property var arrSpell: []
     property int lastSpellbookLevel: 1
+    property string levelUpHint: ""
 
     // This rectangle is the actual popup
     Item {
@@ -178,7 +179,7 @@ InfoWindow {
                             horizontalAlignment: Text.AlignLeft
                             wrapMode: Text.Wrap
                             anchors.fill: parent
-                            text: dict.getStringByCode("SpellbookName" + mainWindow.playerSpellbookLevel)
+                            text: dict.getStringByCode("SpellbookName" + lastSpellbookLevel)
                         }
                         }
                     }
@@ -223,8 +224,8 @@ InfoWindow {
                                 font.pixelSize: 21 * mainWindow.ratioFont
                                 color: "#10C9F5"
                                 horizontalAlignment: Text.AlignLeft
-                                text: dict.getStringByCode(
-                                          "SpellbookHint" + mainWindow.playerSpellbookLevel)
+                                wrapMode: Text.Wrap
+                                text: levelUpHint
                             }
                         } }
                     }
@@ -248,22 +249,30 @@ InfoWindow {
 
     function initGFields() {
         console.log("wnd_spellbook.initGFields", arrSpell.length,
-                    mainWindow.playerSpellbookLevel, lastSpellbookLevel)
+                    mainWindow.playerSpellbookLevel, lastSpellbookLevel, JSON.stringify(mainWindow.gERROR))
+        var sbl = mainWindow.gERROR.sbl;
+        var win_vs_bot = mainWindow.gERROR.win_vs_bot;
+        mainWindow.gERROR = {};
 
         if ((arrSpell.length === 0)
-                || (lastSpellbookLevel !== mainWindow.playerSpellbookLevel)) {
-            arrSpell = []
+                || (lastSpellbookLevel !== sbl)) {
+            arrSpell = [];
             for (var i = 0, Ln = arrSpellInit.length; i < Ln; ++i) {
                 if ((arrSpellInit[i].t === 0) && (arrSpellInit[i].n === '')) {
                     arrSpellInit[i].n = dict.getStringByCode(arrSpellInit[i].g)
                 }
-                if ((arrSpellInit[i].sbl <= mainWindow.playerSpellbookLevel) &&
-                        !((arrSpellInit[i].t === 4) && (mainWindow.playerSpellbookLevel === 5))) {
+                if ((arrSpellInit[i].sbl <= sbl) &&
+                        !((arrSpellInit[i].t === 4) && (sbl === 5))) {
                     arrSpell.push(arrSpellInit[i]);
                 }
             }
         }
-        lastSpellbookLevel = mainWindow.playerSpellbookLevel
+        lastSpellbookLevel = sbl;
+        if ((lastSpellbookLevel === 3) && (win_vs_bot === 2)) {
+            levelUpHint = dict.getStringByCode("SpellbookHint3.1");
+        } else {
+            levelUpHint = dict.getStringByCode("SpellbookHint" + sbl);
+        }
 
         lvSpellList.model = arrSpell
     }

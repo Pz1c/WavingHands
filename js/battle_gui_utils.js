@@ -168,7 +168,7 @@ function prepareStatusIcon(w) {
         }
         icon_name = icon_status_code_to_icon[code] ? icon_status_code_to_icon[code] : code;
         val = w[code] === 999 ? "∞" : w[code];
-        a = {action: code, icon: icon_name, value: val, active: (w.control_paralyze && (code === "paralized")) || (w.control_charmed && (code === "charmed"))};
+        a = {action: code, icon: icon_name, value: val, active: true, active_action: (w.control_paralyze && (code === "paralized")) || (w.control_charmed && (code === "charmed"))};
         if (a.active && (code === "paralized")) {
             a.lgL = w.lgL;
             a.lgR = w.lgR;

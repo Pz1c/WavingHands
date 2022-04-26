@@ -113,5 +113,7 @@
         <file>qml/windows/wnd_search_warlock.qml</file>
         <file>qml/components/TitledTextInput.qml</file>
         <file>qml/windows/wnd_popup.qml</file>
+        <file>qml/windows/wnd_spell_popup.qml</file>
+        <file>res/stars_purple.png</file>
     </qresource>
 </RCC>

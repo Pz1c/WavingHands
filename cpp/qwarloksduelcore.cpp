@@ -511,6 +511,7 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         _allowedAdd = false;
         _reg_in_app = true;
         _show_hint = true;
+        _exp_lv = 1;
         emit registerNewUserChanged();
         saveParameters(false, false, true);
         return true;
@@ -1479,7 +1480,7 @@ void QWarloksDuelCore::processRefferer() {
     int idx1 = full_reff.indexOf("referrer=");
     if (idx1 != -1) {
         idx1 += 9;
-        reff = full_reff.mid(idx1);
+        reff = "create_battle," + full_reff.mid(idx1);
     } else {
         reff = full_reff;
     }
@@ -1974,9 +1975,9 @@ QString QWarloksDuelCore::errorMsg() {
 
 QString QWarloksDuelCore::playerJson() {
     return QString("{\"name\":\"%1\",\"played\":%2,\"won\":%3,\"died\":%4,\"ladder\":%5,\"melee\":%6,\"elo\":%7,\"feedback\":%8,\"rate_us\":%9,"
-                   "\"finished_game_count\":%10,\"sbl\":%11}")
+                   "\"finished_game_count\":%10,\"sbl\":%11,\"win_va_bot\":%12,\"win_vs_warlock\":%13}")
             .arg(_login, intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_ladder), intToStr(_melee), intToStr(_elo), boolToStr(_feedback), boolToStr(_rateus))
-            .arg(intToStr(_finished_battles.count()), intToStr(_exp_lv));
+            .arg(intToStr(_finished_battles.count()), intToStr(_exp_lv), intToStr(_win_vs_bot), intToStr(_win_vs_warlock));
 }
 
 QString QWarloksDuelCore::playerInfo() {
@@ -2423,10 +2424,22 @@ void QWarloksDuelCore::processWarlockGet(QString &Data) {
 }
 
 int QWarloksDuelCore::getBotBattle() {
+    if (_isAsService) {
+        return 0;
+    }
     QBattleInfo *battle_info;
+    foreach(int bid, _ready_in_battles) {
+        battle_info = getBattleInfo(bid);
+        if (battle_info->for_bot() || battle_info->with_bot()) {
+            return bid;
+        }
+    }
     foreach(int bid, _waiting_in_battles) {
         battle_info = getBattleInfo(bid);
-        if (!_isAsService && (battle_info->for_bot() || battle_info->with_bot())) {
+        if ((battle_info->status() != 0) && (battle_info->status() != 1) && (battle_info->status() != -1)) {
+            continue;
+        }
+        if (battle_info->for_bot() || battle_info->with_bot()) {
             QString enemy = battle_info->getEnemy(_login);
             if (_lstAI.indexOf(enemy.toUpper()) != -1) {
                 qDebug() << "emit needAIAnswer"  << enemy;
@@ -2435,12 +2448,7 @@ int QWarloksDuelCore::getBotBattle() {
             }
         }
     }
-    foreach(int bid, _ready_in_battles) {
-        battle_info = getBattleInfo(bid);
-        if (!_isAsService && (battle_info->for_bot() || battle_info->with_bot())) {
-            return bid;
-        }
-    }
+
 
     return 0;
 }

@@ -115,11 +115,13 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
     fillDictionary("LoginAs", "", "", "Login as ...");
+    fillDictionary("SpellbookActionTitle", "", "", "Spellbook");
     fillDictionary("SpellbookTitle", "", "", "Spellbook Level: ");
     fillDictionary("SpellbookSubTitle", "", "", "Note: Small caps like 'c' indicate gestures that need to be performed with both hands");
     fillDictionary("SpellbookHint1", "", "", "Stay alive for at least 15 turns to unlock spellbook level 2!");
     fillDictionary("SpellbookHint2", "", "", "Win a training game to unlock spellbook level 3!");
     fillDictionary("SpellbookHint3", "", "", "Win 2 more training games to unlock spellbook level 4!");
+    fillDictionary("SpellbookHint3.1", "", "", "Win 1 more training games to unlock spellbook level 4!");
     fillDictionary("SpellbookHint4", "", "", "Survive 15 turns or win in a warlock vs. warlock game to unlock the Master Warlock Spellbook!");
     fillDictionary("SpellbookName1", "", "", "Spellbook: Apprentice Level 1");
     fillDictionary("SpellbookName2", "", "", "Spellbook: Apprentice Level 2");
@@ -158,7 +160,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("RateUs", "", "", "Rate Us");
     fillDictionary("RateUsAction", "", "", "Rate");
     fillDictionary("SendFeedback", "", "", "Send Feedback");
-    fillDictionary("RateUs_short_desc", "", "", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us a 5 star rating?");
+    fillDictionary("RateUs_short_desc", "", "", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us with a 5 star rating?");
     fillDictionary("miRulesTitle", "", "", "Advanced Rules");
     fillDictionary("miLogoutTitle", "", "", "Sign Out");
     fillDictionary("BattleHistoryTitle", "", "", "Battle History");

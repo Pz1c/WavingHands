@@ -435,7 +435,7 @@ BaseWindow {
             mainWindow.cleanDelay();
         } else if (permanency && (data.action === "permanency")) {
             mainWindow.cleanPermanency()
-        } else if (data.active) {
+        } else if (data.active_action) {
             console.log("DO some action", JSON.stringify(data));
             BU.battle.currentCharm = BU.getCharmDataByAction(data);
             //mainWindow.showGesture(data.action, BU.battle.currentCharm.h, BU.battle.currentCharm.g, data);

@@ -2,11 +2,11 @@ var C_NG_PLAYER_CODE = 'player';
 var C_NG_BOT_CODE = 'bot';
 var G_BATTLE_LIST = [[],[]];
 var G_CHALLENGE_LIST = [];
-var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0,sbl:-1};
+var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0,sbl:-1,win_vs_bot:0,win_vs_warlock:0};
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
 var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
-var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookTitle"}, /*{c:"top",t:"Top"},*/ {c:"feedback",t:"Feedback"},
+var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, /*{c:"top",t:"Top"},*/ {c:"feedback",t:"Feedback"},
                      //{c:"battle_with_friend",t:"DuelWithFriend"}, /*{c:"switch_account",t:"SwitchAccount"},*/
                      {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"},
                      {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/];
@@ -46,6 +46,7 @@ function newUserRegistered() {
     lPlayerTitle.text = "Hi, " + l_login;
     showTipMessage(warlockDictionary.getStringByCode("JustRegistered").replace("#login#", l_login), true);
     logEvent("registration_finished", {login: l_login});
+    userProfileChanged();
 }
 
 function fixActivBattleDesc(arr) {

@@ -14,6 +14,7 @@ var wnd_orders = "wnd_orders.qml";
 var wnd_spell = "wnd_spell.qml";
 var wnd_search_warlock = "wnd_search_warlock.qml";
 var wnd_popup = "wnd_popup.qml";
+var wnd_spell_popup = "wnd_spell_popup.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -242,6 +243,10 @@ function showErrorWnd(error, chat) {
         break;
     case 22:
         wnd_name = wnd_popup;
+        break;
+    case 7:
+    case 23:
+        wnd_name = wnd_spell_popup;
         break;
     case 101:
         wnd_name = wnd_search_warlock;

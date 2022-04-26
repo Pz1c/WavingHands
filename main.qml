@@ -70,7 +70,7 @@ ApplicationWindow {
         onBattleListChanged: GUI.newBattleList()
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
-        onRegisterNewUserChanged: GUI.newUserRegistered(core)
+        onRegisterNewUserChanged: GUI.newUserRegistered()
         //onTimerStateChanged: changeTimerState()
         onChallengeListChanged: GUI.loadChallengeList()
         onAllowedAcceptChanged: {
@@ -123,6 +123,14 @@ ApplicationWindow {
 
         Keys.onBackPressed: processEscape();
         Keys.onEscapePressed: processEscape();
+        Keys.onCancelPressed: processEscape();
+        Keys.onPressed: function (event) {logKeyEvent(event)};
+
+        //Keys.on
+    }
+
+    function logKeyEvent(event) {
+        console.log("LOG_KEY_EVENT", JSON.stringify(event));
     }
 
     Rectangle {
@@ -852,7 +860,7 @@ ApplicationWindow {
         //}
         //msg_txt += warlockDictionary.getStringByCode(spell_code + "_desc");
 
-        showErrorWnd({type:7,spell:spell_code});
+        showErrorWnd({type:23,spell:spell_code});
     }
 
     function showBattleHistory(txt) {
@@ -963,21 +971,23 @@ ApplicationWindow {
         }
         if (new_gesture !== '') {
             gBattle.spellIdx = arr_cast_now.length;
-            var def_or_none = (gBattle.spellIdx > 0) || (is_player && (gBattle.player_changed_mind ||
-                                                                       ((playerSpellbookLevel < 5) && (finished_high_lv_spell > 0))));
+            var def_or_none = is_player && gBattle.player_changed_mind;
+            //var def_or_none = (gBattle.spellIdx > 0) || (is_player && (gBattle.player_changed_mind || ((playerSpellbookLevel < 5) && (finished_high_lv_spell > 0))));
             if (def_or_none) {
                 gBattle.spellIdx = 1 + arr_cast_now.length;
             }
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
             res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
-            res.push(def_spell);
+            if (def_or_none || (arr_cast_now.length === 0)) {
+                res.push(def_spell);
+            }
         } else {
-            res.push({gp:"?",n:(warlock_idx === 0 ? "Spellbook" : "Spells opponent may cast"),choose:0,t:0,cast_type:100,row_type:3});
+            res.push({gp:"?",n:(warlock_idx === 0 ? warlockDictionary.getStringByCode("SpellbookName" + playerSpellbookLevel) : "Spells opponent may cast"),choose:0,t:0,cast_type:100,row_type:3});
         }
         if (uncompleted_cnt > 0) {
             if (new_gesture !== '') {
-                res.push({gp:"?",n:(warlock_idx === 0 ? "Incomplete Spells" : "Incomplete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
+                res.push({gp:"?",n:(warlock_idx === 0 ? "Incomplete Spells" : "Incomplete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:4});
             }
             res = res.concat(arr_cast_later);
         }
@@ -1131,6 +1141,7 @@ ApplicationWindow {
     }
 
     function showWndSpellbook(close_current, close_all) {
+        gERROR = {sbl:playerSpellbookLevel,win_vs_bot:GUI.G_PROFILE.win_vs_bot};
         WNDU.showSpellbook(close_current, close_all);
     }
 

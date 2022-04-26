@@ -304,7 +304,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
             } else if (_winner.compare(Login.toLower()) == 0) {
                 return QString("Won #%1").arg(intToStr(_battleID));
             } else {
-                return QString("Lose #%1").arg(intToStr(_battleID));
+                return QString("Lost #%1").arg(intToStr(_battleID));
             }
         } else {
             if (_winner.isEmpty()) {
@@ -314,7 +314,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
             } else if (_winner.compare(Login.toLower()) == 0) {
                 return QString("Won vs. %1").arg(enemy);
             } else {
-                return QString("Lose vs. %1").arg(enemy);
+                return QString("Lost vs. %1").arg(enemy);
             }
         }
     }

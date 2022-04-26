@@ -238,6 +238,10 @@ bool QSpell::sortAsc(const QSpell *s1, const QSpell *s2) {
             return s1->_alreadyCasted < s2->_alreadyCasted;
         }
 
+        if (s1->length() != s2->length()) {
+            return s1->length() > s2->length();
+        }
+
         if (s1->_gesture.compare(s2->_gesture) != 0) {
             QString s1g = s1->spellID() == SPELL_STAB ? "ZZZZZZZZZ" : s1->_gesture;
             QString s2g = s2->spellID() == SPELL_STAB ? "ZZZZZZZZZ" : s2->_gesture;

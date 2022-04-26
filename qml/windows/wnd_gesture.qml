@@ -10,17 +10,17 @@ BaseWindow {
     id: dMainItem
 
     with_controls: false
-    with_apply: true
+    with_apply: false
     body_height_prc: 100
     title_height_prc: 0
     control_height_prc: 0
     body_width_prc: 100
     overOpacity: 0
-    //bodyAnchors.verticalCenter: undefined
-    //bodyAnchors.horizontalCenter: undefined
-    //bodyAnchors.right: content_parent.right
-    //bodyAnchors.top: content_parent.top
-    //bodyAnchors.bottom: content_parent.bottom
+    bodyAnchors.verticalCenter: undefined
+    bodyAnchors.horizontalCenter: undefined
+    bodyAnchors.right: content_parent.right
+    bodyAnchors.top: content_parent.top
+    bodyAnchors.bottom: content_parent.bottom
 
 
     bg_source: "qrc:/res/stars_bg.png"
@@ -59,10 +59,35 @@ BaseWindow {
             opacity: 0.5
         }
 
+        BtnWithIcon {
+            id: bwiExit
+            z: 15
+            anchors.top: parent.top
+            anchors.topMargin: 24 * mainWindow.ratioObject
+            anchors.left: iGlow.right
+            anchors.leftMargin: 24 * mainWindow.ratioObject
+            width: 150 * mainWindow.ratioObject
+            height: 50 * mainWindow.ratioObject
+
+            transparent: true
+            image: "qrc:/res/back_arrow.png"
+            image_anchors.verticalCenter: bwiExit.verticalCenter
+            image_anchors.left: bwiExit.left
+            icon_width: 40 * mainWindow.ratioObject
+            text_width: 50 * mainWindow.ratioObject
+            text_color: "#FEE2D6"
+            text: ""
+            fontPixelSize: 28 * mainWindow.ratioFont
+
+            onClicked: {
+                mainWindow.processEscape();
+            }
+        }
+
         Rectangle {
             id: rpAlert
-            anchors.top: parent.top
-            anchors.topMargin: 60 * mainWindow.ratioObject
+            anchors.top: bwiExit.bottom
+            anchors.topMargin: height > 0 ? 60 * mainWindow.ratioObject : 0
             anchors.left: iGlow.right
             anchors.leftMargin: 12 * mainWindow.ratioObject
             anchors.right: parent.right
@@ -166,7 +191,7 @@ BaseWindow {
                                         anchors.fill: parent
                                         onClicked: {
                                             console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpell[index]));
-                                            if ((currGesture === "") && (lvSpellList.model[index].gp !== "?")) {
+                                            if (((currGesture === "") || (arrSpell[index].cast_type > 1)) && (lvSpellList.model[index].gp !== "?")) {
                                                 mainWindow.showSpellDetails(lvSpellList.model[index].g);
                                             } else if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
                                                 arrSpell[index].choose = 1;
@@ -206,7 +231,7 @@ BaseWindow {
                                     anchors.verticalCenter: idRoot2.verticalCenter
                                     anchors.left: parent.left//rdbifInfo.left
                                     anchors.leftMargin: 0.03 * parent.width
-                                    height: 0.8 * idRoot2.height
+                                    //height: 0.8 * idRoot2.height
                                     font.pixelSize: 28 * mainWindow.ratioFont
                                     color: "#0654C0"
                                     //fontSizeMode: Text.VerticalFit
@@ -230,6 +255,30 @@ BaseWindow {
                                     anchors.leftMargin: 0.03 * parent.width
                                     height: 0.8 * idRoot3.height
                                     font.pixelSize: 35 * mainWindow.ratioFont
+                                    color: "#0654C0"
+                                    //fontSizeMode: Text.VerticalFit
+                                    horizontalAlignment: Text.AlignRight
+                                    text: lvSpellList.model[index].n
+                                }
+                            }
+                        }
+
+                    DelegateChoice {
+                        roleValue: "4"
+                        delegate: Item {
+                                id: idRoot4
+                                width: lvSpellList.width
+                                height: 126 * mainWindow.ratioObject
+
+                                Text {
+                                    id: idRoot4Title
+                                    //anchors.verticalCenter: idRoot4.verticalCenter
+                                    anchors.bottom: parent.bottom//rdbifInfo.left
+                                    anchors.bottomMargin: 12 * mainWindow.ratioObject
+                                    anchors.left: parent.left//rdbifInfo.left
+                                    anchors.leftMargin: 12 * mainWindow.ratioObject
+                                    //height: 0.8 * idRoot2.height
+                                    font.pixelSize: 28 * mainWindow.ratioFont
                                     color: "#0654C0"
                                     //fontSizeMode: Text.VerticalFit
                                     horizontalAlignment: Text.AlignRight
@@ -481,6 +530,7 @@ BaseWindow {
                     iconHeight: 50 * mainWindow.ratioObject
                     iconWidth: 50 * mainWindow.ratioObject
                     radius: 20 * mainWindow.ratioObject
+                    visible: actionType === 3
 
                     animationEnabled: false
                     onClicked: {
@@ -709,7 +759,8 @@ BaseWindow {
             if (actionType === 0) {
                 mainWindow.gBattle.spellIdx = 0;
             }
-            arrSpell = [{gp:"?",n:"Default",t:1,choose:1,row_type:1}];
+            arrSpell = [{gp:"?",n:"Completed spells",choose:0,t:0,cast_type:100,row_type:2},
+                        {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1}];
             //arrSpellLater = [];
         } else if (new_gesture === ">") {
             if (actionType === 0) {
