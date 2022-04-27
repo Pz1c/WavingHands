@@ -131,7 +131,7 @@ InfoWindow {
                     width: iItem.width * 0.99
                     wrapMode: Text.Wrap
                     textFormat: Text.RichText
-                    font.pixelSize: 28 * mainWindow.ratioFont
+                    font.pixelSize: 21 * mainWindow.ratioFont
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignJustify
 
