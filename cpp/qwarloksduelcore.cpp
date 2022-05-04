@@ -103,8 +103,17 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     _newBattle->setMaladroit(Maladroid);
     _newBattle->setSize(Count);
     _newBattle->setLevel(FriendlyLevel);
+
+    bool l_p = Private;
+    if (!Warlock.isEmpty() && (_playerStats.contains(Warlock.toLower()) || (_playerStats.size() == 0))) {
+        _inviteToBattle = Warlock;
+    } else {
+        _inviteToBattle.clear();
+        l_p = false;
+    }
+
     QString p_data = "fast=1&";
-    if (Private) {
+    if (l_p) {
         p_data.append("private=1&");
     }
     p_data.append(QString("players=%1&friendly=%2&game=1&blurb=").arg(QString::number(Count), QString::number(FriendlyLevel)));
@@ -116,11 +125,6 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
         desc.prepend("Maladroit ");
     }
     p_data.append(QUrl::toPercentEncoding(desc));
-    if (!Warlock.isEmpty() && _playerStats.contains(Warlock.toLower())) {
-        _inviteToBattle = Warlock;
-    } else {
-        _inviteToBattle.clear();
-    }
 
     qDebug() << p_data;
     sendPostRequest(GAME_SERVER_URL_NEW_CHALLENGE, p_data.toUtf8());
