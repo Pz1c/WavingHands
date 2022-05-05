@@ -283,7 +283,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("SPPc", "Зупинка часу", "Остановка времени", "Time Stop");
     fillDictionary("SPPFD", "Зупинка часу", "Остановка времени", "Time Stop");
     fillDictionary("SSFP", "Захист від холоду", "Защита от холода", "Resist Cold");
-    fillDictionary("SWD", "Страх (без CFDS)", "Страх (без CFDS)", "Fear (No CFDS)");
+    fillDictionary("SWD", "Страх", "Страх", "Fear");
     fillDictionary("SWWc", "Пекельний шторм", "Огненный шторм", "Fire Storm");
     fillDictionary("WDDc", "Хлопок Блискавки", "Хлопок Молнии", "Clap of Lightning");
     fillDictionary("WFP", "Нанести легкі рани", "Нанести легкие раны", "Cause Light Wounds");
@@ -317,8 +317,10 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("WFPSFW_short_desc", "", "", "Monster with 4 hp (usually cast at yourself)");
     fillDictionary("DPP_short_desc", "", "", "Opponent repeats last turn gestures");
     fillDictionary("DSF_short_desc", "", "", "Opponent must do same gesture with both hands");
-    fillDictionary("SWD_short_desc", "", "", "Opponent must do 'P' or 'W' or '>' or '-'");
-    fillDictionary("FFF_short_desc", "", "", "Choose opponent's hand. Force its next gesture to repeat last gesture, except: F -> C, W -> P, S -> D");
+    fillDictionary("SWD_short_desc", "", "", "Opponent may only use 'P', 'W' or '>' gestures");
+    fillDictionary("FFF_short_desc", "", "", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'");
+    fillDictionary("FDF_short_desc", "", "", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'");
+    fillDictionary("FDFD_short_desc", "", "", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'");
     fillDictionary("PSDF_short_desc", "", "", "Choose opponent's hand, then decide his next gesture");
     fillDictionary("PSDD_short_desc", "", "", "Take control of a monster. Cast it at the monster, and choose a new target for that monster to attack");
     fillDictionary("WPP_short_desc", "", "", "Cast it at the target of the spell that you wish to counter (not at the caster). Also acts as a shield");

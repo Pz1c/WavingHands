@@ -21,7 +21,7 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(6,"DFW","Cure Light Wounds", SPELL_TYPE_CURE,10,0,10, SPELL_DEF_TARGER_SELF, 1, true, true, SPELL_GROUP_HEALING, 1));
     Spells.append(new QSpell(7,"DFWFd","Blindness", SPELL_TYPE_CONFUSION,13,0,15, SPELL_DEF_TARGER_ENEMY, 0, true, false, SPELL_GROUP_ADVANCED, 3));
     Spells.append(new QSpell(8,"DPP","Amnesia", SPELL_TYPE_CONFUSION,16,1,12, SPELL_DEF_TARGER_ENEMY, 0, true, true, SPELL_GROUP_DISRUPTIONS, 1));
-    Spells.append(new QSpell(9,"DSF","Confusion/Maladroitness", SPELL_TYPE_CONFUSION,16,5,12, SPELL_DEF_TARGER_ENEMY, 0, true, true, SPELL_GROUP_DISRUPTIONS, 1));
+    Spells.append(new QSpell(9,"DSF","Maladroitness", SPELL_TYPE_CONFUSION,16,5,12, SPELL_DEF_TARGER_ENEMY, 0, true, true, SPELL_GROUP_DISRUPTIONS, 1));
     Spells.append(new QSpell(SPELL_DISEASE,"DSFFFc","Disease", SPELL_TYPE_POISON,14,1,17, SPELL_DEF_TARGER_ENEMY, 5, true, false, SPELL_GROUP_ADVANCED, 3));
     Spells.append(new QSpell(11,"DWFFd","Blindness", SPELL_TYPE_CONFUSION,13,0,15, SPELL_DEF_TARGER_ENEMY, 3, true, false, SPELL_GROUP_ADVANCED, 3));
     Spells.append(new QSpell(12,"DWSSSP","Delay Effect", SPELL_TYPE_SPEC,10,0,10, SPELL_DEF_TARGER_SELF, 0, true, false, SPELL_GROUP_ADVANCED, 5));
@@ -45,7 +45,7 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(30,"SPPc","Time Stop", SPELL_TYPE_HASTLE,13,0,10, SPELL_DEF_TARGER_SELF, 0, true, false, SPELL_GROUP_ADVANCED, 5));
     Spells.append(new QSpell(31,"SPPFD","Time Stop", SPELL_TYPE_HASTLE,13,0,10, SPELL_DEF_TARGER_SELF, 0, true, false, SPELL_GROUP_ADVANCED, 5));
     Spells.append(new QSpell(32,"SSFP","Resist Cold", SPELL_TYPE_RESIST,14,1,10, SPELL_DEF_TARGER_SELF, 0, true, false, SPELL_GROUP_ELEMENTS, 4));
-    Spells.append(new QSpell(33,"SWD","Fear (No CFDS)", SPELL_TYPE_CONFUSION,15,0,12, SPELL_DEF_TARGER_ENEMY, 0, true, true, SPELL_GROUP_DISRUPTIONS, 1));
+    Spells.append(new QSpell(33,"SWD","Fear", SPELL_TYPE_CONFUSION,15,0,12, SPELL_DEF_TARGER_ENEMY, 0, true, true, SPELL_GROUP_DISRUPTIONS, 1));
     Spells.append(new QSpell(34,"SWWc","Fire Storm", SPELL_TYPE_MASSIVE,13,1,14, SPELL_DEF_TARGER_NOBODY, 5, true, false, SPELL_GROUP_ELEMENTS, 4));
     Spells.append(new QSpell(35,"WDDc","Clap of Lightning", SPELL_TYPE_DAMAGE,14,0,14, SPELL_DEF_TARGER_ENEMY, 5, true, false, SPELL_GROUP_DAMAGING, 3));
     Spells.append(new QSpell(36,"WFP","Cause Light Wounds", SPELL_TYPE_DAMAGE,14,0,12, SPELL_DEF_TARGER_ENEMY, 2, true, true, SPELL_GROUP_DAMAGING, 1));

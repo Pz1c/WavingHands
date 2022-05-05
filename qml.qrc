@@ -115,5 +115,26 @@
         <file>qml/windows/wnd_popup.qml</file>
         <file>qml/windows/wnd_spell_popup.qml</file>
         <file>res/stars_purple.png</file>
+        <file>res/charm_monster.png</file>
+        <file>res/magic_mirror.png</file>
+        <file>res/cure_heavy_wounds.png</file>
+        <file>res/cure_light_wounds.png</file>
+        <file>res/fireball.png</file>
+        <file>res/magic_missile.png</file>
+        <file>res/cause_light_wounds.png</file>
+        <file>res/cause_heavy_wounds.png</file>
+        <file>res/lightning_bolt.png</file>
+        <file>res/clap_of_lightning.png</file>
+        <file>res/stab.png</file>
+        <file>res/finger_of_death.png</file>
+        <file>res/fire_storm.png</file>
+        <file>res/ice_storm.png</file>
+        <file>res/dispel_magic.png</file>
+        <file>res/remove_enchantment.png</file>
+        <file>res/time_stop.png</file>
+        <file>res/target_default.png</file>
+        <file>res/sword.png</file>
+        <file>res/anti_spell.png</file>
+        <file>res/lightning_notice.png</file>
     </qresource>
 </RCC>

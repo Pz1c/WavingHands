@@ -85,6 +85,29 @@ BaseWindow {
             }
 
             IconInfo {
+                id: iiSpellbook
+                source: "qrc:/res/spellbook.png";
+                text: ""
+                text_color: "red"
+                height: 78 * mainWindow.ratioObject
+                width: height
+                iconHeight: 48 * mainWindow.ratioObject
+                iconWidth: 48 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.top: parent.top
+                //anchors.topMargin: 3 * mainWindow.ratioObject
+                anchors.right: iiChat.left
+                anchors.rightMargin: 32 * mainWindow.ratioObject
+                radius: 10
+                borderOnPress: false
+                color: buttonPressed ? "#A8F4F4" : "transparent"
+
+                onClicked: {
+                    mainWindow.showWndSpellbook();
+                }
+            }
+
+            IconInfo {
                 id: iiChat
                 source: "qrc:/res/chat.png";
                 text: ""
@@ -120,29 +143,6 @@ BaseWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 //anchors.top: parent.top
                 //anchors.topMargin: 0 * mainWindow.ratioObject
-                anchors.right: iiSpellbook.left
-                anchors.rightMargin: 32 * mainWindow.ratioObject
-                radius: 10
-                borderOnPress: false
-                color: buttonPressed ? "#A8F4F4" : "transparent"
-
-                onClicked: {
-                    mainWindow.showBattleHistory(mainWindow.gBattle.battle_hist);
-                }
-            }
-
-            IconInfo {
-                id: iiSpellbook
-                source: "qrc:/res/spellbook.png";
-                text: ""
-                text_color: "red"
-                height: 78 * mainWindow.ratioObject
-                width: height
-                iconHeight: 48 * mainWindow.ratioObject
-                iconWidth: 48 * mainWindow.ratioObject
-                anchors.verticalCenter: parent.verticalCenter
-                //anchors.top: parent.top
-                //anchors.topMargin: 3 * mainWindow.ratioObject
                 anchors.right: bbSendOrders.left
                 anchors.rightMargin: 14 * mainWindow.ratioObject
                 radius: 10
@@ -150,7 +150,7 @@ BaseWindow {
                 color: buttonPressed ? "#A8F4F4" : "transparent"
 
                 onClicked: {
-                    mainWindow.showWndSpellbook();
+                    mainWindow.showBattleHistory(mainWindow.gBattle.battle_hist);
                 }
             }
 
@@ -261,7 +261,7 @@ BaseWindow {
 
             IconInfo {
                 id: iiDefault
-                source: "qrc:/res/send_1.png";
+                source: "qrc:/res/target_default.png";
                 text: ""
                 height: 78 * mainWindow.ratioObject
                 iconHeight: 60 * mainWindow.ratioObject
