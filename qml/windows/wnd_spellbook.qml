@@ -15,7 +15,7 @@ InfoWindow {
     //title.text: dict.getStringByCode("Spellbook")
 
 
-    property var arrSpellInit: [ {t:2,sbl:0}, {t:3,sbl:0},
+    property var arrSpellInit: [ {t:4,sbl:0}, {t:2,sbl:0}, {t:3,sbl:0},
         {g:'Disruptions:',t:1,n:'',sbl:1},
                 {g:'DPP',t:0,n:'',sbl:1},{g:'DSF',t:0,n:'',sbl:1},{g:'FFF',t:0,n:'',sbl:2},{g:'SWD',t:0,n:'',sbl:1},
                 {g:'PSDD',t:0,n:'',sbl:2},{g:'PSDF',t:0,n:'',sbl:2},{g:'SPFP',t:0,n:'',sbl:3},
@@ -35,7 +35,7 @@ InfoWindow {
                 {g:'PWPWWc',t:0,n:'',sbl:5},{g:'DSFFFc',t:0,n:'',sbl:3},{g:'DWWFWD',t:0,n:'',sbl:5},{g:'DWSSSP',t:0,n:'',sbl:5},{g:'SPFPSDW',t:0,n:'',sbl:5},
         {g:'Elements:',t:1,n:'',sbl:4},
                 {g:'SSFP',t:0,n:'',sbl:4},{g:'WWFP',t:0,n:'',sbl:4},{g:'WSSc',t:0,n:'',sbl:4},{g:'SWWc',t:0,n:'',sbl:4},{g:'cSWWS',t:0,n:'',sbl:4},{g:'cWSSW',t:0,n:'',sbl:4}
-        ,{t:4,sbl:0}]
+        ]
     property var arrSpell: []
     property int lastSpellbookLevel: 1
     property string levelUpHint: ""
@@ -206,26 +206,33 @@ InfoWindow {
                         delegate: Item {
                             id: d4
                             width: dialogWindow.width
-                            height: 1.2 * rHint.height
+                            height: 1.4 * rHint.height
 
                             Rectangle {
                             id: rHint
                             color: "transparent"
-                            anchors.bottom: parent.bottom
+                            anchors.top: parent.top
                             anchors.left: parent.left
                             border.color: "#10C9F5"
                             border.width: 2 * mainWindow.ratioObject
-                            height: 3 * ttHint.contentHeight
+                            height: 1.4 * ttHint.contentHeight
                             width: 0.9 * dialogWindow.width
 
-                            Text {
-                                id: ttHint
+                            Item {
+                                id: iHint
                                 anchors.centerIn: parent
-                                font.pixelSize: 21 * mainWindow.ratioFont
-                                color: "#10C9F5"
-                                horizontalAlignment: Text.AlignLeft
-                                wrapMode: Text.Wrap
-                                text: levelUpHint
+                                width: 0.6 * dialogWindow.width
+                                height: ttHint.contentHeight
+
+                                Text {
+                                    id: ttHint
+                                    anchors.fill: parent
+                                    font.pixelSize: 21 * mainWindow.ratioFont
+                                    color: "#10C9F5"
+                                    horizontalAlignment: Text.AlignLeft
+                                    wrapMode: Text.Wrap
+                                    text: levelUpHint
+                                }
                             }
                         } }
                     }
