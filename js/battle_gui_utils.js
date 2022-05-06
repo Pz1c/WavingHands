@@ -1,12 +1,19 @@
 var icon_status_code = ["scared","confused","charmed","paralized","shield","coldproof","fireproof","poison","disease","amnesia","maladroit","mshield","delay",
                         "time_stop","haste","permanency","blindness","invisibility"];
-var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"haste"};
+var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"time_stop"};
 var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paralized":"FFF","shield":"WWP","coldproof":"SSFP","fireproof":"WWFP","poison":"DWWFWD","disease":"DSFFFc",
                          "amnesia":"DPP","maladroit":"DSF","mshield":"WWS","delay":"DWSSSP","time_stop":"SPPc","haste":"PWPWWc","permanency":"SPFPSDW","blindness":"DWFFd","invisibility":"PPws"};
-var map_spell_to_icon = {"SWD":"scared","DSF":"confused","PSDF":"charmed","FFF":"paralized","WWP":"shield","SSFP":"coldproof","WWFP":"fireproof","DWWFWD":"poison","DSFFFc":"disease",
-            "DPP":"amnesia","DSF":"maladroit","WWS":"mshield","WPP":"mshield","DWSSSP":"delay","SPPc":"time_stop","PWPWWc":"haste","SPFPSDW":"permanency","DWFFd":"blindness","DFWFd":"blindness",
-            "PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice","WFPSFW":"giant","FPSFW":"troll","PSFW":"ogre","SFW":"goblin",
-            "P":"shield","SPPc":"haste","SPPFD":"haste"};
+
+var map_spell_to_icon = {"SWD":"scared","DSF":"confused","PSDF":"charmed","FFF":"paralized","WWP":"shield","SSFP":"coldproof","WWFP":"fireproof",
+            "DWWFWD":"poison","DSFFFc":"disease","DPP":"amnesia","DSF":"maladroit","WWS":"mshield","WPP":"mshield","DWSSSP":"delay","PWPWWc":"haste",
+            "SPFPSDW":"permanency","DWFFd":"blindness","DFWFd":"blindness","PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice",
+            "WFPSFW":"giant","FPSFW":"troll","PSFW":"ogre","SFW":"goblin","P":"shield","SPPc":"time_stop","SPPFD":"time_stop",
+            "cDPW":"dispel_magic","cw":"magic_mirror", "DFFDD":"lightning_bolt","DFPW":"cure_heavy_wounds","DFW":"cure_light_wounds",
+            "FSSDD":"fireball","PDWP":"remove_enchantment","PSDD":"charm_monster","PWPFSSSD":"finger_of_death",
+            "SD":"magic_missile","SPFP":"anti_spell","SWWc":"fire_storm","WDDc":"clap_of_lightning","WFP":"cause_light_wounds",
+            "WPFD":"cause_heavy_wounds","WSSc":"ice_storm", "p":"RIP2",">":"stab","DSFDFc":"disease","FDF":"paralysis","FDFD":"paralysis"};
+
+
 var C_SPELL_DISPEL_MAGIC = 0;
 var C_SPELL_SUMMON_ICE_ELEMENTAL = 1;
 var C_SPELL_SUMMON_FIRE_ELEMENTAL = 2;

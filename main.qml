@@ -975,7 +975,22 @@ ApplicationWindow {
             //var def_or_none = (gBattle.spellIdx > 0) || (is_player && (gBattle.player_changed_mind || ((playerSpellbookLevel < 5) && (finished_high_lv_spell > 0))));
             if (def_or_none) {
                 gBattle.spellIdx = 1 + arr_cast_now.length;
+            } else if (arr_cast_now.length === 1) {
+                arr_cast_now[0].choose = 1;
+                gBattle.spellIdx = 0;
+            } else if (arr_cast_now.length > 1) {
+                var spi = 0;
+                var max_spell_length = 0;
+                for (var si = 0, sL = arr_cast_now.length; si < sL; ++si) {
+                    if (arr_cast_now[si].gp.length >= max_spell_length) {
+                        max_spell_length = arr_cast_now[si].gp.length;
+                        spi = si;
+                    }
+                }
+                arr_cast_now[spi].choose = 1;
+                gBattle.spellIdx = spi;
             }
+
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
             res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
