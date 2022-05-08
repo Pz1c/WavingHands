@@ -28,8 +28,8 @@ InfoWindow {
                 {g:'SFW',t:0,n:'',sbl:1},{g:'PSFW',t:0,n:'',sbl:2},{g:'FPSFW',t:0,n:'',sbl:2},{g:'WFPSFW',t:0,n:'',sbl:2},
         {g:'Protection:',t:1,n:'',sbl:1},
                 {g:'P',t:0,n:'',sbl:1},{g:'p',t:0,n:'',sbl:1},{g:'WWP',t:0,n:'',sbl:1},
-        {g:'Counters:',t:1,n:'',sbl:1},
-                {g:'cw',t:0,n:'',sbl:1},{g:'cDPW',t:0,n:'',sbl:3},{g:'WPP',t:0,n:'',sbl:2},{g:'WWS',t:0,n:'',sbl:2},{g:'PDWP',t:0,n:'',sbl:3},
+        {g:'Counters:',t:1,n:'',sbl:2},
+                {g:'cw',t:0,n:'',sbl:2},{g:'cDPW',t:0,n:'',sbl:3},{g:'WPP',t:0,n:'',sbl:2},{g:'WWS',t:0,n:'',sbl:2},{g:'PDWP',t:0,n:'',sbl:3},
         {g:'Advanced Enchantments:',t:1,n:'',sbl:3},
                 {g:'PPws',t:0,n:'',sbl:3},{g:'DWFFd',t:0,n:'',sbl:3},{g:'DWFWd',t:0,n:'',sbl:3},{g:'SPPc',t:0,n:'',sbl:5},{g:'SPPFD',t:0,n:'',sbl:5},
                 {g:'PWPWWc',t:0,n:'',sbl:5},{g:'DSFFFc',t:0,n:'',sbl:3},{g:'DWWFWD',t:0,n:'',sbl:5},{g:'DWSSSP',t:0,n:'',sbl:5},{g:'SPFPSDW',t:0,n:'',sbl:5},
@@ -259,6 +259,7 @@ InfoWindow {
                     mainWindow.playerSpellbookLevel, lastSpellbookLevel, JSON.stringify(mainWindow.gERROR))
         var sbl = mainWindow.gERROR.sbl;
         var win_vs_bot = mainWindow.gERROR.win_vs_bot;
+        levelUpHint = mainWindow.gERROR.lelveup_hint;
         mainWindow.gERROR = {};
 
         if ((arrSpell.length === 0)

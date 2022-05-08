@@ -265,6 +265,39 @@ void QBattleInfo::setTurn(int newTurn)
     }
 */
 
+QString QBattleInfo::getInListParticipant(const QString &Login) const  {
+    QString res = QString("%1 vs ").arg(Login);
+    QString tmp = Login.toLower();
+    bool first = true;
+    foreach(QString sp, _participant) {
+        if (tmp.compare(sp.toLower()) == 0) {
+            continue;
+        }
+        if (first) {
+            first = false;
+        } else {
+            res.append(", ");
+        }
+        res.append(sp);
+    }
+    return res;
+}
+
+QString QBattleInfo::getInListStatus(const QString &Login) const {
+    if (_winner.compare(" ") == 0) {
+        return "Draw";
+    }
+    if (_winner.isEmpty()) {
+        return "Unknown";
+    }
+    if (_winner.toLower().compare(Login.toLower()) == 0) {
+        return "Win";
+    } else {
+        return "Lose";
+    }
+    return "";
+}
+
 QString QBattleInfo::getInListDescription(const QString &Login) const  {
     if (_status == -3) {
         return QString("Battle #%1 no info").arg(intToStr(_battleID));
@@ -407,7 +440,8 @@ QString QBattleInfo::getFullHist(const QString& Login) const {
         tmp.append(prepareToPrint(_history.at(i)));
         fh.prepend(tmp);
     }
-    return QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\"}").arg(fh, intToStr(_battleID), getInListDescription(Login), _sub_title);
+    return QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\",\"sc\":\"%5\"}")
+            .arg(fh, intToStr(_battleID), getInListParticipant(Login), _sub_title, getInListStatus(Login));
 }
 
 QString QBattleInfo::toJSON(const QString &Login) const {

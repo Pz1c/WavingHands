@@ -157,6 +157,18 @@ function userProfileChanged() {
     }
 }
 
+function getSpellBookLevelUpHint(exept_max) {
+    if (exept_max && (G_PROFILE.sbl >= 5)) {
+        return "";
+    }
+
+    if ((G_PROFILE.sbl === 3) && (G_PROFILE.win_vs_bot === 2)) {
+        return warlockDictionary.getStringByCode("SpellbookHint3.1");
+    } else {
+        return warlockDictionary.getStringByCode("SpellbookHint" + G_PROFILE.sbl);
+    }
+}
+
 function getJoinDialogText(b) {
     var txt = warlockDictionary.getStringByCode(b.need === 1 ? "DialogStartBattle" : "DialogJoinBattle");
     if (b.need === 1) {

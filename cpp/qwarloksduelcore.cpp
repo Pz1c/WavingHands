@@ -1468,9 +1468,17 @@ void QWarloksDuelCore::processRefferer() {
     if (_isAsService) {
         return;
     }
+    QString finished_battles;
+    foreach(int fid, _finished_battles) {
+        if (!finished_battles.isEmpty()) {
+            finished_battles.append(",");
+        }
+        finished_battles.append(intToStr(fid));
+    }
+
     QString full_reff;
     #ifdef Q_OS_ANDROID
-    QJniObject val = QJniObject::fromString("Try to get reffereerrre");
+    QJniObject val = QJniObject::fromString(finished_battles);
     QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "get_refferer",
                                                            "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
                                                            QNativeInterface::QAndroidApplication::context(), val.object<jstring>());
@@ -2216,11 +2224,11 @@ QString QWarloksDuelCore::battleInfo() {
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
-                   "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23}")
+                   "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
-            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn)); // 21-23
+            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot())); // 21-23
 }
 
 void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Value) {
@@ -2415,6 +2423,7 @@ void QWarloksDuelCore::processWarlockGet(QString &Data) {
         if (bi->battleID() > 0) {
             if (_battleInfo.contains(bi->battleID())) {
                 _battleInfo[bi->battleID()]->setWaitFrom(bi->wait_from());
+                _battleInfo[bi->battleID()]->setTurn(bi->turn());
             } else {
                 _battleInfo.insert(bi->battleID(), bi);
                 continue;

@@ -155,9 +155,6 @@ BaseWindow {
                                     color: "transparent"
                                     radius: 30
                                     anchors.fill: parent
-                                    //anchors.bottomMargin: 0.01 * dialogWindow.height
-                                    //border.color: "#A8F4F4"
-                                    //border.width: lvSpellList.model[index].choose === 1 ? (2 * mainWindow.ratioObject) : 0
 
                                     LargeText {
                                         id: rdbiGesture
@@ -180,7 +177,7 @@ BaseWindow {
                                         anchors.rightMargin: 12 * mainWindow.ratioObject
                                         height: 50 * mainWindow.ratioObject
                                         width: 0.55 * parent.width
-                                        color: arrSpell[index].cast_type === 3 ? "#544653" : "snow"
+                                        color: (arrSpell[index].cast_type === 2) ? "#544653" : "snow"
                                         fontSizeMode: Text.VerticalFit
                                         horizontalAlignment: Text.AlignRight
                                         text: lvSpellList.model[index].n
@@ -282,6 +279,43 @@ BaseWindow {
                                     color: "#0654C0"
                                     //fontSizeMode: Text.VerticalFit
                                     horizontalAlignment: Text.AlignRight
+                                    text: lvSpellList.model[index].n
+                                }
+                            }
+                        }
+
+                    DelegateChoice {
+                        roleValue: "5"
+                        delegate: Item {
+                                id: idRoot5
+                                width: lvSpellList.width
+                                height: 126 * mainWindow.ratioObject
+                                //color: "#0e3c94"
+
+                                Image {
+                                    id: iSBLHint
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 12 * mainWindow.ratioObject
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 12 * mainWindow.ratioObject
+
+                                    source: "qrc:/res/lightning_notice.png"
+                                    height: 32 * mainWindow.ratioObject
+                                    width:  height
+                                }
+
+                                Text {
+                                    id: tSBLHint
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 12 * mainWindow.ratioObject
+                                    anchors.left: iSBLHint.right
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 64 * mainWindow.ratioObject
+                                    anchors.bottom: parent.bottom
+
+                                    color: "#10C9F5"
+                                    font.pixelSize: 21 * mainWindow.ratioFont
+                                    wrapMode: Text.Wrap
                                     text: lvSpellList.model[index].n
                                 }
                             }
@@ -782,6 +816,8 @@ BaseWindow {
             mainWindow.gERROR.g = "";
         }
         disableAll = 0;
+        //rSBLHint.visible = false;
+        //rSBLHint.height = 0;
         if (mainWindow.gERROR.at) {
             switch(mainWindow.gERROR.at) {
             case "enemy":
@@ -801,6 +837,16 @@ BaseWindow {
                 break;
             default:
                 actionType = 0;
+                /*var sbl = mainWindow.playerSpellbookLevel;
+                if (sbl < 5) {
+                    if ((sbl === 3) && (mainWindow.win_vs_bot === 2)) {
+                        tSBLHint.text = dict.getStringByCode("SpellbookHint3.1");
+                    } else {
+                        tSBLHint.text = dict.getStringByCode("SpellbookHint" + sbl);
+                    }
+                    rSBLHint.visible = true;
+                    rSBLHint.height = 120 * mainWindow.ratioObject;
+                }*/
             }
         }
         //iiSend.visible = actionType !== 1;
@@ -810,7 +856,20 @@ BaseWindow {
             warlockIdx = mainWindow.gERROR.widx;
         }
         handIdx = mainWindow.gERROR.is_left ? 1 : 2;
-        arrPossibleGesture = mainWindow.gERROR.pga;
+        var arr = mainWindow.gERROR.pga;
+        if (mainWindow.playerSpellbookLevel === 1) {
+            var new_arr = [];
+            for(var i = 0, Ln = arr.length; i < Ln; ++i) {
+                if (arr[i] === "C") {
+
+                } else {
+                    new_arr.push(arr[i]);
+                }
+            }
+            arr = new_arr;
+        }
+
+        arrPossibleGesture = arr;
         setGesture(arrPossibleGesture.length === 1 ? arrPossibleGesture[0] : mainWindow.gERROR.g);
         mainWindow.gERROR = {};
     }

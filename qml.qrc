@@ -136,5 +136,6 @@
         <file>res/sword.png</file>
         <file>res/anti_spell.png</file>
         <file>res/lightning_notice.png</file>
+        <file>js/spell_popup_gui_utils.js</file>
     </qresource>
 </RCC>

@@ -6,7 +6,7 @@ import QtQuick.Controls 2.15
 import "qrc:/qml/components"
 
 import "qrc:/js/battle_gui_utils.js" as BGU
-
+import "qrc:/js/spell_popup_gui_utils.js" as SPGU
 
 InfoWindow {
     id: dMainItem
@@ -160,20 +160,19 @@ InfoWindow {
     }
 
     function initErrFields() {
-        console.log("wnd_spell.initFields", JSON.stringify(mainWindow.gERROR));        
-        var spell_code = mainWindow.gERROR.spell;
-        var icon = BGU.map_spell_to_icon[spell_code];
-        if (icon) {
-            iiIcon.source = "qrc:/res/" + icon + ".png";
+        console.log("wnd_spell_popup.initFields.start", JSON.stringify(mainWindow.gERROR));
+        switch(mainWindow.gERROR.type) {
+        case 9:
+            SPGU.prepareDataTypeFinishedGame(mainWindow.gERROR, dict);
+            break;
+        default:
+            SPGU.prepareDataTypeSpell(mainWindow.gERROR.spell, dict);
+            break;
         }
-        ltGesture.text = spell_code;
-        ltTitle.text = dict.getStringByCode(spell_code);
-        ltShortDesc.text = dict.getStringByCode(spell_code + "_short_desc");
-        ltError.text = dict.getStringByCode(spell_code + "_desc");
 
         saClick.start();
         mainWindow.gERROR = {};
-        console.log("wnd_spell.initFields", ltTitle.text, ltShortDesc.text);
+        console.log("wnd_spell_popup.initFields.end", ltTitle.text, ltShortDesc.text);
     }
 
     Component.onCompleted: {

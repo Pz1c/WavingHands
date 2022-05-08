@@ -96,8 +96,8 @@ BaseWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 //anchors.top: parent.top
                 //anchors.topMargin: 3 * mainWindow.ratioObject
-                anchors.right: iiChat.left
-                anchors.rightMargin: 32 * mainWindow.ratioObject
+                anchors.right: iiScroll.left
+                anchors.rightMargin: (32 + 32 + 78) * mainWindow.ratioObject
                 radius: 10
                 borderOnPress: false
                 color: buttonPressed ? "#A8F4F4" : "transparent"
@@ -601,7 +601,13 @@ BaseWindow {
         title_text = "Battle #" + mainWindow.gBattle.id;
         BU.applyBattle();
         battleChanged();
-        //AI.processBattle(mainWindow.gBattle, mainWindow.gameCore.isAI);
+        if (mainWindow.gBattle.with_bot) {
+            iiChat.visible = false;
+            iiSpellbook.anchors.rightMargin = 32 * mainWindow.ratioObject;
+        } else {
+            iiChat.visible = true;
+            iiSpellbook.anchors.rightMargin = (32 + 78 + 32) * mainWindow.ratioObject;
+        }
         if (mainWindow.gameCore.isAI) {
             sendOrders();
             mainWindow.processEscape();

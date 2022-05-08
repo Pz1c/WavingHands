@@ -68,6 +68,9 @@ public class NotificationClient
           //SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
           String res = sharedPreferences.getString("referrer", "");
           SharedPreferences.Editor editor = sharedPreferences.edit();
+          // fix for issue #193
+          editor.putString("finished_games", message);
+          editor.putInt("app_last_activity", Math.round(System.currentTimeMillis()/1000L));
           if (!res.isEmpty()) {
             editor.putString("referrer", "");
             editor.commit();
@@ -81,6 +84,7 @@ public class NotificationClient
               editor.commit();
               return "show_battle,"+battle_id+","+action_type;
           }
+          editor.commit();
           return "";
         } catch (Exception e) {
             e.printStackTrace();

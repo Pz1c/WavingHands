@@ -1006,6 +1006,10 @@ ApplicationWindow {
             }
             res = res.concat(arr_cast_later);
         }
+        var h = GUI.getSpellBookLevelUpHint(true);
+        if (h !== "") {
+            res.push({gp:"?",n:h,row_type:5});
+        }
 
         return res;
     }
@@ -1156,7 +1160,7 @@ ApplicationWindow {
     }
 
     function showWndSpellbook(close_current, close_all) {
-        gERROR = {sbl:playerSpellbookLevel,win_vs_bot:GUI.G_PROFILE.win_vs_bot};
+        gERROR = {sbl:playerSpellbookLevel,win_vs_bot:GUI.G_PROFILE.win_vs_bot,lelveup_hint:GUI.getSpellBookLevelUpHint(false)};
         WNDU.showSpellbook(close_current, close_all);
     }
 

@@ -15,7 +15,7 @@ QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
     Spells.append(new QSpell(0,"cDPW","Dispel Magic", SPELL_TYPE_REMOVE_ENCHANTMENT,10,1,10,SPELL_DEF_TARGER_SELF, 0, true, false, SPELL_GROUP_COUNTERS, 3));
     Spells.append(new QSpell(1,"cSWWS","Summon Ice Elemental", SPELL_TYPE_ELEMENTAL,14,0,15, SPELL_DEF_TARGER_NOBODY, 3, true, false, SPELL_GROUP_ELEMENTS, 4));
     Spells.append(new QSpell(2,"cWSSW","Summon Fire Elemental", SPELL_TYPE_ELEMENTAL,15,1,15, SPELL_DEF_TARGER_NOBODY, 3, true, false, SPELL_GROUP_ELEMENTS, 4));
-    Spells.append(new QSpell(3,"cw","Magic Mirror", SPELL_TYPE_MAGIC_SHIELD,10,0,10, SPELL_DEF_TARGER_SELF, 0, true, false, SPELL_GROUP_COUNTERS, 1));
+    Spells.append(new QSpell(3,"cw","Magic Mirror", SPELL_TYPE_MAGIC_SHIELD,10,0,10, SPELL_DEF_TARGER_SELF, 0, true, false, SPELL_GROUP_COUNTERS, 2));
     Spells.append(new QSpell(4,"DFFDD","Lightning Bolt", SPELL_TYPE_DAMAGE,11,1,16, SPELL_DEF_TARGER_ENEMY, 5, true, false, SPELL_GROUP_DAMAGING, 3));
     Spells.append(new QSpell(5,"DFPW","Cure Heavy Wounds", SPELL_TYPE_CURE,10,1,10, SPELL_DEF_TARGER_SELF, 2, true, false, SPELL_GROUP_HEALING, 2));
     Spells.append(new QSpell(6,"DFW","Cure Light Wounds", SPELL_TYPE_CURE,10,0,10, SPELL_DEF_TARGER_SELF, 1, true, true, SPELL_GROUP_HEALING, 1));
