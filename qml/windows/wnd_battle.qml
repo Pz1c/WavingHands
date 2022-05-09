@@ -124,6 +124,7 @@ BaseWindow {
                 radius: 10
                 borderOnPress: false
                 color: buttonPressed ? "#A8F4F4" : "transparent"
+                visible: false
 
                 onClicked: {
                     source = "qrc:/res/chat.png";
@@ -532,7 +533,9 @@ BaseWindow {
         iiDefault.visible = Enable;
         //iiElemental.border.width = Enable ? 3 : 0;
         bbSendOrders.visible = !Enable;
-        iiChat.visible = !Enable;
+        if (!mainWindow.gBattle.with_bot) {
+            iiChat.visible = !Enable;
+        }
         iiScroll.visible = !Enable;
         iiSpellbook.visible = !Enable;
         //iiChat.opacity = Enable ? 0.3 : 1;
@@ -601,12 +604,12 @@ BaseWindow {
         title_text = "Battle #" + mainWindow.gBattle.id;
         BU.applyBattle();
         battleChanged();
-        if (mainWindow.gBattle.with_bot) {
-            iiChat.visible = false;
-            iiSpellbook.anchors.rightMargin = 32 * mainWindow.ratioObject;
-        } else {
+        if (!mainWindow.gBattle.with_bot) {
             iiChat.visible = true;
             iiSpellbook.anchors.rightMargin = (32 + 78 + 32) * mainWindow.ratioObject;
+        } else {
+            iiChat.visible = false;
+            iiSpellbook.anchors.rightMargin = 32 * mainWindow.ratioObject;
         }
         if (mainWindow.gameCore.isAI) {
             sendOrders();

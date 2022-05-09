@@ -1006,9 +1006,11 @@ ApplicationWindow {
             }
             res = res.concat(arr_cast_later);
         }
-        var h = GUI.getSpellBookLevelUpHint(true);
-        if (h !== "") {
-            res.push({gp:"?",n:h,row_type:5});
+        if (new_gesture === '') {
+            var h = GUI.getSpellBookLevelUpHint(true);
+            if (h !== "") {
+                res.push({gp:"?",n:h,row_type:5});
+            }
         }
 
         return res;

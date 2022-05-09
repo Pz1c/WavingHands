@@ -137,5 +137,9 @@
         <file>res/anti_spell.png</file>
         <file>res/lightning_notice.png</file>
         <file>js/spell_popup_gui_utils.js</file>
+        <file>res/new_giant.png</file>
+        <file>res/new_goblin.png</file>
+        <file>res/new_ogre.png</file>
+        <file>res/new_troll.png</file>
     </qresource>
 </RCC>
