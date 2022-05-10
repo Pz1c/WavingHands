@@ -974,10 +974,10 @@ ApplicationWindow {
             var def_or_none = is_player && gBattle.player_changed_mind;
             //var def_or_none = (gBattle.spellIdx > 0) || (is_player && (gBattle.player_changed_mind || ((playerSpellbookLevel < 5) && (finished_high_lv_spell > 0))));
             if (def_or_none) {
-                gBattle.spellIdx = 1 + arr_cast_now.length;
+                gBattle.spellIdx = arr_cast_now.length + 1;
             } else if (arr_cast_now.length === 1) {
                 arr_cast_now[0].choose = 1;
-                gBattle.spellIdx = 0;
+                gBattle.spellIdx = 1;
             } else if (arr_cast_now.length > 1) {
                 var spi = 0;
                 var max_spell_length = 0;
@@ -988,7 +988,7 @@ ApplicationWindow {
                     }
                 }
                 arr_cast_now[spi].choose = 1;
-                gBattle.spellIdx = spi;
+                gBattle.spellIdx = spi + 1;
             }
 
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};

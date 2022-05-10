@@ -805,7 +805,9 @@ BaseWindow {
         } else {
             arrSpell = mainWindow.getSpellList(new_gesture, warlockIdx, handIdx);
         }
-        console.log("FINAL ARRAY", JSON.stringify(arrSpell));
+        console.log("FINAL ARRAY BEGIN");
+        console.log(JSON.stringify(arrSpell));
+        console.log("FINAL ARRAY END");
         lvSpellList.model = arrSpell;
     }
 
