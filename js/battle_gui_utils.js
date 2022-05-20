@@ -13,6 +13,15 @@ var map_spell_to_icon = {"SWD":"scared","DSF":"confused","PSDF":"charmed","FFF":
             "SD":"magic_missile","SPFP":"anti_spell","SWWc":"fire_storm","WDDc":"clap_of_lightning","WFP":"cause_light_wounds",
             "WPFD":"cause_heavy_wounds","WSSc":"ice_storm", "p":"RIP2",">":"stab","DSFDFc":"disease","FDF":"paralysis","FDFD":"paralysis"};
 
+var map_spell_name_to_gesture = {"Dispel Magic":["cDPW"],"Counter Spell":["WPP", "WWS"],"Magic Mirror":["cw"],"Summon Goblin":["SFW"],"Summon Ogre":["PSFW"],
+    "Summon Troll":["FPSFW"],"Summon Giant":["WFPSFW"],"Summon Fire Elemental":["cWSSW"],"Summon Ice Elemental":["cSWWS"],
+    "Haste":["PWPWWc"],"Time Stop":["SPPFD", "SPPc"],"Protection":["WWP"],"Resist Heat":["WWFP"],"Resist Cold":["SSFP"],
+    "Paralysis":["FFF", "FDF", "FDFD"],"Amnesia":["DPP"],"Fear":["SWD"],"Confusion":["DSF"],"Maladroitness":["DSF"],"Charm Monster":["PSDD"],
+    "Charm Person":["PSDF"],"Disease":["DSFFFc"],"Poison":["DWWFWD"],"Cure Light Wounds":["DFW"],"Cure Heavy Wounds":["DFPW"],"Anti-spell":["SPFP"],
+    "Blindness":["DWFFd","DFWFd"],"Invisibility":["PPws"],"Permanency":["SPFPSDW"],"Delay Effect":["DWSSSP"],"Remove Enchantment":["PDWP"],
+    "Shield":["P"],"Magic Missile":["SD"],"Cause Light Wounds":["WFP"],"Cause Heavy Wounds":["WPFD"],"Lightning Bolt":["DFFDD"],"Clap of Lightning":["WDDc"],
+    "Fireball":["FSSDD"],"Finger of Death":["PWPFSSSD"],"Fire Storm":["SWWc"],"Ice Storm":["WSSc"],"Stab":[">"]};
+
 
 var C_SPELL_DISPEL_MAGIC = 0;
 var C_SPELL_SUMMON_ICE_ELEMENTAL = 1;
@@ -309,4 +318,220 @@ function getMonsterNameByStrength(Strength) {
 
 function replaceAll(str, find, replace) {
   return str.replace(new RegExp(find, 'g'), replace);
+}
+
+function parseSpellByText(txt) {
+    var arr = txt.split(" ");
+    var walock_name;
+    var spell_name = "";
+    var target_name;
+    var at_found = false;
+    for (var i = 0, Ln = arr.length; i < Ln; ++i) {
+        if (arr[i] === "at") {
+            at_found = true;
+        } else if (arr[i] === "casts") {
+            continue;
+        } else if (!walock_name) {
+            walock_name = arr[i];
+        } else if (!at_found) {
+            spell_name += arr[i] + " ";
+        } else if (!target_name) {
+            target_name = arr[i].replace(".", "");
+        }
+    }
+    if (target_name === "himself") {
+        target_name = walock_name;
+    }
+    spell_name = spell_name.trim();
+
+    console.log("parseSpellByText", txt, walock_name, spell_name, target_name);
+    return {warlock:walock_name,spell:spell_name,target:target_name};
+}
+
+function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
+    var res = [0, 0];
+    console.log("checkIsSpellPossibeForWarlock", Gesture, Left, Right);
+    var gl = Gesture.length;
+    var L = replaceAll(Left, " ", "");
+    var R = replaceAll(Right, " ", "");
+    L = L.substr(L.length - gl);
+    R = R.substr(R.length - gl);
+    var not_found;
+    for (var i = gl - 1; i >= 0; --i) {
+        not_found = true;
+        var g = Gesture.substr(i, 1);
+        var gU = g.toUpperCase();
+        var Lg = L.substr(i, 1);
+        var Rg = R.substr(i, 1);
+        var need_both = g !== gU;
+        console.log("checkIsSpellPossibeForWarlock", g, need_both, L, R, Lg, Rg);
+        if (need_both) {
+            if ((Lg === gU) && (Rg === gU)) {
+                res = [gl - i, gl - i];
+                not_found = false;
+            } else {
+                return [0, 0];
+            }
+        } else {
+            if ((Lg === gU) && ((i === gl - i) || (res[0] === gl - i - 1))) {
+                res[0] = gl - i;
+                not_found = false;
+            }
+            if ((Rg === gU) && ((i === gl - i) || (res[1] === gl - i - 1))) {
+                res[1] = gl - i;
+                not_found = false;
+            }
+        }
+        if (not_found) {
+            return [0, 0];
+        }
+    }
+
+    return res;
+}
+
+function higlightWarlockGestureBySpell(warlock, spell_obj) {
+    var arr_g = map_spell_name_to_gesture[spell_obj.spell];
+    console.log("higlightWarlockGestureBySpell", spell_obj.spell, JSON.stringify(arr_g));
+    if (!arr_g) {
+        return {action:"none"};
+    }
+    for (var i = 0, Ln = arr_g.length; i < Ln; ++i) {
+        var lrsl = checkIsSpellPossibeForWarlock(arr_g[i], warlock.L, warlock.R);
+        if ((lrsl[0] !== 0) || (lrsl[1] !== 0)) {
+            return {action:"highlight",warlock_name:warlock.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(warlock.L, warlock.R, lrsl[0], lrsl[1])}
+        }
+    }
+
+    return {action:"none"};
+}
+
+function getMessageActionBySpell(txt) {
+    var res = [];
+    var spell_obj = parseSpellByText(txt);
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        if (battle.warlocks[i].name === spell_obj.warlock) {
+            res.push(higlightWarlockGestureBySpell(battle.warlocks[i], spell_obj));
+        }
+        if (battle.warlocks[i].name === spell_obj.target) {
+            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === spell_obj.warlock ? "#10C9F5" : "#FEE2D6"});
+        }
+    }
+
+
+    console.log("getMessageActionBySpell", JSON.stringify(spell_obj), JSON.stringify(res));
+    return res;
+}
+
+function parseSimpleAttack(txt, stop_word) {
+    var prepare_txt = stop_word ? txt.replace(stop_word, "attacks") : txt;
+    var arr = replaceAll(prepare_txt.replace(",", " #").replace("for", "#"), '  ', ' ').split(" ");
+
+    var aggressor = arr[0];
+    var target = "";
+    var target_start = false;
+
+    for(var i = 1, Ln = arr.length; i < Ln; ++i) {
+        if (!arr[i]) {
+            continue;
+        }
+        if (arr[i] === 'attacks') {
+            target_start = true;
+            continue;
+        }
+        if (arr[i] === '#') {
+            break;
+        }
+        if (target_start) {
+            if (target !== "") {
+                target += ' ';
+            }
+            target += arr[i];
+        } else {
+            aggressor += " " + arr[i];
+        }
+    }
+    var res = {aggressor:aggressor,target:target,success:txt.indexOf("damage") !== -1 ? 1 : 0};
+    console.log("parseSimpleAttack", JSON.stringify(arr), JSON.stringify(res));
+    return res;
+}
+
+function parseAttackByText(txt) {
+    var res = {};
+    if (txt.indexOf(" attacks ") !== -1) {
+        res = parseSimpleAttack(txt);
+    } else if (txt.indexOf(" swings wildly ") !== -1) {
+        res = parseSimpleAttack(txt, "swings wildly for");
+    } else if (txt.indexOf("tries to attack") !== -1) {
+        res = parseSimpleAttack(txt, "tries to attack");
+    }
+
+    //res = {aggressor:aggressor,target:target,success:txt.indexOf("damage") !== -1 ? 1 : 0};
+    console.log("parseAttackByText", txt, JSON.stringify(res));
+    return res;
+}
+
+function getMessageActionByAttack(txt) {
+    var res = [];
+    var attack_obj = parseAttackByText(txt);
+    var aggressor_found = false, target_found = false, w, m, j, LnJ;
+    if (attack_obj.aggressor) {
+        for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+            //console.log("getMessageActionByAttack", i, Ln, battle.warlocks[i].name);
+            if (!aggressor_found) {
+                if (battle.warlocks[i].name === attack_obj.aggressor) {
+                    res.push(higlightWarlockGestureBySpell(battle.warlocks[i], {warlock:attack_obj.aggressor,spell:"Stab",target:attack_obj.target}));
+                    aggressor_found = true;
+                } else {
+                    w = battle.warlocks[i];
+                    for (j = 0, LnJ = w.monsters; j < LnJ; ++j) {
+                        m = w.monsters[j];
+                        if (m.name === attack_obj.aggressor) {
+                            res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:"#10C9F5"});
+                            aggressor_found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!target_found) {
+                if (attack_obj.success && (battle.warlocks[i].name === attack_obj.target)) {
+                    res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:attack_obj.target === attack_obj.aggressor ? "#10C9F5" : "#FEE2D6"});
+                } else {
+                    w = battle.warlocks[i];
+                    for (j = 0, LnJ = w.monsters; j < LnJ; ++j) {
+                        m = w.monsters[j];
+                        if (m.name === attack_obj.target) {
+                            res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:attack_obj.target === attack_obj.aggressor ? "#10C9F5" : "#FEE2D6"});
+                            target_found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (aggressor_found && target_found) {
+                break;
+            }
+        }
+    }
+
+    console.log("getMessageActionByAttack", JSON.stringify(attack_obj), JSON.stringify(res));
+    return res;
+}
+
+function getMessageActionByRow(row) {
+    var res = [];
+    if (row.txt.indexOf(" casts ") !== -1) {
+        // process spell casting
+        return getMessageActionBySpell(row.txt);
+    } else if (row.color === "#FF6666") {
+        // TODO process dies messages
+    } else {//if (row.txt.indexOf(" attacks ") !== -1) {
+        // process attack message
+        return getMessageActionByAttack(row.txt);
+    }
+
+    return res;
 }

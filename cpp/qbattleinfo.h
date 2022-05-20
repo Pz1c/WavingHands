@@ -38,6 +38,7 @@ public:
     void addHistory(int battle_turn, const QString &hist_msg);
     QString getHistory() const;
     QString getFullHist(const QString &Login) const;
+    QString getTurnInfo(int Turn, const QString &Login) const;
     void parseAllTurns(QString& Data);
 
     bool active(const QString &login) const;

@@ -334,6 +334,40 @@ Item {
         }
     }
 
+    function highlightAction(a) {
+        console.log("Warlock.highlightAction", a.object_type, a.object);
+        if (a.object_type === "warlock") {
+            switch(a.object) {
+            case "hp":
+                iiHP.color = a.color ? a.color : iiHP.bg_color_checked;
+                break;
+            case "gestures":
+                lwGestures.model = a.data;
+                scrollGestures();
+                break;
+            }
+        } else {
+            // monster
+        }
+    }
+
+    function highlightActionRestore(a) {
+        console.log("Warlock.highlightActionRestore", a.object_type, a.object);
+        if (a.object_type === "warlock") {
+            switch(a.object) {
+            case "hp":
+                iiHP.color = iiHP.bg_color;
+                break;
+            case "gestures":
+                lwGestures.model = l_warlock.print_g;
+                scrollGestures();
+                break;
+            }
+        } else {
+            // monster
+        }
+    }
+
     function setGesture(Hand, GestureIcon) {
         console.log("Warlock.setGesture", Hand, GestureIcon);
         if (Hand === "L") {

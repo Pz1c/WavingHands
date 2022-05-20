@@ -177,7 +177,7 @@ BaseWindow {
                                         anchors.rightMargin: 12 * mainWindow.ratioObject
                                         height: 50 * mainWindow.ratioObject
                                         width: 0.55 * parent.width
-                                        color: (arrSpell[index].cast_type === 2) ? "#544653" : "snow"
+                                        color: (lvSpellList.model[index].cast_type === 2) ? "#544653" : "snow"
                                         fontSizeMode: Text.VerticalFit
                                         horizontalAlignment: Text.AlignRight
                                         text: lvSpellList.model[index].n

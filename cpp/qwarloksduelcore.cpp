@@ -270,6 +270,9 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         if (url.indexOf("https://") == -1) {
             url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
         }
+        if (!_reg_in_app) {
+            _exp_lv = 5;
+        }
         qDebug() << "final url " << url;
         setCheckUrl(QString(GAME_SERVER_URL_GET_PROFILE).arg(_login));
         sendGetRequest(url);
@@ -869,15 +872,14 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             if (battleInfo->isWinner(_login)) {
                 if (battleInfo->with_bot()) {
                     switch(++_win_vs_bot) {
+                    case 0:
+                        break;
                     case 1:
+                    case 2:
                         setSBL(3);
                         break;
-                    case 3:
-                        setSBL(4);
-                        break;
-                    case 10:
-                        setSBL(5);
-                        break;
+                    default:
+                        setSBL(_win_vs_bot >= 10 ? 5 : 4);
                     }
                 } else {
                     ++_win_vs_warlock;
@@ -2220,15 +2222,16 @@ QString QWarloksDuelCore::battleInfo() {
     }
     QString tmpBH = battle_info->getHistory();
     QString tmpBC = battle_info->getChat();
+    QString tmpLT = battle_info->getTurnInfo(_loadedBattleTurn, _login);
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
-                   "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24}")
+                   "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
-            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot())); // 21-23
+            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT); // 21-25
 }
 
 void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Value) {
@@ -2300,7 +2303,8 @@ void QWarloksDuelCore::logout() {
     _password.clear();
 
     _finished_battles.clear();
-    _exp_lv = 0;
+    _reg_in_app = false;
+    _exp_lv = 5;
     _played = 0;
     _won = 0;
     _died = 0;

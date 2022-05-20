@@ -43,6 +43,12 @@ function closeChilds(close_current) {
 }
 
 function isSomeWndOpenned() {
+    var str_tmp = "";
+    for(var i = 0, Ln = arr_wnd_stack.length; i < Ln; ++i) {
+        str_tmp += arr_wnd_stack[i].code + ";";
+    }
+
+    console.log("wnd_utils.isSomeWndOpenned", str_tmp);
     return arr_wnd_stack.length > 0;
 }
 

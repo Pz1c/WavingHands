@@ -424,6 +424,64 @@ QString QBattleInfo::prepareToPrint(QString str) const {
     return str.replace("\n","<br>").replace("\r", "").replace('"', "&quot;");
 }
 
+QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
+    if ((Turn <= 1) || (Turn > _turn)) {
+        return "";
+    }
+    QString res = "";
+    QString chm = _chat.at(Turn);
+    QStringList slcm;
+    if (!chm.isEmpty() /*&& !with_bot()*/) {
+        slcm = chm.split("<br>");
+        foreach(QString m, slcm) {
+            if (m.trimmed().isEmpty()) {
+                continue;
+            }
+            if (m.indexOf(Login + " says ") != -1) {
+                continue;
+            }
+            if (!res.isEmpty()) {
+                res.append(",");
+            }
+            res.append(QString("{\"txt\":\"%1\",\"color\":\"#E7FFFF\",\"type\":0}").arg(prepareToPrint(m)));
+        }
+    }
+    chm = _history.at(Turn);
+    if (!chm.isEmpty()) {
+        int idx1;
+        QString curr_color, def_color = "#FFFFFF";
+        QStringList sl1, sl2;
+        slcm = chm.split("<FONT COLOR=\"");
+        foreach(QString m, slcm) {
+            idx1 = m.indexOf('"');
+            curr_color = m.mid(0, idx1);
+            idx1 = m.indexOf(">", idx1);
+            m = m.mid(idx1 + 1);
+            qDebug() << "QBattleInfo::getTurnInfo" << m;
+            sl1 = m.split("</FONT>"); // should be only two
+            foreach(QString ss1, sl1) {
+                sl2 = ss1.split("<br>");
+                foreach(QString ss2, sl2) {
+                    if (ss2.trimmed().isEmpty()) {
+                        continue;
+                    }
+                    if (!res.isEmpty()) {
+                        res.append(",");
+                    }
+                    int l_type = ARR_BATTLE_MSG_COLOR_INACTIVE.indexOf(curr_color) == -1 ? 1 : 2;
+                    if ((l_type == 2) && ((ss2.indexOf("attack") != -1) && (ss2.indexOf("directs") == -1))) {
+                        l_type = 1;
+                    }
+                    res.append(QString("{\"txt\":\"%1\",\"color\":\"%2\",\"type\":%3}").arg(prepareToPrint(ss2.trimmed()), curr_color, intToStr(l_type)));
+                }
+                curr_color = def_color;
+            }
+        }
+    }
+
+    return res.append("]").prepend("[");
+}
+
 QString QBattleInfo::getFullHist(const QString& Login) const {
     QString fh, tmp;
     if (!_description.isEmpty()) {

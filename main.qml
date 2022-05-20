@@ -52,6 +52,7 @@ ApplicationWindow {
             case 0: return Qt.quit();
             case 1: return confirmOrdersEx();
             case 2: return joinBattleDialogResult(true);
+            case 3: return core.logout();
             }
         }
 
@@ -526,6 +527,7 @@ ApplicationWindow {
 
                     onClicked: {
                         console.log("try refresh state");
+                        WNDU.closeChilds();
                         core.scanState(0);
                     }
                 }
@@ -1100,6 +1102,12 @@ ApplicationWindow {
     function confirmOrders() {
         mdNoGesture.text = warlockDictionary.getStringByCode("ConfirmOrdersForTurn");
         mdNoGesture.dialogType = 1;
+        mdNoGesture.visible = true;
+    }
+
+    function confirmLogout() {
+        mdNoGesture.text = warlockDictionary.getStringByCode("ConfirmLogout");
+        mdNoGesture.dialogType = 3;
         mdNoGesture.visible = true;
     }
 

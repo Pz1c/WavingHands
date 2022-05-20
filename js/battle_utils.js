@@ -1,4 +1,5 @@
 var battle = {};
+var map_warlock_name_to_idx = {};
 var cWarlockObject,cIconObject;
 const G_WARLOCK_HEIGHT = 474;
 Qt.include("battle_gui_utils.js");
@@ -110,10 +111,39 @@ function parseParalyzedHands(arr) {
     }
 }
 
+function prepareTurnActionInfo(last_turn_hist) {
+    console.log("battle_utils.prepareTurnActionInfo", JSON.stringify(last_turn_hist), JSON.stringify(battle.hint));
+    var new_hint = [], i, Ln;
+    for(i = 0, Ln = battle.hint.length; i < Ln; ++i) {
+        new_hint.push({txt:battle.hint[i],color_bg:"#FEE2D6",actions:[]});
+    }
+
+    for(i = 0, Ln = last_turn_hist.length; i < Ln; ++i) {
+        var new_action = [];
+        if (battle.with_bot && (last_turn_hist[i].type === 0)) {
+            continue;
+        } else if (last_turn_hist[i].type === 2) {
+            continue;
+        } else if (last_turn_hist[i].type === 1) {
+            new_action = getMessageActionByRow(last_turn_hist[i]); // before change color
+            if ((last_turn_hist[i].color === "#FF6666") || (last_turn_hist[i].color === "#FF8888")) {
+                last_turn_hist[i].color = "#FEE2D6";
+            } else {
+                last_turn_hist[i].color = "#10C9F5";
+            }
+        }
+        new_hint.push({color_bg:last_turn_hist[i].color,txt:replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
+    }
+
+
+    battle.hint = new_hint;
+
+}
+
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: raw_battle.battle_hist,
-        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot};
+        battle_chat: raw_battle.battle_chat, with_bot: false/*raw_battle.with_bot*/};
     // L left  obj
     // R Right obj
     // C Chat  text
@@ -183,9 +213,10 @@ function prepareBattle(raw_battle) {
             battle.actions.M[i].under_control = false;
         }
     }
-
-    //battle.chat = raw_battle.chat;
     delete battle.monsters;
+
+    prepareTurnActionInfo(raw_battle.last_turn_hist);
+
     console.log("prepared battle", JSON.stringify(battle));
 }
 
@@ -236,7 +267,8 @@ function finishPrepareWarlockList() {
             continue;
         }
         var arr_m = battle.warlocks[i];
-        arr_m.warlock_idx = i;        
+        arr_m.warlock_idx = i;
+        map_warlock_name_to_idx[arr_m.name] = i;
         //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
         if (sprite === null) {
@@ -265,7 +297,9 @@ function prepareChat() {
 function prepareHint() {
     if (battle.hint && battle.hint.length > 0) {
         ltTutorial.tutorialData = battle.hint;
-        ltTutorial.text = battle.hint[0];
+        ltTutorial.tutorialDataIdx = 0;
+        showTutorialData(0);
+        //ltTutorial.text = battle.hint[0];
         ltTutorial.visible = true;
     }
 }

@@ -141,5 +141,6 @@
         <file>res/new_goblin.png</file>
         <file>res/new_ogre.png</file>
         <file>res/new_troll.png</file>
+        <file>js/battle_wnd_utils.js</file>
     </qresource>
 </RCC>

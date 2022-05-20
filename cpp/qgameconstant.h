@@ -153,6 +153,8 @@ static QList<int> ARR_SUMMON = QList<int>({SPELL_SUMMON_GIANT, SPELL_SUMMON_GOBL
 static QList<int> ARR_IGNORE_SPELL = QList<int>({SPELL_COUNTER_SPELL1, SPELL_COUNTER_SPELL2, SPELL_MAGIC_MIRROR, SPELL_REMOVE_ENCHANTMENT, SPELL_PROTECTION});
 static QStringList ARR_ACTIVE_COLOR = QStringList({"#FF0000", "#BB4400", "#996600", "#887700", "#778800", "#669900", "#55AA00", "#00FF00", "#0DD2200"});
 static QStringList ARR_ONLINE_COLOR = QStringList({"#33CC00", "#11EE00"});
+static QStringList ARR_BATTLE_MSG_COLOR_ACTIVE = QStringList({"#FF6666", "#FF8888", "#88FF88", "#79D979"});
+static QStringList ARR_BATTLE_MSG_COLOR_INACTIVE = QStringList({"#FFFFFF", "#CCCCCC", "#FF88FF"});
 
 #define intToStr QString::number
 #define boolToInt(val) (val?1:0)

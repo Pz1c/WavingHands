@@ -5,6 +5,7 @@ import QtQuick.Controls 2.15
 
 import "qrc:/qml/components"
 import "qrc:/js/battle_utils.js" as BU
+import "qrc:/js/battle_wnd_utils.js" as BWU
 import "qrc:/js/ai_utils.js" as AI
 
 BaseWindow {
@@ -346,10 +347,7 @@ BaseWindow {
                     visible: ltTutorial.tutorialDataIdx > 0
                     font.pixelSize: 21 * mainWindow.ratioFont
                     onClicked: {
-                        if (--ltTutorial.tutorialDataIdx < 0) {
-                            ltTutorial.tutorialDataIdx = 0;
-                        }
-                        ltTTT.text = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
+                        showTutorialData(-1);
                     }
                 }
 
@@ -367,11 +365,7 @@ BaseWindow {
                     wrapMode: Text.Wrap
 
                     onClicked: {
-                        if (++ltTutorial.tutorialDataIdx >= ltTutorial.tutorialData.length) {
-                            ltTutorial.visible = false;
-                        } else {
-                            ltTTT.text = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
-                        }
+                        showTutorialData(1);
                     }
                 }
 
@@ -393,6 +387,10 @@ BaseWindow {
                 }
             }
         }
+    }
+
+    function showTutorialData(diff) {
+        BWU.showTutorialData(diff);
     }
 
     onCancel: {
@@ -557,8 +555,6 @@ BaseWindow {
         if (is_maladroit) {
             iWarlocks.children[0].setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture));
         }
-
-        //battleChanged();
     }
 
     function setCharm(hand, gesture) {

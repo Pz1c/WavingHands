@@ -27,7 +27,7 @@ function mainMenuActionEx(code) {
     case "rateus": return showRateUsWnd();
     case "player_score": return showUserScoreWnd();
     case "battle_with_friend": return showShareWnd();
-    case "logout": return core.logout();
+    case "logout": return confirmLogout();
     case "spellbook_levelup":
         def_type = 22;
         break;
