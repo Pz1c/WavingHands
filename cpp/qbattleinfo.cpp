@@ -426,7 +426,7 @@ QString QBattleInfo::prepareToPrint(QString str) const {
 
 QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
     if ((Turn <= 1) || (Turn > _turn)) {
-        return "";
+        return "[]";
     }
     QString res = "";
     QString chm = _chat.at(Turn);

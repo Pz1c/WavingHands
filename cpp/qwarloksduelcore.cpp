@@ -1429,8 +1429,13 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             }
 
             if (_isAI && (_ready_in_battles.size() == 0) && battle_info->canForceSurrendering()) {
-                battle_info->setWaitFrom(battle_info->wait_from() + 30 * 60);
-                forceSurrender(bid, battle_info->turn());
+                if (battle_info->turn() > 0) {
+                    battle_info->setWaitFrom(battle_info->wait_from() + 30 * 60);
+                    forceSurrender(bid, battle_info->turn());
+                } else if (!ask_ai) {
+                    ask_ai = true;
+                    getBattle(bid, 0);
+                }
             }
         }
     //}
