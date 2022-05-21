@@ -47,6 +47,17 @@ public class NotificationClient
             e.printStackTrace();
         }
     }
+
+    public static void hideNotification(Context context) {
+        try {
+            NotificationManager m_notificationManager = (NotificationManager)
+                    context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            m_notificationManager.cancel(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
     public static void share(Context context, String message) {
         try {

@@ -36,6 +36,8 @@ public class MainActivity extends QtActivity {
             e.printStackTrace();
         }
 
+        CheckStatus.hideNotification(this);
+
         if (need_check_ref == 0) {
             // on below line we are building our install referrer client and building it.
             referrerClient = InstallReferrerClient.newBuilder(this).build();
