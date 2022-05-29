@@ -265,7 +265,7 @@ void QBattleInfo::setTurn(int newTurn)
     }
 */
 
-QString QBattleInfo::getInListParticipant(const QString &Login) const  {
+QString QBattleInfo::getInListParticipant(const QString &Login, bool Short) const  {
     QString res = QString("%1 vs ").arg(Login);
     QString tmp = Login.toLower();
     bool first = true;
@@ -279,6 +279,9 @@ QString QBattleInfo::getInListParticipant(const QString &Login) const  {
             res.append(", ");
         }
         res.append(sp);
+    }
+    if (Short) {
+        res = res.replace(" vs ", ",").replace(" ", "");
     }
     return res;
 }

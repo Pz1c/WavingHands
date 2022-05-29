@@ -4,9 +4,11 @@ import QtQuick.Layouts 1.12
 
 import ua.sp.warloksduel 2.0
 import ua.sp.warlockdictionary 1.0
+//import ua.sp.GoogleAnalytics 1.0
 
 import "qrc:/js/game_constant.js" as GC
 import "qrc:/js/gui_utils.js" as GUI
+//import "qrc:/js/ga.js" as GA
 //import "qrc:/js/main_utils.js" as MUtils
 //import "qrc:/js/ai_utils.js" as AI
 import "qrc:/js/user_profile_utils.js" as UU
@@ -15,12 +17,14 @@ import "qrc:/qml/windows"
 import "qrc:/qml/components"
 import "qrc:/qml"
 
+
 ApplicationWindow {
     id: mainWindow
     visible: true
     width: 506//600
     height: 900//1068
     flags: /*Qt.FramelessWindowHint|*/Qt.Window
+    color: "#551470"
 
     property real ratioObject: 1
     property real ratioFont: 1
@@ -31,6 +35,15 @@ ApplicationWindow {
     property var gERROR: ({})
     property var gBattle: ({})
     property int playerSpellbookLevel: 6
+    property var warlockDictionary: WarlockDictionary
+    //property var googleAnalytic: GoogleAnalytics
+    property real height_koeff: 1
+    property bool exit_on_back_button: true
+    property bool action_send_order: true
+    property string tipTxt;
+    //property bool allowCloseTip: false;
+    property bool is_game_in_progress: false
+    property alias keyListener: iWndContainer
 
     Dialog {
         id: mdNoGesture
@@ -49,7 +62,9 @@ ApplicationWindow {
 
         onAccepted: {
             switch(dialogType) {
-            case 0: return Qt.quit();
+            case 0:
+                logEvent("app_closed", {});
+                return Qt.quit();
             case 1: return confirmOrdersEx();
             case 2: return joinBattleDialogResult(true);
             case 3: return core.logout();
@@ -93,6 +108,7 @@ ApplicationWindow {
                 showNewUserMenu();
             } else {
                 //core.scanState();
+                logEvent("auto_login_start", {});
                 core.setTimerInterval(1, 0);
                 GUI.prepareLoginMenu(core.accountMenu);
             }
@@ -104,17 +120,6 @@ ApplicationWindow {
         userId: //take uuid
             core.uuid
     }*/
-
-    property var warlockDictionary: WarlockDictionary
-    property real height_koeff: 1
-    property bool exit_on_back_button: true
-    property bool action_send_order: true
-    property string tipTxt;
-    //property bool allowCloseTip: false;
-    property bool is_game_in_progress: false
-    property alias keyListener: iWndContainer
-
-    color: "#551470"
 
     Item {
         id: iWndContainer
@@ -339,7 +344,10 @@ ApplicationWindow {
                 height: 48 * ratioObject
                 width: 48 * ratioObject
 
-                onClicked: dMenu.open()
+                onClicked: {
+                    dMenu.open();
+                    logEvent("ListGames_Menu_Clicked");
+                }
                 background: Image {
                     anchors.fill: parent
                     source: "res/menu.png"
@@ -356,6 +364,7 @@ ApplicationWindow {
                 width: 48 * ratioObject
 
                 onClicked: {
+                    logEvent("ListGames_Spellbook_Clicked");
                     showWndSpellbook();
                 }
                 background: Image {
@@ -394,6 +403,7 @@ ApplicationWindow {
                 anchors.verticalCenter: parent.verticalCenter
 
                 onClicked: {
+                    logEvent("ListGames_Score_Clicked");
                     GUI.mainMenuAction("player_score");
                 }
             }
@@ -758,6 +768,7 @@ ApplicationWindow {
     property int startRegisterFlowIndex: 0
     function getLoginFromUser(real_login) {
         if (real_login) {
+            logEvent("user_login_start");
             startRegisterFlowIndex = 1; // login
             WNDU.showRegisterFlow();
         } else {
@@ -1047,27 +1058,36 @@ ApplicationWindow {
         }
 
         WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, gBattle.actions[gBattle.currentHand].n);
+        logEvent("Play_Target_View", {Mode:"spell"});
     }
 
     function chooseMonsterTarget(title) {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false, title);
+        logEvent("Play_Target_View", {Mode:"monster"});
         //WNDU.processEscape();
     }
 
-    function setSpellTarget(TargetName, Permanent, Delay, OperationType) {
-        console.log("main.setSpellTarget", TargetName, Permanent, Delay, OperationType, gBattle.currentHand);
+    function setSpellTarget(TargetName, lPermanent, lDelay, OperationType) {
+        console.log("main.setSpellTarget", TargetName, lPermanent, lDelay, OperationType, gBattle.currentHand);
         if (OperationType === 1) {
             gBattle.actions[gBattle.currentHand].target = TargetName;
-            if (Permanent === 1) {
+            if (lPermanent === 1) {
                 gBattle.actions.P = gBattle.currentHandIdx;
+            } else {
+                lPermanent = 0;
             }
-            if (Delay === 1) {
+            if (lDelay === 1) {
                 gBattle.actions.D = gBattle.currentHandIdx;
+            } else {
+                lDelay = 0;
             }
+
+            logEvent("Play_Target_Clicked", {Mode:"spell",Target:TargetName,Spell:gBattle.actions[gBattle.currentHand].n,Permanent:lPermanent,Delay:lDelay});
         } else if (OperationType === 2) {
             console.log("before", gBattle.currentMonsterIdx, JSON.stringify(gBattle.actions.M[gBattle.currentMonsterIdx]));
             gBattle.actions.M[gBattle.currentMonsterIdx].target = TargetName;
             console.log("after", gBattle.currentMonsterIdx, JSON.stringify(gBattle.actions.M[gBattle.currentMonsterIdx]));
+            logEvent("Play_Target_Clicked", {Mode:"monster",Target:TargetName,Monster:gBattle.actions.M[gBattle.currentMonsterIdx].name});
         }
     }
 
@@ -1112,10 +1132,12 @@ ApplicationWindow {
     }
 
     function showFeedbackWnd() {
+        logEvent("Feedback_View", {});
         return showErrorWnd({id:-1,type:13,action:"feedback"});
     }
 
     function showRateUsWnd() {
+        logEvent("Rating_View", {});
         return showErrorWnd({id:-1,type:14,action:"rate_us"});
     }
 
@@ -1179,6 +1201,7 @@ ApplicationWindow {
     }
 
     function closeChild() {
+        logEvent("login_finish");
         WNDU.closeChild();
     }
 
@@ -1211,8 +1234,28 @@ ApplicationWindow {
         if (!params) {
             params = {};
         }
+        if (!params.engagement_time_msec) {
+            params.engagement_time_msec  = 1;
+        }
+        if (!params.Mode) {
+            params.Mode = ((GUI.G_PROFILE.finished_game_count < 3) || (GUI.G_PROFILE.elo <= 1500)) ? "beginner" : "ready";
+        }
+        if (!params.Spellbook_Level) {
+            params.Spellbook_Level = playerSpellbookLevel;
+        }
+        if (!params.Finished_Trainings) {
+            params.Finished_Trainings = GUI.G_PROFILE.win_vs_bot;
+        }
+        if (!params.Finished_Games) {
+            params.Finished_Games = GUI.G_PROFILE.finished_game_count;
+        }
 
-        console.log("logEvent", event_name, JSON.stringify(params));
+        var param_str = "";
+        for (const [key, value] of Object.entries(params)) {
+            param_str += key + ";" + value + ";";
+        }
+        console.log("logEvent", event_name, JSON.stringify(params), param_str);
+        core.logEvent(event_name, param_str);
         //analytics.logEvent(event_name, params);
     }
 
@@ -1234,12 +1277,19 @@ ApplicationWindow {
         console.log(dpi, bdip, ww, wh, bw, bh);
         ratioObject = Math.min(ww/bw, wh/bh);
         ratioFont = Math.max(1, Math.min((wh*bdip)/(dpi*bh), (ww*bdip/(dpi*bw))));
+
+        core.setUserProperties(Qt.platform.os, w + "x" + h, Qt.locale().name);
     }
 
     function creationFinished() {
         console.log("iWndContainer x y", iWndContainer.x, iWndContainer.y);
         calculateRatio();
-        logEvent("gameFieldReady", {ratio_o:ratioObject, ratio_f: ratioFont});
+
+        //googleAnalytic.setTID("YOUR-QA-CODE");
+        //googleAnalytic.setScreenSize(Qt.screenWidth, Qt.screenHeight);
+        //googleAnalytic.setOS(Qt.platform.os);
+
+        logEvent("app_start", {ratio_o:ratioObject, ratio_f: ratioFont});
         //GUI.prepareNewGameBtn(1500);
     }
 

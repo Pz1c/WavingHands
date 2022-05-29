@@ -20,6 +20,7 @@
 #include <QThread>
 
 #include <qcore.h>
+#include <qgoogleanalytics.h>
 //#include "qwarlockutils.h"
 #include "qwarlockspellchecker.h"
 #include "qwarlockdictionary.h"
@@ -145,6 +146,8 @@ public slots:
     void getSharableLink(const QString &game_level = "vf");
     void setTimerInterval(int count, int msec);
     int getBotBattle();
+    void setUserProperties(const QString &OS, const QString &Screen, const QString &Locale);
+    void logEvent(QString EventName, QString EventParams);
 
 
     void slotReadyRead() override;
@@ -208,7 +211,7 @@ protected:
 
     void setCredentialToAuth(QAuthenticator *authenticator);
 
-    void processNewLogin();
+    void processNewLogin(bool Silent = false);
     QString accountToString();
     void accountsFromString(QString acc);
 
@@ -252,6 +255,10 @@ private:
     bool _show_hint;
     bool _reg_in_app;
     bool _process_refferer;
+    bool _event_start_training;
+    bool _event_start_pvp;
+    bool _event_submit_turn;
+    bool _event_submit_turn5;
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
@@ -260,6 +267,8 @@ private:
     QStringList _challenge;
     int _win_vs_bot;
     int _win_vs_warlock;
+    int _play_training_game;
+    int _play_pvp_game;
     //QMap<int, QString> _battleDesc;
     //QMap<int, int> _battleHint;
     //QMap<int, int> _battleState; // -2 deleted, -1 not started, 0 wait, 1 ready, 2 finished
@@ -327,6 +336,9 @@ private:
     // AI service
     QWarloksDuelCore *_aiCore;
     QThread _aiThread;
+
+    //GA4
+    QGoogleAnalytics _ga;
 
 };
 

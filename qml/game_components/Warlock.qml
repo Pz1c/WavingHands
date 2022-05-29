@@ -215,20 +215,24 @@ Item {
         onClicked: {
             if (l_warlock.player) {
                 mainWindow.showGesture(true, l_warlock.plg, "normal", l_warlock.warlock_idx);
+                mainWindow.logEvent("Play_Left_Click");
             } else if (l_warlock.control_paralyze) {
                 //mainWindow.showGesture(true, l_warlock.plg, "paralyze", l_warlock.warlock_idx);
                 l_paralyzeActionData.hand = "LH";
                 l_paralyzeActionData.plg = l_warlock.plg;
                 l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
                 iconClick(l_paralyzeActionData);
+                mainWindow.logEvent("Play_FFF_Choose", {Hand:"Left"});
             } else if (l_warlock.control_charmed) {
                 //mainWindow.showGesture(true, l_warlock.plg, "charm", l_warlock.warlock_idx);
                 l_charmActionData.hand = "LH";
                 l_charmActionData.plg = l_warlock.plg;
                 l_charmActionData.warlock_idx = l_warlock.warlock_idx;
                 iconClick(l_charmActionData);
+                mainWindow.logEvent("Play_PSDF_Choose", {Hand:"Left"});
             } else {
                 mainWindow.showGesture(true, l_warlock.plg, "enemy", l_warlock.warlock_idx);
+                mainWindow.logEvent("Play_Check_Enemy_Spells", {Hand:"Left"});
             }
         }
 
@@ -260,20 +264,24 @@ Item {
         onClicked: {
             if (l_warlock.player) {
                 mainWindow.showGesture(false, l_warlock.prg, "normal", l_warlock.warlock_idx);
+                mainWindow.logEvent("Play_Right_Click");
             } else if (l_warlock.control_paralyze) {
                 //mainWindow.showGesture(false, l_warlock.prg, "paralyze", l_warlock.warlock_idx);
                 l_paralyzeActionData.hand = "RH";
                 l_paralyzeActionData.plg = l_warlock.plg;
                 //l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
                 iconClick(l_paralyzeActionData);
+                mainWindow.logEvent("Play_FFF_Choose", {Hand:"Right"});
             } else if (l_warlock.control_charmed) {
                 //mainWindow.showGesture(false, l_warlock.prg, "charm", l_warlock.warlock_idx);
                 l_charmActionData.hand = "RH";
                 l_charmActionData.plg = l_warlock.plg;
                 //l_charmActionData.warlock_idx = l_warlock.warlock_idx;
                 iconClick(l_charmActionData);
+                mainWindow.logEvent("Play_PSDF_Choose", {Hand:"Right"});
             } else {
                 mainWindow.showGesture(false, l_warlock.prg, "enemy", l_warlock.warlock_idx);
+                mainWindow.logEvent("Play_Check_Enemy_Spells", {Hand:"Right"});
             }
         }
 

@@ -196,6 +196,7 @@ BaseWindow {
                                                 arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
                                                 mainWindow.gBattle.spellIdx = index;
                                                 lvSpellList.model = arrSpell;
+                                                mainWindow.logEvent("Play_Gesture_Spell", {Spell:arrSpell[index].n});
                                             } else if (arrSpell[index].cast_type === 2) {
                                                 mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
                                             } else if (arrSpell[index].cast_type === 3) {
@@ -207,6 +208,7 @@ BaseWindow {
                                             console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
                                             if(lvSpellList.model[index].gp !== "?") {
                                                 mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                                mainWindow.logEvent("Play_Gesture_Spell_Detail", {Spell:lvSpellList.model[index].g});
                                             } else {
 
                                             }
@@ -379,7 +381,7 @@ BaseWindow {
 
                     animationEnabled: false
                     onClicked: {
-                        setGesture("C");
+                        setGesture("C", true);
                     }
                 }
 
@@ -406,7 +408,7 @@ BaseWindow {
 
                     animationEnabled: false
                     onClicked: {
-                        setGesture("D");
+                        setGesture("D", true);
                     }
                 }
 
@@ -433,7 +435,7 @@ BaseWindow {
 
                     animationEnabled: false
                     onClicked: {
-                        setGesture("F");
+                        setGesture("F", true);
                     }
                 }
 
@@ -460,7 +462,7 @@ BaseWindow {
 
                     animationEnabled: false
                     onClicked: {
-                        setGesture("S");
+                        setGesture("S", true);
                     }
                 }
 
@@ -486,7 +488,7 @@ BaseWindow {
 
                     animationEnabled: false
                     onClicked: {
-                        setGesture("P");
+                        setGesture("P", true);
                     }
                 }
 
@@ -513,7 +515,7 @@ BaseWindow {
 
                     animationEnabled: false
                     onClicked: {
-                        setGesture("W");
+                        setGesture("W", true);
                     }
                 }
 
@@ -540,7 +542,7 @@ BaseWindow {
 
                     animationEnabled: false
                     onClicked: {
-                        setGesture(">");
+                        setGesture(">", true);
                     }
                 }
 
@@ -568,7 +570,7 @@ BaseWindow {
 
                     animationEnabled: false
                     onClicked: {
-                        setGesture("-");
+                        setGesture("-", true);
                     }
                 }
 
@@ -615,6 +617,7 @@ BaseWindow {
                         }
 
                         mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
+                        mainWindow.logEvent("Play_Gesture_Submit", {Letter:currGesture});
                     }
                 }
 
@@ -758,7 +761,7 @@ BaseWindow {
         }
     }
 
-    function setGesture(new_gesture) {
+    function setGesture(new_gesture, from_gui) {
         clearAll()
         console.log("wnd_gesture.setGesture", new_gesture);
         if (new_gesture === currGesture) {
@@ -809,6 +812,12 @@ BaseWindow {
         console.log(JSON.stringify(arrSpell));
         console.log("FINAL ARRAY END");
         lvSpellList.model = arrSpell;
+        if (from_gui) {
+            mainWindow.logEvent("Play_Gesture_Click", {Letter:new_gesture});
+            if (new_gesture !== "") {
+                mainWindow.logEvent("Play_CompletedSpells_View", {Letter:new_gesture,Warning:rpAlert.visible ? "surrendering" : "none"});
+            }
+        }
     }
 
     function initGFields() {
@@ -839,6 +848,7 @@ BaseWindow {
                 break;
             default:
                 actionType = 0;
+                mainWindow.gERROR.at = "own gestures";
                 /*var sbl = mainWindow.playerSpellbookLevel;
                 if (sbl < 5) {
                     if ((sbl === 3) && (mainWindow.win_vs_bot === 2)) {
@@ -873,6 +883,7 @@ BaseWindow {
 
         arrPossibleGesture = arr;
         setGesture(arrPossibleGesture.length === 1 ? arrPossibleGesture[0] : mainWindow.gERROR.g);
+        mainWindow.logEvent("Play_Gesture_View", {Mode:mainWindow.gERROR.at});
         mainWindow.gERROR = {};
     }
 

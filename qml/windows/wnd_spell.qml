@@ -137,8 +137,10 @@ InfoWindow {
                     } else if (l_data.action === "private_challenge") {
                         mainWindow.gameCore.acceptChallenge(l_data.id, true);
                     } else if (l_data.action === "rate_us") {
+                        mainWindow.logEvent("Rating_Click", {});
                         Qt.openUrlExternally("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel");
                     } else if (l_data.action === "feedback") {
+                        mainWindow.logEvent("Feedback_Click", {});
                         Qt.openUrlExternally("https://forms.gle/vW3tBW8595KtREZe8");
                     } else if (l_data.action === "joinus") {
                         Qt.openUrlExternally("https://www.facebook.com/WarlocksDuel");

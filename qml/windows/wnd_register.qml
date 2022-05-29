@@ -559,6 +559,7 @@ BaseWindow {
             mainWindow.startRegisterFlowIndex = 0;
         }
         changeIndex(idx, true);
+        //mainWindow.logEven("tutorial_start");
         ltiLogin.setFontSize();
         ltiEmail.setFontSize();
         ltiPass.setFontSize();

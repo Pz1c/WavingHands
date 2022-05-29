@@ -16,6 +16,7 @@
 #include "cpp/qwarlockdictionary.h"
 #include "cpp/nativeforjava.cpp"
 
+#include <qgoogleanalytics.h>
 
 int main(int argc, char *argv[])
 {
@@ -48,8 +49,10 @@ int main(int argc, char *argv[])
         }
 
         QWarlockDictionary::getInstance();
+        //QGoogleAnalytics::getInstance();
         qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");
         qmlRegisterSingletonType<QWarlockDictionary>("ua.sp.warlockdictionary", 1, 0, "WarlockDictionary", gamedictionary_qobject_singletontype_provider);
+        //qmlRegisterSingletonType<QGoogleAnalytics>("ua.sp.GoogleAnalytics", 1, 0, "GoogleAnalytics", googleanalytics_qobject_singletontype_provider);
 
         QQmlApplicationEngine engine;
         engine.load(QUrl(QStringLiteral("qrc:///main.qml")));

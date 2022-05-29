@@ -14,7 +14,7 @@ public:
     QString toJSON(const QString &Login = "") const;
     QString toString(bool Short = false) const;
     QString getInListDescription(const QString &Login) const;
-    QString getInListParticipant(const QString &Login) const;
+    QString getInListParticipant(const QString &Login, bool Short = false) const;
     QString getInListStatus(const QString &Login) const;
     bool isWinner(const QString &Login) const;
     bool canForceSurrendering() const;

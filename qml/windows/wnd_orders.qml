@@ -179,6 +179,7 @@ BaseWindow {
                                     onClicked: {
                                         console.log("click on order", index, JSON.stringify(lvOrderList.model[index]));
                                         var item = lvOrderList.model[index];
+                                        mainWindow.logEvent("Play_Review_Click", {RowType: item.type});
                                         switch(item.type) {
                                         case "LH":
                                             mainWindow.showGesture(true);
@@ -235,6 +236,7 @@ BaseWindow {
 
                     onClicked: {
                         mainWindow.confirmOrdersEx();
+                        mainWindow.logEvent("Play_Review_Final_Submit");
                     }
                 }
     }
@@ -267,6 +269,8 @@ BaseWindow {
         iiSend.textWidth = (!is_surrender ? 80 : 120)* mainWindow.ratioObject;
         iiSend.text = is_surrender ? "SURRENDER!" : "Submit";
         mainWindow.gERROR = {};
+        mainWindow.logEvent("Play_Submit_Clicked", {Warning: is_surrender ? "surrendering" : "none"});
+
     }
 
     Component.onCompleted: {

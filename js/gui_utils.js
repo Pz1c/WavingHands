@@ -18,6 +18,7 @@ function getMainMenuList() {
 }
 
 function mainMenuActionEx(code) {
+    logEvent("menu_action", {action:code});
     var def_type = 1013;
     switch(code) {
     case "refresh": return core.scanState(false);
@@ -72,6 +73,7 @@ function newBattleList() {
     lvActiveBattle.model = G_BATTLE_LIST[0];
     lvFinishedBattle.model = G_BATTLE_LIST[1];
     ltFinishedBattle.visible = G_BATTLE_LIST[1].length > 0;
+    logEvent("ListGames_View");
 }
 
 function loadBattleList(filter) {
@@ -195,6 +197,7 @@ function startGameWithPlayerEx() {
             if (creator.found && (G_PROFILE.elo > creator.elo + 200)) {
                 continue;
             }
+            logEvent("accept_callenge", {source:"btn_new",Type:"Training",With:"Random warlock",against:creator});
             core.acceptChallenge(battle.id, false);
             return;
         } else if (i !== best_idx) {
@@ -220,6 +223,7 @@ function startGameWithPlayerEx() {
         if (G_PROFILE.elo >= 1700) {
             desc += " Elo " + (G_PROFILE.elo - 200) + " or more please.";
         }
+        logEvent("create_callenge", {source:"btn_new",Type:"Training",With:"Random warlock"});
         core.createNewChallenge(1, 0, 1, 1, 2, 1, desc);
     /*} else {
         V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;
@@ -249,10 +253,13 @@ function startGameWithBotEx() {
     } else {
         for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
             if (G_CHALLENGE_LIST[i].active && G_CHALLENGE_LIST[i].with_bot) {
+                //logEvent("accept_callenge", {source:"btn_new",level:"very friendly",with:"bot",against:""});
+                logEvent("accept_callenge", {source:"btn_new",Type:"Training",With:"Bot"});
                 core.acceptChallenge(G_CHALLENGE_LIST[i].id, false);
                 return;
             }
         }
+        logEvent("create_callenge", {source:"btn_new",Type:"Training",With:"Bot"});
         core.createNewChallenge(1, 0, 1, 1, 2, 2, "TRANING BOT ONLY");
     }
 }
@@ -279,7 +286,9 @@ function startGame(actionIdx) {
     if (!G_PROFILE.feedback && (G_PROFILE.finished_game_count >= 2)) {
         G_PROFILE.feedback = true;
         core.setParamValue("feedback", "true");
-        showFeedbackWnd();
+        //
+        afterCloseAction = "feedback";
+        //showFeedbackWnd();
         console.log("!!!FEEDBACK CHECK", "after", G_PROFILE.feedback);
     }
 

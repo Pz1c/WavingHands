@@ -9,8 +9,11 @@ QT += qml quick network
 #}
 
 INCLUDEPATH += ../library/game/
+INCLUDEPATH += ../library/QGoogleAnalytics/
 
 HEADERS += \
+    ../library/QGoogleAnalytics/qgaconstant.h \
+    ../library/QGoogleAnalytics/qgoogleanalytics.h \
     cpp/qbattleinfo.h \
     cpp/qgameconstant.h \
     cpp/qmonster.h \
@@ -28,6 +31,7 @@ HEADERS += \
     ../library/game/qlevelmanager.h \
 
 SOURCES += main.cpp \
+    ../library/QGoogleAnalytics/qgoogleanalytics.cpp \
     cpp/nativeforjava.cpp \
     cpp/qbattleinfo.cpp \
     cpp/qmonster.cpp \
@@ -79,7 +83,6 @@ contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
 #android: include(D:/Android/sdk/android_openssl/openssl.pri)
 
 DISTFILES += \
-    platforms/android/AndroidManifest.xml \
     platforms/android/AndroidManifest.xml \
     platforms/android/build.gradle \
     platforms/android/gradle.properties \

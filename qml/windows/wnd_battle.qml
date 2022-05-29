@@ -105,6 +105,7 @@ BaseWindow {
 
                 onClicked: {
                     mainWindow.showWndSpellbook();
+                    mainWindow.logEvent("Play_Spellbook_Click");
                 }
             }
 
@@ -130,6 +131,7 @@ BaseWindow {
                 onClicked: {
                     source = "qrc:/res/chat.png";
                     mainWindow.showBattleChat(mainWindow.gBattle.battle_chat);
+                    mainWindow.logEvent("Play_Chat_Click");
                 }
             }
 
@@ -153,6 +155,7 @@ BaseWindow {
 
                 onClicked: {
                     mainWindow.showBattleHistory(mainWindow.gBattle.battle_hist);
+                    mainWindow.logEvent("Play_History_Click");
                 }
             }
 
@@ -185,6 +188,7 @@ BaseWindow {
                 onClicked: {
                     console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
                     mainWindow.showOrders(BU.getOrdersForReview(dict));
+                    mainWindow.logEvent("Play_Submit_Clicked");
                 }
             }
 
@@ -399,6 +403,14 @@ BaseWindow {
 
     function iconClick(data) {
         console.log("wnd_battle.iconClick", JSON.stringify(data));
+        if (data.action === "hp") {
+            mainWindow.logEvent("Play_Warlock_Click", {Click:data.warlock_name});
+        } else if (data.action === "m") {
+            mainWindow.logEvent("Play_Monster_Click", {Click:data.name});
+        } else {
+            mainWindow.logEvent("Play_Spell_Click", {Click:data.action});
+        }
+
         if (operationMode >= 1) {
             if ((operationMode === 1) && (data.action === "permanency")) {
                 permanency = !permanency ? 1 : 0;

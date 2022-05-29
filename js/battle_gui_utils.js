@@ -324,24 +324,27 @@ function parseSpellByText(txt) {
     var arr = txt.split(" ");
     var walock_name;
     var spell_name = "";
-    var target_name;
+    var target_name = "";
     var at_found = false;
     for (var i = 0, Ln = arr.length; i < Ln; ++i) {
         if (arr[i] === "at") {
             at_found = true;
+            continue;
         } else if (arr[i] === "casts") {
             continue;
         } else if (!walock_name) {
             walock_name = arr[i];
         } else if (!at_found) {
             spell_name += arr[i] + " ";
-        } else if (!target_name) {
-            target_name = arr[i].replace(".", "");
+        } else if (at_found) {
+            target_name += arr[i].replace(".", "") + " ";
         }
     }
+    target_name = target_name.trim();
     if (target_name === "himself") {
         target_name = walock_name;
     }
+
     spell_name = spell_name.trim();
 
     console.log("parseSpellByText", txt, walock_name, spell_name, target_name);
