@@ -33,14 +33,17 @@ function processAllHintAction(actions, restore) {
 
 
 function showTutorialData(diff) {
-    var code = mainWindow.gBattle.turn_num === 1 ? "Play_Tutorial_Click_" : "Play_Turn_Message_Click_";
+    var log_msg = mainWindow.gBattle.turn_num === 1;
+    var code = log_msg ? "Play_Tutorial_Click_" : "Play_Turn_Message_Click_";
     if (diff !== 0) {
         // restore prev changed
         processAllHintAction(ltTutorial.tutorialData[ltTutorial.tutorialDataIdx].actions, true);
-        if (diff > 0) {
-            mainWindow.logEvent(code + "Next");
-        } else {
-            mainWindow.logEvent(code + "Back");
+        if (log_msg) {
+            if (diff > 0) {
+                mainWindow.logEvent(code + "Next");
+            } else {
+                mainWindow.logEvent(code + "Back");
+            }
         }
     }
 
@@ -55,12 +58,15 @@ function showTutorialData(diff) {
     }
     var hint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
     if (!hint) {
-        mainWindow.logEvent(code + "Gotit");
+        if (log_msg) {
+            mainWindow.logEvent(code + "Gotit");
+        }
         ltTutorial.visible = false;
         return;
     }
     console.log("showTutorialData", diff, JSON.stringify(hint));
     ltTutorial.color = hint.color_bg;
     ltTTT.text = hint.txt;
+
     processAllHintAction(ltTutorial.tutorialData[ltTutorial.tutorialDataIdx].actions, false);
 }

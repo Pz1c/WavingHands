@@ -2091,9 +2091,9 @@ QString QWarloksDuelCore::errorMsg() {
 
 QString QWarloksDuelCore::playerJson() {
     return QString("{\"name\":\"%1\",\"played\":%2,\"won\":%3,\"died\":%4,\"ladder\":%5,\"melee\":%6,\"elo\":%7,\"feedback\":%8,\"rate_us\":%9,"
-                   "\"finished_game_count\":%10,\"sbl\":%11,\"win_va_bot\":%12,\"win_vs_warlock\":%13}")
+                   "\"finished_game_count\":%10,\"sbl\":%11,\"win_vs_bot\":%12,\"win_vs_warlock\":%13}")
             .arg(_login, intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_ladder), intToStr(_melee), intToStr(_elo), boolToStr(_feedback), boolToStr(_rateus))
-            .arg(intToStr(_finished_battles.count()), intToStr(_exp_lv), intToStr(_win_vs_bot), intToStr(_win_vs_warlock));
+            .arg(intToStr(_play_training_game + _play_pvp_game), intToStr(_exp_lv), intToStr(_win_vs_bot), intToStr(_win_vs_warlock));
 }
 
 QString QWarloksDuelCore::playerInfo() {

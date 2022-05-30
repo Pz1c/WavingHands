@@ -15,6 +15,7 @@ Item {
 
     property double height_koeff: iRoot.height / 800
     property var dict: WarlockDictionary
+    //property alias gameCore: mainWindow.gameCore
     property alias title_text: ltTitle.text
     property alias title_color: ltTitle.color
     property alias content_item: bwBody

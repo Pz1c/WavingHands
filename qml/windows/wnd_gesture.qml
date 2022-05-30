@@ -139,6 +139,12 @@ BaseWindow {
                 model: []
                 anchors.fill: svError
 
+                readonly property var actions: {
+                        "log": function(spell_name) {
+                            mainWindow.logEvent("Play_Gesture_Spell", {Spell:spell_name});
+                        }
+                    }
+
                 DelegateChooser {
                     id: chooser
                     role: "row_type"
@@ -190,13 +196,15 @@ BaseWindow {
                                             console.log("choose spell", mainWindow.gBattle.spellIdx, index, JSON.stringify(lvSpellList.model[index]), JSON.stringify(arrSpell[index]));
                                             if (((currGesture === "") || (arrSpell[index].cast_type > 1)) && (lvSpellList.model[index].gp !== "?")) {
                                                 mainWindow.showSpellDetails(lvSpellList.model[index].g);
+                                                logEvent("Play_Gesture_Spell_Detail", {Spell:lvSpellList.model[index].g});
                                             } else if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
+                                                var spell_name = arrSpell[index].n;
                                                 arrSpell[index].choose = 1;
                                                 arrSpell[index].need_target = true;
                                                 arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
                                                 mainWindow.gBattle.spellIdx = index;
+                                                mainWindow.logEvent("Play_Gesture_Spell", {"Spell":spell_name});
                                                 lvSpellList.model = arrSpell;
-                                                mainWindow.logEvent("Play_Gesture_Spell", {Spell:arrSpell[index].n});
                                             } else if (arrSpell[index].cast_type === 2) {
                                                 mainWindow.setGesture(currGesture, {gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}, true);
                                             } else if (arrSpell[index].cast_type === 3) {
@@ -208,7 +216,7 @@ BaseWindow {
                                             console.log("spell info", index, JSON.stringify(lvSpellList.model[index]));
                                             if(lvSpellList.model[index].gp !== "?") {
                                                 mainWindow.showSpellDetails(lvSpellList.model[index].g);
-                                                mainWindow.logEvent("Play_Gesture_Spell_Detail", {Spell:lvSpellList.model[index].g});
+                                                logEvent("Play_Gesture_Spell_Detail", {Spell:lvSpellList.model[index].g});
                                             } else {
 
                                             }
@@ -617,7 +625,7 @@ BaseWindow {
                         }
 
                         mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
-                        mainWindow.logEvent("Play_Gesture_Submit", {Letter:currGesture});
+                        logEvent("Play_Gesture_Submit", {Letter:currGesture});
                     }
                 }
 
@@ -730,6 +738,10 @@ BaseWindow {
         visible = false;
     }
 
+    function logEvent(eventName, data) {
+        mainWindow.logEvent(eventName, data);
+    }
+
     function clearAll() {
         var set_enable = (arrPossibleGesture.length > 0);
         for (var i = 0; i < 8; ++i) {
@@ -813,9 +825,9 @@ BaseWindow {
         console.log("FINAL ARRAY END");
         lvSpellList.model = arrSpell;
         if (from_gui) {
-            mainWindow.logEvent("Play_Gesture_Click", {Letter:new_gesture});
+            logEvent("Play_Gesture_Click", {Letter:new_gesture});
             if (new_gesture !== "") {
-                mainWindow.logEvent("Play_CompletedSpells_View", {Letter:new_gesture,Warning:rpAlert.visible ? "surrendering" : "none"});
+                logEvent("Play_CompletedSpells_View", {Letter:new_gesture,Warning:rpAlert.visible ? "surrendering" : "none"});
             }
         }
     }
@@ -883,7 +895,7 @@ BaseWindow {
 
         arrPossibleGesture = arr;
         setGesture(arrPossibleGesture.length === 1 ? arrPossibleGesture[0] : mainWindow.gERROR.g);
-        mainWindow.logEvent("Play_Gesture_View", {Mode:mainWindow.gERROR.at});
+        logEvent("Play_Gesture_View", {Mode:mainWindow.gERROR.at});
         mainWindow.gERROR = {};
     }
 

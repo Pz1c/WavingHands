@@ -376,14 +376,32 @@ Item {
         }
     }
 
-    function setGesture(Hand, GestureIcon) {
-        console.log("Warlock.setGesture", Hand, GestureIcon);
+    function setGesture(Hand, GestureIcon, Gesture, Inside) {
+        console.log("Warlock.setGesture", Hand, GestureIcon, l_warlock.lgR, l_warlock.lgL, Gesture, l_warlock.control_paralyze, Inside);
         if (Hand === "L") {
             iiLeft.source = "qrc:/res/" + GestureIcon + ".png";
             iiLeft.color = "lightblue";
             if (!l_warlock.player) {
                 iiRight.source = l_control_icon;
                 iiRight.color = "transparent";
+            } else if (!Inside) {
+                if (l_warlock.control_paralyze) {
+                    l_paralyzeActionData.hand = "RH";
+                    l_paralyzeActionData.plg = l_warlock.prg;
+                    l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
+                    l_paralyzeActionData.skip_show_gesture = true;
+                    iconClick(l_paralyzeActionData);
+                    var par_g = SG.getNextParalyzedGesture(l_warlock.lgR, mainWindow.gBattle.is_fc);
+                    mainWindow.setCharm("RH", par_g, true);
+                    setGesture("R", SG.getIconByGesture(par_g, true), par_g, true);
+                } else if (l_warlock.control_charmed) {
+                    l_charmActionData.hand = "LH";
+                    l_charmActionData.plg = l_warlock.plg;
+                    l_charmActionData.warlock_idx = l_warlock.warlock_idx;
+                    l_charmActionData.skip_show_gesture = true;
+                    iconClick(l_charmActionData);
+                    mainWindow.setCharm("LH", Gesture, true);
+                }
             }
         } else if (Hand === "R") {
             iiRight.source = "qrc:/res/" + GestureIcon + ".png";
@@ -391,6 +409,24 @@ Item {
             if (!l_warlock.player) {
                 iiLeft.source = l_control_icon;
                 iiLeft.color = "transparent";
+            } else if (!Inside) {
+                if (l_warlock.control_paralyze) {
+                    l_paralyzeActionData.hand = "LH";
+                    l_paralyzeActionData.plg = l_warlock.plg;
+                    l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
+                    l_paralyzeActionData.skip_show_gesture = true;
+                    iconClick(l_paralyzeActionData);
+                    var par_gr = SG.getNextParalyzedGesture(l_warlock.lgL, mainWindow.gBattle.is_fc);
+                    mainWindow.setCharm("LH", par_gr, true);
+                    setGesture("L", SG.getIconByGesture(par_gr, true), par_gr, true);
+                } else if (l_warlock.control_charmed) {
+                    l_charmActionData.hand = "RH";
+                    l_charmActionData.plg = l_warlock.prg;
+                    l_charmActionData.warlock_idx = l_warlock.warlock_idx;
+                    l_charmActionData.skip_show_gesture = true;
+                    iconClick(l_charmActionData);
+                    mainWindow.setCharm("RH", Gesture, true);
+                }
             }
         }
     }
@@ -569,7 +605,7 @@ Item {
         if (!l_warlock.player && (l_warlock.fh > 0)) {
             var lh = l_warlock.fh === 1 ? "L" : "R";
             var ng = (l_warlock.charmed > 0) ? "-" : SG.getNextParalyzedGesture(l_warlock["lg"+lh], mainWindow.gBattle.is_fc);
-            setGesture(lh, SG.getIconByGesture(ng, true));
+            setGesture(lh, SG.getIconByGesture(ng, true), ng);
         }
 
         iiBanked.visible = (l_warlock.banked_spell !== "");

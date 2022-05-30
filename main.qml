@@ -1109,9 +1109,11 @@ ApplicationWindow {
         WNDU.showCharm();
     }
 
-    function setCharm(H, G) {
+    function setCharm(H, G, no_need_escape) {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].setCharm(H, G);
-        WNDU.processEscape();
+        if (!no_need_escape) {
+            WNDU.processEscape();
+        }
     }
 
     function showOrders(arr) {

@@ -40,3 +40,7 @@ function getMonsterNameByStrength(Strength) {
     default: return "Unknown";
     }
 }
+
+function local_log_spell_event(spell_name) {
+    mainWindow.logEvent("Play_Gesture_Spell", {Spell:spell_name});
+}

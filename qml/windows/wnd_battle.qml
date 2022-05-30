@@ -450,8 +450,10 @@ BaseWindow {
             console.log("DO some action", JSON.stringify(data));
             BU.battle.currentCharm = BU.getCharmDataByAction(data);
             //mainWindow.showGesture(data.action, BU.battle.currentCharm.h, BU.battle.currentCharm.g, data);
-            var is_left = data.hand === "LH";
-            mainWindow.showGesture(is_left, data.plg, data.action, data.warlock_idx, is_left ? data.lgL : data.lgR);
+            if (!data.skip_show_gesture) {
+                var is_left = data.hand === "LH";
+                mainWindow.showGesture(is_left, data.plg, data.action, data.warlock_idx, is_left ? data.lgL : data.lgR);
+            }
         } else {
             iconDoubleClick(data);
         }
@@ -563,9 +565,9 @@ BaseWindow {
     }
 
     function setGesture(gesture, is_maladroit) {
-        iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture));
-        if (is_maladroit) {
-            iWarlocks.children[0].setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture));
+        iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture), gesture);
+        if (is_maladroit || (gesture === "C")) {
+            iWarlocks.children[0].setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture), gesture);
         }
     }
 
