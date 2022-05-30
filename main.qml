@@ -638,8 +638,16 @@ ApplicationWindow {
                                             obj.type = 17;
                                             obj.action = "private_challenge";
                                             showErrorWnd(obj);
+
                                         } else {
                                             core.getBattle(lvActiveBattle.model[index].id, Math.max(lvActiveBattle.model[index].s, 0));
+                                            if (lvActiveBattle.model[index].s === 1) {
+                                            logEvent("Game_Ready_Clicked", {Id:lvActiveBattle.model[index].id});
+                                            } else if (lvActiveBattle.model[index].s === 0) {
+                                                logEvent("Game_Waiting_Clicked", {Id:lvActiveBattle.model[index].id});
+                                            } else if (lvActiveBattle.model[index].s === -1) {
+                                                logEvent("Game_Pending_Clicked", {Id:lvActiveBattle.model[index].id});
+                                            }
                                         }
                                     }
                                 }
@@ -730,6 +738,7 @@ ApplicationWindow {
                                 onClicked: {
                                     console.log("getFinishedBattle", index, JSON.stringify(lvFinishedBattle.model[index]));
                                     core.getBattle(lvFinishedBattle.model[index].id, lvFinishedBattle.model[index].s);
+                                    logEvent("Game_Finished_Clicked", {Id:lvActiveBattle.model[index].id});
                                 }
                             }
                         }
