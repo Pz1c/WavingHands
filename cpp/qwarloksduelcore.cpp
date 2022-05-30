@@ -5,6 +5,8 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     QGameCore(parent)
 {
     _isAsService = AsService;
+    _isAiBusy = false;
+    _lastAnyAiCall = 0;
     if (_isAsService) {
         _request_code = "ass";
     }
@@ -326,6 +328,18 @@ void QWarloksDuelCore::aiLogin() {
     }
 }
 
+void QWarloksDuelCore::callAI(QString Login) {
+    if (!Login.isEmpty()) {
+        emit needAIAnswer(Login);
+        return;
+    }
+    qint64 curr_time = QDateTime::currentSecsSinceEpoch();
+    if ((_lastAnyAiCall == 0) || ((curr_time - _lastAnyAiCall) >= 30)) {
+        _lastAnyAiCall = curr_time;
+        emit needAIAnswer("");
+    }
+}
+
 void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl) {
     QList<QBattleInfo*> list = QWarlockUtils::parseChallengesList(Data);
     qDebug() << "finishChallengeList" << StatusCode << NewUrl << _isAI;// << _challengeList << list;
@@ -348,7 +362,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
             }
         } else if (bi->for_bot() && !bi->active(_login)) {
             qDebug() << "finishChallengeList" << "emit needAIAnswer";
-            emit needAIAnswer("");
+            callAI();
         }
     }
 
@@ -361,6 +375,8 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
             aiCreateNewChallenge();
         } else if (!_isAsService) {
             aiLogin();
+        } else {
+            _isAiBusy = _ready_in_battles.count() > 0;
         }
     }
 }
@@ -416,7 +432,7 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
             sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
         } else if (!_isAsService && battle_info->for_bot()) {
             qDebug() << "emit needAIAnswer";
-            emit needAIAnswer("");
+            callAI();
         }
         QString params = QString("Id;%1;Type;%2;With;%3;Warlock;%4;IsBot;%6;").arg(created_id, battle_info->level() == 0 ? "Training" : "Scored",
                                                                                   (!_inviteToBattle.isEmpty() ? "Private warlock" : (battle_info->for_bot() ? "Bot" : "Random warlock")),
@@ -459,7 +475,7 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
             qDebug() << "QWarloksDuelCore::finishAccept" << bi->getEnemy(_login) << bi->toJSON(_login);
             if (bi->for_bot() || bi->with_bot()) {
                 qDebug() << "emit needAIAnswer" << bi->getEnemy(_login);
-                emit needAIAnswer(bi->getEnemy(_login));
+                callAI(bi->getEnemy(_login));
             }
         }
     } else {
@@ -491,10 +507,10 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
         qDebug() << "QWarloksDuelCore::finishOrderSubmit" << bi->getEnemy(_login) << bi->toJSON(_login);
         if (!_isAsService && (bi->for_bot() || bi->with_bot())) {
             qDebug() << "emit needAIAnswer" << bi->getEnemy(_login);
-            emit needAIAnswer(bi->getEnemy(_login));
+            callAI(bi->getEnemy(_login));
         } else if (_isAsService) {
             qDebug() << "emit readyAIAnswer";
-            emit readyAIAnswer();
+            emit readyAIAnswer(_loadedBattleID);
             processWarlockPut();
         }
     }
@@ -1457,6 +1473,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     if (_ready_in_battles.count() > 0) {
         setTimeState(false);
         if (_isAI) {
+            _isAiBusy = true;
             getBattle(_ready_in_battles.at(0), 0);
         }
     } else /* if (new_fb_id > 0) {
@@ -1508,7 +1525,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
                 if (_lstAI.indexOf(enemy.toUpper()) != -1) {
                     ask_ai = true;
                     qDebug() << "emit needAIAnswer"  << enemy;
-                    emit needAIAnswer(battle_info->getEnemy(_login));
+                    callAI(battle_info->getEnemy(_login));
                 }
             }
 
@@ -1521,6 +1538,10 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
                     getBattle(bid, 0);
                 }
             }
+        }
+        if (!_isAI && !ask_ai) {
+            qDebug() << "emit needAIAnswer any";
+            callAI();
         }
     //}
     if (!changed) {
@@ -1636,7 +1657,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     if (ready_in_battles.count() > 0) {
         _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("ReadyB")));
         idx = -1;
-        foreach(int i, _ready_in_battles) {
+        foreach(int i, ready_in_battles) {
             if (++idx > 0) {
                 _warlockInfo.append(", ");
             }
@@ -1647,7 +1668,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     if (waiting_in_battles.count() > 0) {
         _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("WaitB")));
         idx = -1;
-        foreach(int i, _waiting_in_battles) {
+        foreach(int i, waiting_in_battles) {
             if (++idx > 0) {
                 _warlockInfo.append(", ");
             }
@@ -1658,7 +1679,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     if (finished_battles.count() > 0) {
         _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("FinishB")));
         idx = -1;
-        foreach(int i, _finished_battles) {
+        foreach(int i, finished_battles) {
             if (++idx > 0) {
                 _warlockInfo.append(", ");
             }
@@ -2495,12 +2516,21 @@ void QWarloksDuelCore::doAIAnswer(QString Login) {
     //    _botIdx = _lstAI.indexOf(Login.toUpper()) - 1;
     //}
     //aiLogin();
+    if (_isAiBusy && Login.isEmpty()) {
+        return;
+    }
+    _isAiBusy = !Login.isEmpty();
     sendGetRequest(QString(GAME_SERVER_URL_WARLOCK_GET).arg(Login));
 }
 
-void QWarloksDuelCore::checkAIAnswer() {
-    qDebug() << "QWarloksDuelCore::checkAIAnswer" << _isAsService;
-    scanState(true);
+void QWarloksDuelCore::checkAIAnswer(int battle_id) {
+    qDebug() << "QWarloksDuelCore::checkAIAnswer" << _isAsService << battle_id;
+    if (battle_id > 0) {
+        QBattleInfo *bi = getBattleInfo(battle_id);
+        if (bi->with_bot()) {
+            scanState(true);
+        }
+    }
 }
 
 void QWarloksDuelCore::processWarlockPut() {
@@ -2562,7 +2592,7 @@ int QWarloksDuelCore::getBotBattle() {
             QString enemy = battle_info->getEnemy(_login);
             if (_lstAI.indexOf(enemy.toUpper()) != -1) {
                 qDebug() << "emit needAIAnswer"  << enemy;
-                emit needAIAnswer(battle_info->getEnemy(_login));
+                callAI(battle_info->getEnemy(_login));
                 return bid;
             }
         }
@@ -2586,7 +2616,10 @@ void QWarloksDuelCore::setUserProperties(const QString &OS, const QString &Scree
 }
 
 void QWarloksDuelCore::logEvent(QString EventName, QString EventParams) {
-    qDebug() << "QWarloksDuelCore::logEvent" << EventName << EventParams;
+    qDebug() << "QWarloksDuelCore::logEvent" << EventName << EventParams << _isAI << _isAsService;
+    if (_isAsService) {
+        return;
+    }
     QString final_param = EventParams;
     if (final_param.indexOf("Warlock;") == -1) {
         final_param.append(QString("Warlock;%1;").arg(_login));

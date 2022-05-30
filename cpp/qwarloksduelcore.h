@@ -116,7 +116,7 @@ signals:
     void accountMenuChanged();
     void battleListChanged();
     void needAIAnswer(QString Login);
-    void readyAIAnswer();
+    void readyAIAnswer(int battle_id);
 
 public slots:
 
@@ -171,7 +171,7 @@ protected slots:
     void timerFired();
     void processServiceTimer();
     void doAIAnswer(QString Login);
-    void checkAIAnswer();
+    void checkAIAnswer(int battle_id);
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -229,6 +229,7 @@ protected:
 
     void processWarlockGet(QString &Data);
     void processWarlockPut();
+    void callAI(QString Login = "");
 private:
     // user login
     bool _isLogined;
@@ -323,6 +324,8 @@ private:
     bool _isTimerActive;
     bool _isScanForced;
     bool _isAsService;
+    bool _isAiBusy;
+    qint64 _lastAnyAiCall;
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;
