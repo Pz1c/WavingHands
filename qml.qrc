@@ -1,8 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>html/spelllist_en.htm</file>
-        <file>img/reg.png</file>
         <file>js/ai_utils.js</file>
         <file>js/user_profile_utils.js</file>
         <file>js/wnd_utils.js</file>
