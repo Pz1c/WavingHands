@@ -2547,6 +2547,10 @@ void QWarloksDuelCore::processWarlockPut() {
 }
 
 void QWarloksDuelCore::processWarlockGet(QString &Data) {
+    if (Data.indexOf("#TO_OFTEN#") != -1) {
+        _isAiBusy = false;
+        return;
+    }
     QStringList sl = Data.split("#SPLIT_POINT#");
     QString Login = sl.at(0);
     _botIdx = _lstAI.indexOf(Login, Qt::CaseInsensitive) - 1;
