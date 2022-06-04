@@ -367,7 +367,7 @@ function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
         var Lg = L.substr(i, 1);
         var Rg = R.substr(i, 1);
         var need_both = g !== gU;
-        console.log("checkIsSpellPossibeForWarlock", g, need_both, L, R, Lg, Rg);
+        console.log("checkIsSpellPossibeForWarlock", g, need_both, L, R, Lg, Rg, i);
         if (need_both) {
             if ((Lg === gU) && (Rg === gU)) {
                 res = [gl - i, gl - i];
@@ -376,11 +376,11 @@ function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
                 return [0, 0];
             }
         } else {
-            if ((Lg === gU) && ((i === gl - i) || (res[0] === gl - i - 1))) {
+            if ((Lg === gU) && ((i === gl - 1) || (res[0] === gl - i - 1))) {
                 res[0] = gl - i;
                 not_found = false;
             }
-            if ((Rg === gU) && ((i === gl - i) || (res[1] === gl - i - 1))) {
+            if ((Rg === gU) && ((i === gl - 1) || (res[1] === gl - i - 1))) {
                 res[1] = gl - i;
                 not_found = false;
             }
@@ -412,12 +412,27 @@ function higlightWarlockGestureBySpell(warlock, spell_obj) {
 function getMessageActionBySpell(txt) {
     var res = [];
     var spell_obj = parseSpellByText(txt);
+    var target_found = false;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].name === spell_obj.warlock) {
             res.push(higlightWarlockGestureBySpell(battle.warlocks[i], spell_obj));
+        } else {
+            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0)});
         }
         if (battle.warlocks[i].name === spell_obj.target) {
             res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === spell_obj.warlock ? "#10C9F5" : "#FEE2D6"});
+            target_found = true;
+        }
+        if (!target_found) {
+            var w = battle.warlocks[i];
+            for (var j = 0, LnJ = w.monsters; j < LnJ; ++j) {
+                var m = w.monsters[j];
+                if (m.name === spell_obj.target) {
+                    res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:"#FEE2D6"});
+                    target_found = true;
+                    break;
+                }
+            }
         }
     }
 

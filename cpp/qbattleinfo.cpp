@@ -142,14 +142,21 @@ QString QBattleInfo::containParticipant(const QString& line) {
     return "";
 }
 
-QString QBattleInfo::getEnemy(const QString &Login) const {
+QString QBattleInfo::getEnemy(const QString &Login, bool All) const {
     QString tmp = Login.toLower();
+    QString res = "";
     foreach(QString lp, _participant) {
         if (tmp.compare(lp.toLower()) != 0) {
-            return lp;
+            if (!res.isEmpty()) {
+                res.append(", ");
+            }
+            res.append(lp);
+            if (!All) {
+                break;
+            }
         }
     }
-    return "";
+    return res;
 }
 
 bool QBattleInfo::fullParsed() const
@@ -312,7 +319,7 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
     } else if (_status == 0) {
         if (_size == _participant.size()) {
             // looks like already started
-            QString enemy = getEnemy(Login);
+            QString enemy = getEnemy(Login, true);
             if (enemy.isEmpty()) {
                 return QString("Waiting opponent #%1").arg(intToStr(_battleID));
             } else {
@@ -324,14 +331,14 @@ QString QBattleInfo::getInListDescription(const QString &Login) const  {
             //return QString("Waiting opponent #%1").arg(intToStr(_battleID));
         }
     } else if (_status == 1) {
-        QString enemy = getEnemy(Login);
+        QString enemy = getEnemy(Login, true);
         if (enemy.isEmpty()) {
             return QString("Ready #%1").arg(intToStr(_battleID));
         } else {
             return QString("Ready vs. %1").arg(enemy);
         }
     } else if (_status == 2) {
-        QString enemy = getEnemy(Login.toLower());
+        QString enemy = getEnemy(Login.toLower(), true);
         if (enemy.isEmpty()) {
             if (_winner.isEmpty()) {
                 return QString("Finished #%1").arg(intToStr(_battleID));

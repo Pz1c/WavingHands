@@ -297,8 +297,8 @@ function prepareChat() {
 function prepareHint() {
     if (battle.hint && battle.hint.length > 0) {
         ltTutorial.tutorialData = battle.hint;
-        ltTutorial.tutorialDataIdx = 0;
-        showTutorialData(0);
+        ltTutorial.tutorialDataIdx = -1;
+        showTutorialData(1, true);
         //ltTutorial.text = battle.hint[0];
         ltTutorial.visible = true;
     }

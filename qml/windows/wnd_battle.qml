@@ -40,6 +40,8 @@ BaseWindow {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: bfAll.top
+            contentWidth: -1
+            contentHeight: iWarlocks.height
 
             Rectangle {
                 id: rTutOverlay
@@ -393,8 +395,8 @@ BaseWindow {
         }
     }
 
-    function showTutorialData(diff) {
-        BWU.showTutorialData(diff);
+    function showTutorialData(diff, skip_restore) {
+        BWU.showTutorialData(diff, skip_restore);
     }
 
     onCancel: {

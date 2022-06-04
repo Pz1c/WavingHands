@@ -81,7 +81,7 @@ public:
 
     bool fullParsed() const;
 
-    QString getEnemy(const QString &Login) const;
+    QString getEnemy(const QString &Login, bool All = false) const;
 protected:
     QString prepareToPrint(QString str) const;
     void parseString(const QString &battle_info);

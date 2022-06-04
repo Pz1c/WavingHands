@@ -1242,7 +1242,7 @@ ApplicationWindow {
             return;
         }
 
-        if (!params) {
+        if (!(typeof params === 'object')) {
             params = {};
         }
         if (!params.engagement_time_msec) {

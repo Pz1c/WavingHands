@@ -25,17 +25,17 @@ function processHintAction(a, restore) {
 
 function processAllHintAction(actions, restore) {
     var i, Ln = actions.length;
-    rTutOverlay.opacity = (((Ln === 0) && !restore) || ((Ln !== 0) && restore)) ? 0.5 : 0.1;
+    rTutOverlay.opacity = (((Ln === 0) && !restore) || ((Ln !== 0) && restore)) ? 0.5 : 0.3;
     for (i = 0; i < Ln; ++i) {
         processHintAction(actions[i], restore);
     }
 }
 
 
-function showTutorialData(diff) {
+function showTutorialData(diff, skip_restore) {
     var log_msg = mainWindow.gBattle.turn_num === 1;
     var code = log_msg ? "Play_Tutorial_Click_" : "Play_Turn_Message_Click_";
-    if (diff !== 0) {
+    if ((diff !== 0) && !skip_restore) {
         // restore prev changed
         processAllHintAction(ltTutorial.tutorialData[ltTutorial.tutorialDataIdx].actions, true);
         if (log_msg) {
