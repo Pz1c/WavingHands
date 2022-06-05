@@ -2,12 +2,13 @@
 #define QWARLOCKSTAT_H
 
 #include <QDebug>
+#include <QDateTime>
 
 class QWarlockStat
 {
 public:
     QWarlockStat();
-    QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color);
+    QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity);
     QWarlockStat(QString Raw, bool FromIni = false);
 
     QString toString() const;
@@ -28,16 +29,14 @@ public:
 
     int elo() const;
 
-    int active() const;
-
     bool online() const;
 
     void parseAndInit(QString Raw);
     void parseIniAndInit(QString Raw);
 
 protected:
-    void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color);
-
+    void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity);
+    qint64 getLastActivityByColor(const QString Color);
 private:
     QString _name;
     bool _registered;
@@ -47,8 +46,7 @@ private:
     int _won;
     int _died;
     int _elo;
-    int _active;
-    int _online;
+    qint64 _lastActivity;
     QString _color;
 };
 

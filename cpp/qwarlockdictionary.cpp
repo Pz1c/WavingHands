@@ -182,6 +182,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("NewGameWithPlayerBtn1", "", "", "Warlock");
     fillDictionary("NewGameWithPlayerBtn2", "", "", "Friend");
     fillDictionary("NewGameWithPlayerBtn3", "", "", "Find a warlock by name");
+    fillDictionary("NewGameFindByName", "", "", "Find by name");
     fillDictionary("NewGameWithBotTitle", "", "", "Choose your training partner");
     fillDictionary("NewGameWithBotSDesc", "", "", "Play against an AI training bot, or invite a friend and train against each other");
     fillDictionary("NewGameWithBotBtn1", "", "", "Training bot");
@@ -193,6 +194,9 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("FinishedGameResultTitleLose", "", "", "Uh Oh... You lost the game.");
     fillDictionary("FinishedGameResultTitleDraw", "", "", "Hmm... It's a draw.");
     fillDictionary("FinishedGameResultTitleUnknown", "", "", "Damn! What's going on?");
+    fillDictionary("NewGameMoreOption", "", "", "More options");
+    fillDictionary("NewGameAutoMatch", "", "", "Auto Match");
+
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
     fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");

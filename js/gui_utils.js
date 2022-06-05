@@ -268,8 +268,8 @@ function startGameWithBot() {
     showErrorWnd({id:-1,type:20});
 }
 
-function startGame(actionIdx) {
-    switch(V_BTN_ACTION[actionIdx]) {
+function startGameByCode(action_code) {
+    switch(action_code) {
          case 'player':
              startGameWithPlayer();
              break;
@@ -291,8 +291,10 @@ function startGame(actionIdx) {
         //showFeedbackWnd();
         console.log("!!!FEEDBACK CHECK", "after", G_PROFILE.feedback);
     }
+}
 
-    //core.scanState(true);
+function startGame(actionIdx) {
+    startGameByCode(V_BTN_ACTION[actionIdx]);
 }
 
 function prepareLoginMenu(menu_str) {

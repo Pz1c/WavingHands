@@ -15,6 +15,7 @@ var wnd_spell = "wnd_spell.qml";
 var wnd_search_warlock = "wnd_search_warlock.qml";
 var wnd_popup = "wnd_popup.qml";
 var wnd_spell_popup = "wnd_spell_popup.qml";
+var wnd_new_game = "wnd_new_game.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -55,7 +56,7 @@ function isSomeWndOpenned() {
 var max_z_index = 0;
 
 function showWnd(wnd_name, close_current, close_all_stack, add_in_stack, only_create) {
-    logEvent("open_wnd", {name:wnd_name,max_z:max_z_index});
+    //logEvent("open_wnd", {name:wnd_name,max_z:max_z_index});
     console.log("showWnd", wnd_name, close_current, close_all_stack, add_in_stack);
     //add_in_stack = true;
 
@@ -296,6 +297,10 @@ function showCharm() {
 
 function showOrders() {
     showWnd(wnd_orders, 0, 0, 1);
+}
+
+function showNewGame() {
+    showWnd(wnd_new_game, 1, 1, 1);
 }
 
 function showSpellbook(close_current, close_all) {

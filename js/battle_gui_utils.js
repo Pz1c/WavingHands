@@ -109,6 +109,13 @@ function preparePrintGestures(GL, GR, mscL, mscR) {
         ll = getIconByGesture(GL.substr(i, 1));
         lr = getIconByGesture(GR.substr(i, 1));
         item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== ' ', rv: lr !== ' ', la: i >= Ln - mscL, ra: i >= Ln - mscR};
+        if (!item.lv) {
+            item.l = "g__";
+        }
+        if (!item.rv) {
+            item.r = "g__";
+        }
+
         res.push(item);
     }
     return res;

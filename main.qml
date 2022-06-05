@@ -97,7 +97,7 @@ ApplicationWindow {
             showUserProfile(true);
         }
         onPlayerInfoChanged: GUI.userProfileChanged()
-        onLoginChanged: closeChild()
+        onLoginChanged: closeChild(true)
 
         Component.onCompleted: {
             console.log("Core.completed");
@@ -310,8 +310,7 @@ ApplicationWindow {
             anchors.horizontalCenter: parent.horizontalCenter
 
             onClicked: {
-                console.log("start game WITH FRIEND");
-                GUI.mainMenuAction("battle_with_friend");
+                callInviteFriends();
                 dMenu.close();
             }
         }
@@ -441,7 +440,7 @@ ApplicationWindow {
         BtnBig {
             id: bbNewGame
             text_color: "#ABF4F4"
-            text: warlockDictionary.getStringByCode("TrainingGame")
+            text: warlockDictionary.getStringByCode("NewGame")
             bg_color_active: "#551470"
             border_color_active: "#551470"
             radius: 30
@@ -460,7 +459,9 @@ ApplicationWindow {
 
             onClicked: {
                 console.log("start game btn 1");
-                GUI.startGame(0);
+                logEvent("New_game_button", {});
+                WNDU.showNewGame();
+                //GUI.startGame(0);
             }
         }
 
@@ -471,7 +472,7 @@ ApplicationWindow {
             transparent: true
             font.underline: true
             border.width: 0
-            visible: core.allowedAdd || true
+            visible: false//core.allowedAdd || true
 
             width: 0.5 * parent.width
             height: 60 * ratioObject
@@ -1178,8 +1179,29 @@ ApplicationWindow {
         processAfterClose();
     }
 
+    function callInviteFriends() {
+        console.log("start game WITH FRIEND");
+        GUI.mainMenuAction("battle_with_friend");
+    }
+
     function startGameWithBotEx() {
         GUI.startGameWithBotEx();
+    }
+
+    function startGameWithBot() {
+        GUI.startGameWithBot();
+    }
+
+    function startTrainingGame() {
+        GUI.startGameByCode('bot');
+    }
+
+    function startWarlockGame() {
+        GUI.startGameByCode('player');
+    }
+
+    function startGameWithPlayer() {
+        GUI.startGameWithPlayer();
     }
 
     function startGameWithPlayerEx() {
@@ -1211,31 +1233,16 @@ ApplicationWindow {
         WNDU.storeWnd(wnd);
     }
 
-    function closeChild() {
-        logEvent("login_finish");
+    function closeChild(from_login) {
+        if (from_login) {
+            logEvent("login_finish");
+        }
         WNDU.closeChild();
     }
 
     function linkActivated(link) {
         GUI.linkActivated(link)
     }
-
-    /*function changeTimerState() {
-        timerCounter = 0;
-        if (core.timerState) {
-            if (!tScanTimer.running) {
-                tScanTimer.start();
-            }
-        } else {
-            if (tScanTimer.running) {
-                tScanTimer.stop();
-            }
-        }
-    }*/
-
-    /*function changeGesture(Gesture, Left) {
-        MUtils.changeGesture(Gesture, Left);
-    }*/
 
     function logEvent(event_name, params) {
         if (core.isAI) {
