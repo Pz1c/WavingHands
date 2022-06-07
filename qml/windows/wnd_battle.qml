@@ -24,8 +24,10 @@ BaseWindow {
     property int operationMode: 0
     // 0 - normal state
     // 1 - spell targeting
+    property string spellTitle: ""
     property int permanency: 0
     property int delay: 0
+    property var target: ({target_name:""})
 
     // This rectangle is the actual popup
     Item {
@@ -194,32 +196,43 @@ BaseWindow {
                 }
             }
 
-
-            /*BtnBig {
-                id: bbSendOrders
-                text_color: "#ABF4F4"
-                text: warlockDictionary.getStringByCode("SendOrders")
-                bg_color_active: "#551470"
-                border_color_active: "#551470"
-                radius: 30
+            IconInfo {
+                id: bbChooseTarget
+                active: false
+                source: "qrc:/res/send_"+(active ? "1" : "0")+".png"
+                textVisible: true
                 visible: false
 
-                gradient: Gradient {
-                    GradientStop { position: 0.0; color: "#FEE2D6" }
-                    GradientStop { position: 0.5; color: "#551470" }
-                    GradientStop { position: 1.0; color: "#FEE2D6" }
-                }
+                height: 48 * mainWindow.ratioObject
+                iconHeight: 48 * mainWindow.ratioObject
+                iconWidth: 48 * mainWindow.ratioObject
+                textHeight: 48 * mainWindow.ratioObject
+                textWidth: 80 * mainWindow.ratioObject
+                width: (48 + 18 + 80) * mainWindow.ratioObject
+                textAnchors.left: bbChooseTarget.left
+                textAnchors.right: undefined
+                iconAnchors.right: bbChooseTarget.right
+                iconAnchors.centerIn: undefined
+                //anchors.verticalCenter: parent.verticalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 6 * mainWindow.ratioObject
+                //anchors.top: parent.top
+                //anchors.topMargin: 5 * mainWindow.ratioObject
+                anchors.right: parent.right
+                anchors.rightMargin: 12 * mainWindow.ratioObject
 
-                anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                height: 0.6 * parent.height
-                width: 0.5 * parent.width
+                color: "transparent"
+                text_color: active ? "#A8F4F4" : "#544653"
+                text: "Done"
 
                 onClicked: {
                     console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
-                    mainWindow.showOrders(BU.getOrdersForReview(dict));
+                    setTargetingOnOff(false, true);
+                    mainWindow.setSpellTarget(target.target_name, permanency, delay, operationMode);
+                    operationMode = 0;
+                    mainWindow.logEvent("Play_Target_Sumbit", {Target:target.target_name,Permanency:permanency,Delay:delay});
                 }
-            }*/
+            }
 
             IconInfo {
                 id: iiElemental
@@ -231,7 +244,7 @@ BaseWindow {
                 //anchors.top: parent.top
                 //anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
-                anchors.leftMargin: 6 * mainWindow.ratioObject
+                anchors.leftMargin: 66 * mainWindow.ratioObject
                 radius: 10
 
                 onClicked: {
@@ -243,15 +256,29 @@ BaseWindow {
                 }
             }
 
+            Text {
+                id: tTargetTitle
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.leftMargin: 66 * mainWindow.ratioObject
+                font.pixelSize: 28 * mainWindow.ratioFont
+                color: "#FEE2D6"
+                text: "target spell to someone"
+                textFormat: Text.RichText
+                visible: false
+            }
+
             IconInfo {
                 id: iiNobody
                 source: "qrc:/res/target_nobody.png";
                 text: ""
-                height: 78 * mainWindow.ratioObject
-                iconHeight: 60 * mainWindow.ratioObject
-                iconWidth: 60 * mainWindow.ratioObject
+                height: 60 * mainWindow.ratioObject
+                iconHeight: 48 * mainWindow.ratioObject
+                iconWidth: 48 * mainWindow.ratioObject
                 width: height
-                anchors.verticalCenter: parent.verticalCenter
+                //anchors.verticalCenter: parent.verticalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 6 * mainWindow.ratioObject
                 //anchors.top: parent.top
                 //anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
@@ -271,15 +298,19 @@ BaseWindow {
                 id: iiDefault
                 source: "qrc:/res/target_default.png";
                 text: ""
-                height: 78 * mainWindow.ratioObject
-                iconHeight: 60 * mainWindow.ratioObject
-                iconWidth: 60 * mainWindow.ratioObject
+                height: 60 * mainWindow.ratioObject
+                iconHeight: 48 * mainWindow.ratioObject
+                iconWidth: 48 * mainWindow.ratioObject
                 width: height
-                anchors.verticalCenter: parent.verticalCenter
+                //anchors.verticalCenter: parent.verticalCenter
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 6 * mainWindow.ratioObject
                 //anchors.top: parent.top
                 //anchors.topMargin: 12 * mainWindow.ratioObject
-                anchors.right: parent.right
-                anchors.rightMargin: 12 * mainWindow.ratioObject
+                //anchors.right: parent.right
+                //anchors.rightMargin: 12 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: ((iiElemental.visible ? 84 : 0) + 54) * mainWindow.ratioObject
                 visible: false
                 radius: 10
                 l_data: ({action:"hp",warlock_name:"Default"})
@@ -419,14 +450,18 @@ BaseWindow {
             } else if ((operationMode === 1) && (data.action === "delay")) {
                 delay = !delay ? 1 : 0;
             } else if ((data.action === "hp") || (data.action === "m")) {
-                setTargetingOnOff(false, true);
-                var target_name = data.action === "hp" ? data.warlock_name : data.name;
-                mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
-                operationMode = 0;
+                target = data;
+                bbChooseTarget.active = true;
+                //setTargetingOnOff(false, true);
+                target.target_name = data.action === "hp" ? data.warlock_name : data.name;
+                tTargetTitle.text = getTargetTitle(operationMode === 1, spellTitle);
+                tTargetTitle.visible = true;
+                //mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
+                //operationMode = 0;
                 if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
                     //open target window for charmed monster
                     data.under_control = true;
-                    iconDoubleClick(data);
+                    //iconDoubleClick(data);
                 }
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
@@ -515,6 +550,32 @@ BaseWindow {
         paHint.start();
     }
 
+    function getTargetTitle(IsSpell, Title) {
+        var res = "";
+        if (IsSpell && (Title.indexOf("Summon") !== -1) && (Title.indexOf("Elemental") === -1)) {
+            res = Title + ' to serve: ';
+        } else if (IsSpell) {
+            res = "Cast " + Title;
+            if (Title.indexOf("Counter") !== -1) {
+                res += ' spell';
+            }
+            if (permanency) {
+                res += " (make permanent)";
+            }
+            if (delay) {
+                res += " (bank it)";
+            }
+
+            res += ' on: ';
+        } else {
+            res = "Order " + Title + " to attack: ";
+            res = res.replace("Right Hand Monster", "Right Hand");
+            res = res.replace("Left Hand Monster", "Left Hand");
+        }
+        res += '<font color="#10C9F5">' + target.target_name + '</font>';
+        return res;
+    }
+
     function setTargetingOnOff(Enable, IsSpell, Title) {
         if (!Enable) {
             battleChanged();
@@ -522,19 +583,21 @@ BaseWindow {
         } else {
             //bbSendOrders.active = false;
             if (Title) {
-                var txt = "Select target for " + Title;
+                var txt = "";//"Select target for " + Title;
                 if (IsSpell) {
                     if (mainWindow.gBattle.player_has_bank) {
                         txt = "To bank a "+Title+", click the the bank icon, and then choose the spell's target";
                     } else if (mainWindow.gBattle.player_has_permanent) {
                         txt = "To do a "+Title+" permanent, click the the permanency icon, and then choose the spell's target";
                     } else if (Title !== "Counter Spell") {
-                        txt += " spell";
+                        //txt += " spell";
                     }
                 }
 
                 //
-                showShortHint(txt);
+                if (txt !== "") {
+                    showShortHint(txt);
+                }
             }
         }
 
@@ -544,9 +607,14 @@ BaseWindow {
         //ltAll.text = Enable ? "Nobody" : "All";
         //ltAll.border_visible = Enable;
         iiNobody.visible = Enable;
-        iiDefault.visible = Enable;
+        if (Enable) {
+            tTargetTitle.text = getTargetTitle(IsSpell, Title);
+        }
+        tTargetTitle.visible = Enable && (target.target_name !== "");
+        iiDefault.visible = Enable && mainWindow.gBattle.player_under_control;
         //iiElemental.border.width = Enable ? 3 : 0;
         bbSendOrders.visible = !Enable;
+        bbChooseTarget.visible = Enable;
         if (!mainWindow.gBattle.with_bot) {
             iiChat.visible = !Enable;
         }
@@ -588,6 +656,8 @@ BaseWindow {
     }
 
     function prepareToTargeting(is_spell, title) {
+        spellTitle = title;
+        target = {target_name:""};
         operationMode = is_spell ? 1 : 2;
         setTargetingOnOff(true, is_spell, title);
         permanency = 0;

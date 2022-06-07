@@ -101,11 +101,15 @@ function getFullIconPathByGesture(G) {
     return "qrc:/res/g_" + getIconByGesture(G) + ".png";
 }
 
-function preparePrintGestures(GL, GR, mscL, mscR) {
-    var res = [], item, ll, lr;
+function preparePrintGestures(GL, GR, mscL, mscR, maxLength) {
+    var res = [], item, ll, lr, start_idx = 1, Ln = GL.length;
     //GL = GL.toLowerCase();
     //GR = GR.toLowerCase();
-    for(var i = 1, Ln = GL.length; i < Ln; ++i) {
+    if (maxLength) {
+        start_idx = Math.max(1, Ln - maxLength);
+    }
+
+    for(var i = start_idx; i < Ln; ++i) {
         ll = getIconByGesture(GL.substr(i, 1));
         lr = getIconByGesture(GR.substr(i, 1));
         item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== ' ', rv: lr !== ' ', la: i >= Ln - mscL, ra: i >= Ln - mscR};
@@ -409,7 +413,7 @@ function higlightWarlockGestureBySpell(warlock, spell_obj) {
     for (var i = 0, Ln = arr_g.length; i < Ln; ++i) {
         var lrsl = checkIsSpellPossibeForWarlock(arr_g[i], warlock.L, warlock.R);
         if ((lrsl[0] !== 0) || (lrsl[1] !== 0)) {
-            return {action:"highlight",warlock_name:warlock.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(warlock.L, warlock.R, lrsl[0], lrsl[1])}
+            return {action:"highlight",warlock_name:warlock.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(warlock.L, warlock.R, lrsl[0], lrsl[1], 5)}
         }
     }
 
@@ -424,7 +428,7 @@ function getMessageActionBySpell(txt) {
         if (battle.warlocks[i].name === spell_obj.warlock) {
             res.push(higlightWarlockGestureBySpell(battle.warlocks[i], spell_obj));
         } else {
-            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0)});
+            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
         }
         if (battle.warlocks[i].name === spell_obj.target) {
             res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === spell_obj.warlock ? "#10C9F5" : "#FEE2D6"});

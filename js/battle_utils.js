@@ -43,6 +43,7 @@ function prepareWarlock(w) {
         battle.ngR = battle.player_gesture_R;
         battle.player_has_bank = w.delay > 0;
         battle.player_has_permanency = w.permanency > 0;
+        battle.player_under_control = w.control_paralyze || w.control_charmed;
     }
 
     return w;
