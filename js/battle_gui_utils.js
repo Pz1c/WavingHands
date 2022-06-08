@@ -420,7 +420,7 @@ function higlightWarlockGestureBySpell(warlock, spell_obj) {
     return {action:"none"};
 }
 
-function getMessageActionBySpell(txt) {
+function getMessageActionBySpell(txt, battle) {
     var res = [];
     var spell_obj = parseSpellByText(txt);
     var target_found = false;
@@ -500,7 +500,7 @@ function parseAttackByText(txt) {
     return res;
 }
 
-function getMessageActionByAttack(txt) {
+function getMessageActionByAttack(txt, battle) {
     var res = [];
     var attack_obj = parseAttackByText(txt);
     var aggressor_found = false, target_found = false, w, m, j, LnJ;
@@ -550,16 +550,16 @@ function getMessageActionByAttack(txt) {
     return res;
 }
 
-function getMessageActionByRow(row) {
+function getMessageActionByRow(row, battle) {
     var res = [];
     if (row.txt.indexOf(" casts ") !== -1) {
         // process spell casting
-        return getMessageActionBySpell(row.txt);
+        return getMessageActionBySpell(row.txt, battle);
     } else if (row.color === "#FF6666") {
         // TODO process dies messages
     } else {//if (row.txt.indexOf(" attacks ") !== -1) {
         // process attack message
-        return getMessageActionByAttack(row.txt);
+        return getMessageActionByAttack(row.txt, battle);
     }
 
     return res;

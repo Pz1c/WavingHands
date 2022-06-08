@@ -44,3 +44,36 @@ function getMonsterNameByStrength(Strength) {
 function local_log_spell_event(spell_name) {
     mainWindow.logEvent("Play_Gesture_Spell", {Spell:spell_name});
 }
+
+function getTargetTitle(IsSpell, Title, TargetName, Permanency, Delay, NoColor) {
+    var res = "";
+    if (IsSpell && (Title.indexOf("Summon") !== -1) && (Title.indexOf("Elemental") === -1)) {
+        res = Title + ' to serve: ';
+    } else if (IsSpell) {
+        res = "Cast " + Title;
+        if (Title.indexOf("Counter") !== -1) {
+            res += ' spell';
+        }
+        if (Permanency) {
+            res += " (make permanent)";
+        }
+        if (Delay) {
+            res += " (bank it)";
+        }
+
+        res += ' on: ';
+    } else {
+        res = "Direct  " + Title + " at ";
+        res = res.replace("Right Hand Monster", "Right Hand");
+        res = res.replace("Left Hand Monster", "Left Hand");
+    }
+    if (!NoColor) {
+        res += '<font color="#10C9F5">';
+    }
+    res += TargetName;
+    if (!NoColor) {
+        res += '</font>';
+    }
+
+    return res;
+}

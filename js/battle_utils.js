@@ -1,13 +1,15 @@
+.import "battle_gui_utils.js" as BGU
+.import QtQuick 2.0 as QQ
+
 var battle = {};
 var map_warlock_name_to_idx = {};
 var cWarlockObject,cIconObject;
 const G_WARLOCK_HEIGHT = 474;
-Qt.include("battle_gui_utils.js");
 
 
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
-    w.print_g = preparePrintGestures(w.L, w.R, w.smcL, w.smcR);
+    w.print_g = BGU.preparePrintGestures(w.L, w.R, w.smcL, w.smcR);
     if (!w.id) {
         w.id = battle.targetsMap[w.name];
     }
@@ -27,7 +29,7 @@ function prepareWarlock(w) {
 
     w.control_paralyze = battle.paralyze.indexOf(w.id) !== -1;
     w.control_charmed  = battle.charm.indexOf(w.id) !== -1;
-    w.statusIcons = prepareStatusIcon(w);
+    w.statusIcons = BGU.prepareStatusIcon(w);
     w.banked_spell = w.bank;//player && */(battle.fire !== "") ? battle.fire : "";
     w.turn_num = battle.turn_num;
     if (w.player) {
@@ -52,7 +54,7 @@ function prepareWarlock(w) {
 function parseTargets(targets_str) {
     battle.targetsList = [];
     battle.targetsMap = {};
-    var strs = strToArr2D(targets_str, '#', ';', true);
+    var strs = BGU.strToArr2D(targets_str, '#', ';', true);
     var m_owner;
     console.log("parseTargets", JSON.stringify(strs));
     var title, obj_id;
@@ -126,14 +128,14 @@ function prepareTurnActionInfo(last_turn_hist) {
         } else if (last_turn_hist[i].type === 2) {
             continue;
         } else if (last_turn_hist[i].type === 1) {
-            new_action = getMessageActionByRow(last_turn_hist[i]); // before change color
+            new_action = BGU.getMessageActionByRow(last_turn_hist[i], battle); // before change color
             if ((last_turn_hist[i].color === "#FF6666") || (last_turn_hist[i].color === "#FF8888")) {
                 last_turn_hist[i].color = "#FEE2D6";
             } else {
                 last_turn_hist[i].color = "#10C9F5";
             }
         }
-        new_hint.push({color_bg:last_turn_hist[i].color,txt:replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
+        new_hint.push({color_bg:last_turn_hist[i].color,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
     }
 
 
@@ -171,9 +173,9 @@ function prepareBattle(raw_battle) {
             continue;
         }
         if ((m.name.indexOf(":") !== -1) && (m.strength !== 0)) {
-            m.icon = getMonsterIconByName(getMonsterNameByStrength(m.strength));
+            m.icon = BGU.getMonsterIconByName(BGU.getMonsterNameByStrength(m.strength));
         } else {
-            m.icon = getMonsterIconByName(m.name);
+            m.icon = BGU.getMonsterIconByName(m.name);
         }
         m.action = "m";
         m.action_idx = battle.actions.M.length;
@@ -182,7 +184,7 @@ function prepareBattle(raw_battle) {
             battle.monsters[m.owner] = [];
         }
 
-        m.damage = getMonsterDamageByName(m.name);
+        m.damage = BGU.getMonsterDamageByName(m.name);
         battle.monsters[m.owner].push(m);
         battle.actions.M.push({id:battle.targetsMap[m.name],target:m.new_target,old_target:m.target,under_control:true,owner:m.owner,name:m.name,
                                   status:m.status,d:m.damage,hp:m.hp,action:"m",strength:m.damage,icon:m.icon});
@@ -234,7 +236,7 @@ function prepareElemental() {
 
 function prepareWarlocks() {
     console.log("iWarlocks");
-    cleanChildren(iWarlocks);
+    BGU.cleanChildren(iWarlocks);
 
     if (!cIconObject) {
         cIconObject = Qt.createComponent("qrc:///qml/components/IconInfo.qml");
@@ -242,11 +244,11 @@ function prepareWarlocks() {
     if (!cWarlockObject) {
         cWarlockObject = Qt.createComponent("qrc:///qml/game_components/Warlock.qml");
     }
-    if (cWarlockObject.status === Component.Error) {
+    if (cWarlockObject.status === QQ.Component.Error) {
         console.log("Error loading component: " + cWarlockObject.errorString());
         return ;
     }
-    if (cWarlockObject.status === Component.Ready) {
+    if (cWarlockObject.status === QQ.Component.Ready) {
         console.log("component ready");
         finishPrepareWarlockList();
     } else {
@@ -257,7 +259,7 @@ function prepareWarlocks() {
 
 function finishPrepareWarlockList() {
     console.log("finishPrepareWarlockList", battleWindow.height, battleWindow.width, battle.turn_num);
-    if (cWarlockObject.status === Component.Error || cWarlockObject.status !== Component.Ready) {
+    if (cWarlockObject.status === QQ.Component.Error || cWarlockObject.status !== QQ.Component.Ready) {
         console.log("Error loading component:", cWarlockObject.errorString());
         return ;
     }
@@ -332,11 +334,11 @@ function prepareOrder() {
     post_request += "LH$"+actions.L.g+"#";
     post_request += "RH$"+actions.R.g+"#";
     console.log("prepareOrder", "point2", post_request);
-    post_request += "LHS$"+getSpellNameForOrder(actions.L)+"#";
-    post_request += "RHS$"+getSpellNameForOrder(actions.R)+"#";
+    post_request += "LHS$"+BGU.getSpellNameForOrder(actions.L)+"#";
+    post_request += "RHS$"+BGU.getSpellNameForOrder(actions.R)+"#";
     console.log("prepareOrder", "point3", post_request);
-    post_request += "LHT$"+getSpellTargetForOrder(actions.L, battle.targetsMap)+"#";
-    post_request += "RHT$"+getSpellTargetForOrder(actions.R, battle.targetsMap)+"#";
+    post_request += "LHT$"+BGU.getSpellTargetForOrder(actions.L, battle.targetsMap)+"#";
+    post_request += "RHT$"+BGU.getSpellTargetForOrder(actions.R, battle.targetsMap)+"#";
     console.log("prepareOrder", "point4", post_request, JSON.stringify(battle.targetsMap));
 
     var i, Ln, m_obj, pc_gv;
@@ -350,7 +352,7 @@ function prepareOrder() {
         if (!trg) {
             trg = "";
         } else {
-            trg = replaceAll(trg, " ", "+");
+            trg = BGU.replaceAll(trg, " ", "+");
         }
 
         post_request += m_obj.id + "$" + trg + "#";
@@ -404,19 +406,19 @@ function getOrdersForReview(dictionary) {
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
     }
     // gesture
-    res.push({type:"LH",v:getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary, battle.completed_spell_L),
-              c:"snow",icon:"g_" + getIconByGesture(actions.L.g),icon_text:"",icon_visible:true,icon_width:60});
+    res.push({type:"LH",v:BGU.getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary, battle.completed_spell_L),
+              c:"snow",icon:"g_" + BGU.getIconByGesture(actions.L.g),icon_text:"",icon_visible:true,icon_width:60});
     console.log("getOrdersForReview", "point2", JSON.stringify(res));
-    res.push({type:"RH",v:getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary, battle.completed_spell_R),
-              c:"snow",icon:"g_" + getIconByGesture(actions.R.g),icon_text:"",icon_visible:true,icon_width:60});
+    res.push({type:"RH",v:BGU.getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary, battle.completed_spell_R),
+              c:"snow",icon:"g_" + BGU.getIconByGesture(actions.R.g),icon_text:"",icon_visible:true,icon_width:60});
     console.log("getOrdersForReview", "point3", JSON.stringify(res));
 
     if (actions.D !== -1) {
-        res.push({type:"D",v:getSpecActionText("D", actions.D, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
+        res.push({type:"D",v:BGU.getSpecActionText("D", actions.D, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point4", JSON.stringify(res));
     }
     if (actions.P !== -1) {
-        res.push({type:"P",v:getSpecActionText("P", actions.P, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
+        res.push({type:"P",v:BGU.getSpecActionText("P", actions.P, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point5", JSON.stringify(res));
     }
     if (actions.F === 1) {
@@ -425,13 +427,13 @@ function getOrdersForReview(dictionary) {
     }
     var i, Ln, m_obj, pc_gv;
     for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
-        res.push({type:"CP",v:getCharmActionText("CP", actions.CP[battle.paralyze[i]],
+        res.push({type:"CP",v:BGU.getCharmActionText("CP", actions.CP[battle.paralyze[i]],
                   battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow",icon:"paralized",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point7", JSON.stringify(res));
     }
     for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
         console.log("getOrdersForReview before charm", i, Ln, battle.charm[i], JSON.stringify(actions.CC[battle.charm[i]]));
-        res.push({type:"CC",v:getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary),
+        res.push({type:"CC",v:BGU.getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary),
                      c:"snow",icon:"charmed",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point8", JSON.stringify(res));
     }
@@ -442,12 +444,12 @@ function getOrdersForReview(dictionary) {
             continue;
         }
 
-        var obj = {type:"M",v:getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow",action_idx:i,icon:"",icon_text:"",icon_visible:true,icon_width:78};
+        var obj = {type:"M",v:BGU.getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow",action_idx:i,icon:"",icon_text:"",icon_visible:true,icon_width:78};
         if (m_obj.name.indexOf(":") !== -1) {
-            obj.icon = getMonsterIconBySummonHP(m_obj.hp);
+            obj.icon = BGU.getMonsterIconBySummonHP(m_obj.hp);
             obj.icon_text = m_obj.name.substr(0, 1);
         } else {
-            obj.icon = getMonsterIconByName(m_obj.name);
+            obj.icon = BGU.getMonsterIconByName(m_obj.name);
             obj.icon_text = m_obj.hp;
         }
         res.push(obj);
@@ -497,4 +499,8 @@ function checkIsMonsterCharmed(monster) {
         battle.actions.M[monster.action_idx].under_control = true;
     }
     return res;
+}
+
+function getIconByGesture(g) {
+    return BGU.getIconByGesture(g);
 }

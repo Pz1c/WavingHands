@@ -7,6 +7,7 @@ import "qrc:/qml/components"
 import "qrc:/js/battle_utils.js" as BU
 import "qrc:/js/battle_wnd_utils.js" as BWU
 import "qrc:/js/ai_utils.js" as AI
+import "qrc:/js/small_gui_utils.js" as SGU
 
 BaseWindow {
     id: battleItem
@@ -244,7 +245,7 @@ BaseWindow {
                 //anchors.top: parent.top
                 //anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
-                anchors.leftMargin: 66 * mainWindow.ratioObject
+                anchors.leftMargin: 6 * mainWindow.ratioObject
                 radius: 10
 
                 onClicked: {
@@ -260,7 +261,7 @@ BaseWindow {
                 id: tTargetTitle
                 anchors.top: parent.top
                 anchors.left: parent.left
-                anchors.leftMargin: 66 * mainWindow.ratioObject
+                anchors.leftMargin: 80 * mainWindow.ratioObject
                 font.pixelSize: 28 * mainWindow.ratioFont
                 color: "#FEE2D6"
                 text: "target spell to someone"
@@ -551,29 +552,7 @@ BaseWindow {
     }
 
     function getTargetTitle(IsSpell, Title) {
-        var res = "";
-        if (IsSpell && (Title.indexOf("Summon") !== -1) && (Title.indexOf("Elemental") === -1)) {
-            res = Title + ' to serve: ';
-        } else if (IsSpell) {
-            res = "Cast " + Title;
-            if (Title.indexOf("Counter") !== -1) {
-                res += ' spell';
-            }
-            if (permanency) {
-                res += " (make permanent)";
-            }
-            if (delay) {
-                res += " (bank it)";
-            }
-
-            res += ' on: ';
-        } else {
-            res = "Order " + Title + " to attack: ";
-            res = res.replace("Right Hand Monster", "Right Hand");
-            res = res.replace("Left Hand Monster", "Left Hand");
-        }
-        res += '<font color="#10C9F5">' + target.target_name + '</font>';
-        return res;
+        return SGU.getTargetTitle(IsSpell, Title, target.target_name, permanency, delay);
     }
 
     function setTargetingOnOff(Enable, IsSpell, Title) {
