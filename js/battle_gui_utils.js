@@ -125,7 +125,7 @@ function preparePrintGestures(GL, GR, mscL, mscR, maxLength) {
     return res;
 }
 
-function getMonsterIconByName(name) {
+function getMonsterIconByNameEx(name) {
     if (name.indexOf("Goblin") !== -1) {
         return "goblin";
     } else if (name.indexOf("Ogre") !== -1) {
@@ -137,6 +137,15 @@ function getMonsterIconByName(name) {
     } else {
         return "summon";
     }
+}
+
+function getMonsterIconByName(name) {
+    var res = getMonsterIconByNameEx(name);
+    if ((res !== "summon") && (name.indexOf("(") !== -1)) {
+        res = "new_" + res;
+    }
+
+    return res;
 }
 
 function getMonsterIconBySummonHP(HP) {

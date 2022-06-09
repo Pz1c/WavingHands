@@ -1050,9 +1050,10 @@ ApplicationWindow {
 
         WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit);
         if (need_target) {
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, spell.n);
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, spell);
         } else {
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].battleChanged();
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].currentSpell = {n:"",h:gBattle.currentHand === "L" ? 1 : 2,g:""};
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].battleChanged(true);
         }
         WNDU.processEscape();
     }
@@ -1072,7 +1073,7 @@ ApplicationWindow {
     }
 
     function chooseMonsterTarget(title) {
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false, title);
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false, {n:title});
         logEvent("Play_Target_View", {Mode:"monster"});
         //WNDU.processEscape();
     }

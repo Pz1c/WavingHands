@@ -303,6 +303,35 @@ Item {
 
     Component.onCompleted: finishWarlockCreation();
 
+    function showHideSummonIcon(spell) {
+        if (!l_warlock.player) {
+            return;
+        }
+        for (var i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
+            var item = iMonsters.children[i];
+            var name = item.l_data && item.l_data.name ? item.l_data.name : "";
+            if (name.indexOf(":") === -1) {
+                continue;
+            }
+            var action;
+            if (spell.g.indexOf("SFW") !== -1) {
+                action = 1;
+            } else {
+                action = 2;
+            }
+            if (!(((name.indexOf("LH:") !== -1) && (spell.h === 1)) || ((name.indexOf("RH:") !== -1) && (spell.h === 2)))) {
+                action = 0;
+            }
+            if (action === 1) {
+                iMonsters.children[i].visible = true;
+                iMonsters.children[i].width = iMonsters.height;
+            } else if (action === 2) {
+                iMonsters.children[i].visible = false;
+                iMonsters.children[i].width = 0;
+            }
+        }
+    }
+
     function targetingOnOff(Enable, IsSpell) {
         console.log("Warlock.targetingOnOff", l_warlock.name, Enable);
         var opacity = Enable ? 0.3 : 1;
@@ -312,6 +341,7 @@ Item {
         iiRight.opacity = opacity;
         iiLeft.active = !Enable;
         iiRight.active = !Enable;
+        rBottomLine.visible = l_warlock.player || !Enable;
         //iiHP.active = Enable;
         //iiHP.border.width = border_width;
         if (iiBanked.visible) {
@@ -505,6 +535,10 @@ Item {
 
             curr_x += incerment * (sprite.width + 18 * l_ratio);
             total_width += sprite.width + 18 * l_ratio;
+            if (l_warlock.player && (arr_m.name.indexOf(":") !== -1)) {
+                sprite.width = 0;
+                sprite.visible = false;
+            }
         }
         parent.width = total_width;
         //parent.height = total_height;

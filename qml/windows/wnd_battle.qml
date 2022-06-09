@@ -25,7 +25,7 @@ BaseWindow {
     property int operationMode: 0
     // 0 - normal state
     // 1 - spell targeting
-    property string spellTitle: ""
+    property var currentSpell: ({n:"",h:0,g:""})
     property int permanency: 0
     property int delay: 0
     property var target: ({target_name:""})
@@ -204,19 +204,18 @@ BaseWindow {
                 textVisible: true
                 visible: false
 
-                height: 48 * mainWindow.ratioObject
-                iconHeight: 48 * mainWindow.ratioObject
-                iconWidth: 48 * mainWindow.ratioObject
-                textHeight: 48 * mainWindow.ratioObject
+                height: 64 * mainWindow.ratioObject
+                iconHeight: 64 * mainWindow.ratioObject
+                iconWidth: 64 * mainWindow.ratioObject
+                textHeight: 64 * mainWindow.ratioObject
                 textWidth: 80 * mainWindow.ratioObject
-                width: (48 + 18 + 80) * mainWindow.ratioObject
+                width: (64 + 18 + 80) * mainWindow.ratioObject
                 textAnchors.left: bbChooseTarget.left
                 textAnchors.right: undefined
                 iconAnchors.right: bbChooseTarget.right
                 iconAnchors.centerIn: undefined
                 //anchors.verticalCenter: parent.verticalCenter
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 6 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
                 //anchors.top: parent.top
                 //anchors.topMargin: 5 * mainWindow.ratioObject
                 anchors.right: parent.right
@@ -232,6 +231,7 @@ BaseWindow {
                     mainWindow.setSpellTarget(target.target_name, permanency, delay, operationMode);
                     operationMode = 0;
                     mainWindow.logEvent("Play_Target_Sumbit", {Target:target.target_name,Permanency:permanency,Delay:delay});
+                    showHideSummonIcon();
                 }
             }
 
@@ -257,29 +257,40 @@ BaseWindow {
                 }
             }
 
-            Text {
-                id: tTargetTitle
-                anchors.top: parent.top
+            Rectangle {
+                id: rTT
+                color: "#544653"
+                anchors.bottom: iiNobody.top
                 anchors.left: parent.left
-                anchors.leftMargin: 80 * mainWindow.ratioObject
-                font.pixelSize: 28 * mainWindow.ratioFont
-                color: "#FEE2D6"
-                text: "target spell to someone"
-                textFormat: Text.RichText
+                anchors.right: parent.right
+                height: 50 * mainWindow.ratioObject
                 visible: false
+
+                Text {
+                    id: tTargetTitle
+                    anchors.left: parent.left
+                    anchors.leftMargin: 6 * mainWindow.ratioObject
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 6 * mainWindow.ratioObject
+                    //anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: 28 * mainWindow.ratioFont
+                    color: "#FEE2D6"
+                    text: ""
+                    textFormat: Text.RichText
+                }
             }
 
             IconInfo {
                 id: iiNobody
                 source: "qrc:/res/target_nobody.png";
                 text: ""
-                height: 60 * mainWindow.ratioObject
-                iconHeight: 48 * mainWindow.ratioObject
-                iconWidth: 48 * mainWindow.ratioObject
+                height: 78 * mainWindow.ratioObject
+                iconHeight: 60 * mainWindow.ratioObject
+                iconWidth: 60 * mainWindow.ratioObject
                 width: height
-                //anchors.verticalCenter: parent.verticalCenter
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 6 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.bottom: parent.bottom
+                //anchors.bottomMargin: 6 * mainWindow.ratioObject
                 //anchors.top: parent.top
                 //anchors.topMargin: 12 * mainWindow.ratioObject
                 anchors.left: parent.left
@@ -299,13 +310,13 @@ BaseWindow {
                 id: iiDefault
                 source: "qrc:/res/target_default.png";
                 text: ""
-                height: 60 * mainWindow.ratioObject
-                iconHeight: 48 * mainWindow.ratioObject
-                iconWidth: 48 * mainWindow.ratioObject
+                height: 78 * mainWindow.ratioObject
+                iconHeight: 60 * mainWindow.ratioObject
+                iconWidth: 60 * mainWindow.ratioObject
                 width: height
-                //anchors.verticalCenter: parent.verticalCenter
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 6 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                //anchors.bottom: parent.bottom
+                //anchors.bottomMargin: 6 * mainWindow.ratioObject
                 //anchors.top: parent.top
                 //anchors.topMargin: 12 * mainWindow.ratioObject
                 //anchors.right: parent.right
@@ -455,8 +466,8 @@ BaseWindow {
                 bbChooseTarget.active = true;
                 //setTargetingOnOff(false, true);
                 target.target_name = data.action === "hp" ? data.warlock_name : data.name;
-                tTargetTitle.text = getTargetTitle(operationMode === 1, spellTitle);
-                tTargetTitle.visible = true;
+                tTargetTitle.text = getTargetTitle(operationMode === 1, currentSpell.n);
+                //tTargetTitle.visible = true;
                 //mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
                 //operationMode = 0;
                 if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
@@ -589,10 +600,11 @@ BaseWindow {
         if (Enable) {
             tTargetTitle.text = getTargetTitle(IsSpell, Title);
         }
-        tTargetTitle.visible = Enable && (target.target_name !== "");
+        rTT.visible = Enable;// && (target.target_name !== "");
         iiDefault.visible = Enable && mainWindow.gBattle.player_under_control;
         //iiElemental.border.width = Enable ? 3 : 0;
         bbSendOrders.visible = !Enable;
+        bbChooseTarget.active = false;
         bbChooseTarget.visible = Enable;
         if (!mainWindow.gBattle.with_bot) {
             iiChat.visible = !Enable;
@@ -602,7 +614,13 @@ BaseWindow {
         //iiChat.opacity = Enable ? 0.3 : 1;
     }
 
-    function battleChanged() {
+    function showHideSummonIcon() {
+        for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+            iWarlocks.children[i].showHideSummonIcon(currentSpell);
+        }
+    }
+
+    function battleChanged(FromGesture) {
         var old_state = bbSendOrders.active;
         var new_state = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g);
         if (old_state != new_state) {
@@ -610,6 +628,10 @@ BaseWindow {
             if (new_state) {
                 bbSendOrders.animate(1);
             }
+        }
+        if (FromGesture) {
+            //
+            showHideSummonIcon();
         }
     }
 
@@ -634,11 +656,11 @@ BaseWindow {
         BU.setCharm(hand, gesture);
     }
 
-    function prepareToTargeting(is_spell, title) {
-        spellTitle = title;
+    function prepareToTargeting(is_spell, spell) {
+        currentSpell = spell;
         target = {target_name:""};
         operationMode = is_spell ? 1 : 2;
-        setTargetingOnOff(true, is_spell, title);
+        setTargetingOnOff(true, is_spell, currentSpell.n);
         permanency = 0;
         delay = 0;
     }

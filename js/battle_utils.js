@@ -173,7 +173,7 @@ function prepareBattle(raw_battle) {
             continue;
         }
         if ((m.name.indexOf(":") !== -1) && (m.strength !== 0)) {
-            m.icon = BGU.getMonsterIconByName(BGU.getMonsterNameByStrength(m.strength));
+            m.icon = "new_" + BGU.getMonsterIconByName(BGU.getMonsterNameByStrength(m.strength));
         } else {
             m.icon = BGU.getMonsterIconByName(m.name);
         }
