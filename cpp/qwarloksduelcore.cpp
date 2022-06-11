@@ -1566,6 +1566,11 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             battle_info->setStatus(BATTLE_INFO_STATUS_FINISHED);
         }
     }
+    foreach(int bid, old_fin) {
+        if (_finished_battles.indexOf(bid) == -1) {
+            _finished_battles.append(bid);
+        }
+    }
 
     // try to find refferrer
     processRefferer();

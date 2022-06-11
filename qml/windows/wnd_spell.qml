@@ -306,7 +306,7 @@ InfoWindow {
             }
             ltError.font.pixelSize = 28 * mainWindow.ratioFont;
         } else if (spell_code) {
-            var spell_icon = BGU.map_spell_to_icon[spell_code];
+            var spell_icon = BGU.getIconBySpell(spell_code);
             SGU.prepareSpellDescription(spell_code, spell_icon);
         }
 

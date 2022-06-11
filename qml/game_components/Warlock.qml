@@ -313,8 +313,9 @@ Item {
             if (name.indexOf(":") === -1) {
                 continue;
             }
-            var action;
-            if (spell.g.indexOf("SFW") !== -1) {
+            var action, spell_g = spell.g;
+
+            if ((spell_g.indexOf("SFW") !== -1) || (spell_g.indexOf("cSWWS") !== -1) || (spell_g.indexOf("cWSSW") !== -1)) {
                 action = 1;
             } else {
                 action = 2;
@@ -535,7 +536,7 @@ Item {
 
             curr_x += incerment * (sprite.width + 18 * l_ratio);
             total_width += sprite.width + 18 * l_ratio;
-            if (l_warlock.player && (arr_m.name.indexOf(":") !== -1)) {
+            if (l_warlock.player && (type === "m") && (arr_m.name.indexOf(":") !== -1)) {
                 sprite.width = 0;
                 sprite.visible = false;
             }

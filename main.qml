@@ -1040,7 +1040,7 @@ ApplicationWindow {
     }
 
     function setGesture(gesture, spell, need_target) {
-        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) || ((gesture === "C") && !(gBattle.warlocks[0].amnesia > 0));
+        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) || ((gesture === "C") && !gBattle.player_under_control);
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
         if (is_maladroit && (gBattle.actions[gBattle.otherHand].g !== gesture)) {

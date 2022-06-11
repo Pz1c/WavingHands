@@ -180,7 +180,8 @@ BaseWindow {
                 textAnchors.right: undefined
                 iconAnchors.right: bbSendOrders.right
                 iconAnchors.centerIn: undefined
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.bottom: rTT.top
+                //anchors.verticalCenter: parent.verticalCenter
                 //anchors.top: parent.top
                 //anchors.topMargin: 5 * mainWindow.ratioObject
                 anchors.right: parent.right
@@ -214,10 +215,8 @@ BaseWindow {
                 textAnchors.right: undefined
                 iconAnchors.right: bbChooseTarget.right
                 iconAnchors.centerIn: undefined
-                //anchors.verticalCenter: parent.verticalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                //anchors.top: parent.top
-                //anchors.topMargin: 5 * mainWindow.ratioObject
+                anchors.bottom: rTT.top
+                anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.right: parent.right
                 anchors.rightMargin: 12 * mainWindow.ratioObject
 
@@ -241,9 +240,8 @@ BaseWindow {
                 text: "3"
                 height: 78 * mainWindow.ratioObject
                 width: height
-                anchors.verticalCenter: parent.verticalCenter
-                //anchors.top: parent.top
-                //anchors.topMargin: 12 * mainWindow.ratioObject
+                anchors.bottom: rTT.top
+                anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: 6 * mainWindow.ratioObject
                 radius: 10
@@ -260,19 +258,19 @@ BaseWindow {
             Rectangle {
                 id: rTT
                 color: "#544653"
-                anchors.bottom: iiNobody.top
+                anchors.bottom: parent.bottom//iiNobody.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: 50 * mainWindow.ratioObject
+                height: 36 * mainWindow.ratioObject
                 visible: false
 
                 Text {
                     id: tTargetTitle
                     anchors.left: parent.left
                     anchors.leftMargin: 6 * mainWindow.ratioObject
-                    anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 6 * mainWindow.ratioObject
-                    //anchors.verticalCenter: parent.verticalCenter
+                    //anchors.bottom: parent.bottom
+                    //anchors.bottomMargin: 6 * mainWindow.ratioObject
+                    anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: 28 * mainWindow.ratioFont
                     color: "#FEE2D6"
                     text: ""
@@ -288,11 +286,9 @@ BaseWindow {
                 iconHeight: 60 * mainWindow.ratioObject
                 iconWidth: 60 * mainWindow.ratioObject
                 width: height
-                anchors.verticalCenter: parent.verticalCenter
-                //anchors.bottom: parent.bottom
-                //anchors.bottomMargin: 6 * mainWindow.ratioObject
-                //anchors.top: parent.top
-                //anchors.topMargin: 12 * mainWindow.ratioObject
+                //anchors.verticalCenter: parent.verticalCenter
+                anchors.bottom: rTT.top
+                anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: ((iiElemental.visible ? 84: 0) + 6) * mainWindow.ratioObject
                 visible: false
@@ -314,13 +310,8 @@ BaseWindow {
                 iconHeight: 60 * mainWindow.ratioObject
                 iconWidth: 60 * mainWindow.ratioObject
                 width: height
-                anchors.verticalCenter: parent.verticalCenter
-                //anchors.bottom: parent.bottom
-                //anchors.bottomMargin: 6 * mainWindow.ratioObject
-                //anchors.top: parent.top
-                //anchors.topMargin: 12 * mainWindow.ratioObject
-                //anchors.right: parent.right
-                //anchors.rightMargin: 12 * mainWindow.ratioObject
+                anchors.bottom: rTT.top
+                anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: ((iiElemental.visible ? 84 : 0) + 54) * mainWindow.ratioObject
                 visible: false
@@ -542,7 +533,7 @@ BaseWindow {
             break;
         default: // spell
             msg_type = 7
-            spell_code = BU.icon_status_spell[data.action];
+            spell_code = BU.getIconStatusSpell(data.action);
             if (spell_code) {
                 msg_title = dict.getStringByCode(spell_code);
                 msg_text  = dict.getStringByCode(spell_code + "_desc");

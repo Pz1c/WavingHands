@@ -504,3 +504,11 @@ function checkIsMonsterCharmed(monster) {
 function getIconByGesture(g) {
     return BGU.getIconByGesture(g);
 }
+
+function getIconStatusSpell(code) {
+    return BGU.icon_status_spell[code];
+}
+
+function getIconBySpell(spell_code) {
+    return BGU.map_spell_to_icon[spell_code];
+}
