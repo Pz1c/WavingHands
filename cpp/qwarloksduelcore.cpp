@@ -1582,7 +1582,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
 }
 
 void QWarloksDuelCore::processRefferer() {
-    if (_isAsService) {
+    if (_isAsService || _isAI) {
         return;
     }
     QString finished_battles;
@@ -2390,6 +2390,9 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
 
 void QWarloksDuelCore::showNotification(const QString &msg) {
     qDebug() << "QWarloksDuelCore::showNotification" << msg;
+    if (_isAsService || _isAI) {
+        return;
+    }
     #ifdef Q_OS_ANDROID
     QJniObject javaNotification = QJniObject::fromString(msg);
     QJniObject::callStaticMethod<void>(
@@ -2504,6 +2507,9 @@ void QWarloksDuelCore::processServiceTimer() {
 }
 
 void QWarloksDuelCore::setCheckUrl(const QString &check_url) {
+    if (_isAsService || _isAI) {
+        return;
+    }
     #ifdef Q_OS_ANDROID
     QJniObject javaNotification = QJniObject::fromString(check_url);
     QJniObject::callStaticMethod<void>(
