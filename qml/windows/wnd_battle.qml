@@ -225,12 +225,15 @@ BaseWindow {
                 text: "Done"
 
                 onClicked: {
-                    console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
+                    console.log("bbChooseTarget.Clicked", JSON.stringify(mainWindow.gBattle.actions), JSON.stringify(target));
                     setTargetingOnOff(false, true);
                     mainWindow.setSpellTarget(target.target_name, permanency, delay, operationMode);
                     operationMode = 0;
                     mainWindow.logEvent("Play_Target_Sumbit", {Target:target.target_name,Permanency:permanency,Delay:delay});
                     showHideSummonIcon();
+                    if ((target.action === "m") && BU.checkIsMonsterCharmed(target)) {
+                        target.under_control = true;
+                    }
                 }
             }
 
@@ -461,11 +464,11 @@ BaseWindow {
                 //tTargetTitle.visible = true;
                 //mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
                 //operationMode = 0;
-                if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
+                //if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
                     //open target window for charmed monster
-                    data.under_control = true;
+                  //  data.under_control = true;
                     //iconDoubleClick(data);
-                }
+                //}
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }
