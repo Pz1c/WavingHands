@@ -21,8 +21,8 @@ import "qrc:/qml"
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 506//600
-    height: 900//1068
+    width: 400//600
+    height: 712//1068
     flags: /*Qt.FramelessWindowHint|*/Qt.Window
     color: "#551470"
 
@@ -97,7 +97,10 @@ ApplicationWindow {
             showUserProfile(true);
         }
         onPlayerInfoChanged: GUI.userProfileChanged()
-        onLoginChanged: closeChild(true)
+        onLoginChanged: {
+            closeChild(true);
+            //showAfterRegWnd();
+        }
 
         Component.onCompleted: {
             console.log("Core.completed");
@@ -106,6 +109,7 @@ ApplicationWindow {
                 tbTop.visible = false;
                 rBody.visible = false;
                 showNewUserMenu();
+                //showAfterRegWnd();
             } else {
                 //core.scanState();
                 logEvent("auto_login_start", {});
@@ -609,6 +613,7 @@ ApplicationWindow {
                                     anchors.right: rdbiLink.right
                                     anchors.rightMargin: 36 * ratioObject
                                     visible: (lvActiveBattle.model[index].s === 1) || (lvActiveBattle.model[index].s === 3)
+                                             || (lvActiveBattle.model[index].s === 4)
                                     radius: width / 2
                                     gradient: Gradient {
                                         GradientStop { position: 0.0; color: "#9DFFD3" }
@@ -634,7 +639,7 @@ ApplicationWindow {
                                     anchors.fill: parent
                                     onClicked: {
                                         console.log("getBattle", index, JSON.stringify(lvActiveBattle.model[index]));
-                                        if (lvActiveBattle.model[index].s === 3) {
+                                        if ((lvActiveBattle.model[index].s === 3) || (lvActiveBattle.model[index].s === 4)) {
                                             var obj = JSON.parse(JSON.stringify(lvActiveBattle.model[index]));
                                             obj.type = 17;
                                             obj.action = "private_challenge";
@@ -849,6 +854,16 @@ ApplicationWindow {
             showErrorWnd({text:txt,type:2,title:"Battle #" + bit});
         }
         core.scanState(1);
+    }
+
+    function showAfterRegWnd() {
+        WNDU.showAfterRegistrationWindow();
+    }
+
+    function afterRegAction() {
+        processEscape();
+        GUI.startGameWithPlayerEx(true);
+        GUI.startGameWithBotEx(true);
     }
 
     function showReadyBattle() {

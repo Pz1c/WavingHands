@@ -35,7 +35,7 @@ InfoWindow {
             anchors.leftMargin: 12 * mainWindow.ratioObject
             font.pixelSize: 42 * mainWindow.ratioFont
             color: "#10C9F5"
-            text: "Practice Mode:"
+            text: warlockDictionary.getStringByCode("NewGamePractice")
         }
 
         BtnBig {
@@ -111,7 +111,7 @@ InfoWindow {
             anchors.leftMargin: 12 * mainWindow.ratioObject
             font.pixelSize: 42 * mainWindow.ratioFont
             color: "#10C9F5"
-            text: "Practice Mode:"
+            text: warlockDictionary.getStringByCode("NewGameDuel")
         }
 
         BtnBig {

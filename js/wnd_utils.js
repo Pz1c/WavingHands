@@ -16,6 +16,7 @@ var wnd_search_warlock = "wnd_search_warlock.qml";
 var wnd_popup = "wnd_popup.qml";
 var wnd_spell_popup = "wnd_spell_popup.qml";
 var wnd_new_game = "wnd_new_game.qml";
+var wnd_after_reg = "wnd_after_registration.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -224,6 +225,9 @@ function showSearchWarlockWindow() {
     showWnd(wnd_search_warlock, 0, 0, 1);
 }
 
+function showAfterRegistrationWindow() {
+    showWnd(wnd_after_reg, 0, 1, 1);
+}
 
 function showErrorWnd(error, chat) {
     if (!error.type) {

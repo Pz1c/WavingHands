@@ -23,6 +23,7 @@ Item {
     property alias content_item: bwBody
     property alias icon: iiIcon
     property alias title: tTitle
+    property alias titleVisible: rTitle.visible
 
     function onKeyPressed(event) {
         console.log("InfoWindow.KEY_PRESSED: " + event.key)

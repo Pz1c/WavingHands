@@ -45,7 +45,8 @@ function newUserRegistered() {
     var l_login = core.login;
     closeChild();
     lPlayerTitle.text = "Hi, " + l_login;
-    showTipMessage(warlockDictionary.getStringByCode("JustRegistered").replace("#login#", l_login), true);
+    //showTipMessage(warlockDictionary.getStringByCode("JustRegistered").replace("#login#", l_login), true);
+    showAfterRegWnd();
     logEvent("registration_finished", {login: l_login});
     userProfileChanged();
 }
@@ -136,8 +137,8 @@ function prepareNewGameBtn(ELO) {
         V_BTN2_TITLE = warlockDictionary.getStringByCode("NewGameWithBot");
         V_BTN_ACTION = [C_NG_PLAYER_CODE, C_NG_BOT_CODE];
     }
-    bbNewGame.text = V_BTN1_TITLE;
-    bbNewBotGame.text = V_BTN2_TITLE;
+    //bbNewGame.text = V_BTN1_TITLE;
+    //bbNewBotGame.text = V_BTN2_TITLE;
 }
 
 function userProfileChanged() {
@@ -183,39 +184,41 @@ function getJoinDialogText(b) {
     return txt;
 }
 
-function startGameWithPlayerEx() {
+function startGameWithPlayerEx(skip_search) {
     console.log("startGameWithPlayer", JSON.stringify(G_CHALLENGE_LIST));
     var best_idx = -1, battle, bb;
-    for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
-        battle = G_CHALLENGE_LIST[i];
-        if (!battle.active || (battle.size > 2)) {
-            continue;
-        }
+    if (!skip_search) {
+        for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
+            battle = G_CHALLENGE_LIST[i];
+            if (!battle.active || (battle.size > 2)) {
+                continue;
+            }
 
-        if ((battle.level === 1) && (battle.need === 1)) {
-            var creator = JSON.parse(core.getWarlockStats(battle.participant, 1));
-            if (creator.found && (G_PROFILE.elo > creator.elo + 200)) {
-                continue;
+            if ((battle.level === 1) && (battle.need === 1)) {
+                var creator = JSON.parse(core.getWarlockStats(battle.participant, 1));
+                if (creator.found && (G_PROFILE.elo > creator.elo + 200)) {
+                    continue;
+                }
+                logEvent("accept_callenge", {source:"btn_new",Type:"Training",With:"Random warlock",against:creator});
+                core.acceptChallenge(battle.id, false);
+                return;
+            } else if (i !== best_idx) {
+                if (best_idx === -1) {
+                    best_idx = 0;
+                    continue;
+                }
+                bb = G_CHALLENGE_LIST[best_idx];
+                if (bb.need > battle.need) {
+                    continue;
+                }
+                if (bb.level < battle.level) {
+                    continue;
+                }
+                if (bb.fast && !battle.fast) {
+                    continue;
+                }
+                best_idx = i;
             }
-            logEvent("accept_callenge", {source:"btn_new",Type:"Training",With:"Random warlock",against:creator});
-            core.acceptChallenge(battle.id, false);
-            return;
-        } else if (i !== best_idx) {
-            if (best_idx === -1) {
-                best_idx = 0;
-                continue;
-            }
-            bb = G_CHALLENGE_LIST[best_idx];
-            if (bb.need > battle.need) {
-                continue;
-            }
-            if (bb.level < battle.level) {
-                continue;
-            }
-            if (bb.fast && !battle.fast) {
-                continue;
-            }
-            best_idx = i;
         }
     }
     //if (best_idx === -1) {
@@ -245,11 +248,13 @@ function joinBattleDialogResult(accept) {
     }
 }
 
-function startGameWithBotEx() {
+function startGameWithBotEx(silence) {
     console.log("startGameWithBot", JSON.stringify(G_CHALLENGE_LIST));
     var bot_battle_id = core.getBotBattle();
     if (bot_battle_id) {
-        showErrorWnd({id:-1,type:21});
+        if (!silence) {
+            showErrorWnd({id:-1,type:21});
+        }
     } else {
         for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
             if (G_CHALLENGE_LIST[i].active && G_CHALLENGE_LIST[i].with_bot) {

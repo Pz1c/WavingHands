@@ -168,6 +168,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("Say", "", "", "Add a message");
     fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");
     fillDictionary("PersonalChalengeSDesc", "", "", "You are invited for a private duel by ");
+    fillDictionary("OpenChalengeTitle", "", "", "Open duel invite");
+    fillDictionary("OpenChalengeSDesc", "", "", "You are invited for a open duel by ");
     fillDictionary("PersonalChalengeAccept", "", "", "Accept");
     fillDictionary("PersonalChalengeReject", "", "", "Reject");
     fillDictionary("DuelWithFriend", "", "", "Duel with a friend");
@@ -195,7 +197,9 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("FinishedGameResultTitleDraw", "", "", "Hmm... It's a draw.");
     fillDictionary("FinishedGameResultTitleUnknown", "", "", "Damn! What's going on?");
     fillDictionary("NewGameMoreOption", "", "", "More options");
-    fillDictionary("NewGameAutoMatch", "", "", "Auto Match");
+    fillDictionary("NewGameAutoMatch", "", "", "Play");
+    fillDictionary("NewGameDuel", "", "", "Duel");
+    fillDictionary("NewGamePractice", "", "", "Practice Mode:");
 
 
     fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");

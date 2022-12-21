@@ -43,7 +43,12 @@ BaseWindow {
         id: mainItem
         anchors.fill: content_item
         z: 11
-        color: "black"
+        //color: "black"
+
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#210430" }
+            GradientStop { position: 1.0; color: "#10C9F5" }
+        }
 
         Image {
             id: iTopBg
@@ -71,6 +76,7 @@ BaseWindow {
             text_width: 0.1 * parent.width
             text_color: "#FEE2D6"
             text: "Back"
+            transparent: true
 
 
 
@@ -95,6 +101,7 @@ BaseWindow {
             text_width: 0.1 * parent.width
             text: "Next"
             text_color: "#FEE2D6"
+            transparent: true
 
             onClicked: {
                 changeIndex(1);
@@ -325,6 +332,7 @@ BaseWindow {
                     checked: false
                     height: 0.05 * parent.width
                     width: 0.05 * parent.width
+                    color: "transparent"
                     //border.color: "#E7FFFF"
                     //border.width: 3
                     //innerBorder.width: 2
@@ -358,6 +366,7 @@ BaseWindow {
                     anchors.rightMargin: 0.05 * parent.width
                     width: 0.50 * parent.width
                     height: 0.09 * parent.height
+                    transparent: true
 
                     image: cbConfirmation.checked ? "qrc:/res/send_1.png" : "qrc:/res/send_0.png"
                     //image_anchors.verticalCenter: bwiSingUp.verticalCenter
@@ -501,6 +510,7 @@ BaseWindow {
 
                     text: "Submit"
                     text_color: "#E7FFFF"
+                    transparent: true
 
                     onClicked: {
                         var err_cnt = 0;

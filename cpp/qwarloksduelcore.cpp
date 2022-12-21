@@ -344,7 +344,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
     QList<QBattleInfo*> list = QWarlockUtils::parseChallengesList(Data);
     qDebug() << "finishChallengeList" << StatusCode << NewUrl << _isAI;// << _challengeList << list;
     QString list_str;
-    bool working = false;
+    bool working = false, active_challenge = false;
     int with_bot = 0;
     foreach(QBattleInfo*bi, list) {
         list_str.append(intToStr(bi->battleID())).append(";");
@@ -363,6 +363,8 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
         } else if (bi->for_bot() && !bi->active(_login)) {
             qDebug() << "finishChallengeList" << "emit needAIAnswer";
             callAI();
+        } else if (!active_challenge && !bi->for_bot() && bi->active(_login) && (bi->size() == 2)) {
+            active_challenge = true;
         }
     }
 
@@ -370,6 +372,9 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
         _challengeList = list_str;
         qDebug() << list;
         emit challengeListChanged();
+        if (active_challenge) {
+            generateBattleList();
+        }
     } else if (_isAI && !working) {
         if (with_bot < 2) {
             aiCreateNewChallenge();
@@ -1388,6 +1393,28 @@ void QWarloksDuelCore::generateBattleList() {
         battle_info = getBattleInfo(bid);
         battle_info->setStatus(BATTLE_INFO_STATUS_READY);
         _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
+    }
+    if (_waiting_in_battles.size() + _ready_in_battles.size() < 5) {
+        QStringList sl = _challengeList.split(";");
+        foreach (QString s, sl) {
+            bid = s.toInt();
+            if (bid <= 0){
+                continue;
+            }
+            battle_info = getBattleInfo(bid);
+            if ((battle_info->level() == BATTLE_INFO_LEVEL_LADDER) || (battle_info->with_bot()) || (battle_info->status() != BATTLE_INFO_STATUS_NO_START) ||
+                 battle_info->size() != 2 || !battle_info->active(_login)) {
+                continue;
+            }
+            if (first) {
+                first = false;
+            } else {
+                _battleList.append(",");
+            }
+            _battleList.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2 challenge by %3\",\"dt\":\"%4\",\"el\":\"%5\"}").
+                               arg(intToStr(bid), battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "Open" : "Practice", battle_info->getEnemy(_login), battle_info->description(), battle_info->getEnemy(_login)));
+            //_battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
+        }
     }
     QString wait_str = "";
     for(i = _waiting_in_battles.size()- 1; i >= 0; --i) {

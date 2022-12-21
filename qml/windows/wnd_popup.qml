@@ -57,8 +57,6 @@ InfoWindow {
                 }
             }
 
-
-
             Text {
                 id: ltTitle
                 anchors.top: iIcon.bottom

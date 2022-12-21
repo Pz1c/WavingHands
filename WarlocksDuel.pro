@@ -72,12 +72,12 @@ QML_IMPORT_PATH =
 
 contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
     ANDROID_EXTRA_LIBS = \
-        C:/Users/sergey.berezovitch/AppData/Local/Android/Sdk/android_openssl/latest/arm/libcrypto_1_1.so \
-        C:/Users/sergey.berezovitch/AppData/Local/Android/Sdk/android_openssl/latest/arm/libssl_1_1.so \
-        C:/Users/sergey.berezovitch/AppData/Local/Android/Sdk/android_openssl/latest/arm64/libcrypto_1_1.so \
-        C:/Users/sergey.berezovitch/AppData/Local/Android/Sdk/android_openssl/latest/arm64/libssl_1_1.so \
-        C:/Users/sergey.berezovitch/AppData/Local/Android/Sdk/android_openssl/latest/x86/libcrypto_1_1.so \
-        C:/Users/sergey.berezovitch/AppData/Local/Android/Sdk/android_openssl/latest/x86/libssl_1_1.so
+        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/arm/libcrypto_1_1.so \
+        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/arm/libssl_1_1.so \
+        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/arm64/libcrypto_1_1.so \
+        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/arm64/libssl_1_1.so \
+        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/x86/libcrypto_1_1.so \
+        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/x86/libssl_1_1.so
 }
 
 #android: include(D:/Android/sdk/android_openssl/openssl.pri)
@@ -98,4 +98,4 @@ DISTFILES += \
     platforms/android/src/com/kdab/training/MyService.java \
     platforms/android/src/org/qtproject/example/androidnotifier/CustomBR.java \
     platforms/android/src/org/qtproject/example/androidnotifier/NotificationClient.java
-android: include(C:/Users/sergey.berezovitch/AppData/Local/Android/Sdk/android_openssl/openssl.pri)
+android: include(C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/openssl.pri)
