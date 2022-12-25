@@ -89,6 +89,7 @@ public:
     QString accountMenu();
     QString battleList();
 
+
 signals:
     void needLogin();
     void loginChanged();
@@ -123,7 +124,7 @@ public slots:
     QString getOnlineUrl(int battle_id = 0);
     void scanState(bool Silent = false);
     void getChallengeList(bool Silent = false);
-    void getTopList();
+    void scanTopList();
     void acceptChallenge(int battle_id, bool from_card = false);
     bool aiAcceptChallenge(int battle_id, bool changeAI = true);
     void rejectChallenge(int battle_id);
@@ -161,6 +162,7 @@ public slots:
     int getLoadedBattleTurn();
     QString battleInfo();
     QString playerJson();
+    QString getTopList(bool ShowAll = false);
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
     void setupAIServer();
@@ -217,6 +219,8 @@ protected:
 
     void generateBattleList();
     int parseBattleDescription(QString &Data);
+
+    void generateTopList();
 
     QString getHintArray(int hint_id);
     QString getBattleHint(QBattleInfo *battle_info);
@@ -319,6 +323,8 @@ private:
     QString _chat;
     QWarlock *_enemy;
     QWarlock *_player;
+    QString _topActive;
+    QString _topAll;
 
     // management
     bool _isTimerActive;

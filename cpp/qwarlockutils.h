@@ -50,6 +50,7 @@ public:
     static void parseBattleTurn(QString &turn_text, QBattleInfo* bi, int current_turn, bool last_turn);
     static int getStrengthByMonsterName(QString val);
     static void parseUnstartedBattle(QString &Data, QBattleInfo *bi);
+    static int getRand(int Min, int Max);
 };
 
 #endif // QWARLOCKUTILS_H

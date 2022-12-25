@@ -24,6 +24,7 @@ Item {
     property alias icon: iiIcon
     property alias title: tTitle
     property alias titleVisible: rTitle.visible
+    property alias gradient: rOver.gradient
 
     function onKeyPressed(event) {
         console.log("InfoWindow.KEY_PRESSED: " + event.key)

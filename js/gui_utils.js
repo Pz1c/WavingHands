@@ -6,7 +6,7 @@ var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0,sbl:-
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
 var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
-var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, /*{c:"top",t:"Top"},*/ {c:"feedback",t:"Feedback"},
+var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, {c:"top",t:"TopList"}, {c:"feedback",t:"Feedback"},
                      //{c:"battle_with_friend",t:"DuelWithFriend"}, /*{c:"switch_account",t:"SwitchAccount"},*/
                      {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"},
                      {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/];
@@ -26,6 +26,7 @@ function mainMenuActionEx(code) {
     case "rules": return Qt.openUrlExternally("https://games.ravenblack.net/rules");
     case "feedback": return showFeedbackWnd();
     case "rateus": return showRateUsWnd();
+    case "top": return showHallOfFameWindow();
     case "player_score": return showUserScoreWnd();
     case "battle_with_friend": return showShareWnd();
     case "logout": return confirmLogout();

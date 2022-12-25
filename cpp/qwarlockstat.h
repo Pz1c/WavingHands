@@ -12,6 +12,7 @@ public:
     QWarlockStat(QString Raw, bool FromIni = false);
 
     QString toString() const;
+    QString toJSON() const;
 
     const QString &name() const;
 
@@ -34,12 +35,17 @@ public:
     void parseAndInit(QString Raw);
     void parseIniAndInit(QString Raw);
 
+    qint64 lastActivity() const;
+
+    bool ai() const;
+
 protected:
     void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity);
     qint64 getLastActivityByColor(const QString Color);
 private:
     QString _name;
     bool _registered;
+    bool _ai;
     int _ladder;
     int _melee;
     int _played;

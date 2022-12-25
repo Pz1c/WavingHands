@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.is.games.WarlocksDuel" android:installLocation="auto" android:versionCode="330" android:versionName="1.9.9.1">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.is.games.WarlocksDuel" android:installLocation="auto" android:versionCode="364" android:versionName="1.9.9.6">
     <!-- %%INSERT_PERMISSIONS -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- %%INSERT_FEATURES -->
+    <uses-sdk android:targetSdkVersion="31" android:minSdkVersion="24"/>
     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true"/>
+    <!-- android:theme="@android:style/Theme.NoTitleBar.Fullscreen" -->
     <application android:name="org.qtproject.qt.android.bindings.QtApplication" android:extractNativeLibs="true" android:hardwareAccelerated="true" android:label="WarlocksDuel" android:requestLegacyExternalStorage="true" android:allowNativeHeapPointerTagging="false" android:icon="@drawable/icon">
-        <activity android:name="com.kdab.training.MainActivity" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:label="WarlocksDuel" android:launchMode="singleTop" android:screenOrientation="portrait">
+        <activity android:name="com.kdab.training.MainActivity" android:exported="true" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:label="WarlocksDuel" android:launchMode="singleTop" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -32,8 +35,8 @@
             <meta-data android:name="android.app.static_init_classes" android:value="-- %%INSERT_INIT_CLASSES%% --"/>
             <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
         </service>
-        <receiver android:name="com.kdab.training.AlarmReceiver" android:process=":remote"/>
-        <receiver android:name="com.kdab.training.MyBroadcastReceiver">
+        <receiver android:name="com.kdab.training.AlarmReceiver" android:process=":remote" android:exported="true"/>
+        <receiver android:name="com.kdab.training.MyBroadcastReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>

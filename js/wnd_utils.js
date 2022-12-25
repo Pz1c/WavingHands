@@ -17,6 +17,7 @@ var wnd_popup = "wnd_popup.qml";
 var wnd_spell_popup = "wnd_spell_popup.qml";
 var wnd_new_game = "wnd_new_game.qml";
 var wnd_after_reg = "wnd_after_registration.qml";
+var wnd_top = "wnd_hall_of_fame.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -219,6 +220,10 @@ function showBattleResult() {
 
 function showProfileWindow() {
     showWnd(wnd_profile, 0, 0, 1);
+}
+
+function showTopWindow() {
+    showWnd(wnd_top, 0, 1, 1);
 }
 
 function showSearchWarlockWindow() {

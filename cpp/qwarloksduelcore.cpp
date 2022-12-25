@@ -389,6 +389,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
 void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl) {
     qDebug() << "finishTopList" << StatusCode << NewUrl;
     int pos1 = Data.lastIndexOf("<TD CLASS=darkbg>"), pos2;
+    //QList<QWarlockStat> wsl;
     while((pos1 = Data.indexOf("<TR>", pos1)) != -1) {
         pos2 = Data.indexOf("</TR>", pos1);
         QWarlockStat ws(Data.mid(pos1, pos2 - pos1));
@@ -396,13 +397,45 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
         qDebug() << "QWarloksDuelCore::finishTopList" << ws.toString();
         pos1 = pos2 + 4;
     }
-
+    generateTopList();
     //QString list = QWarlockUtils::parseTopList(Data);
     /*if (_topList.compare(list) != 0) {
         _topList = list;
         qDebug() << list;
         emit topListChanged();
     }*/
+}
+
+void QWarloksDuelCore::generateTopList() {
+    QMap<QString, QWarlockStat>::iterator psi;
+    QList<QWarlockStat> wsl;
+    for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
+        wsl.append(psi.value());
+    }
+    struct {
+            bool operator()(const QWarlockStat &s1, const QWarlockStat &s2) const { return s1.elo() > s2.elo(); }
+    } customOrderWS;
+    std::sort(wsl.begin(), wsl.end(), customOrderWS);
+    _topActive.clear();
+    _topAll.clear();
+    qint64 curr_time = QDateTime::currentSecsSinceEpoch();
+    foreach(QWarlockStat ws, wsl) {
+        if (ws.ai()) {
+            continue;
+        }
+        if (!_topAll.isEmpty()) {
+            _topAll.append(",");
+        }
+        _topAll.append(ws.toJSON());
+        if (curr_time - ws.lastActivity() < 3 * 24 * 60 * 60) {
+            if (!_topActive.isEmpty()) {
+                _topActive.append(",");
+            }
+            _topActive.append(ws.toJSON());
+        }
+    }
+    _topActive.append("]").prepend("[");
+    _topAll.append("]").prepend("[");
 }
 
 bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl) {
@@ -604,7 +637,7 @@ void QWarloksDuelCore::getChallengeList(bool Silent) {
     sendGetRequest(GAME_SERVER_URL_CHALLENGES);
 }
 
-void QWarloksDuelCore::getTopList() {
+void QWarloksDuelCore::scanTopList() {
     setIsLoading(true);
     qint64 udt = QDateTime::currentSecsSinceEpoch();
     sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg((udt - _lastPlayersScan > (3 * 24 * 60 - 15) * 60) ? '1' : '0'));
@@ -1394,28 +1427,7 @@ void QWarloksDuelCore::generateBattleList() {
         battle_info->setStatus(BATTLE_INFO_STATUS_READY);
         _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
     }
-    if (_waiting_in_battles.size() + _ready_in_battles.size() < 5) {
-        QStringList sl = _challengeList.split(";");
-        foreach (QString s, sl) {
-            bid = s.toInt();
-            if (bid <= 0){
-                continue;
-            }
-            battle_info = getBattleInfo(bid);
-            if ((battle_info->level() == BATTLE_INFO_LEVEL_LADDER) || (battle_info->with_bot()) || (battle_info->status() != BATTLE_INFO_STATUS_NO_START) ||
-                 battle_info->size() != 2 || !battle_info->active(_login)) {
-                continue;
-            }
-            if (first) {
-                first = false;
-            } else {
-                _battleList.append(",");
-            }
-            _battleList.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2 challenge by %3\",\"dt\":\"%4\",\"el\":\"%5\"}").
-                               arg(intToStr(bid), battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "Open" : "Practice", battle_info->getEnemy(_login), battle_info->description(), battle_info->getEnemy(_login)));
-            //_battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
-        }
-    }
+
     QString wait_str = "";
     for(i = _waiting_in_battles.size()- 1; i >= 0; --i) {
         bid = _waiting_in_battles.at(i);
@@ -1443,6 +1455,64 @@ void QWarloksDuelCore::generateBattleList() {
             _battleList.append(",");
         }
         _battleList.append(wait_str);
+    }
+
+    int active_battle_cnt = _waiting_in_battles.size() + _ready_in_battles.size();
+    bool with_challenge = false;
+    if (active_battle_cnt < 5) {
+        QStringList sl = _challengeList.split(";");
+        foreach (QString s, sl) {
+            bid = s.toInt();
+            if (bid <= 0){
+                continue;
+            }
+            battle_info = getBattleInfo(bid);
+            if ((battle_info->level() == BATTLE_INFO_LEVEL_LADDER) || (battle_info->with_bot()) || (battle_info->status() != BATTLE_INFO_STATUS_NO_START) ||
+                 battle_info->size() != 2 || !battle_info->active(_login)) {
+                continue;
+            }
+            if (first) {
+                first = false;
+            } else {
+                _battleList.append(",");
+            }
+            QString enemy = battle_info->getEnemy(_login).toLower();
+            if (!with_challenge && _playerStats.contains(enemy)) {
+                if (qAbs(_playerStats[enemy].elo() - _elo) <= 150) {
+                    with_challenge = true;
+                }
+            }
+            QString ddd = battle_info->description();
+            ddd = ddd.replace("Maladroit", "", Qt::CaseInsensitive)
+                    .replace("ParaFC", "", Qt::CaseInsensitive)
+                    .replace("Created with android app Warlock's Duel.", "", Qt::CaseInsensitive)
+                    .replace("NO BOT", "", Qt::CaseInsensitive);
+            _battleList.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2 challenge by %3\",\"dt\":\"%4\",\"el\":\"%5\"}").
+                               arg(intToStr(bid), battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "Open" : "Practice", battle_info->getEnemy(_login), ddd, battle_info->getEnemy(_login)));
+            //_battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
+        }
+    }
+    if (!with_challenge && (active_battle_cnt < 3)) {
+        QMap<QString, QWarlockStat>::iterator psi;
+        QList<QString> awailable_walocks;
+        qint64 curr_time = QDateTime::currentSecsSinceEpoch();
+        for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
+            if (!psi.value().ai() && (curr_time - psi.value().lastActivity() <= 3 * 24 * 60 * 60) && (qAbs(psi.value().elo() - _elo) <= 150)) {
+                awailable_walocks.append(psi.key());
+            }
+        }
+        if (awailable_walocks.size() > 0) {
+            int idx = QWarlockUtils::getRand(0, awailable_walocks.size());
+            if (!first) {
+            //    first = false;
+            //} else {
+                _battleList.append(",");
+            }
+            QString enemy = _playerStats[awailable_walocks.at(idx)].name();
+            _battleList.append(QString("{\"id\":0,\"s\":5,\"d\":\"New Match: %1\",\"dt\":\"Players we match you have played recently and are more or less your level\",\"el\":\"%3\"}").
+                               arg(enemy, enemy));
+
+        }
     }
 
     _battleList.append("],[");
@@ -1663,7 +1733,7 @@ bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
     }
     if (!_isAI && !_isAsService) {
         if (QDateTime::currentSecsSinceEpoch() - _lastPlayersScan > 10 * 60) {
-            getTopList();
+            scanTopList();
         }
     }
     return true;
@@ -2104,6 +2174,7 @@ void QWarloksDuelCore::loadGameParameters() {
         _playerStats[settings->value("n").toString()] = QWarlockStat(settings->value("v").toString(), true);
     }
     settings->endArray();
+    generateTopList();
 }
 
 bool QWarloksDuelCore::allowedAccept()
@@ -2312,6 +2383,10 @@ QString QWarloksDuelCore::getOnlineUrl(int battle_id) {
 
 QString QWarloksDuelCore::battleList() {
     return _battleList;
+}
+
+QString QWarloksDuelCore::getTopList(bool ShowAll) {
+    return ShowAll ? _topAll : _topActive;
 }
 
 QString QWarloksDuelCore::getHintArray(int hint_id) {

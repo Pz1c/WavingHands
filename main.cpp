@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     qDebug() << s2;
     qDebug() << NATIVE_JAVA_INCLUDED;
 
-    if (argc > 1 && qstrcmp(argv[1], "-service") == 0) {
+    /*if (argc > 1 && qstrcmp(argv[1], "-service") == 0) {
         qDebug() << "Service starting with from the same .so file";
         #ifdef Q_OS_ANDROID
         QAndroidService app(argc, argv);
@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
         return app.exec();
         #endif
         //return 0;
-    } else {
+    } else {*/
+        //QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QGuiApplication app(argc, argv);
         qint32 fontId = QFontDatabase::addApplicationFont(":/res/AgencyFB.ttf");
         qDebug() << "fontId" << fontId;
@@ -57,5 +58,5 @@ int main(int argc, char *argv[])
         QQmlApplicationEngine engine;
         engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
         return app.exec();
-    }
+    //}
 }

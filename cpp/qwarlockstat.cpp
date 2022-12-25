@@ -34,6 +34,7 @@ void QWarlockStat::init(QString Name, bool Registered, int Ladder, int Melee, in
     } else {
         _lastActivity = 0;
     }
+    _ai = (_lstAI.indexOf(_name.toUpper()) != -1);
 }
 
 void QWarlockStat::parseIniAndInit(QString Raw) {
@@ -84,10 +85,29 @@ qint64 QWarlockStat::getLastActivityByColor(const QString Color) {
     } else if (Color.compare("#669900") == 0) {
         curr_time -= 60 * 60 * 5; // 5 hours ago
     } else {
-        curr_time -= 3 * 24 * 60 * 60; // 3 days ago
+        bool ok;
+        QString tmp = Color;
+        tmp.replace("#", "");
+        int hex = tmp.toInt(&ok, 16);
+        qDebug() << "QWarlockStat::getLastActivityByColor" << Color << tmp << ok << hex << (hex <= 0xCC3300);
+        if (ok && (hex <= 0xCC3300)) {
+            curr_time -= 1 * 24 * 60 * 60; // more than 3 days ago
+        } else {
+            curr_time -= 3 * 24 * 60 * 60 + 1; // more than 3 days ago
+        }
     }
 
     return curr_time;
+}
+
+bool QWarlockStat::ai() const
+{
+    return _ai;
+}
+
+qint64 QWarlockStat::lastActivity() const
+{
+    return _lastActivity;
 }
 
 QString QWarlockStat::toString() const {
@@ -97,8 +117,17 @@ QString QWarlockStat::toString() const {
             .arg(_color, intToStr(_lastActivity)); // 9-10
 }
 
+QString QWarlockStat::toJSON() const {
+    return QString("{\"r\":%1,\"n\":\"%2\",\"l\":%3,\"m\":%4,\"p\":%5,\"w\":%6,\"d\":%7,\"e\":%8,\"c\":\"%9\","
+                   "\"la\":%10}")
+            .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee) // 1-4
+            ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
+            .arg(_color, intToStr(_lastActivity)); // 9-10
+}
+
+
 bool QWarlockStat::online() const {
-    return (_lstAI.indexOf(_name.toUpper()) != -1) || (QDateTime::currentSecsSinceEpoch() - _lastActivity <= 5 * 60);
+    return _ai || (QDateTime::currentSecsSinceEpoch() - _lastActivity <= 5 * 60);
 }
 
 int QWarlockStat::elo() const

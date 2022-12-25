@@ -81,7 +81,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("ReadyB", "Поєдинки, що чекають дій", "Бои которые ожидают действий", "Waiting action");
     fillDictionary("ChallengeB", "Виклики", "Вызовы", "Challenges");
     fillDictionary("BattleList", "Поєдинки, до яких можна приєднатись", "Бои к которым можно присоединиться", "Battle list");
-    fillDictionary("TopList", "Чемпіони", "Чемпионы", "Champions");
+    fillDictionary("TopList", "Чемпіони", "Чемпионы", "Hall of Fame");
     fillDictionary("Messages", "Повідомлення", "Сообщения", "Messages");
     fillDictionary("SpellList", "Список доступних заклять", "Список доступніх заклинаний", "Spell list");
     fillDictionary("Accounts", "Акаунти", "Акаунты", "Accounts");
@@ -170,6 +170,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("PersonalChalengeSDesc", "", "", "You are invited for a private duel by ");
     fillDictionary("OpenChalengeTitle", "", "", "Open duel invite");
     fillDictionary("OpenChalengeSDesc", "", "", "You are invited for a open duel by ");
+    fillDictionary("NewChalengeSDesc", "", "", "New Match: ");
     fillDictionary("PersonalChalengeAccept", "", "", "Accept");
     fillDictionary("PersonalChalengeReject", "", "", "Reject");
     fillDictionary("DuelWithFriend", "", "", "Duel with a friend");

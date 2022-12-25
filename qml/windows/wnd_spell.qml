@@ -136,6 +136,9 @@ InfoWindow {
                         mainWindow.startGameWithBotEx();
                     } else if (l_data.action === "private_challenge") {
                         mainWindow.gameCore.acceptChallenge(l_data.id, true);
+                    } else if (l_data.action === "force_challenge") {
+                        //void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock = "");
+                        mainWindow.gameCore.createNewChallenge(true, true, true, true, 2, 1, "Let the battle begin ;)", l_data.el);
                     } else if (l_data.action === "rate_us") {
                         mainWindow.logEvent("Rating_Click", {});
                         Qt.openUrlExternally("https://play.google.com/store/apps/details?id=net.is.games.WarlocksDuel");

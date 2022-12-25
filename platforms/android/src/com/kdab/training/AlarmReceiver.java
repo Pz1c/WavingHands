@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.os.Build;
 
 public class AlarmReceiver extends BroadcastReceiver
 {
@@ -25,7 +26,13 @@ public class AlarmReceiver extends BroadcastReceiver
         Log.d(TAG, "setAlarm");
         AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, AlarmReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
+        PendingIntent pi;// = PendingIntent.getBroadcast(context, 0, i, 0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          pi = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        } else {
+          pi = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
         assert am != null;
         int next_alert_in_sec = getNextAlertTimeoutSec(context, Initial);
         Log.d(TAG, "next_alert_in_sec = " + next_alert_in_sec);

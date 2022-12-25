@@ -784,3 +784,7 @@ void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
         bi->setSize(size_i);
     }
 }
+
+int QWarlockUtils::getRand(int Min, int Max) {
+    return QRandomGenerator::global()->bounded(Min, Max);
+}

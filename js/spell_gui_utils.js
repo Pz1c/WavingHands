@@ -238,13 +238,14 @@ function prepareBattleHistory(l_data, dict) {
 }
 
 function preparePersonalChallenge(l_data, dict) {
-    ltTitle.text = dict.getStringByCode(l_data.s === 3 ? "PersonalChalengeTitle" : "OpenChalengeTitle");
-    ltShortDesc.text = dict.getStringByCode(l_data.s === 3 ? "PersonalChalengeSDesc" : "OpenChalengeSDesc") + l_data.el;
+    ltTitle.text =  dict.getStringByCode(l_data.s !== 4 ? "PersonalChalengeTitle" : "OpenChalengeTitle");
+    ltShortDesc.text = dict.getStringByCode(l_data.s === 5 ? "NewChalengeSDesc" : (l_data.s === 3 ? "PersonalChalengeSDesc" : "OpenChalengeSDesc")) + l_data.el;
+
     var enemy = JSON.parse(mainWindow.gameCore.getWarlockStats(l_data.el));
     ltError.text = l_data.dt.replace("Waiting", "<br>Waiting").replace(", need", "<br>Need") + "<br>Score: " + enemy.elo + "<br>Played: " + enemy.played + "<br>Won: " + enemy.won + "<br>Died: " + enemy.died;
     bbAction.visible = true;
     bbAction.text = dict.getStringByCode("PersonalChalengeAccept");
-    bbSkipAction.visible = l_data.s === 3;
+    bbSkipAction.visible = l_data.s !== 4;
     bbSkipAction.text = dict.getStringByCode("PersonalChalengeReject");
 }
 

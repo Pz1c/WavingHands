@@ -31,6 +31,7 @@ import android.app.PendingIntent;
 import com.kdab.training.MainActivity;
 import android.net.Uri;
 import java.util.Arrays;
+import android.os.Build;
 
 class MyJavaNatives
 {
@@ -111,8 +112,12 @@ public class CheckStatus extends Service {
                            }
                         }
                     }
+                    boolean reminder = !(ready || challenge || finished) && (last_sent_notif > 0)
+                                    && (app_last_activity > 0) && (app_last_activity < last_sent_notif)
+                                    && ((last_notification - last_sent_notif) > 3 * 24 * 60 * 60);
 
-                    if (ready || challenge || finished) {
+
+                    if (ready || challenge || finished || reminder) {
                         Log.d(TAG, "need notif");
                         String msg, btn_title = "Play";//
                         Bundle msg_data = new Bundle();
@@ -132,7 +137,7 @@ public class CheckStatus extends Service {
                                 msg_data.putInt("battle_id", Integer.parseInt(arr_ready[0]));
                                 editor.putInt("notification_battle_id", Integer.parseInt(arr_ready[0]));
                             }
-                        } else {
+                        } else if (finished) {
                             msg = "Your battle is over!";
                             msg_data.putInt("action_type", 3);
                             editor.putInt("notification_action_type", 3);
@@ -140,6 +145,15 @@ public class CheckStatus extends Service {
                             if ((finished_id != 0) && (finished_id != -2)) {
                                 msg_data.putInt("battle_id", finished_id);
                                 editor.putInt("notification_battle_id", finished_id);
+                            }
+                        } else {
+                            msg = "Great news! You got a new match";
+                            msg_data.putInt("action_type", 4);
+                            editor.putInt("notification_action_type", 4);
+                            btn_title = "Show me";
+                            if ((finished_id != 0) && (finished_id != -2)) {
+                                msg_data.putInt("battle_id", 0);
+                                editor.putInt("notification_battle_id", 0);
                             }
                         }
                         Log.d(TAG, msg);
@@ -257,8 +271,12 @@ public class CheckStatus extends Service {
             //if (data != null) {
                 resultIntent.putExtras(data);
             //}
-            PendingIntent resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+            PendingIntent resultPendingIntent;// = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            }else {
+                resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            }
             Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
             m_builder//.setSmallIcon(icon)
                     .setSmallIcon(R.drawable.notification_icon)

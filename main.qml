@@ -21,11 +21,11 @@ import "qrc:/qml"
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 400//600
-    height: 712//1068
-    flags: /*Qt.FramelessWindowHint|*/Qt.Window
+    width: 410//600
+    height: 720//1068
+    flags: /*Qt.FramelessWindowHint//|*/Qt.Window
     color: "#551470"
-
+    visibility: isMobile() ? Window.FullScreen : Window.Windowed
     property real ratioObject: 1
     property real ratioFont: 1
     property string afterCloseAction: ""
@@ -612,12 +612,11 @@ ApplicationWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.right: rdbiLink.right
                                     anchors.rightMargin: 36 * ratioObject
-                                    visible: (lvActiveBattle.model[index].s === 1) || (lvActiveBattle.model[index].s === 3)
-                                             || (lvActiveBattle.model[index].s === 4)
+                                    visible: (lvActiveBattle.model[index].s === 1) || (lvActiveBattle.model[index].s >= 3)
                                     radius: width / 2
                                     gradient: Gradient {
-                                        GradientStop { position: 0.0; color: "#9DFFD3" }
-                                        GradientStop { position: 1.0; color: "#9CDFFF" }
+                                        GradientStop { position: 0.0; color: lvActiveBattle.model[index].s === 4 ? "#34ab9d" : "#9DFFD3" }
+                                        GradientStop { position: 1.0; color: lvActiveBattle.model[index].s === 4 ? "#3a9aa5" : "#9CDFFF" }
                                     }
                                 }
 
@@ -639,12 +638,11 @@ ApplicationWindow {
                                     anchors.fill: parent
                                     onClicked: {
                                         console.log("getBattle", index, JSON.stringify(lvActiveBattle.model[index]));
-                                        if ((lvActiveBattle.model[index].s === 3) || (lvActiveBattle.model[index].s === 4)) {
+                                        if (lvActiveBattle.model[index].s >= 3) {
                                             var obj = JSON.parse(JSON.stringify(lvActiveBattle.model[index]));
                                             obj.type = 17;
-                                            obj.action = "private_challenge";
+                                            obj.action = lvActiveBattle.model[index].s === 5 ? "force_challenge" : "private_challenge";
                                             showErrorWnd(obj);
-
                                         } else {
                                             core.getBattle(lvActiveBattle.model[index].id, Math.max(lvActiveBattle.model[index].s, 0));
                                             if (lvActiveBattle.model[index].s === 1) {
@@ -1240,6 +1238,10 @@ ApplicationWindow {
         }
     }
 
+    function showHallOfFameWindow() {
+        WNDU.showTopWindow();
+    }
+
     function showWndSpellbook(close_current, close_all) {
         gERROR = {sbl:playerSpellbookLevel,win_vs_bot:GUI.G_PROFILE.win_vs_bot,lelveup_hint:GUI.getSpellBookLevelUpHint(false)};
         WNDU.showSpellbook(close_current, close_all);
@@ -1293,20 +1295,34 @@ ApplicationWindow {
         //analytics.logEvent(event_name, params);
     }
 
+    function isMobile() {
+        var currOs = Qt.platform.os
+        return (currOs === "android") || (currOs === "ios") || (currOs === "blackberry") || (currOs === "winphone");
+    }
+
     function calculateRatio() {
-        var w, h, currOs = Qt.platform.os;
-        if ((currOs === "android") || (currOs === "ios") || (currOs === "blackberry") || (currOs === "winphone")) {
-            w = Screen.width;// .desktopAvailableWidth;
-            h = Screen.height;// .desktopAvailableHeight;
+        var w, h;
+        if (isMobile()) {
+            //w = Screen.width;// * Screen.devicePixelRatio;
+            //h = Screen.height;// * Screen.devicePixelRatio;
+            w = Screen.desktopAvailableWidth;
+            h = Screen.desktopAvailableHeight;
+            console.log("calculateRatio", "Px", Screen.devicePixelRatio);
+            console.log("calculateRatio", "Width", Screen.width, Screen.desktopAvailableWidth, mainWindow.width);
+            console.log("calculateRatio", "Height", Screen.height, Screen.desktopAvailableHeight, mainWindow.height);
+            //if ((Screen.desktopAvailableHeight < Screen.height) && (Screen.desktopAvailableHeight === mainWindow.height)) {
+            //    h = Screen.desktopAvailableHeight + (Screen.height - Screen.desktopAvailableHeight) / 2;
+            //    mainWindow.height = h;
+            //}
         } else {
             w = mainWindow.width;
             h = mainWindow.height;
         }
-        var dpi = Screen.pixelDensity;
-        var wh = Math.max(w, h);
-        var ww = Math.min(w, h);
-        var bh = 1068;//800;
-        var bw = 600;
+        var dpi  = Screen.pixelDensity;
+        var wh   = Math.max(w, h);
+        var ww   = Math.min(w, h);
+        var bh   = 1068;//800;
+        var bw   = 600;
         var bdip = 3.74;
         console.log(dpi, bdip, ww, wh, bw, bh);
         ratioObject = Math.min(ww/bw, wh/bh);
@@ -1316,7 +1332,7 @@ ApplicationWindow {
     }
 
     function creationFinished() {
-        console.log("iWndContainer x y", iWndContainer.x, iWndContainer.y);
+        console.log("iWndContainer x y", iWndContainer.x, iWndContainer.y, iWndContainer.height, iWndContainer.width);
         calculateRatio();
 
         //googleAnalytic.setTID("YOUR-QA-CODE");

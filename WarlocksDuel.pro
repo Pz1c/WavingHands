@@ -86,10 +86,16 @@ DISTFILES += \
     platforms/android/AndroidManifest.xml \
     platforms/android/build.gradle \
     platforms/android/gradle.properties \
+    platforms/android/gradle.properties \
+    platforms/android/gradle/wrapper/gradle-wrapper.jar \
     platforms/android/gradle/wrapper/gradle-wrapper.jar \
     platforms/android/gradle/wrapper/gradle-wrapper.properties \
+    platforms/android/gradle/wrapper/gradle-wrapper.properties \
+    platforms/android/gradlew \
     platforms/android/gradlew \
     platforms/android/gradlew.bat \
+    platforms/android/gradlew.bat \
+    platforms/android/res/values/libs.xml \
     platforms/android/res/values/libs.xml \
     platforms/android/src/com/kdab/training/AlarmReceiver.java \
     platforms/android/src/com/kdab/training/CheckStatus.java \
