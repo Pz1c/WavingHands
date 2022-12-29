@@ -197,10 +197,10 @@ BaseWindow {
                                             if (((currGesture === "") || (arrSpell[index].cast_type > 1)) && (lvSpellList.model[index].gp !== "?")) {
                                                 mainWindow.showSpellDetails(lvSpellList.model[index].g);
                                                 mainWindow.logEvent("Play_Gesture_Spell_Detail", {Spell:lvSpellList.model[index].g});
-                                            } else if ((arrSpell[index].cast_type === 1) && (arrSpell[index].choose !== 1)) {
+                                            } else if ((arrSpell[index].cast_type <= 1) && (arrSpell[index].choose !== 1)) {
                                                 var spell_name = arrSpell[index].n;
                                                 arrSpell[index].choose = 1;
-                                                arrSpell[index].need_target = true;
+                                                arrSpell[index].need_target = (arrSpell[index].cast_type === 1);//true;
                                                 arrSpell[mainWindow.gBattle.spellIdx].choose = 0;
                                                 mainWindow.gBattle.spellIdx = index;
                                                 mainWindow.logEvent("Play_Gesture_Spell", {"Spell":spell_name});
@@ -604,13 +604,19 @@ BaseWindow {
                             mainWindow.setCharm(handIdx === 1 ? "LH" : "RH", currGesture);
                         } else {
                             var spell = arrSpell[mainWindow.gBattle.spellIdx], s;
-                            var need_targeting = (spell.n === "Stab") || (mainWindow.gBattle.spellIdx !== 0);
-                            if (!need_targeting) {
-                                for(var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
-                                    s = arrSpell[i];
-                                    if ((s.ng === currGesture) && (s.t === 1) && (s.dt !== 0)) {
-                                        need_targeting = true;
-                                        break;
+                            console.log("choose spell", mainWindow.gBattle.spellIdx, JSON.stringify(spell));
+
+                            var need_targeting = (spell.gp !== "None");
+                            if (need_targeting) {
+                                need_targeting = ((spell.n === "Stab") || (mainWindow.gBattle.spellIdx !== 0));
+                                if (!need_targeting) {
+                                    for(var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
+                                        s = arrSpell[i];
+                                        console.log("choose spell nn", JSON.stringify(s));
+                                        if ((s.ng === currGesture) && (s.t === 1) && (s.dt !== 0)) {
+                                            need_targeting = true;
+                                            break;
+                                        }
                                     }
                                 }
                             }

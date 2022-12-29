@@ -902,12 +902,12 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         return false;
     }
 
-    int ccnt = 0, idxc = 0;
+    /*int ccnt = 0, idxc = 0;
     while((idxc = Data.indexOf(" says ", idxc)) != -1) {
         idxc += 6;
         ++ccnt;
     }
-    _chat = intToStr(ccnt);
+    _chat = intToStr(ccnt);*/
 
     _isParaFDF = Data.indexOf("(ParaFDF)") != -1;
     _isParaFC = Data.indexOf("(ParaFC)") != -1;
@@ -1131,12 +1131,16 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
     QString chat_msg;
     QStringList slC = turn_hist.split("<BR>");
     QString short_hist;
+    int chat_cnt = 0;
     foreach(QString ss, slC) {
         if (ss.indexOf(" says ") != -1) {
             if (!chat_msg.isEmpty()) {
                 chat_msg.append("<br>");
             }
             chat_msg.append(ss);
+            if (ss.indexOf(_login, Qt::CaseInsensitive) == -1) {
+                ++chat_cnt;
+            }
         } else {
             if (!short_hist.isEmpty()) {
                 short_hist.append("<br>");
@@ -1148,6 +1152,11 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
     QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
     battleInfo->addChat(_loadedBattleTurn, chat_msg);
     battleInfo->addHistory(_loadedBattleTurn, short_hist);
+    // fix for issue #201
+    if (battleInfo->with_bot()) {
+        chat_cnt = 0;
+    }
+    _chat = intToStr(chat_cnt);
 }
 
 void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
@@ -1458,7 +1467,8 @@ void QWarloksDuelCore::generateBattleList() {
     }
 
     int active_battle_cnt = _waiting_in_battles.size() + _ready_in_battles.size();
-    bool with_challenge = false;
+    QString chalenge_str;
+    bool with_challenge = false, with_any_challenge = false;
     if (active_battle_cnt < 5) {
         QStringList sl = _challengeList.split(";");
         foreach (QString s, sl) {
@@ -1471,11 +1481,12 @@ void QWarloksDuelCore::generateBattleList() {
                  battle_info->size() != 2 || !battle_info->active(_login)) {
                 continue;
             }
-            if (first) {
-                first = false;
+            if (with_any_challenge) {
+                chalenge_str.append(",");
             } else {
-                _battleList.append(",");
+                with_any_challenge = true;
             }
+
             QString enemy = battle_info->getEnemy(_login).toLower();
             if (!with_challenge && _playerStats.contains(enemy)) {
                 if (qAbs(_playerStats[enemy].elo() - _elo) <= 150) {
@@ -1487,32 +1498,40 @@ void QWarloksDuelCore::generateBattleList() {
                     .replace("ParaFC", "", Qt::CaseInsensitive)
                     .replace("Created with android app Warlock's Duel.", "", Qt::CaseInsensitive)
                     .replace("NO BOT", "", Qt::CaseInsensitive);
-            _battleList.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2 challenge by %3\",\"dt\":\"%4\",\"el\":\"%5\"}").
+            chalenge_str.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2 challenge by %3\",\"dt\":\"%4\",\"el\":\"%5\"}").
                                arg(intToStr(bid), battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "Open" : "Practice", battle_info->getEnemy(_login), ddd, battle_info->getEnemy(_login)));
             //_battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
         }
     }
-    if (!with_challenge && (active_battle_cnt < 3)) {
+    if (with_any_challenge && !with_challenge && (active_battle_cnt < 3)) {
         QMap<QString, QWarlockStat>::iterator psi;
         QList<QString> awailable_walocks;
         qint64 curr_time = QDateTime::currentSecsSinceEpoch();
         for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
-            if (!psi.value().ai() && (curr_time - psi.value().lastActivity() <= 3 * 24 * 60 * 60) && (qAbs(psi.value().elo() - _elo) <= 150)) {
+            if (!psi.value().ai() && (curr_time - psi.value().lastActivity() <= 3 * 24 * 60 * 60) &&
+               (psi.key().compare(_login.toLower()) != 0) && (qAbs(psi.value().elo() - _elo) <= 150)) {
                 awailable_walocks.append(psi.key());
             }
         }
         if (awailable_walocks.size() > 0) {
             int idx = QWarlockUtils::getRand(0, awailable_walocks.size());
-            if (!first) {
-            //    first = false;
-            //} else {
+            if (first) {
+                first = false;
+            } else {
                 _battleList.append(",");
             }
             QString enemy = _playerStats[awailable_walocks.at(idx)].name();
             _battleList.append(QString("{\"id\":0,\"s\":5,\"d\":\"New Match: %1\",\"dt\":\"Players we match you have played recently and are more or less your level\",\"el\":\"%3\"}").
                                arg(enemy, enemy));
-
         }
+    }
+    if (!chalenge_str.isEmpty()) {
+        if (first) {
+            //first = false;
+        } else {
+            _battleList.append(",");
+        }
+        _battleList.append(chalenge_str);
     }
 
     _battleList.append("],[");

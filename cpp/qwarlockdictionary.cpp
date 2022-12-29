@@ -111,6 +111,14 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
     fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P) - raising a white flag");
     fillDictionary("TitleAction_M", "", "", "direct %1<br>at %2");
+    fillDictionary("TitleActionHint_pp", "", "", "P/P means surrender. Is that what you want?");
+    fillDictionary("TitleActionHint_nobody", "", "", "Really? You are targeting 'nobody'");
+    fillDictionary("TitleActionHint_knifes", "", "", "You only have 1 knife, and right hand goes first");
+    fillDictionary("TitleActionHint_monster1", "", "", "Do you really want the monster to attack you?");
+    fillDictionary("TitleActionHint_monster2", "", "", "Do you really want to target your own monster?");
+    fillDictionary("TitleActionHint_summon", "", "", "Really? Your summon will serve your opponent");
+    fillDictionary("TitleActionHint_clap", "", "", "Really? No spell has 'c' only one one hand");
+
     fillDictionary("Refresh", "", "", "Refresh");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");

@@ -316,7 +316,7 @@ BaseWindow {
                 anchors.bottom: rTT.top
                 anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.left: parent.left
-                anchors.leftMargin: ((iiElemental.visible ? 84 : 0) + 54) * mainWindow.ratioObject
+                anchors.leftMargin: ((iiElemental.visible ? 84 : 0) + 6 + 84) * mainWindow.ratioObject
                 visible: false
                 radius: 10
                 l_data: ({action:"hp",warlock_name:"Default"})
@@ -376,6 +376,14 @@ BaseWindow {
                 property var tutorialData: ([])
                 property int tutorialDataIdx: 0
                 property alias text: ltTTT.text
+
+                MouseArea {
+                    id: maTutAll
+                    anchors.fill: parent
+                    onClicked: {
+                        ltTTT.clicked();
+                    }
+                }
 
                 LargeText {
                     id: ltTTTPrev
@@ -441,7 +449,7 @@ BaseWindow {
     }
 
     function iconClick(data) {
-        console.log("wnd_battle.iconClick", JSON.stringify(data));
+        console.log("wnd_battle.iconClick", operationMode, JSON.stringify(data));
         if (data.action === "hp") {
             mainWindow.logEvent("Play_Warlock_Click", {Click:data.warlock_name});
         } else if (data.action === "m") {
@@ -464,11 +472,12 @@ BaseWindow {
                 //tTargetTitle.visible = true;
                 //mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
                 //operationMode = 0;
-                //if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
+                if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
                     //open target window for charmed monster
-                  //  data.under_control = true;
+                    //data.under_control = true;
+                    data.allow_choose_target = true;
                     //iconDoubleClick(data);
-                //}
+                }
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }
@@ -520,6 +529,8 @@ BaseWindow {
                 msg_text += " (owner by "+data.owner+")";
                 console.log("get target", JSON.stringify(mainWindow.gBattle.actions), mainWindow.gBattle.actions.M[data.action_idx].target);
                 data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
+                //data.allow_choose_target = mainWindow.gBattle.actions.M[data.action_idx].allow_choose_target;
+                data.under_control = mainWindow.gBattle.actions.M[data.action_idx].under_control;
                 mainWindow.gBattle.currentMonsterIdx = data.action_idx;
                 console.log("set target", data.target);
             }

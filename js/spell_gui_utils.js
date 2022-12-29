@@ -157,7 +157,7 @@ function prepareMonsterDetails(l_data, dict) {
     details += "<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
     ltError.text = details;
     bbAction.text = dict.getStringByCode("MonsterSetTarget");
-    bbAction.visible = l_data.under_control;
+    bbAction.visible = l_data.under_control;// || l_data.allow_choose_target;
 }
 
 function prepareHPDetails(l_data, dict) {

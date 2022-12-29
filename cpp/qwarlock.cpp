@@ -1214,7 +1214,9 @@ void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters, con
     //
     targetSpell(enemy, monsters);
     //
-    processMonster(monsters, enemy);    
+    if (_AI) {
+        processMonster(monsters, enemy);
+    }
 }
 
 void QWarlock::setPossibleSpells(const QList<QSpell *> &possibleSpells)

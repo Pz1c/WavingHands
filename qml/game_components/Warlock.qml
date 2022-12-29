@@ -304,16 +304,17 @@ Item {
     Component.onCompleted: finishWarlockCreation();
 
     function showHideSummonIcon(spell) {
-        if (!l_warlock.player) {
+        if (!l_warlock.player || !spell) {
             return;
         }
+        console.log("showHideSummonIcon", JSON.stringify(spell));
         for (var i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
             var item = iMonsters.children[i];
             var name = item.l_data && item.l_data.name ? item.l_data.name : "";
             if (name.indexOf(":") === -1) {
                 continue;
             }
-            var action, spell_g = spell.g;
+            var action, spell_g = spell.g ? spell.g : "";
 
             if ((spell_g.indexOf("SFW") !== -1) || (spell_g.indexOf("cSWWS") !== -1) || (spell_g.indexOf("cWSSW") !== -1)) {
                 action = 1;

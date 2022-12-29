@@ -70,6 +70,8 @@ public:
 
     int spellBookLevel() const;
 
+    bool twoHand() const;
+
 protected:
 
     int calcPriority(bool Enemy);
@@ -92,6 +94,7 @@ private:
     qreal _realPriority;
     int _spellGroup;
     int _spellBookLevel;
+    bool _twoHand;
 
     static int _orderType;
 };

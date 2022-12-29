@@ -35,6 +35,7 @@ function prepareWarlock(w) {
     if (w.player) {
         battle.L = w.L;
         battle.R = w.R;
+        battle.player_name = w.name;
         battle.player_gesture_L = w.pgL;
         battle.player_gesture_R = w.pgR;
         battle.player_spell_L = w.psL;
@@ -45,7 +46,8 @@ function prepareWarlock(w) {
         battle.ngR = battle.player_gesture_R;
         battle.player_has_bank = w.delay > 0;
         battle.player_has_permanency = w.permanency > 0;
-        battle.player_under_control = w.control_paralyze || w.control_charmed;
+        battle.player_under_control = (w.charmed > 0) || (w.paralized > 0);
+        console.log("prepareWarlock", battle.player_under_control, JSON.stringify(w));
     }
 
     return w;
@@ -216,7 +218,7 @@ function prepareBattle(raw_battle) {
             battle.actions.M[i].under_control = false;
         }
     }
-    delete battle.monsters;
+    //delete battle.monsters;
 
     prepareTurnActionInfo(raw_battle.last_turn_hist);
 
@@ -392,48 +394,99 @@ function prepareOrder() {
     mainWindow.processEscape();
 }
 
+function checkSummonHint(action) {
+    console.log("checkSummonHint", JSON.stringify(action));
+    if ((action.s.n.indexOf("Summon") === -1) || (action.s.n.indexOf("Elemental") !== -1)) {
+        return false;
+    }
+    if (action.target === battle.player_name) {
+        return false;
+    }
+    for(var i=0, Ln = battle.monsters[battle.player_name].length; i < Ln; ++i) {
+        if (battle.monsters[battle.player_name][i].name === action.target) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function checkMonsterHint(monster) {
+    console.log("checkMonsterHint", JSON.stringify(battle.monsters));
+    for(var i=0, Ln = battle.monsters[battle.player_name].length; i < Ln; ++i) {
+        if (battle.monsters[battle.player_name][i].name === monster.target) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 function getOrdersForReview(dictionary) {
     console.log("getOrdersForReview", JSON.stringify(battle.actions));
     var res = [];
     var actions = battle.actions;
 
     if ((actions.L.g === "P") && (actions.R.g === "P")) {
-        res.push({type:"PP",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"RIP2",icon_text:"",icon_visible:true,icon_width:60});
+        res.push({row_type:"0",type:"PP",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"RIP2",icon_text:"",icon_visible:true,icon_width:60});
+        //res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_pp"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
     }
 
     if (actions.C !== "") {
-        res.push({type:"C",v:"Say: " + actions.C,c:"snow",icon:"chat",icon_text:"",icon_visible:true,icon_width:60});
+        res.push({row_type:"0",type:"C",v:"Say: " + actions.C,c:"snow",icon:"chat",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
     }
     // gesture
-    res.push({type:"LH",v:BGU.getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary, battle.completed_spell_L),
+    res.push({row_type:"0",type:"LH",v:BGU.getTextForHandAction("LH", actions.L, battle.targetsMap, dictionary, battle.completed_spell_L),
               c:"snow",icon:"g_" + BGU.getIconByGesture(actions.L.g),icon_text:"",icon_visible:true,icon_width:60});
+    if ((actions.L.g === "C") && (actions.R.g !== "C")) {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_clap"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    }
+    if (actions.L.target === "Nobody") {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_nobody"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    } else if (checkSummonHint(actions.L)) {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_summon"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    }
     console.log("getOrdersForReview", "point2", JSON.stringify(res));
-    res.push({type:"RH",v:BGU.getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary, battle.completed_spell_R),
+
+    res.push({row_type:"0",type:"RH",v:BGU.getTextForHandAction("RH", actions.R, battle.targetsMap, dictionary, battle.completed_spell_R),
               c:"snow",icon:"g_" + BGU.getIconByGesture(actions.R.g),icon_text:"",icon_visible:true,icon_width:60});
+    if ((actions.L.g !== "C") && (actions.R.g === "C")) {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_clap"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    }
+    if (actions.R.target === "Nobody") {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_nobody"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    } else if (checkSummonHint(actions.L)) {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_summon"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    }
     console.log("getOrdersForReview", "point3", JSON.stringify(res));
 
+    if ((actions.L.g === ">") && (actions.R.g === ">")) {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_knifes"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    }
+
     if (actions.D !== -1) {
-        res.push({type:"D",v:BGU.getSpecActionText("D", actions.D, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
+        res.push({row_type:"0",type:"D",v:BGU.getSpecActionText("D", actions.D, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point4", JSON.stringify(res));
     }
     if (actions.P !== -1) {
-        res.push({type:"P",v:BGU.getSpecActionText("P", actions.P, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
+        res.push({row_type:"0",type:"P",v:BGU.getSpecActionText("P", actions.P, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point5", JSON.stringify(res));
     }
     if (actions.F === 1) {
-        res.push({type:"F",v:battle.fire,c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
+        res.push({row_type:"0",type:"F",v:battle.fire,c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point6", JSON.stringify(res));
     }
     var i, Ln, m_obj, pc_gv;
     for(i = 0, Ln = battle.paralyze.length; i < Ln; ++i) {
-        res.push({type:"CP",v:BGU.getCharmActionText("CP", actions.CP[battle.paralyze[i]],
+        res.push({row_type:"0",type:"CP",v:BGU.getCharmActionText("CP", actions.CP[battle.paralyze[i]],
                   battle.targetsMap[battle.paralyze[i]], dictionary), c:"snow",icon:"paralized",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point7", JSON.stringify(res));
     }
     for(i = 0, Ln = battle.charm.length; i < Ln; ++i) {
         console.log("getOrdersForReview before charm", i, Ln, battle.charm[i], JSON.stringify(actions.CC[battle.charm[i]]));
-        res.push({type:"CC",v:BGU.getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary),
+        res.push({row_type:"0",type:"CC",v:BGU.getCharmActionText("CC", actions.CC[battle.charm[i]], battle.targetsMap[battle.charm[i]], dictionary),
                      c:"snow",icon:"charmed",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point8", JSON.stringify(res));
     }
@@ -444,7 +497,7 @@ function getOrdersForReview(dictionary) {
             continue;
         }
 
-        var obj = {type:"M",v:BGU.getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow",action_idx:i,icon:"",icon_text:"",icon_visible:true,icon_width:78};
+        var obj = {row_type:"0",type:"M",v:BGU.getMonsterActionText(m_obj, m_obj.target, battle.targetsMap, dictionary),c:"snow",action_idx:i,icon:"",icon_text:"",icon_visible:true,icon_width:78};
         if (m_obj.name.indexOf(":") !== -1) {
             obj.icon = BGU.getMonsterIconBySummonHP(m_obj.hp);
             obj.icon_text = m_obj.name.substr(0, 1);
@@ -453,6 +506,14 @@ function getOrdersForReview(dictionary) {
             obj.icon_text = m_obj.hp;
         }
         res.push(obj);
+        if (m_obj.target === "Nobody") {
+            res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_nobody"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+        } else if (m_obj.target === battle.player_name) {
+            res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_monster1"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+        } else if (checkMonsterHint(m_obj)) {
+            res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_monster2"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+        }
+
         console.log("getOrdersForReview", "point9", JSON.stringify(res));
     }
     return res;
@@ -484,10 +545,11 @@ function checkIsMonsterCharmed(monster) {
     if (monster.owner === battle.player_name) {
         return false;
     }
-    var lp = battle.warlocks[0];
+    //var lp = battle.warlocks[0];
+    /*console.log("checkIsMonsterCharmed", lp.charm_left, lp.charm_right);
     if (!lp["charm_" + (battle.currentHand === "L" ? "left" : "right")]) {
         return false;
-    }
+    }*/
     if (!battle.actions[battle.currentHand].s) {
         return false;
     }
@@ -496,6 +558,7 @@ function checkIsMonsterCharmed(monster) {
             || battle.player_under_control;
     if (res) {
         monster.allow_choose_target = true;
+        battle.actions.M[monster.action_idx].allow_choose_target = true;
         battle.actions.M[monster.action_idx].under_control = true;
     }
     return res;

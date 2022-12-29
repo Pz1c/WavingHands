@@ -7,6 +7,7 @@ QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Pr
 {
     _spellID = SpellID;
     _gesture = Gesture;
+    _twoHand = Gesture.toUpper().compare(Gesture) != 0;
     _name = Name;
     _spellType = SpellType;
     _priority = Priority;
@@ -35,6 +36,11 @@ int QSpell::calcPriority(bool Enemy) {
     res *= prc;
     qDebug() << "QSpell::calcPriority result" << res;
     return static_cast<int>(res);
+}
+
+bool QSpell::twoHand() const
+{
+    return _twoHand;
 }
 
 int QSpell::spellBookLevel() const
@@ -144,6 +150,7 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _realPriority = Spell->_realPriority;
     _spellGroup = Spell->_spellGroup;
     _spellBookLevel = Spell->_spellBookLevel;
+    _twoHand = Spell->_twoHand;
 }
 
 int QSpell::spellID() const
@@ -208,7 +215,8 @@ QString QSpell::json(bool Short) const {
     QString ng = nextGesture();
     return QString("{\"id\":%1,\"n\":\"%2\",\"g\":\"%3\",\"t\":%4,\"st\":%5,\"p\":%6,\"h\":%7,\"l\":%8,\"a\":%9,\"ng\":\"%10\","
                    "\"th\":%11,\"dt\":%12,\"active\":%13,\"dmg\":%14,\"basic\":%15,\"rp\":%16,\"sg\":%17,\"sbl\":%18}").
-            arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority), intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).
+            arg(intToStr(_spellID), _name, _gesture, intToStr(_turnToCast), intToStr(_spellType), intToStr(_priority),
+                intToStr(_hand), intToStr(_level), intToStr(_alreadyCasted)).//1-9
             arg(ng.toUpper(), boolToIntS(ng.compare(ng.toUpper()) != 0), intToStr(_defTarget), boolToIntS(_active), intToStr(_damage), boolToStr(_basic), QString::number(_realPriority)).
             arg(intToStr(_spellGroup), intToStr(_spellBookLevel));
     }

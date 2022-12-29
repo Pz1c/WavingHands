@@ -612,11 +612,11 @@ ApplicationWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.right: rdbiLink.right
                                     anchors.rightMargin: 36 * ratioObject
-                                    visible: (lvActiveBattle.model[index].s === 1) || (lvActiveBattle.model[index].s >= 3)
+                                    visible: (lvActiveBattle.model[index].s === 1) || (lvActiveBattle.model[index].s === 3) || (lvActiveBattle.model[index].s === 5)
                                     radius: width / 2
                                     gradient: Gradient {
-                                        GradientStop { position: 0.0; color: lvActiveBattle.model[index].s === 4 ? "#34ab9d" : "#9DFFD3" }
-                                        GradientStop { position: 1.0; color: lvActiveBattle.model[index].s === 4 ? "#3a9aa5" : "#9CDFFF" }
+                                        GradientStop { position: 0.0; color: lvActiveBattle.model[index].s === 5 ? "#34ab9d" : "#9DFFD3" }
+                                        GradientStop { position: 1.0; color: lvActiveBattle.model[index].s === 5 ? "#3a9aa5" : "#9CDFFF" }
                                     }
                                 }
 
@@ -958,16 +958,25 @@ ApplicationWindow {
         /*if (new_gesture !== '') {
             console.log("mainWindow.getSpellList", JSON.stringify(arr));
         }*/
-        var uncompleted_cnt = 0, i, Ln, charm_monster = 0, finished_high_lv_spell = 0;
+        var uncompleted_cnt = 0, i, Ln, charm_monster = 0, finished_high_lv_spell = 0, other_hand_finish_spell = 0, curr_hand_finish_two_hand_spell = 0;
         for (i = 0, Ln = arr.length; i < Ln; ++i) {
             s = arr[i];
+            //console.log("mainWindow.getSpellList", i, JSON.stringify(s));
             s.choose = 0;
             s.row_type = 1;
             if (s.h !== hand_idx) {
+                if ((new_gesture !== '') && (s.ng === new_gesture) && (s.t === 1) && (s.th === 1)) {
+                    s.gp = '<font color="#10C9F5">'+s.g+'</font>';
+                    s.cast_type = 1;
+                    arr_cast_now.push(s);
+                } else if ((s.t === 1) && (s.a > 0)) {
+                    console.log("mainWindow.getSpellList", i, JSON.stringify(s));
+                    ++other_hand_finish_spell;
+                }
                 continue;
             }
             if (s.sbl > playerSpellbookLevel) {
-                if ((new_gesture !== '') && (s.ng === new_gesture) && (s.t === 1)) {
+                if ((new_gesture !== '') && (s.ng === new_gesture) && (s.t === 1) && (s.a > 0)) {
                     ++finished_high_lv_spell;
                 }
                 continue;
@@ -982,6 +991,9 @@ ApplicationWindow {
                         arr_cast_now.push(s);
                         if (s.id === GUI.SPELL_CHARM_MONSTER) {
                             charm_monster = 1;
+                        }
+                        if (s.th === 1) {
+                            ++curr_hand_finish_two_hand_spell;
                         }
                     } else {
                         idx = s.g.length - s.t + 1;
@@ -1030,7 +1042,7 @@ ApplicationWindow {
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
             res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
-            if (def_or_none || (arr_cast_now.length === 0)) {
+            if (def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0) && (other_hand_finish_spell > 0))) {
                 res.push(def_spell);
             }
         } else {
@@ -1053,8 +1065,12 @@ ApplicationWindow {
     }
 
     function setGesture(gesture, spell, need_target) {
-        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) || ((gesture === "C") && !gBattle.player_under_control);
+        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) || (((gesture === "C") || (spell.th> 0)) && !gBattle.player_under_control);
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
+        if (!spell.n) {
+            spell.n = "None";
+        }
+
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
         if (is_maladroit && (gBattle.actions[gBattle.otherHand].g !== gesture)) {
             gBattle["ng" + gBattle.otherHand] = gesture;

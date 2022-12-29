@@ -2,6 +2,7 @@
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Qt.labs.qmlmodels 1.0
 
 import "qrc:/qml/components"
 
@@ -18,7 +19,7 @@ BaseWindow {
 
     bg_source: "qrc:/res/stars_bg.png"
     overRect.anchors.left: undefined
-    overRect.width: 516 * mainWindow.ratioObject
+    overRect.width: 528 * mainWindow.ratioObject
     overRect.gradient: Gradient {
         GradientStop { position: 0.0; color: "#210430" }
         GradientStop { position: 1.0; color: "#0654C0" }
@@ -48,25 +49,28 @@ BaseWindow {
             GradientStop { position: 1.0;  color: "#FEE2D6" }
         }
 
-        ScrollView {
+        //ScrollView {
+        Item {
             id: svError
             anchors.top: parent.top
             anchors.topMargin: 60 * mainWindow.ratioObject
             anchors.left: iGlow.right
-            anchors.leftMargin: 12 * mainWindow.ratioObject
+            //anchors.leftMargin: 12 * mainWindow.ratioObject
             anchors.right: parent.right
-            anchors.rightMargin: 12 * mainWindow.ratioObject
-            anchors.bottom: parent.bottom
+            //anchors.rightMargin: 12 * mainWindow.ratioObject
+            anchors.bottom: iiSend.top
 
-            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            //ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            //ScrollBar.vertical.policy: ScrollBar.AsNeeded
+            //contentHeight: iSpellBook.height
 
             Item {
                 id: iSpellBook
                 anchors.top:  parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: (2 + 60 + lvOrderList.model.length * 102) * mainWindow.ratioObject
+                anchors.bottom: parent.bottom
+                //height: lvOrderList.height + ltSpellbook.height
 
                 visible: true
 
@@ -88,7 +92,7 @@ BaseWindow {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: ltSpellbook.bottom
-                    height: 2 * mainWindow.ratioObject
+                    height: 0//2 * mainWindow.ratioObject
                     color: "#FEE2D6"
                 }
 
@@ -98,11 +102,72 @@ BaseWindow {
                     anchors.top: rLine.bottom
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: lvOrderList.model.length * 130 * mainWindow.ratioObject
+                    anchors.bottom: parent.bottom
+                    //height: lvOrderList.model.length * 500 * mainWindow.ratioObject
 
                     contentWidth: -1
+                    contentHeight: lvOrderList.model.length * 300 * mainWindow.ratioObject
+                    flickableDirection: Flickable.VerticalFlick
 
-                    delegate: Item {
+                    delegate: chooser
+
+                    DelegateChooser {
+                        id: chooser
+                        role: "row_type"
+
+                        DelegateChoice {
+                            roleValue: "1"
+                            delegate: Item {
+                                id: idHRoot
+                                width: lvOrderList.width
+                                height:  80 * mainWindow.ratioObject
+
+                                IconInfo {
+                                    id: rdbiHIcon
+                                    source: "qrc:/res/lightning_notice.png"
+                                    visible: true
+                                    anchors.left: idHRoot.left
+                                    anchors.leftMargin: 24 * mainWindow.ratioObject
+                                    anchors.verticalCenter: idHRoot.verticalCenter
+                                    height: 48 * mainWindow.ratioObject
+                                    width: height
+                                    text: ""
+                                    textVisible: false
+                                    color: "transparent"
+                                }
+
+                                Text {
+                                    id: rdbiHGesture
+                                    color: "#E7FFFF"
+                                    horizontalAlignment: Text.AlignLeft
+                                    verticalAlignment: Text.AlignVCenter
+                                    text: lvOrderList.model[index].v
+                                    font.pixelSize: 21 * mainWindow.ratioFont
+                                    wrapMode: Text.WordWrap
+                                    anchors.left: rdbiHIcon.right
+                                    anchors.leftMargin: 24 * mainWindow.ratioObject
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 24 * mainWindow.ratioObject
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 5 * mainWindow.ratioObject
+                                    //height: 92 * mainWindow.ratioObject
+                                }
+
+                                Rectangle {
+                                    id: rItemHLineB
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.bottom: idHRoot.bottom
+                                    height: 2 * mainWindow.ratioObject
+                                    color: "#FEE2D6"
+                                    visible: index === lvOrderList.model.length - 1
+                                }
+                            }
+                        }
+
+                        DelegateChoice {
+                            roleValue: "0"
+                            delegate: Item {
                             id: idRoot
                             width: lvOrderList.width
                             height: Math.max(rdbiGesture.contentHeight + 12 * mainWindow.ratioObject, 102 * mainWindow.ratioObject)
@@ -191,6 +256,8 @@ BaseWindow {
                                             mainWindow.gBattle.currentMonsterIdx = item.action_idx;
                                             mainWindow.showErrorWnd({type:4,text:"",title:"Monster",data:mainWindow.gBattle.actions.M[item.action_idx],close_current:1});
                                             break;
+                                        case "H":
+                                            break;
                                         default:
                                             mainWindow.closeChild();
                                         }
@@ -198,14 +265,27 @@ BaseWindow {
                                 }
 
                                 Rectangle {
-                                    id: rItemLine
+                                    id: rItemLineT
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.top: idRoot.top
+                                    height: 2 * mainWindow.ratioObject
+                                    color: "#FEE2D6"
+                                    visible: true
+                                }
+
+                                Rectangle {
+                                    id: rItemLineB
                                     anchors.left: parent.left
                                     anchors.right: parent.right
                                     anchors.bottom: idRoot.bottom
                                     height: 2 * mainWindow.ratioObject
                                     color: "#FEE2D6"
+                                    visible: index === lvOrderList.model.length - 1
                                 }
                         }
+                        }
+                    }
                 }
             }
         }
