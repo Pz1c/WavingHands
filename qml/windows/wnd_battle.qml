@@ -472,12 +472,12 @@ BaseWindow {
                 //tTargetTitle.visible = true;
                 //mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
                 //operationMode = 0;
-                if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
+                //if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
                     //open target window for charmed monster
                     //data.under_control = true;
-                    data.allow_choose_target = true;
+                    //data.allow_choose_target = true;
                     //iconDoubleClick(data);
-                }
+                //}
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }

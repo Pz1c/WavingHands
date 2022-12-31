@@ -61,7 +61,7 @@ function getTargetTitle(IsSpell, Title, TargetName, Permanency, Delay, NoColor) 
             res += " (bank it)";
         }
 
-        res += ' on: ';
+        res += ' at: ';
     } else {
         res = "Direct  " + Title + " at ";
         res = res.replace("Right Hand Monster", "Right Hand");
