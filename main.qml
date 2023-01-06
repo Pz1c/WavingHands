@@ -1312,8 +1312,9 @@ ApplicationWindow {
     }
 
     function isMobile() {
-        var currOs = Qt.platform.os
-        return (currOs === "android") || (currOs === "ios") || (currOs === "blackberry") || (currOs === "winphone");
+        var currOs = Qt.platform.os, res = (currOs === "android") || (currOs === "ios") || (currOs === "blackberry") || (currOs === "winphone");
+        console.log("isMobile", currOs, res);
+        return res;
     }
 
     function calculateRatio() {

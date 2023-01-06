@@ -25,6 +25,12 @@ Item {
     property alias title: tTitle
     property alias titleVisible: rTitle.visible
     property alias gradient: rOver.gradient
+    property int body_width_prc: 100
+    property int body_height_prc: 100
+    property int title_height_prc: 0
+    property int control_height_prc: 0
+
+	focus: true
 
     function onKeyPressed(event) {
         console.log("InfoWindow.KEY_PRESSED: " + event.key)
@@ -122,12 +128,21 @@ Item {
 
     Item {
         id: bwBody
-        anchors.top: rTitle.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.horizontalCenter: parent.horizontalCenter
+        height: body_height_prc / 100 * iRoot.height
+        width: body_width_prc / 100 * iRoot.width
         //color: "snow"
         z: 10
+    }
+
+    function fixHeight() {
+        bwBody.height = iRoot.height
+        /*if (with_controls) {
+            bwBody.height = 0.60 * iRoot.height;
+        } else {
+            bwBody.height = 0.80 * iRoot.height;
+        }*/
     }
 
     function showWnd() {
@@ -143,7 +158,8 @@ Item {
     }
 
     function initFields() {
-        console.log("BaseWindow.qml.initFields");
+        console.log("InfoWindow.qml.initFields");
+        fixHeight();
     }
 
     Component.onCompleted: {
