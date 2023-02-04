@@ -11,6 +11,9 @@ InfoWindow {
     //with_controls: true
     //with_apply: true
     //body_height_prc: 60
+    //title.font.pixelSize: 49 * mainWindow.ratioFont
+    //title.color: "#10C9F5"
+    title: dict.getStringByCode("SearchWizardTitle")
 
     // This rectangle is the actual popup
     Item {
@@ -18,7 +21,7 @@ InfoWindow {
         anchors.fill: content_item
         //color: "transparent"
 
-        Text {
+        /*Text {
             id: ltTitle
             anchors.top: parent.top
             anchors.left: parent.left
@@ -30,69 +33,12 @@ InfoWindow {
             horizontalAlignment: Text.AlignLeft
             //fontSizeMode: Text.VerticalFit
             text: dict.getStringByCode("SearchWizardTitle")
-        }
-
-        Text {
-            id: ltShortDesc
-            anchors.top: ltTitle.bottom
-            anchors.topMargin: 20 * mainWindow.ratioObject
-            anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
-            anchors.right: parent.right
-            //height: 50 * mainWindow.ratioObject
-            color: "#FEE2D6"
-            horizontalAlignment: Text.AlignLeft
-            font.pixelSize: 28 * mainWindow.ratioFont
-            text: dict.getStringByCode("SearchWizardShortDesc")
-            wrapMode: Text.WordWrap
-        }
-
-        Text {
-            id: ltDesc
-            anchors.top: ltShortDesc.bottom
-            anchors.topMargin: 20 * mainWindow.ratioObject
-            anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
-            anchors.right: parent.right
-            anchors.rightMargin: 20 * mainWindow.ratioObject
-            font.pixelSize: 28 * mainWindow.ratioFont
-            color: "#10C9F5"
-            text: ""
-            horizontalAlignment: Text.AlignLeft
-            //fontSizeMode: Text.VerticalFit
-        }
-
-        ScrollView {
-            id: svMain
-            anchors.top: ltDesc.bottom
-            anchors.topMargin: 20 * mainWindow.ratioObject
-            anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
-            anchors.right: parent.right
-            anchors.rightMargin: 20 * mainWindow.ratioObject
-            anchors.bottom: ltiLogin.top
-            anchors.bottomMargin: 20 * mainWindow.ratioObject
-
-            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-            ScrollBar.vertical.policy: ScrollBar.AsNeeded
-
-            contentWidth: -1
-
-            Text {
-                id: ltWarlockDetails
-                width: dialogWindow.width * 0.99
-                wrapMode: Text.Wrap
-                textFormat: Text.RichText
-                font.pixelSize: 28 * mainWindow.ratioFont
-                color: "#FEE2D6"
-                horizontalAlignment: Text.AlignJustify
-            }
-        }
+        }*/
 
         LabeledTextInput {
             id: ltiLogin
-            anchors.bottom: dialogWindow.bottom
-            anchors.bottomMargin: 20 * mainWindow.ratioObject
+            anchors.top: parent.top
+            anchors.topMargin: 20 * mainWindow.ratioObject
             anchors.left: parent.left
             anchors.leftMargin: 20 * mainWindow.ratioObject
             anchors.right: iiCSend.left
@@ -138,8 +84,8 @@ InfoWindow {
             width: 64 * mainWindow.ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 20 * mainWindow.ratioObject
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 17 * mainWindow.ratioObject
+            anchors.top: ltiLogin.top
+            anchors.topMargin: 32 * mainWindow.ratioObject
             active: false
             color: "transparent"
             //text_color: "#E7FFFF"
@@ -152,6 +98,65 @@ InfoWindow {
                 mainWindow.processEscape();
             }
         }
+
+        Text {
+            id: ltShortDesc
+            anchors.top: ltiLogin.bottom
+            anchors.topMargin: 20 * mainWindow.ratioObject
+            anchors.left: parent.left
+            anchors.leftMargin: 20 * mainWindow.ratioObject
+            anchors.right: parent.right
+            //height: 50 * mainWindow.ratioObject
+            color: "#FEE2D6"
+            horizontalAlignment: Text.AlignLeft
+            font.pixelSize: 28 * mainWindow.ratioFont
+            text: dict.getStringByCode("SearchWizardShortDesc")
+            wrapMode: Text.WordWrap
+        }
+
+        Text {
+            id: ltDesc
+            anchors.top: ltShortDesc.bottom
+            anchors.topMargin: 20 * mainWindow.ratioObject
+            anchors.left: parent.left
+            anchors.leftMargin: 20 * mainWindow.ratioObject
+            anchors.right: parent.right
+            anchors.rightMargin: 20 * mainWindow.ratioObject
+            font.pixelSize: 28 * mainWindow.ratioFont
+            color: "#10C9F5"
+            text: ""
+            horizontalAlignment: Text.AlignLeft
+            //fontSizeMode: Text.VerticalFit
+        }
+
+        ScrollView {
+            id: svMain
+            anchors.top: ltDesc.bottom
+            anchors.topMargin: 20 * mainWindow.ratioObject
+            anchors.left: parent.left
+            anchors.leftMargin: 20 * mainWindow.ratioObject
+            anchors.right: parent.right
+            anchors.rightMargin: 20 * mainWindow.ratioObject
+            anchors.bottom: parent.bottom
+            //anchors.bottomMargin: 20 * mainWindow.ratioObject
+
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+            contentWidth: -1
+
+            Text {
+                id: ltWarlockDetails
+                width: dialogWindow.width * 0.99
+                wrapMode: Text.Wrap
+                textFormat: Text.RichText
+                font.pixelSize: 28 * mainWindow.ratioFont
+                color: "#FEE2D6"
+                horizontalAlignment: Text.AlignJustify
+            }
+        }
+
+
 
         z: 11
     }

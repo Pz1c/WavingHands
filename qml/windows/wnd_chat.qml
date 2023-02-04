@@ -11,6 +11,9 @@ InfoWindow {
     //with_controls: true
     //with_apply: true
     //body_height_prc: 60
+    title: "Chat"
+    //title.font.pixelSize: 49 * mainWindow.ratioFont
+    //title.color: "#10C9F5"
 
     // This rectangle is the actual popup
     Item {
@@ -18,7 +21,7 @@ InfoWindow {
         anchors.fill: content_item
         //color: "transparent"
 
-        Text {
+        /*Text {
             id: ltTitle
             anchors.top: parent.top
             anchors.left: parent.left
@@ -30,40 +33,12 @@ InfoWindow {
             horizontalAlignment: Text.AlignLeft
             //fontSizeMode: Text.VerticalFit
             text: "Chat"
-        }
-
-        ScrollView {
-            id: svError
-            anchors.top: ltTitle.bottom
-            anchors.topMargin: 20 * mainWindow.ratioObject
-            anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
-            anchors.right: parent.right
-            anchors.bottom: iAction.top
-            contentWidth: -1
-
-            Text {
-                id: ltError
-                y: 0
-                x: 0
-                width: dialogWindow.width - 0.11 * dialogWindow.height
-                //height: svLog.height
-                font.pixelSize: 28 * mainWindow.ratioFont
-                wrapMode: Text.WordWrap
-                color: "snow"
-                textFormat: Text.RichText
-                /*
-                onLinkActivated: {
-                    mainWindow.linkActivated(link);
-                    mainWindow.processEscape();
-                }*/
-            }
-        }
+        }*/
 
         Item {
             id: iAction
-            anchors.bottom: iText.top
-            anchors.bottomMargin: 16 * mainWindow.ratioObject
+            anchors.top: parent.top
+            anchors.topMargin: 16 * mainWindow.ratioObject
             anchors.left: parent.left
             //anchors.leftMargin: 3 * mainWindow.ratioObject
             anchors.right: parent.right
@@ -138,8 +113,8 @@ InfoWindow {
 
         Item {
             id: iText
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 16 * mainWindow.ratioObject
+            anchors.top: iAction.bottom
+            anchors.topMargin: 16 * mainWindow.ratioObject
             anchors.left: parent.left
             anchors.leftMargin: 16 * mainWindow.ratioObject
             anchors.right: parent.right
@@ -156,6 +131,34 @@ InfoWindow {
                 onLinkActivated: {
                     setNewMsgText("");
                 }
+            }
+        }
+
+        ScrollView {
+            id: svError
+            anchors.top : iText.bottom
+            anchors.topMargin: 20 * mainWindow.ratioObject
+            anchors.left: parent.left
+            anchors.leftMargin: 20 * mainWindow.ratioObject
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            contentWidth: -1
+
+            Text {
+                id: ltError
+                y: 0
+                x: 0
+                width: dialogWindow.width - 0.11 * dialogWindow.height
+                //height: svLog.height
+                font.pixelSize: 28 * mainWindow.ratioFont
+                wrapMode: Text.WordWrap
+                color: "snow"
+                textFormat: Text.RichText
+                /*
+                onLinkActivated: {
+                    mainWindow.linkActivated(link);
+                    mainWindow.processEscape();
+                }*/
             }
         }
 

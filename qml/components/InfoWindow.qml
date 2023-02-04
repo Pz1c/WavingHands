@@ -22,7 +22,7 @@ Item {
     property string title_color: ""
     property alias content_item: bwBody
     property alias icon: iiIcon
-    property alias title: tTitle
+    property alias title: tTitle.text
     property alias titleVisible: rTitle.visible
     property alias gradient: rOver.gradient
     property int body_width_prc: 100
@@ -128,11 +128,11 @@ Item {
 
     Item {
         id: bwBody
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-        height: body_height_prc / 100 * iRoot.height
-        width: body_width_prc / 100 * iRoot.width
-        //color: "snow"
+        anchors.top: rTitle.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+
         z: 10
     }
 

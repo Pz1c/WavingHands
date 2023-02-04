@@ -143,5 +143,7 @@
         <file>qml/windows/wnd_new_game.qml</file>
         <file>qml/windows/wnd_after_registration.qml</file>
         <file>qml/windows/wnd_hall_of_fame.qml</file>
+        <file>qml/windows/wnd_warlock_popup.qml</file>
+        <file>res/trophy_3d.png</file>
     </qresource>
 </RCC>

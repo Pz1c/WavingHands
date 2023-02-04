@@ -15,6 +15,7 @@ var wnd_spell = "wnd_spell.qml";
 var wnd_search_warlock = "wnd_search_warlock.qml";
 var wnd_popup = "wnd_popup.qml";
 var wnd_spell_popup = "wnd_spell_popup.qml";
+var wnd_warlock_popup = "wnd_warlock_popup.qml";
 var wnd_new_game = "wnd_new_game.qml";
 var wnd_after_reg = "wnd_after_registration.qml";
 var wnd_top = "wnd_hall_of_fame.qml";
@@ -267,6 +268,9 @@ function showErrorWnd(error, chat) {
         break;
     case 101:
         wnd_name = wnd_search_warlock;
+        break;
+    case 15:
+        wnd_name = wnd_warlock_popup;
         break;
     default:
         if (error.type >= 7) {

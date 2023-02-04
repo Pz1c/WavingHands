@@ -334,6 +334,11 @@ Item {
         }
     }
 
+    function hintOnOff(Restore) {
+        iiLeft.visible = Restore;
+        iiRight.visible = Restore;
+    }
+
     function targetingOnOff(Enable, IsSpell) {
         console.log("Warlock.targetingOnOff", l_warlock.name, Enable);
         var opacity = Enable ? 0.3 : 1;

@@ -32,6 +32,17 @@ function processAllHintAction(actions, restore) {
 }
 
 
+function prepareWarockToHint(restore) {
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        iWarlocks.children[i].hintOnOff(restore);
+    }
+}
+
+function closeTutorial() {
+    ltTutorial.visible = false;
+    prepareWarockToHint(true);
+}
+
 function showTutorialData(diff, skip_restore) {
     var log_msg = mainWindow.gBattle.turn_num === 1;
     var code = log_msg ? "Play_Tutorial_Click_" : "Play_Turn_Message_Click_";
@@ -53,7 +64,7 @@ function showTutorialData(diff, skip_restore) {
     }
 
     if (ltTutorial.tutorialDataIdx >= ltTutorial.tutorialData.length) {
-        ltTutorial.visible = false;
+        closeTutorial();
         return;
     }
     var hint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
@@ -61,12 +72,13 @@ function showTutorialData(diff, skip_restore) {
         if (log_msg) {
             mainWindow.logEvent(code + "Gotit");
         }
-        ltTutorial.visible = false;
+        closeTutorial();
         return;
     }
     console.log("showTutorialData", diff, JSON.stringify(hint));
     ltTutorial.color = hint.color_bg;
     ltTTT.text = hint.txt;
+    prepareWarockToHint(false);
 
     processAllHintAction(ltTutorial.tutorialData[ltTutorial.tutorialDataIdx].actions, false);
 }

@@ -2,7 +2,7 @@ var C_NG_PLAYER_CODE = 'player';
 var C_NG_BOT_CODE = 'bot';
 var G_BATTLE_LIST = [[],[]];
 var G_CHALLENGE_LIST = [];
-var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0,sbl:-1,win_vs_bot:0,win_vs_warlock:0};
+var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0,sbl:-1,win_vs_bot:0,win_vs_warlock:0,last_activity:0};
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
 var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
@@ -237,8 +237,12 @@ function startGameWithPlayerEx(skip_search) {
     }*/
 }
 
-function startGameWithPlayer() {
-    showErrorWnd({id:-1,type:19});
+function startGameWithPlayer(WarlockName, FriendlyLevel) {
+    if (!WarlockName) {
+        showErrorWnd({id:-1,type:19});
+    } else {
+        core.createNewChallenge(1, 0, 1, 1, FriendlyLevel, 1, "Welcome to fight", WarlockName);
+    }
 }
 
 function joinBattleDialogResult(accept) {
@@ -274,10 +278,10 @@ function startGameWithBot() {
     showErrorWnd({id:-1,type:20});
 }
 
-function startGameByCode(action_code) {
+function startGameByCode(action_code, WarlockName, FriendlyLevel) {
     switch(action_code) {
          case 'player':
-             startGameWithPlayer();
+             startGameWithPlayer(WarlockName, FriendlyLevel);
              break;
          case 'bot':
              if ((G_PROFILE.finished_game_count < 3) || (G_PROFILE.elo <= 1500)) {

@@ -1196,9 +1196,13 @@ ApplicationWindow {
     }
 
     function showUserScoreWnd(data) {
-        if (!data) {
+        if (!data || (data.name === GUI.G_PROFILE.name)) {
             data = JSON.parse(JSON.stringify(GUI.G_PROFILE));
+            data.isPlayer = true;
+        } else {
+            data.isPlayer = false;
         }
+
         data.type = 15;
         return showErrorWnd(data);
     }
@@ -1226,8 +1230,8 @@ ApplicationWindow {
         GUI.startGameByCode('bot');
     }
 
-    function startWarlockGame() {
-        GUI.startGameByCode('player');
+    function startWarlockGame(WarlockName, FriendlyLevel) {
+        GUI.startGameByCode('player', WarlockName, FriendlyLevel);
     }
 
     function startGameWithPlayer() {

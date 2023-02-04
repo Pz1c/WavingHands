@@ -372,7 +372,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
         _challengeList = list_str;
         qDebug() << list;
         emit challengeListChanged();
-        if (active_challenge) {
+        if (active_challenge || (_waiting_in_battles.count() + _ready_in_battles.count() == 0)) {
             generateBattleList();
         }
     } else if (_isAI && !working) {
@@ -623,6 +623,7 @@ void QWarloksDuelCore::scanState(bool Silent) {
     if (!Silent) {
         _isScanForced = true;
         setIsLoading(true);
+        //_challengeList.clear();
     }
 
     sendGetRequest(GAME_SERVER_URL_PLAYER);
@@ -1420,6 +1421,7 @@ void QWarloksDuelCore::parseChallendge(QString &Data) {
 }
 
 void QWarloksDuelCore::generateBattleList() {
+    qDebug() << "QWarloksDuelCore::generateBattleList";
     _battleList = "[[" + _challenge.join(",");
     bool first = _challenge.isEmpty();
     QBattleInfo *battle_info;
@@ -1477,8 +1479,9 @@ void QWarloksDuelCore::generateBattleList() {
                 continue;
             }
             battle_info = getBattleInfo(bid);
-            if ((battle_info->level() == BATTLE_INFO_LEVEL_LADDER) || (battle_info->with_bot()) || (battle_info->status() != BATTLE_INFO_STATUS_NO_START) ||
-                 battle_info->size() != 2 || !battle_info->active(_login)) {
+            if ((battle_info->level() == BATTLE_INFO_LEVEL_LADDER) || battle_info->with_bot() ||
+                 (battle_info->status() != BATTLE_INFO_STATUS_NO_START) ||
+                 (battle_info->size() != 2) || !battle_info->active(_login)) {
                 continue;
             }
             if (with_any_challenge) {
@@ -1503,7 +1506,7 @@ void QWarloksDuelCore::generateBattleList() {
             //_battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
         }
     }
-    if (with_any_challenge && !with_challenge && (active_battle_cnt < 3)) {
+    if (/*with_any_challenge && */!with_challenge && (active_battle_cnt < 3)) {
         QMap<QString, QWarlockStat>::iterator psi;
         QList<QString> awailable_walocks;
         qint64 curr_time = QDateTime::currentSecsSinceEpoch();

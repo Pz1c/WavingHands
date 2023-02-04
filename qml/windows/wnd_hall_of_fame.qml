@@ -244,6 +244,8 @@ InfoWindow {
                                 obj.played = obj.p;
                                 obj.won = obj.w;
                                 obj.died = obj.d;
+                                obj.lost = obj.l;
+                                obj.last_activity = obj.la;
                                 mainWindow.showUserScoreWnd(obj);
                             }
                         }
