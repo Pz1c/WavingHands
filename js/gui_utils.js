@@ -26,7 +26,7 @@ function mainMenuActionEx(code) {
     case "rules": return Qt.openUrlExternally("https://games.ravenblack.net/rules");
     case "feedback": return showFeedbackWnd();
     case "rateus": return showRateUsWnd();
-    case "top": return showHallOfFameWindow();
+    case "top": return getHallOfFame();
     case "player_score": return showUserScoreWnd();
     case "battle_with_friend": return showShareWnd();
     case "logout": return confirmLogout();

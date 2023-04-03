@@ -125,6 +125,10 @@ public class MainActivity extends QtActivity {
         Uri data = intent.getData();
         Bundle bundle = intent.getExtras();
         Log.d(TAG, "onResume check intent");
+
+        // https://github.com/Pz1c/WavingHands/issues/258
+        CheckStatus.hideNotification(this);
+
         if (data != null) {
             Log.d(TAG, "onResume data: " + data.toString());
         }

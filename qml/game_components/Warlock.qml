@@ -339,8 +339,8 @@ Item {
         iiRight.visible = Restore;
     }
 
-    function targetingOnOff(Enable, IsSpell) {
-        console.log("Warlock.targetingOnOff", l_warlock.name, Enable);
+    function targetingOnOff(Enable, IsSpell, Permanency, Delay) {
+        console.log("Warlock.targetingOnOff", l_warlock.name, Enable, IsSpell, Permanency, Delay);
         var opacity = Enable ? 0.3 : 1;
         var border_width = Enable ? 3 : 0;
         lwGestures.opacity = opacity;
@@ -363,15 +363,26 @@ Item {
         for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
             item = iCharm.children[i];
 
-            var perm_or_del_checked = (item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action') && item.l_data.hasOwnProperty('checked') &&
-                                       ((item.l_data.action === "permanency") || (item.l_data.action === "delay")) && (item.l_data.checked || Enable));
+            var has_action = item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action');
+            var is_perm = has_action && (item.l_data.action === "permanency");
+            var is_del = has_action && (item.l_data.action === "delay");
+            var perm_or_del =  is_perm || is_del;
+            var perm_or_del_checked = perm_or_del && item.l_data.hasOwnProperty('checked') && (item.l_data.checked || Enable);
             console.log(JSON.stringify(item.l_data), perm_or_del_checked);
 
             if (IsSpell && l_warlock.player && perm_or_del_checked) {
                 if (Enable) {
                     item.animate(1);
                 }
+                if (item.checkbox && ((is_perm && !Permanency) || (is_del && !Delay))) {
+                    if ((is_perm && Permanency) || (is_del && Delay)) {
+                        item.setChecked(true);
+                    } else if ((is_perm && !Permanency) || (is_del && !Delay)) {
+                        item.setChecked(false);
+                    }
+                }
                 item.active = Enable;// || perm_or_del_checked;
+
             } else {
                 item.opacity = opacity;
                 //item.active = !Enable;

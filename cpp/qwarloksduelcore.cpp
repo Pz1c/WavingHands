@@ -398,6 +398,9 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
         pos1 = pos2 + 4;
     }
     generateTopList();
+    if (isLoading()) {
+        emit topListChanged();
+    }
     //QString list = QWarlockUtils::parseTopList(Data);
     /*if (_topList.compare(list) != 0) {
         _topList = list;
@@ -638,10 +641,10 @@ void QWarloksDuelCore::getChallengeList(bool Silent) {
     sendGetRequest(GAME_SERVER_URL_CHALLENGES);
 }
 
-void QWarloksDuelCore::scanTopList() {
-    setIsLoading(true);
+void QWarloksDuelCore::scanTopList(bool Silent, bool ForceFull) {
+    setIsLoading(!Silent);
     qint64 udt = QDateTime::currentSecsSinceEpoch();
-    sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg((udt - _lastPlayersScan > (3 * 24 * 60 - 15) * 60) ? '1' : '0'));
+    sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(ForceFull || (udt - _lastPlayersScan > (3 * 24 * 60 - 15) * 60) ? '1' : '0'));
     _lastPlayersScan = udt;
 }
 
@@ -1755,7 +1758,7 @@ bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
     }
     if (!_isAI && !_isAsService) {
         if (QDateTime::currentSecsSinceEpoch() - _lastPlayersScan > 10 * 60) {
-            scanTopList();
+            scanTopList(true);
         }
     }
     return true;

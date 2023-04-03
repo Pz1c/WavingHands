@@ -101,6 +101,7 @@ ApplicationWindow {
             closeChild(true);
             //showAfterRegWnd();
         }
+        onTopListChanged: showHallOfFameWindow()
 
         Component.onCompleted: {
             console.log("Core.completed");
@@ -1079,6 +1080,9 @@ ApplicationWindow {
 
         WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit);
         if (need_target) {
+            console.log("NEED_TARGET", gBattle.actions.P, gBattle.currentHandIdx);
+            spell.permanency = (gBattle.actions.P === -1) || (gBattle.actions.P !== gBattle.currentHandIdx) ? 0 : 1;
+            spell.delay = (gBattle.actions.D === -1) || (gBattle.actions.D !== gBattle.currentHandIdx) ? 0 : 1;
             WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, spell);
         } else {
             WNDU.arr_wnd_instance[WNDU.wnd_battle].currentSpell = {n:"",h:gBattle.currentHand === "L" ? 1 : 2,g:""};
@@ -1256,6 +1260,11 @@ ApplicationWindow {
         if (!WNDU.isSomeWndOpenned()) {
             processAfterClose();
         }
+    }
+
+    function getHallOfFame() {
+        core.scanTopList(false, true);
+        //WNDU.showTopWindow();
     }
 
     function showHallOfFameWindow() {

@@ -378,11 +378,11 @@ function prepareOrder() {
     console.log("prepareOrder", "point7", post_request);
 
     if (actions.D !== -1) {
-        post_request += "DELAY$" + getHandByIdx(actions.D);
+        post_request += "DELAY$" + BGU.getHandByIdx(actions.D);
     }
     console.log("prepareOrder", "point8", post_request);
     if (actions.P !== -1) {
-        post_request += "PERM$" + getHandByIdx(actions.P);
+        post_request += "PERM$" + BGU.getHandByIdx(actions.P);
     }
     console.log("prepareOrder", "point9", post_request);
     if (actions.F === 1) {

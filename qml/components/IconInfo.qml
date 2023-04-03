@@ -92,10 +92,7 @@ Rectangle {
 
                 animate(1);
                 if (checkbox) {
-                    checked = !checked;
-                    button.border.width = checked ? 3 : 0;
-                    button.color = checked ? bg_color_checked : bg_color;
-                    l_data.checked = checked;
+                    setChecked(!checked);
                 }
 
                 button.clicked(l_data);
@@ -130,6 +127,13 @@ Rectangle {
                 button.doubleClicked(l_data);
             //}
         }
+    }
+
+    function setChecked(NewChecked) {
+        checked = NewChecked;
+        button.border.width = checked ? 3 : 0;
+        button.color = checked ? bg_color_checked : bg_color;
+        l_data.checked = checked;
     }
 
     function animate(cnt) {

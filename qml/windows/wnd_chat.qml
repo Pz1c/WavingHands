@@ -20,6 +20,7 @@ InfoWindow {
         id: dialogWindow
         anchors.fill: content_item
         //color: "transparent"
+        property string chat_text: "";
 
         /*Text {
             id: ltTitle
@@ -85,6 +86,17 @@ InfoWindow {
                     color: "#E7FFFF"
                     font.pixelSize: 48 * mainWindow.ratioFont
                     z: 15
+                    maximumLength: 255
+
+                    onTextEdited: {
+                        // https://github.com/Pz1c/WavingHands/issues/263
+                        var new_text = tiTextEdit.text;
+                        var old_text = dialogWindow.chat_text;
+                        console.log("chat text edited", new_text.length, old_text.length, old_text.indexOf(new_text));
+                        if ((new_text.length > old_text.length) || (new_text.length + 1 === old_text.length) || (old_text.indexOf(new_text) !== 0)) {
+                            dialogWindow.chat_text = new_text;
+                        }
+                    }
                 }
             }
 
@@ -104,7 +116,9 @@ InfoWindow {
                 color: "transparent"
 
                 onClicked: {
-                    setNewMsgText(tiTextEdit.text);
+                    // https://github.com/Pz1c/WavingHands/issues/263
+                    console.log("Chat.Send.OnClick dialogWindow.chat_text", dialogWindow.chat_text, "tiTextEdit.text", tiTextEdit.text);
+                    setNewMsgText(dialogWindow.chat_text);
                     mainWindow.processEscape();
                     //mainWindow.storeBattleChatMsg(tiTextEdit.text);
                 }
@@ -195,6 +209,7 @@ InfoWindow {
         }
         mainWindow.storeBattleChatMsg(txt);
         tiTextEdit.text = "";
+        
     }
 
     function initErrFields() {

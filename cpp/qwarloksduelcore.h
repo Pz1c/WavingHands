@@ -15,7 +15,9 @@
 #include <QStandardPaths>
 #include <QClipboard>
 #include <QGuiApplication>
+#ifdef Q_OS_ANDROID
 #include <QJniObject>
+#endif
 #include <QTimer>
 #include <QThread>
 
@@ -124,7 +126,7 @@ public slots:
     QString getOnlineUrl(int battle_id = 0);
     void scanState(bool Silent = false);
     void getChallengeList(bool Silent = false);
-    void scanTopList();
+    void scanTopList(bool Silent = false, bool ForceFull = false);
     void acceptChallenge(int battle_id, bool from_card = false);
     bool aiAcceptChallenge(int battle_id, bool changeAI = true);
     void rejectChallenge(int battle_id);

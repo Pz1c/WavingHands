@@ -28,6 +28,10 @@ BaseWindow {
     property var currentSpell: ({n:"",h:0,g:""})
     property int permanency: 0
     property int delay: 0
+    //property int permanencyL: 0
+    //property int delayL: 0
+    //property int permanencyR: 0
+    //property int delayR: 0
     property var target: ({target_name:""})
 
     // This rectangle is the actual popup
@@ -497,7 +501,7 @@ BaseWindow {
         } else if (delay && (data.action === "delay")) {
             mainWindow.cleanDelay();
         } else if (permanency && (data.action === "permanency")) {
-            mainWindow.cleanPermanency()
+            mainWindow.cleanPermanency();
         } else if (data.active_action) {
             console.log("DO some action", JSON.stringify(data));
             BU.battle.currentCharm = BU.getCharmDataByAction(data);
@@ -597,7 +601,12 @@ BaseWindow {
         }
 
         for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
-            iWarlocks.children[i].targetingOnOff(Enable, IsSpell);
+            var l_P = 0, l_D = 0;
+            if (i === 0) {
+                l_P = permanency;
+                l_D = delay;
+            }
+            iWarlocks.children[i].targetingOnOff(Enable, IsSpell, l_P, l_D);
         }
         //ltAll.text = Enable ? "Nobody" : "All";
         //ltAll.border_visible = Enable;
@@ -665,9 +674,9 @@ BaseWindow {
         currentSpell = spell;
         target = {target_name:""};
         operationMode = is_spell ? 1 : 2;
+        permanency = spell.permanency ? spell.permanency : 0;
+        delay = spell.delay ? spell.delay : 0;
         setTargetingOnOff(true, is_spell, currentSpell.n);
-        permanency = 0;
-        delay = 0;
     }
 
     function sendOrders() {
@@ -692,13 +701,14 @@ BaseWindow {
         title_text = "Battle #" + mainWindow.gBattle.id;
         BU.applyBattle();
         battleChanged();
-        if (!mainWindow.gBattle.with_bot) {
+        if (/*true || */!mainWindow.gBattle.with_bot) {
             iiChat.visible = true;
             iiSpellbook.anchors.rightMargin = (32 + 78 + 32) * mainWindow.ratioObject;
         } else {
             iiChat.visible = false;
             iiSpellbook.anchors.rightMargin = 32 * mainWindow.ratioObject;
         }
+
         if (mainWindow.gameCore.isAI) {
             sendOrders();
             mainWindow.processEscape();
