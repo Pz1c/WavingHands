@@ -289,7 +289,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         if (url.indexOf("https://") == -1) {
             url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
         }
-        if (!_reg_in_app) {
+        if (!_isAI && !_reg_in_app) {
             _exp_lv = 5;
         }
         qDebug() << "final url " << url;
@@ -328,15 +328,16 @@ void QWarloksDuelCore::aiLogin() {
     }
 }
 
-void QWarloksDuelCore::callAI(QString Login) {
+void QWarloksDuelCore::callAI(QString Login, int MagicBookLevel) {
+    qDebug() << "QWarloksDuelCore::callAI" << Login << MagicBookLevel;
     if (!Login.isEmpty()) {
-        emit needAIAnswer(Login);
+        emit needAIAnswer(Login, MagicBookLevel);
         return;
     }
     qint64 curr_time = QDateTime::currentSecsSinceEpoch();
     if ((_lastAnyAiCall == 0) || ((curr_time - _lastAnyAiCall) >= 30)) {
         _lastAnyAiCall = curr_time;
-        emit needAIAnswer("");
+        emit needAIAnswer("", MagicBookLevel);
     }
 }
 
@@ -362,7 +363,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
             }
         } else if (bi->for_bot() && !bi->active(_login)) {
             qDebug() << "finishChallengeList" << "emit needAIAnswer";
-            callAI();
+            callAI("", 5);
         } else if (!active_challenge && !bi->for_bot() && bi->active(_login) && (bi->size() == 2)) {
             active_challenge = true;
         }
@@ -473,7 +474,7 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
             sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
         } else if (!_isAsService && battle_info->for_bot()) {
             qDebug() << "emit needAIAnswer";
-            callAI();
+            callAI("", 5);
         }
         QString params = QString("Id;%1;Type;%2;With;%3;Warlock;%4;IsBot;%6;").arg(created_id, battle_info->level() == 0 ? "Training" : "Scored",
                                                                                   (!_inviteToBattle.isEmpty() ? "Private warlock" : (battle_info->for_bot() ? "Bot" : "Random warlock")),
@@ -516,7 +517,7 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
             qDebug() << "QWarloksDuelCore::finishAccept" << bi->getEnemy(_login) << bi->toJSON(_login);
             if (bi->for_bot() || bi->with_bot()) {
                 qDebug() << "emit needAIAnswer" << bi->getEnemy(_login);
-                callAI(bi->getEnemy(_login));
+                callAI(bi->getEnemy(_login), _exp_lv);
             }
         }
     } else {
@@ -548,7 +549,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
         qDebug() << "QWarloksDuelCore::finishOrderSubmit" << bi->getEnemy(_login) << bi->toJSON(_login);
         if (!_isAsService && (bi->for_bot() || bi->with_bot())) {
             qDebug() << "emit needAIAnswer" << bi->getEnemy(_login);
-            callAI(bi->getEnemy(_login));
+            callAI(bi->getEnemy(_login), _exp_lv);
         } else if (_isAsService) {
             qDebug() << "emit readyAIAnswer";
             emit readyAIAnswer(_loadedBattleID);
@@ -1171,6 +1172,7 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         if (_isAsService) qDebug() << "QWarloksDuelCore::setPossibleSpell" << w->name() << w->player() << _player << _enemy;
         if (w->player()) {
             _player = w;
+            w->setMagicBookLevel(_exp_lv);
         } else if (!_enemy) {
             _enemy = w;
         }
@@ -1647,7 +1649,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
                 if (_lstAI.indexOf(enemy.toUpper()) != -1) {
                     ask_ai = true;
                     qDebug() << "emit needAIAnswer"  << enemy;
-                    callAI(battle_info->getEnemy(_login));
+                    callAI(battle_info->getEnemy(_login), _exp_lv);
                 }
             }
 
@@ -1663,7 +1665,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         }
         if (!_isAI && !ask_ai) {
             qDebug() << "emit needAIAnswer any";
-            callAI();
+            callAI("", 5);
         }
     //}
     if (!changed) {
@@ -1754,7 +1756,7 @@ void QWarloksDuelCore::processRefferer() {
 bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
     parsePlayerInfo(Data, ForceBattleList);
     if (!ForceBattleList) {
-        getChallengeList();
+        getChallengeList(true);
     }
     if (!_isAI && !_isAsService) {
         if (QDateTime::currentSecsSinceEpoch() - _lastPlayersScan > 10 * 60) {
@@ -1877,6 +1879,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return true;
     }
 
+    // battle parsing there
     if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1) || (url.indexOf("robot_gateway/wh/") != -1)) {
         return !finishGetFinishedBattle(data);
     }
@@ -1953,8 +1956,8 @@ void QWarloksDuelCore::slotReadyRead() {
         return;
     }
 
-    processData(data, _httpResponceCode, url, new_url.toString());
     setIsLoading(false);
+    processData(data, _httpResponceCode, url, new_url.toString());
 }
 
 void QWarloksDuelCore::slotError(QNetworkReply::NetworkError error) {
@@ -2648,8 +2651,8 @@ void QWarloksDuelCore::setCheckUrl(const QString &check_url) {
     #endif
 }
 
-void QWarloksDuelCore::doAIAnswer(QString Login) {
-    qDebug() << "QWarloksDuelCore::doAIAnswer" << Login << _isAsService;
+void QWarloksDuelCore::doAIAnswer(QString Login, int MagicBookLevel) {
+    qDebug() << "QWarloksDuelCore::doAIAnswer" << Login << _isAsService << MagicBookLevel;
     //if (!Login.isEmpty()) {
     //    _botIdx = _lstAI.indexOf(Login.toUpper()) - 1;
     //}
@@ -2658,6 +2661,7 @@ void QWarloksDuelCore::doAIAnswer(QString Login) {
         return;
     }
     _isAiBusy = !Login.isEmpty();
+    _exp_lv = MagicBookLevel;
     sendGetRequest(QString(GAME_SERVER_URL_WARLOCK_GET).arg(Login));
 }
 
@@ -2734,7 +2738,7 @@ int QWarloksDuelCore::getBotBattle() {
             QString enemy = battle_info->getEnemy(_login);
             if (_lstAI.indexOf(enemy.toUpper()) != -1) {
                 qDebug() << "emit needAIAnswer"  << enemy;
-                callAI(battle_info->getEnemy(_login));
+                callAI(battle_info->getEnemy(_login), _exp_lv);
                 return bid;
             }
         }

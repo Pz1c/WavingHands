@@ -60,6 +60,12 @@ public:
 
     int forcedHand() const;
 
+    void setMagicBookLevel(int newMagicBookLevel);
+
+    int magicBookLevel() const;
+
+    bool AI() const;
+
 protected:
     void analyzeMonster(QList<QMonster *> &monsters, QWarlock *enemy);
     void processMonster(QList<QMonster *> &monsters, QWarlock *enemy);
@@ -134,6 +140,7 @@ private:
     int _totalEnemyAttack;
     int _totalEnemyHP;
     bool _enemyParalyze;
+    int _magicBookLevel;
     QWarlockSpellChecker *_SpellChecker;
 };
 

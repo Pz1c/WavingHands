@@ -172,7 +172,8 @@ void QWarlockSpellChecker::checkHandOnSpell(QList<QSpell *> &Result, QSpell *Spe
     }
 }
 
-QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left, QString possible_right, bool IsFDF) {
+QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left,
+                                                           QString possible_right, bool IsFDF, int MaxSpellBookLevel) {
     qDebug() << "QWarlockSpellChecker::getPosibleSpellsList" << left << right << Enemy;
     QList<QSpell *> res;
 
@@ -184,6 +185,9 @@ QList<QSpell *> QWarlockSpellChecker::getPosibleSpellsList(QString left, QString
 
     foreach(QSpell *vn, Spells) {
         if (!vn->active()) {
+            continue;
+        }
+        if (vn->spellBookLevel() > MaxSpellBookLevel) {
             continue;
         }
         checkHandOnSpell(res, vn, left, right, WARLOCK_HAND_LEFT, Enemy, possible_left, possible_right);
@@ -223,7 +227,9 @@ QList<QSpell *> QWarlockSpellChecker::getSpellsList(QWarlock *warlock, bool Sepa
     QString right = warlock->rightGestures().replace(" ", "");
     QString possible_left = warlock->possibleLeftGestures();
     QString possible_right = warlock->possibleRightGestures();
-    QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF());
+    int max_spell_book_level = (warlock->player() && warlock->AI()) ? warlock->magicBookLevel() : 5;
+    qDebug() << "QWarlockSpellChecker::getSpellsList max_spell_book_level" << max_spell_book_level << warlock->player() << warlock->AI() << warlock->magicBookLevel();
+    QList<QSpell *> sl = getPosibleSpellsList(left, right, !warlock->player(), possible_left, possible_right, warlock->isParaFDF(), max_spell_book_level);
     //logSpellList(sl, "QWarlockSpellChecker::getSpellsList before");
     /*if (SeparateSpellbook) {
         QSpell::setOrderType(1);

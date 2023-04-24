@@ -118,7 +118,7 @@ signals:
     void warlockInfoChanged();
     void accountMenuChanged();
     void battleListChanged();
-    void needAIAnswer(QString Login);
+    void needAIAnswer(QString Login, int MagicBookLevel);
     void readyAIAnswer(int battle_id);
 
 public slots:
@@ -174,7 +174,7 @@ protected slots:
     void loginToSite();
     void timerFired();
     void processServiceTimer();
-    void doAIAnswer(QString Login);
+    void doAIAnswer(QString Login, int MagicBookLevel);
     void checkAIAnswer(int battle_id);
 
 protected:
@@ -235,7 +235,7 @@ protected:
 
     void processWarlockGet(QString &Data);
     void processWarlockPut();
-    void callAI(QString Login = "");
+    void callAI(QString Login, int MagicBookLevel);
 private:
     // user login
     bool _isLogined;

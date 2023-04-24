@@ -20,6 +20,7 @@ QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString R
     _totalEnemyAttack = 0;
     _totalEnemyHP = 0;
     _totalFriendlyAttack = 0;
+    _magicBookLevel = 5;
 }
 
 QWarlock::QWarlock(QWarlock *CopyFrom) {
@@ -320,6 +321,21 @@ int QWarlock::getTurnToCastBySpellID(int spell_id, int def_value, int hand) cons
         return def_value;
     }
     return _turnToCast[spell_id]->turnToCast();
+}
+
+bool QWarlock::AI() const
+{
+    return _AI;
+}
+
+int QWarlock::magicBookLevel() const
+{
+    return _magicBookLevel;
+}
+
+void QWarlock::setMagicBookLevel(int newMagicBookLevel)
+{
+    _magicBookLevel = newMagicBookLevel;
 }
 
 int QWarlock::forcedHand() const

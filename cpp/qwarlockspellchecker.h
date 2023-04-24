@@ -20,7 +20,8 @@ public:
 
     QString checkSpells(QString Left, QString Right, bool Enemy);
     QList<QSpell *> getSpellsList(QWarlock *warlock, bool SeparateSpellbook = false);
-    QList<QSpell *> getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left, QString possible_right, bool IsFDF);
+    QList<QSpell *> getPosibleSpellsList(QString left, QString right, bool Enemy, QString possible_left, QString possible_right,
+                                         bool IsFDF, int MaxSpellBookLevel = 5);
     QList<QSpell *> getStriktSpellsList(QString left, QString right, bool Enemy);
     QList<QSpell *> Spells;
     QString getSpellBook(bool IsFDF, bool Sort = false, bool EnableSurrender = true);
