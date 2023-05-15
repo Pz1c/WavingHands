@@ -72,12 +72,10 @@ QML_IMPORT_PATH =
 
 contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
     ANDROID_EXTRA_LIBS = \
-        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/arm/libcrypto_1_1.so \
-        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/arm/libssl_1_1.so \
-        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/arm64/libcrypto_1_1.so \
-        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/arm64/libssl_1_1.so \
-        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/x86/libcrypto_1_1.so \
-        C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/latest/x86/libssl_1_1.so
+    C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libcrypto_3.so \
+    C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libssl_3.so \
+    $$PWD/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
+    $$PWD/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libssl_3.so
 }
 
 #android: include(D:/Android/sdk/android_openssl/openssl.pri)
@@ -104,4 +102,12 @@ DISTFILES += \
     platforms/android/src/com/kdab/training/MyService.java \
     platforms/android/src/org/qtproject/example/androidnotifier/CustomBR.java \
     platforms/android/src/org/qtproject/example/androidnotifier/NotificationClient.java
-android: include(C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/openssl.pri)
+#android: include(C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/openssl.pri)
+
+contains(ANDROID_TARGET_ARCH,arm64-v8a) {
+    ANDROID_EXTRA_LIBS = \
+        C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libcrypto_3.so \
+        C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libssl_3.so \
+        $$PWD/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
+        $$PWD/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libssl_3.so
+}

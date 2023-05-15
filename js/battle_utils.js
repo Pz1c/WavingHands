@@ -166,6 +166,7 @@ function prepareBattle(raw_battle) {
     var i, Ln;
     for (i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
         var m = raw_battle.monsters[i];
+        console.log("JS.prepareBattle.monsters", JSON.stringify(m));
         m.is_elemental = !m.owner || (m.owner === "Nobody");
         m.allow_choose_target = false;
         if (m.is_elemental) {
@@ -174,7 +175,7 @@ function prepareBattle(raw_battle) {
             battle.elemental.action = "m";
             continue;
         }
-        if ((m.name.indexOf(":") !== -1) && (m.strength !== 0)) {
+        if ((m.name.indexOf(":") !== -1) && (m.strength > 0)) {
             m.icon = "new_" + BGU.getMonsterIconByName(BGU.getMonsterNameByStrength(m.strength));
         } else {
             m.icon = BGU.getMonsterIconByName(m.name);
@@ -550,7 +551,7 @@ function checkIsMonsterCharmed(monster) {
     if (!lp["charm_" + (battle.currentHand === "L" ? "left" : "right")]) {
         return false;
     }*/
-    if (!battle.actions[battle.currentHand].s) {
+    if (!battle.actions[battle.currentHand] || !battle.actions[battle.currentHand].s) {
         return false;
     }
     var spell = battle.actions[battle.currentHand].s;

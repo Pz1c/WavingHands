@@ -330,7 +330,7 @@ function getMonsterNameByStrength(Strength) {
     switch(Strength) {
     case 1: return "Goblin";
     case 2: return "Ogre";
-    case 3: return "Trol";
+    case 3: return "Troll";
     case 4: return "Giant";
     default: return "Unknown";
     }

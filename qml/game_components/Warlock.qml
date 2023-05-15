@@ -89,17 +89,29 @@ Item {
         height: 78 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
-        contentWidth: iMonsters.width
-        contentHeight: iMonsters.height
+        //contentWidth: iMonsters.width
+        //contentHeight: iMonsters.height
 
-        Item {
+        ListView {
             id: iMonsters
-            //anchors.left: parent.left
-            //anchors.top: parent.top
-            //anchors.fill: parent
-            height: 78 * l_ratio
-            x:0
-            y:0
+            orientation: ListView.Horizontal
+            model: []
+            delegate: IconInfo {
+                id: iiDM
+                l_data: iMonsters.model[index]
+                height: 78 * l_ratio
+                width: 78 * l_ratio
+                text: iMonsters.model[index].text
+                source: "qrc:/res/"+iMonsters.model[index].icon+".png"
+                checkbox: iMonsters.model[index].is_checkbox
+                radius: 20
+                onClicked: {
+                    rWarlock.iconClick(l_data);
+                }
+                onDoubleClicked: {
+                    rWarlock.iconDoubleClick(l_data);
+                }
+            }
         }
     }
 
@@ -113,17 +125,30 @@ Item {
         height: 78 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
-        contentWidth: iCharm.width
-        contentHeight: iCharm.height
+        //contentWidth: iCharm.width
+        //contentHeight: iCharm.height
 
-        Item {
+        ListView {
             id: iCharm
-            //anchors.right: parent.right
-            //anchors.top: parent.top
-            //anchors.fill: parent
-            height: 78 * l_ratio
-            //x:0
-            y:0
+            orientation: ListView.Horizontal
+            layoutDirection: Qt.RightToLeft
+            model: []
+            delegate: IconInfo {
+                id: iiDC
+                l_data: iCharm.model[index]
+                height: 78 * l_ratio
+                width: 78 * l_ratio
+                text: iCharm.model[index].text
+                source: "qrc:/res/"+iCharm.model[index].icon+".png"
+                checkbox: iCharm.model[index].is_checkbox
+                radius: 20
+                onClicked: {
+                    rWarlock.iconClick(l_data);
+                }
+                onDoubleClicked: {
+                    rWarlock.iconDoubleClick(l_data);
+                }
+            }
         }
     }
 
@@ -308,8 +333,8 @@ Item {
             return;
         }
         console.log("showHideSummonIcon", JSON.stringify(spell));
-        for (var i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
-            var item = iMonsters.children[i];
+        for (var i = 0, Ln = iMonsters.count; i < Ln; ++i) {
+            var item = iMonsters.itemAtIndex(i);
             var name = item.l_data && item.l_data.name ? item.l_data.name : "";
             if (name.indexOf(":") === -1) {
                 continue;
@@ -325,11 +350,11 @@ Item {
                 action = 0;
             }
             if (action === 1) {
-                iMonsters.children[i].visible = true;
-                iMonsters.children[i].width = iMonsters.height;
+                item.visible = true;
+                item.width = iMonsters.height;
             } else if (action === 2) {
-                iMonsters.children[i].visible = false;
-                iMonsters.children[i].width = 0;
+                item.visible = false;
+                item.width = 0;
             }
         }
     }
@@ -360,8 +385,8 @@ Item {
             item.border.width = border_width;
             //item.active = Enable;
         }*/
-        for (i = 0, Ln = iCharm.children.length; i < Ln; ++i) {
-            item = iCharm.children[i];
+        for (i = 0, Ln = iCharm.count; i < Ln; ++i) {
+            item = iCharm.itemAtIndex(i);
 
             var has_action = item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action');
             var is_perm = has_action && (item.l_data.action === "permanency");
@@ -520,16 +545,17 @@ Item {
             return ;
         }
         var curr_x = start_x;
-        var total_width = 0, is_checkbox;
+        var total_width = 0;
         for(var i = 0, Ln = arr.length; i < Ln; ++i) {
             if (!arr[i]) {
                 continue;
             }
             var arr_m = arr[i];
-            is_checkbox = false;
+            arr_m.is_checkbox = false;
+            arr_m.text = arr_m[code_value];
             if (type === "s") {
-                is_checkbox = (arr_m.action === "permanency") || (arr_m.action === "delay");
-                if (is_checkbox) {
+                arr_m.is_checkbox = (arr_m.action === "permanency") || (arr_m.action === "delay");
+                if (arr_m.is_checkbox) {
                     arr_m.checked = false;
                 }
 
@@ -541,8 +567,9 @@ Item {
                 }
             }
 
-            var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height, text: arr_m[code_value],
-                                                        source: "qrc:/res/"+arr_m.icon+".png", checkbox: is_checkbox, radius: 20});
+            /*var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height,
+                                                        text: arr_m[code_value],
+                                                        source: "qrc:/res/"+arr_m.icon+".png", checkbox: arr_m.is_checkbox, radius: 20});
             if (sprite === null) {
                 console.log("prepareDynamic Error creating object");
                 continue;
@@ -556,9 +583,10 @@ Item {
             if (l_warlock.player && (type === "m") && (arr_m.name.indexOf(":") !== -1)) {
                 sprite.width = 0;
                 sprite.visible = false;
-            }
+            }*/
         }
-        parent.width = total_width;
+        parent.model = arr;
+
         //parent.height = total_height;
         //parent.parent.contentWidth = total_width;
         //console.log("prepareDynamic", total_width, parent.width, parent.parent.contentWidth, parent.parent.width);

@@ -465,8 +465,10 @@ BaseWindow {
         if (operationMode >= 1) {
             if ((operationMode === 1) && (data.action === "permanency")) {
                 permanency = !permanency ? 1 : 0;
+                tTargetTitle.text = getTargetTitle(operationMode === 1, currentSpell.n);
             } else if ((operationMode === 1) && (data.action === "delay")) {
                 delay = !delay ? 1 : 0;
+                tTargetTitle.text = getTargetTitle(operationMode === 1, currentSpell.n);
             } else if ((data.action === "hp") || (data.action === "m")) {
                 target = data;
                 bbChooseTarget.active = true;
