@@ -8,6 +8,7 @@
 #include <QtQml>
 #include <QDebug>
 #include <QFontDatabase>
+#include <QScreen>
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
 #endif
@@ -49,6 +50,43 @@ int main(int argc, char *argv[])
             }
         }
 
+        int iwidth =0, iheight = 0;
+        #ifdef Q_OS_ANDROID
+        QJniObject val = QJniObject::fromString("dummy");
+        QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "get_screen_size",
+                                                           "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
+                                                           QNativeInterface::QAndroidApplication::context(), val.object<jstring>());
+        QString res = string.toString();
+        qDebug() << "get_screen_size" << res;
+        QStringList sl = res.split(",");
+        if (sl.size() == 2) {
+            iwidth = sl.at(0).toInt();
+            iheight = sl.at(1).toInt();
+        }
+        #endif
+        if (iwidth <= 0) {
+            QRect rect = QGuiApplication::primaryScreen()->geometry();
+            iwidth = rect.width();
+            iheight = rect.height();
+        }
+
+        /*
+        qreal refDpi = 216.;
+        qreal refHeight = 1776.;
+        qreal refWidth = 1080.;
+        */
+        /*qreal refDpi = 96;
+        qreal refHeight = 1068;
+        qreal refWidth = 600;
+*/
+        qreal height = qMax(iheight, iwidth);
+        qreal width = qMin(iheight, iwidth);
+        // qreal dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
+/*
+        qreal m_ratio = qMin(height/refHeight, width/refWidth);
+        qreal m_ratioFont = qMin(height*refDpi/(dpi*refHeight), width*refDpi/(dpi*refWidth));
+        qDebug() << "BEFORE QML" << dpi << height << width << m_ratio << m_ratioFont;
+*/
         QWarlockDictionary::getInstance();
         //QGoogleAnalytics::getInstance();
         qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");
@@ -56,6 +94,13 @@ int main(int argc, char *argv[])
         //qmlRegisterSingletonType<QGoogleAnalytics>("ua.sp.GoogleAnalytics", 1, 0, "GoogleAnalytics", googleanalytics_qobject_singletontype_provider);
 
         QQmlApplicationEngine engine;
+        engine.setInitialProperties({
+            { "realScreenWidth", QVariant::fromValue(width) },
+            { "realScreenHeight", QVariant::fromValue(height) }/*,
+            { "calculatedRatio", QVariant::fromValue(m_ratio) },
+            { "calculatedRatioFont", QVariant::fromValue(m_ratioFont) }*/
+        });
+
         engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
         return app.exec();
     //}

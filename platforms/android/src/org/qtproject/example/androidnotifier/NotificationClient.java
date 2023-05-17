@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+import android.content.res.Resources;
 
 public class NotificationClient
 {
@@ -100,6 +101,17 @@ public class NotificationClient
         } catch (Exception e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    public static String get_screen_size(Context context, String message) {
+        try {
+            int w = Resources.getSystem().getDisplayMetrics().widthPixels;
+            int h = Resources.getSystem().getDisplayMetrics().heightPixels;
+            return w + "," + h;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "0,0";
         }
     }
 

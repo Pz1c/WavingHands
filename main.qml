@@ -45,6 +45,11 @@ ApplicationWindow {
     property bool is_game_in_progress: false
     property alias keyListener: iWndContainer
 
+    property int realScreenWidth: 0
+    property int realScreenHeight: 0
+    property real calculatedRatio: 0
+    property real calculatedRatioFont: 0
+
     Dialog {
         id: mdNoGesture
         title: warlockDictionary.getStringByCode("AreYouSure")
@@ -1331,15 +1336,12 @@ ApplicationWindow {
     }
 
     function calculateRatio() {
-        var w, h;
+        var w, h, fw, fh;
         if (isMobile()) {
-            //w = Screen.width;// * Screen.devicePixelRatio;
-            //h = Screen.height;// * Screen.devicePixelRatio;
-            w = Screen.desktopAvailableWidth;
-            h = Screen.desktopAvailableHeight;
-            console.log("calculateRatio", "Px", Screen.devicePixelRatio);
-            console.log("calculateRatio", "Width", Screen.width, Screen.desktopAvailableWidth, mainWindow.width);
-            console.log("calculateRatio", "Height", Screen.height, Screen.desktopAvailableHeight, mainWindow.height);
+            w = Screen.width;// * Screen.devicePixelRatio;
+            h = Screen.height;// * Screen.devicePixelRatio;
+            fw = realScreenWidth;//Screen.desktopAvailableWidth;
+            fh = realScreenHeight;//Screen.desktopAvailableHeight;
             //if ((Screen.desktopAvailableHeight < Screen.height) && (Screen.desktopAvailableHeight === mainWindow.height)) {
             //    h = Screen.desktopAvailableHeight + (Screen.height - Screen.desktopAvailableHeight) / 2;
             //    mainWindow.height = h;
@@ -1347,16 +1349,30 @@ ApplicationWindow {
         } else {
             w = mainWindow.width;
             h = mainWindow.height;
+            fw = w;
+            fh = h;
         }
-        var dpi  = Screen.pixelDensity;
-        var wh   = Math.max(w, h);
-        var ww   = Math.min(w, h);
-        var bh   = 1068;//800;
-        var bw   = 600;
-        var bdip = 3.74;
-        console.log(dpi, bdip, ww, wh, bw, bh);
-        ratioObject = Math.min(ww/bw, wh/bh);
-        ratioFont = Math.max(1, Math.min((wh*bdip)/(dpi*bh), (ww*bdip/(dpi*bw))));
+        console.log("calculateRatio", "calculated", calculatedRatio, calculatedRatioFont);
+        console.log("calculateRatio", "Px", Screen.devicePixelRatio, Screen.pixelDensity);
+        console.log("calculateRatio", "Width", Screen.width, Screen.desktopAvailableWidth, mainWindow.width, realScreenWidth);
+        console.log("calculateRatio", "Height", Screen.height, Screen.desktopAvailableHeight, mainWindow.height, realScreenHeight);
+
+        if ((calculatedRatio === 0) || !isMobile()) {
+            var dpi  = Screen.pixelDensity * Screen.devicePixelRatio;
+            var wh   = Math.max(w, h);
+            var ww   = Math.min(w, h);
+            var fwh   = Math.max(fw, fh);
+            var fww   = Math.min(fw, fh);
+            var bh   = 1068;//800;
+            var bw   = 600;
+            var bdpi = 4.459 * 1.25;
+            console.log(dpi, bdpi, ww, wh, bw, bh);
+            ratioObject = Math.min(ww/bw, wh/bh);
+            ratioFont = Math.max(1, Math.min((fwh*dpi)/(bdpi*bh), (fww*dpi/(bdpi*bw))));
+        } else {
+            ratioObject = calculatedRatio;
+            ratioFont = calculatedRatioFont;
+        }
 
         core.setUserProperties(Qt.platform.os, w + "x" + h, Qt.locale().name);
     }
