@@ -1,5 +1,7 @@
 function cleanUpWindow(ratioObject) {
     //ltDesc.visible = true;
+    icon.visible = false;
+    icon.iconInfoVisible = false;
     rDesc.visible = true;
     bbAction.visible = false;
     ltShortDesc.visible = true;
@@ -155,6 +157,29 @@ function prepareMonsterDetails(l_data, dict) {
       ltShortDesc.text = dict.getStringByCode("Warlock");
     }
     details += "<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
+    if (l_data.status.indexOf("-") !== -1) {
+        icon.iconInfoSource = l_data.enchantment_icon;
+        icon.iconInfoVisible = true;
+
+        details += "<br><font color=#10C9F5>Enchantments:</font><br>";
+        var ench_lst = l_data.status.substr(l_data.status.indexOf("-") + 1).split(" ");
+        for(var i = 0, Ln = ench_lst.length; i < Ln; ++i) {
+            var ss = ench_lst[i];
+            var sidx1 = ss.indexOf("(");
+            if (sidx1 === -1) {
+                continue;
+            }
+            details += ss.substr(0, sidx1) + ": ";
+            var sidx2 = ss.indexOf(")", sidx1);
+            var cnt = ss.substr(sidx1 + 1, sidx2 - sidx1 - 1) * 1;
+            details += cnt + " turn";
+            if (cnt > 1) {
+                details += "s";
+            }
+            details += "<br>";
+        }
+    }
+
     ltError.text = details;
     bbAction.text = dict.getStringByCode("MonsterSetTarget");
     bbAction.visible = l_data.under_control;// || l_data.allow_choose_target;

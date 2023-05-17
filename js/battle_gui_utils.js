@@ -6,7 +6,7 @@ var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paral
 
 var map_spell_to_icon = {"SWD":"scared","DSF":"confused","PSDF":"charmed","FFF":"paralized","WWP":"shield","SSFP":"coldproof","WWFP":"fireproof",
             "DWWFWD":"poison","DSFFFc":"disease","DPP":"amnesia","DSF":"maladroit","WWS":"mshield","WPP":"mshield","DWSSSP":"delay","PWPWWc":"haste",
-            "SPFPSDW":"permanency","DWFFd":"blindness","DFWFd":"blindness","PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice",
+            "SPFPSDW":"permanency","DWFFd":"blindness","DWFWd":"blindness","PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice",
             "WFPSFW":"giant","FPSFW":"troll","PSFW":"ogre","SFW":"goblin","P":"shield","SPPc":"time_stop","SPPFD":"time_stop",
             "cDPW":"dispel_magic","cw":"magic_mirror", "DFFDD":"lightning_bolt","DFPW":"cure_heavy_wounds","DFW":"cure_light_wounds",
             "FSSDD":"fireball","PDWP":"remove_enchantment","PSDD":"charm_monster","PWPFSSSD":"finger_of_death",
@@ -99,6 +99,18 @@ function getIconByGesture(G) {
 
 function getFullIconPathByGesture(G) {
     return "qrc:/res/g_" + getIconByGesture(G) + ".png";
+}
+
+function getSpellIconByGesture(G) {
+    if (map_spell_to_icon[G]) {
+        return map_spell_to_icon[G];
+    } else {
+        return "stars_purple";
+    }
+}
+
+function getFullSpellIconByGesture(G) {
+    return "qrc:/res/" + getSpellIconByGesture(G) + ".png";
 }
 
 function preparePrintGestures(GL, GR, mscL, mscR, maxLength) {

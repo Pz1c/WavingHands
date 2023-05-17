@@ -140,9 +140,66 @@ function prepareTurnActionInfo(last_turn_hist) {
         new_hint.push({color_bg:last_turn_hist[i].color,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
     }
 
-
     battle.hint = new_hint;
+}
 
+function prepareMonster(m) {
+    m.is_elemental = !m.owner || (m.owner === "Nobody");
+    m.allow_choose_target = false;
+    if (m.is_elemental) {
+        battle.elemental = m;
+        battle.elemental.type = m.name.indexOf("Fire") !== -1 ? "fire" : "ice";
+        battle.elemental.action = "m";
+        return false;
+    }
+
+    if ((m.name.indexOf(":") !== -1) && (m.strength > 0)) {
+        m.icon = "new_" + BGU.getMonsterIconByName(BGU.getMonsterNameByStrength(m.strength));
+    } else {
+        m.icon = BGU.getMonsterIconByName(m.name);
+    }
+
+    m.action = "m";
+    m.action_idx = battle.actions.M.length;
+
+    if (!battle.monsters[m.owner]) {
+        battle.monsters[m.owner] = [];
+    }
+
+    m.damage = BGU.getMonsterDamageByName(m.name);
+
+    m.enchantment_icon = "";
+    if (m.status.indexOf("-") !== -1) {
+        var status = m.status.toLowerCase();
+        m.enchantment = "";
+        m.enchantment_icon = "qrc:/res/target_default.png";
+        for (var i = 0, Ln = BGU.icon_status_code.length; i < Ln; ++i) {
+            if (status.indexOf(BGU.icon_status_code[i]) !== -1) {
+                if (m.enchantment !== "") {
+                    m.enchantment = "many";
+                    break;
+                } else {
+                    m.enchantment = BGU.icon_status_code[i];
+                }
+            }
+        }
+
+        if (m.enchantment !== "many") {
+            var e_code = BGU.icon_status_code_to_icon[m.enchantment];
+            if (!e_code) {
+                e_code = m.enchantment;
+            }
+            var tmp_spell = BGU.icon_status_spell[e_code];
+            if (tmp_spell) {
+                var tmp_icon = BGU.map_spell_to_icon[tmp_spell];
+                if (tmp_icon) {
+                    m.enchantment_icon = "qrc:/res/"+tmp_icon+".png";
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
 function prepareBattle(raw_battle) {
@@ -167,30 +224,12 @@ function prepareBattle(raw_battle) {
     for (i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
         var m = raw_battle.monsters[i];
         console.log("JS.prepareBattle.monsters", JSON.stringify(m));
-        m.is_elemental = !m.owner || (m.owner === "Nobody");
-        m.allow_choose_target = false;
-        if (m.is_elemental) {
-            battle.elemental = m;
-            battle.elemental.type = m.name.indexOf("Fire") !== -1 ? "fire" : "ice";
-            battle.elemental.action = "m";
-            continue;
+        if (prepareMonster(m)) {
+            battle.monsters[m.owner].push(m);
+            battle.actions.M.push({id:battle.targetsMap[m.name],target:m.new_target,old_target:m.target,
+                                   under_control:true,owner:m.owner,name:m.name,
+                                   status:m.status,d:m.damage,hp:m.hp,action:"m",strength:m.damage,icon:m.icon});
         }
-        if ((m.name.indexOf(":") !== -1) && (m.strength > 0)) {
-            m.icon = "new_" + BGU.getMonsterIconByName(BGU.getMonsterNameByStrength(m.strength));
-        } else {
-            m.icon = BGU.getMonsterIconByName(m.name);
-        }
-        m.action = "m";
-        m.action_idx = battle.actions.M.length;
-
-        if (!battle.monsters[m.owner]) {
-            battle.monsters[m.owner] = [];
-        }
-
-        m.damage = BGU.getMonsterDamageByName(m.name);
-        battle.monsters[m.owner].push(m);
-        battle.actions.M.push({id:battle.targetsMap[m.name],target:m.new_target,old_target:m.target,under_control:true,owner:m.owner,name:m.name,
-                                  status:m.status,d:m.damage,hp:m.hp,action:"m",strength:m.damage,icon:m.icon});
     }
 
     for (i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {

@@ -1296,6 +1296,10 @@ ApplicationWindow {
         GUI.linkActivated(link)
     }
 
+    function showToast(msg) {
+        core.showNotification(msg);
+    }
+
     function logEvent(event_name, params) {
         if (core.isAI) {
             return;

@@ -5,6 +5,8 @@ import QtQuick.Controls 2.15
 import Qt.labs.qmlmodels 1.0
 
 import "qrc:/qml/components"
+import "qrc:/js/battle_gui_utils.js" as BGU
+
 
 InfoWindow {
     id: dMainItem
@@ -17,24 +19,28 @@ InfoWindow {
 
     property var arrSpellInit: [ {t:4,sbl:0}, {t:2,sbl:0}, {t:3,sbl:0},
         {g:'Disruptions:',t:1,n:'',sbl:1},
-                {g:'DPP',t:0,n:'',sbl:1},{g:'DSF',t:0,n:'',sbl:1},{g:'FFF',t:0,n:'',sbl:2},{g:'SWD',t:0,n:'',sbl:1},
-                {g:'PSDD',t:0,n:'',sbl:2},{g:'PSDF',t:0,n:'',sbl:2},{g:'SPFP',t:0,n:'',sbl:3},
+                {g:'DPP',t:0,n:'',sbl:1,st:1},{g:'DSF',t:0,n:'',sbl:1,st:1},{g:'FFF',t:0,n:'',sbl:2,st:1},{g:'SWD',t:0,n:'',sbl:1,st:1},
+                {g:'PSDD',t:0,n:'',sbl:2,st:1},{g:'PSDF',t:0,n:'',sbl:2,st:1},{g:'SPFP',t:0,n:'',sbl:3,st:1},
         {g:'Damaging:',t:1,n:'',sbl:1},
-                {g:'>',t:0,n:'',sbl:1},{g:'SD',t:0,n:'',sbl:1},{g:'WFP',t:0,n:'',sbl:1},{g:'WPFD',t:0,n:'',sbl:1},
-                {g:'WDDc',t:0,n:'',sbl:3},{g:'DFFDD',t:0,n:'',sbl:3},{g:'FSSDD',t:0,n:'',sbl:3},{g:'PWPFSSSD',t:0,n:'',sbl:5},
+                {g:'>',t:0,n:'',sbl:1,st:2},{g:'SD',t:0,n:'',sbl:1,st:2},{g:'WFP',t:0,n:'',sbl:1,st:2},{g:'WPFD',t:0,n:'',sbl:1,st:2},
+                {g:'WDDc',t:0,n:'',sbl:3,st:2},{g:'DFFDD',t:0,n:'',sbl:3,st:2},{g:'FSSDD',t:0,n:'',sbl:3,st:2},{g:'PWPFSSSD',t:0,n:'',sbl:5,st:2},
         {g:'Healing:',t:1,n:'',sbl:1},
-                {g:'DFW',t:0,n:'',sbl:1},{g:'DFPW',t:0,n:'',sbl:2},
+                {g:'DFW',t:0,n:'',sbl:1,st:3},{g:'DFPW',t:0,n:'',sbl:2,st:3},
         {g:'Monsters:',t:1,n:'',sbl:1},
-                {g:'SFW',t:0,n:'',sbl:1},{g:'PSFW',t:0,n:'',sbl:2},{g:'FPSFW',t:0,n:'',sbl:2},{g:'WFPSFW',t:0,n:'',sbl:2},
+                {g:'SFW',t:0,n:'',sbl:1,st:4},{g:'PSFW',t:0,n:'',sbl:2,st:4},{g:'FPSFW',t:0,n:'',sbl:2,st:4},{g:'WFPSFW',t:0,n:'',sbl:2,st:4},
         {g:'Protection:',t:1,n:'',sbl:1},
-                {g:'P',t:0,n:'',sbl:1},{g:'p',t:0,n:'',sbl:1},{g:'WWP',t:0,n:'',sbl:1},
+                {g:'P',t:0,n:'',sbl:1,st:5},{g:'p',t:0,n:'',sbl:1,st:5},{g:'WWP',t:0,n:'',sbl:1,st:5},
         {g:'Counters:',t:1,n:'',sbl:2},
-                {g:'cw',t:0,n:'',sbl:2},{g:'cDPW',t:0,n:'',sbl:3},{g:'WPP',t:0,n:'',sbl:2},{g:'WWS',t:0,n:'',sbl:2},{g:'PDWP',t:0,n:'',sbl:3},
+                {g:'cw',t:0,n:'',sbl:2,st:6},{g:'cDPW',t:0,n:'',sbl:3,st:6},{g:'WPP',t:0,n:'',sbl:2,st:6},
+                {g:'WWS',t:0,n:'',sbl:2,st:6},{g:'PDWP',t:0,n:'',sbl:3,st:6},
         {g:'Advanced Enchantments:',t:1,n:'',sbl:3},
-                {g:'PPws',t:0,n:'',sbl:3},{g:'DWFFd',t:0,n:'',sbl:3},{g:'DWFWd',t:0,n:'',sbl:3},{g:'SPPc',t:0,n:'',sbl:5},{g:'SPPFD',t:0,n:'',sbl:5},
-                {g:'PWPWWc',t:0,n:'',sbl:5},{g:'DSFFFc',t:0,n:'',sbl:3},{g:'DWWFWD',t:0,n:'',sbl:5},{g:'DWSSSP',t:0,n:'',sbl:5},{g:'SPFPSDW',t:0,n:'',sbl:5},
+                {g:'PPws',t:0,n:'',sbl:3,st:7},{g:'DWFFd',t:0,n:'',sbl:3,st:7},{g:'DWFWd',t:0,n:'',sbl:3,st:7},
+                {g:'SPPc',t:0,n:'',sbl:5},{g:'SPPFD',t:0,n:'',sbl:5,st:7},{g:'PWPWWc',t:0,n:'',sbl:5,st:7},
+                {g:'DSFFFc',t:0,n:'',sbl:3,st:7},{g:'DWWFWD',t:0,n:'',sbl:5,st:7},{g:'DWSSSP',t:0,n:'',sbl:5,st:7},
+                {g:'SPFPSDW',t:0,n:'',sbl:5,st:7},
         {g:'Elements:',t:1,n:'',sbl:4},
-                {g:'SSFP',t:0,n:'',sbl:4},{g:'WWFP',t:0,n:'',sbl:4},{g:'WSSc',t:0,n:'',sbl:4},{g:'SWWc',t:0,n:'',sbl:4},{g:'cSWWS',t:0,n:'',sbl:4},{g:'cWSSW',t:0,n:'',sbl:4}
+                {g:'SSFP',t:0,n:'',sbl:4,st:8},{g:'WWFP',t:0,n:'',sbl:4,st:8},{g:'WSSc',t:0,n:'',sbl:4,st:8},
+                {g:'SWWc',t:0,n:'',sbl:4,st:8},{g:'cSWWS',t:0,n:'',sbl:4,st:8},{g:'cWSSW',t:0,n:'',sbl:4,st:8}
         ]
     property var arrSpell: []
     property int lastSpellbookLevel: 1
@@ -105,14 +111,30 @@ InfoWindow {
                                 Text {
                                     id: rdbifTitle
                                     anchors.verticalCenter: rdSpellItem.verticalCenter
-                                    anchors.right: parent.right //rdbifInfo.left
-                                    //anchors.rightMargin: 0.03 * parent.width
+                                    anchors.right: rSpellIcon.left //rdbifInfo.left
+                                    anchors.rightMargin: 0.03 * parent.width
                                     height: 0.8 * rdSpellItem.height
                                     font.pixelSize: 28 * mainWindow.ratioFont
                                     color: "#FEE2D6"
                                     fontSizeMode: Text.VerticalFit
                                     horizontalAlignment: Text.AlignRight
                                     text: lvSpellList.model[index].n
+                                }
+
+                                Rectangle {
+                                    id: rSpellIcon
+                                    height: 0.9 * parent.height
+                                    width: height
+                                    anchors.verticalCenter: rdSpellItem.verticalCenter
+                                    anchors.right: parent.right
+                                    radius: 10
+                                    color: (lvSpellList.model[index].st === 3 ? "#0654C0" : (lvSpellList.model[index].st === 2 ? "#FEE2D6" : "#551470"))
+
+                                    Image {
+                                        id: iSpellIcon
+                                        source: BGU.getFullSpellIconByGesture(lvSpellList.model[index].g)
+                                        anchors.fill: parent
+                                    }
                                 }
 
                                 MouseArea {

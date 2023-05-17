@@ -25,6 +25,8 @@ Rectangle {
     property alias textWidth: btnText.width
     property alias textAnchors: btnText.anchors
     property alias iconAnchors: iIcon.anchors
+    property alias iconInfoVisible: iInfoIcon.visible
+    property alias iconInfoSource: iInfoIcon.source
     //property alias paddingLeft: anchors.leftMargin
     //property alias paddingRignt: anchors.rightMargin
     property string bg_color: "#551470"
@@ -55,6 +57,15 @@ Rectangle {
         width: 0.3 * button.width
         color: "white"
         fontSizeMode: Text.Fit
+    }
+
+    Image {
+        id: iInfoIcon
+        anchors.left: button.left
+        anchors.bottom: button.bottom
+        height: 0.3 * button.height
+        width: 0.3 * button.width
+        visible: false
     }
 
     SequentialAnimation on color {

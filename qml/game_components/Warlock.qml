@@ -103,7 +103,9 @@ Item {
                 width: 78 * l_ratio
                 text: iMonsters.model[index].text
                 source: "qrc:/res/"+iMonsters.model[index].icon+".png"
-                checkbox: iMonsters.model[index].is_checkbox
+                iconInfoSource: iMonsters.model[index].enchantment_icon
+                iconInfoVisible: iMonsters.model[index].enchantment_icon !== ""
+                checkbox: false//iMonsters.model[index].is_checkbox
                 radius: 20
                 onClicked: {
                     rWarlock.iconClick(l_data);

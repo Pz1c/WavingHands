@@ -170,6 +170,8 @@ public slots:
     void setupAIServer();
 
     void setSBL(int NewLevel);
+    // https://github.com/Pz1c/WavingHands/issues/268
+    void showNotification(const QString &msg);
 protected slots:
     void loginToSite();
     void timerFired();
@@ -227,7 +229,6 @@ protected:
     QString getHintArray(int hint_id);
     QString getBattleHint(QBattleInfo *battle_info);
 
-    void showNotification(const QString &msg);
     QBattleInfo *getBattleInfo(int battleId);
 
     void storeFullParsedBattle(QBattleInfo *bi);

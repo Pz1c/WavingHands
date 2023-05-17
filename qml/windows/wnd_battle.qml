@@ -337,7 +337,7 @@ BaseWindow {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 anchors.left: iiElemental.right
-                anchors.right: iiDefault.left
+                anchors.right: bbChooseTarget.horizontalCenter
                 visible: false
                 text: "test hint 01"
                 color: "#210430"
@@ -578,6 +578,7 @@ BaseWindow {
     }
 
     function setTargetingOnOff(Enable, IsSpell, Title) {
+        console.log("wnd_battle.setTargetingOnOff", Enable, IsSpell, Title, mainWindow.gBattle.player_has_bank, mainWindow.gBattle.player_has_permanency);
         if (!Enable) {
             battleChanged();
             ltHint.visible = false;
@@ -587,9 +588,9 @@ BaseWindow {
                 var txt = "";//"Select target for " + Title;
                 if (IsSpell) {
                     if (mainWindow.gBattle.player_has_bank) {
-                        txt = "To bank a "+Title+", click the the bank icon, and then choose the spell's target";
-                    } else if (mainWindow.gBattle.player_has_permanent) {
-                        txt = "To do a "+Title+" permanent, click the the permanency icon, and then choose the spell's target";
+                        txt = "To bank a "+Title+", click the bank icon and then choose a target";
+                    } else if (mainWindow.gBattle.player_has_permanency) {
+                        txt = "To make "+Title+" permanent, click the permanency icon and then choose a target";
                     } else if (Title !== "Counter Spell") {
                         //txt += " spell";
                     }

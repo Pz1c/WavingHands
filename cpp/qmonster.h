@@ -52,6 +52,7 @@ private:
     QString _owner;
     QString _target;
     QString _newTarget;
+    QString _enchantment;
     int _strength;
     int _hp;
     int _attackStrength;

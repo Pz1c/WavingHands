@@ -5,6 +5,7 @@ import Qt.labs.qmlmodels 1.0
 
 import "qrc:/qml/components"
 import "qrc:/js/small_gui_utils.js" as SG
+import "qrc:/js/battle_gui_utils.js" as BGU
 
 BaseWindow {
     id: dMainItem
@@ -179,14 +180,31 @@ BaseWindow {
                                     LargeText {
                                         id: rdbifTitle
                                         anchors.verticalCenter: rdSpellItem.verticalCenter
-                                        anchors.right: rdSpellItem.right
-                                        anchors.rightMargin: 12 * mainWindow.ratioObject
+                                        anchors.right: rSpellIcon.left
+                                        anchors.rightMargin: 6 * mainWindow.ratioObject
                                         height: 50 * mainWindow.ratioObject
                                         width: 0.55 * parent.width
                                         color: (lvSpellList.model[index].cast_type === 2) ? "#544653" : "snow"
                                         fontSizeMode: Text.VerticalFit
                                         horizontalAlignment: Text.AlignRight
                                         text: lvSpellList.model[index].n
+                                    }
+
+                                    Rectangle {
+                                        id: rSpellIcon
+                                        height: 50 * mainWindow.ratioObject
+                                        width: height
+                                        anchors.verticalCenter: rdSpellItem.verticalCenter
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 12 * mainWindow.ratioObject
+                                        radius: 10
+                                        color: (lvSpellList.model[index].st === 3 ? "#0654C0" : (lvSpellList.model[index].st === 2 ? "#FEE2D6" : "#551470"))
+
+                                        Image {
+                                            id: iSpellIcon
+                                            source: BGU.getFullSpellIconByGesture(lvSpellList.model[index].g)
+                                            anchors.fill: parent
+                                        }
                                     }
 
                                     MouseArea {

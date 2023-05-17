@@ -150,6 +150,8 @@ QString QMonster::html(const QString &user_login) {
 QString QMonster::json(const QString &user_login) {
     bool targeted = _target.compare(user_login, Qt::CaseInsensitive) == 0;
 
-    return QString("{\"under_control\":%1,\"name\":\"%2\",\"status\":\"%3\",\"owner\":\"%4\",\"target\":\"%5\",\"targeted\":%6,\"strength\":%7,\"new_target\":\"%8\",\"hp\":%9}")
-             .arg(boolToStr(is_owner(user_login)), _name, _status, _owner, _target, boolToStr(targeted), intToStr(_strength), _newTarget, intToStr(_hp));
+    return QString("{\"under_control\":%1,\"name\":\"%2\",\"status\":\"%3\",\"owner\":\"%4\",\"target\":\"%5\",\"targeted\":%6,"
+                   "\"strength\":%7,\"new_target\":\"%8\",\"hp\":%9,\"enchantment\":\"%10\"}")
+             .arg(boolToStr(is_owner(user_login)), _name, _status, _owner, _target, boolToStr(targeted),
+             intToStr(_strength), _newTarget, intToStr(_hp)).arg(_enchantment);
 }

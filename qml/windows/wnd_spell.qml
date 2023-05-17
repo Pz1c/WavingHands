@@ -271,7 +271,6 @@ InfoWindow {
         SGU.cleanUpWindow(mainWindow.ratioObject);
 
         if (l_data && (l_data.action || (l_data.type && (l_data.type >= 8)))) {
-            icon.visible = false;
             if (l_data.type && (l_data.type === 21)) {
                 SGU.prepareTooMuchBotBattles(l_data, dict);
             } else if (l_data.type && (l_data.type === 20)) {

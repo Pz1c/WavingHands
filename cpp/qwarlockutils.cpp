@@ -57,7 +57,7 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
 
 QString QWarlockUtils::getStringFromData(QString &Data, QString Search, QString ValueBegin, QString ValueEnd, int &Pos, bool NoChangePos) {
     //qDebug() << "QWarlockUtils::getStringFromData" << (Data.length() > 60 ? Data.left(60) : Data) << Search << ValueBegin << ValueEnd << Pos << NoChangePos;
-    int old_pos = Pos, idx1, idx2 = 0, idx3 = -1;
+    int old_pos = Pos, idx1 = 0, idx2 = 0, idx3 = -1;
     if (Pos == -1) {
         Pos = 0;
     }
