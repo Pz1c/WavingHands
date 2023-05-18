@@ -19,28 +19,28 @@ InfoWindow {
 
     property var arrSpellInit: [ {t:4,sbl:0}, {t:2,sbl:0}, {t:3,sbl:0},
         {g:'Disruptions:',t:1,n:'',sbl:1},
-                {g:'DPP',t:0,n:'',sbl:1,st:1},{g:'DSF',t:0,n:'',sbl:1,st:1},{g:'FFF',t:0,n:'',sbl:2,st:1},{g:'SWD',t:0,n:'',sbl:1,st:1},
-                {g:'PSDD',t:0,n:'',sbl:2,st:1},{g:'PSDF',t:0,n:'',sbl:2,st:1},{g:'SPFP',t:0,n:'',sbl:3,st:1},
+                {g:'DPP',t:0,n:'',sbl:1,sg:1},{g:'DSF',t:0,n:'',sbl:1,sg:1},{g:'FFF',t:0,n:'',sbl:2,sg:1},{g:'SWD',t:0,n:'',sbl:1,sg:1},
+                {g:'PSDD',t:0,n:'',sbl:2,sg:1},{g:'PSDF',t:0,n:'',sbl:2,sg:1},{g:'SPFP',t:0,n:'',sbl:3,sg:1},
         {g:'Damaging:',t:1,n:'',sbl:1},
-                {g:'>',t:0,n:'',sbl:1,st:2},{g:'SD',t:0,n:'',sbl:1,st:2},{g:'WFP',t:0,n:'',sbl:1,st:2},{g:'WPFD',t:0,n:'',sbl:1,st:2},
-                {g:'WDDc',t:0,n:'',sbl:3,st:2},{g:'DFFDD',t:0,n:'',sbl:3,st:2},{g:'FSSDD',t:0,n:'',sbl:3,st:2},{g:'PWPFSSSD',t:0,n:'',sbl:5,st:2},
+                {g:'>',t:0,n:'',sbl:1,sg:2},{g:'SD',t:0,n:'',sbl:1,sg:2},{g:'WFP',t:0,n:'',sbl:1,sg:2},{g:'WPFD',t:0,n:'',sbl:1,sg:2},
+                {g:'WDDc',t:0,n:'',sbl:3,sg:2},{g:'DFFDD',t:0,n:'',sbl:3,sg:2},{g:'FSSDD',t:0,n:'',sbl:3,sg:2},{g:'PWPFSSSD',t:0,n:'',sbl:5,sg:2},
         {g:'Healing:',t:1,n:'',sbl:1},
-                {g:'DFW',t:0,n:'',sbl:1,st:3},{g:'DFPW',t:0,n:'',sbl:2,st:3},
+                {g:'DFW',t:0,n:'',sbl:1,sg:3},{g:'DFPW',t:0,n:'',sbl:2,sg:3},
         {g:'Monsters:',t:1,n:'',sbl:1},
-                {g:'SFW',t:0,n:'',sbl:1,st:4},{g:'PSFW',t:0,n:'',sbl:2,st:4},{g:'FPSFW',t:0,n:'',sbl:2,st:4},{g:'WFPSFW',t:0,n:'',sbl:2,st:4},
+                {g:'SFW',t:0,n:'',sbl:1,sg:4},{g:'PSFW',t:0,n:'',sbl:2,sg:4},{g:'FPSFW',t:0,n:'',sbl:2,sg:4},{g:'WFPSFW',t:0,n:'',sbl:2,sg:4},
         {g:'Protection:',t:1,n:'',sbl:1},
-                {g:'P',t:0,n:'',sbl:1,st:5},{g:'p',t:0,n:'',sbl:1,st:5},{g:'WWP',t:0,n:'',sbl:1,st:5},
+                {g:'P',t:0,n:'',sbl:1,sg:5},{g:'p',t:0,n:'',sbl:1,sg:5},{g:'WWP',t:0,n:'',sbl:1,sg:5},
         {g:'Counters:',t:1,n:'',sbl:2},
-                {g:'cw',t:0,n:'',sbl:2,st:6},{g:'cDPW',t:0,n:'',sbl:3,st:6},{g:'WPP',t:0,n:'',sbl:2,st:6},
-                {g:'WWS',t:0,n:'',sbl:2,st:6},{g:'PDWP',t:0,n:'',sbl:3,st:6},
+                {g:'cw',t:0,n:'',sbl:2,sg:6},{g:'cDPW',t:0,n:'',sbl:3,sg:6},{g:'WPP',t:0,n:'',sbl:2,sg:6},
+                {g:'WWS',t:0,n:'',sbl:2,sg:6},{g:'PDWP',t:0,n:'',sbl:3,sg:6},
         {g:'Advanced Enchantments:',t:1,n:'',sbl:3},
-                {g:'PPws',t:0,n:'',sbl:3,st:7},{g:'DWFFd',t:0,n:'',sbl:3,st:7},{g:'DWFWd',t:0,n:'',sbl:3,st:7},
-                {g:'SPPc',t:0,n:'',sbl:5},{g:'SPPFD',t:0,n:'',sbl:5,st:7},{g:'PWPWWc',t:0,n:'',sbl:5,st:7},
-                {g:'DSFFFc',t:0,n:'',sbl:3,st:7},{g:'DWWFWD',t:0,n:'',sbl:5,st:7},{g:'DWSSSP',t:0,n:'',sbl:5,st:7},
-                {g:'SPFPSDW',t:0,n:'',sbl:5,st:7},
+                {g:'PPws',t:0,n:'',sbl:3,sg:7},{g:'DWFFd',t:0,n:'',sbl:3,sg:7},{g:'DWFWd',t:0,n:'',sbl:3,sg:7},
+                {g:'SPPc',t:0,n:'',sbl:5},{g:'SPPFD',t:0,n:'',sbl:5,sg:7},{g:'PWPWWc',t:0,n:'',sbl:5,sg:7},
+                {g:'DSFFFc',t:0,n:'',sbl:3,sg:7},{g:'DWWFWD',t:0,n:'',sbl:5,sg:7},{g:'DWSSSP',t:0,n:'',sbl:5,sg:7},
+                {g:'SPFPSDW',t:0,n:'',sbl:5,sg:7},
         {g:'Elements:',t:1,n:'',sbl:4},
-                {g:'SSFP',t:0,n:'',sbl:4,st:8},{g:'WWFP',t:0,n:'',sbl:4,st:8},{g:'WSSc',t:0,n:'',sbl:4,st:8},
-                {g:'SWWc',t:0,n:'',sbl:4,st:8},{g:'cSWWS',t:0,n:'',sbl:4,st:8},{g:'cWSSW',t:0,n:'',sbl:4,st:8}
+                {g:'SSFP',t:0,n:'',sbl:4,sg:8},{g:'WWFP',t:0,n:'',sbl:4,sg:8},{g:'WSSc',t:0,n:'',sbl:4,sg:8},
+                {g:'SWWc',t:0,n:'',sbl:4,sg:8},{g:'cSWWS',t:0,n:'',sbl:4,sg:8},{g:'cWSSW',t:0,n:'',sbl:4,sg:8}
         ]
     property var arrSpell: []
     property int lastSpellbookLevel: 1
@@ -128,7 +128,7 @@ InfoWindow {
                                     anchors.verticalCenter: rdSpellItem.verticalCenter
                                     anchors.right: parent.right
                                     radius: 10
-                                    color: (lvSpellList.model[index].st === 3 ? "#0654C0" : (lvSpellList.model[index].st === 2 ? "#FEE2D6" : "#551470"))
+                                    color: (lvSpellList.model[index].sg === 3 ? "#0654C0" : (lvSpellList.model[index].sg === 2 ? "#FEE2D6" : "#551470"))
 
                                     Image {
                                         id: iSpellIcon

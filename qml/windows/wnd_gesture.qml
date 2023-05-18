@@ -198,7 +198,7 @@ BaseWindow {
                                         anchors.right: parent.right
                                         anchors.rightMargin: 12 * mainWindow.ratioObject
                                         radius: 10
-                                        color: (lvSpellList.model[index].st === 3 ? "#0654C0" : (lvSpellList.model[index].st === 2 ? "#FEE2D6" : "#551470"))
+                                        color: (lvSpellList.model[index].sg === 3 ? "#0654C0" : (lvSpellList.model[index].sg === 2 ? "#FEE2D6" : "#551470"))
 
                                         Image {
                                             id: iSpellIcon

@@ -702,6 +702,7 @@ BaseWindow {
             return;
         }
         title_text = "Battle #" + mainWindow.gBattle.id;
+        rTT.visible = false;
         BU.applyBattle();
         battleChanged();
         if (/*true || */!mainWindow.gBattle.with_bot) {

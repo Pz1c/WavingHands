@@ -140,9 +140,9 @@ bool QWarlockUtils::parseWarlock(QString &Data, QList<QWarlock *> &result, QStri
     QString name = getStringFromData(Data, "WIDTH=\"50%\"", "html\">", "</A>", pos);
     pos = 0;
     QString state = getStringFromData(Data, "a href=\"/player/", "<TD CLASS=lightbg>", "</TD", pos);
-    QString lh = getStringFromData(Data, "LH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>", pos).replace("&nbsp;", " ").replace("&gt;", ">");
-    QString rh = getStringFromData(Data, "RH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>", pos).replace("&nbsp;", " ").replace("&gt;", ">");
-    qDebug() << "QWarlockUtils::parseWarlock" << name << player;
+    QString lh = getStringFromData(Data, "LH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>", pos).replace("&nbsp;", " ").replace("&gt;", ">").replace("&gt", ">");
+    QString rh = getStringFromData(Data, "RH:</FONT>", "<FONT CLASS=monoturn>", "</FONT>", pos).replace("&nbsp;", " ").replace("&gt;", ">").replace("&gt", ">");
+    qDebug() << "QWarlockUtils::parseWarlock" << name << player << lh << rh;
     QWarlock *res = new QWarlock(name, state, lh, rh, name.compare(player, Qt::CaseInsensitive) == 0, _lstAI.indexOf(name.toUpper()) != -1);
     result.append(res);
     return true;
