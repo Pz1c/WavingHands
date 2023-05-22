@@ -399,15 +399,7 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
         pos1 = pos2 + 4;
     }
     generateTopList();
-    if (isLoading()) {
-        emit topListChanged();
-    }
-    //QString list = QWarlockUtils::parseTopList(Data);
-    /*if (_topList.compare(list) != 0) {
-        _topList = list;
-        qDebug() << list;
-        emit topListChanged();
-    }*/
+    emit topListChanged();
 }
 
 void QWarloksDuelCore::generateTopList() {
@@ -2514,8 +2506,8 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
     }
     // boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), intToStr(_active)
     QStringList sltmp = stmp.split(",");
-    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7,\"online\":%8}").
-            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), boolToStr(sltmp.at(10).toInt() == 1));
+    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7,\"last_activity\":%8}").
+            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), sltmp.at(10));
 }
 
 void QWarloksDuelCore::showNotification(const QString &msg) {

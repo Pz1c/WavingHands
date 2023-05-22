@@ -365,14 +365,16 @@ BaseWindow {
 
             Rectangle {
                 id: ltTutorial
-                anchors.top: parent.top
+                /*anchors.top: parent.top
                 anchors.topMargin: 6 * mainWindow.ratioObject
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 18 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: 24 * mainWindow.ratioObject
                 anchors.right: parent.right
-                anchors.rightMargin: 24 * mainWindow.ratioObject
+                anchors.rightMargin: 24 * mainWindow.ratioObject*/
+                anchors.fill: parent
+                anchors.topMargin: -6 * mainWindow.ratioObject
                 z:2000
                 visible: false
                 color: "#FEE2D6"
@@ -393,7 +395,7 @@ BaseWindow {
                     id: ltTTTPrev
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
-                    anchors.leftMargin: 18 * mainWindow.ratioObject
+                    anchors.leftMargin: 6 * mainWindow.ratioObject
                     width: 30 * mainWindow.ratioObject
                     height: 0.80 * parent.height
                     fontSizeMode: Text.VerticalFit
@@ -427,8 +429,8 @@ BaseWindow {
                 LargeText {
                     id: ltTTTNext
                     anchors.verticalCenter: parent.verticalCenter
-                    anchors.right: parent.right
-                    anchors.rightMargin: 18 * mainWindow.ratioObject
+                    anchors.right: iTTIcons.left
+                    anchors.rightMargin: 6 * mainWindow.ratioObject
                     width: 30 * mainWindow.ratioObject
                     height: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 0.80 * parent.height : 0.50 * parent.height
                     fontSizeMode: Text.VerticalFit
@@ -438,6 +440,55 @@ BaseWindow {
                     font.pixelSize: 21 * mainWindow.ratioFont
                     onClicked: {
                         ltTTT.clicked();
+                    }
+                }
+
+                Item {
+                    id: iTTIcons
+                    width: 128 * mainWindow.ratioObject
+                    height: 128 * mainWindow.ratioObject
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 30 * mainWindow.ratioObject
+
+                    Rectangle {
+                        id: rTTIMainIcon
+                        width: 100 * mainWindow.ratioObject
+                        height: 100 * mainWindow.ratioObject
+                        anchors.left: parent.left
+                        //anchors.leftMargin: 15 * mainWindow.ratioObject
+                        anchors.top: parent.top
+                        //anchors.topMargin: 15 * mainWindow.ratioObject
+                        border.width: 2 * mainWindow.ratioObject
+                        border.color: "#FEE2D6"
+                        radius: 10
+
+                        Image {
+                            id: iTTIMainIcon
+                            anchors.fill: parent
+                            //width: 96 * mainWindow.ratioObject
+                            //height: 96 * mainWindow.ratioObject
+
+                            source: "qrc:/res/spellbook.png"
+                        }
+
+                        Text {
+                            id: tTTIMainIconText
+
+                            text: ""
+                            anchors.centerIn: parent;
+                            font.pixelSize: 28 * mainWindow.ratioFont
+                        }
+                    }
+
+                    Image {
+                        id: iTTISmallIcon
+                        anchors.verticalCenter: rTTIMainIcon.bottom
+                        anchors.horizontalCenter: rTTIMainIcon.right
+                        width: 64 * mainWindow.ratioObject
+                        height: 64 * mainWindow.ratioObject
+
+                        source: "qrc:/res/spellbook.png"
                     }
                 }
             }

@@ -158,6 +158,10 @@ static QStringList ARR_ACTIVE_COLOR = QStringList({"#FF0000", "#BB4400", "#99660
 static QStringList ARR_ONLINE_COLOR = QStringList({"#11EE00", "#00FF00"});
 static QStringList ARR_BATTLE_MSG_COLOR_ACTIVE = QStringList({"#FF6666", "#FF8888", "#88FF88", "#79D979"});
 static QStringList ARR_BATTLE_MSG_COLOR_INACTIVE = QStringList({"#FFFFFF", "#CCCCCC", "#FF88FF"});
+static QMap<QString, int> MAP_COLOR_TO_SECONDS {{"#00FF00",1},{"#11EE00",120},{"#22DD00",300},{"#33CC00",600},{"#44BB00",1800},
+                                               {"#55AA00",3600},{"#669900",7200},{"#778800",21600},{"#887700",43200},{"#996600",86400},
+                                               {"#AA5500",130000},{"#BB4400",172800},{"#CC3300",259200},{"#DD2200",500000},
+                                               {"#EE1100",1000000},{"#FF0000",20000000}};
 
 #define intToStr QString::number
 #define boolToInt(val) (val?1:0)

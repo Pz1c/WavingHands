@@ -146,6 +146,10 @@ function getMonsterIconByNameEx(name) {
         return "troll";
     } else if (name.indexOf("Giant") !== -1) {
         return "giant";
+    } else if ((name.indexOf("Fire") !== -1) && (name.indexOf("Elemental") !== -1)) {
+        return "elemental_fire";
+    } else if ((name.indexOf("Ice") !== -1) && (name.indexOf("Elemental") !== -1)) {
+        return "elemental_ice";
     } else {
         return "summon";
     }
@@ -501,8 +505,20 @@ function parseSimpleAttack(txt, stop_word) {
             aggressor += " " + arr[i];
         }
     }
-    var res = {aggressor:aggressor,target:target,success:txt.indexOf("damage") !== -1 ? 1 : 0};
+    var res = {aggressor:aggressor,target:target,success:txt.indexOf("damage") !== -1 ? 1 : 0,shield:txt.indexOf("shield") !== -1 ? 1 : 0};
     console.log("parseSimpleAttack", JSON.stringify(arr), JSON.stringify(res));
+    return res;
+}
+
+function parseStrangeAttack(txt) {
+    var summons = ["Goblin", "Orge", "Troll", "Giant", "Elemental"];
+    var res = {aggressor:"",target:""};
+    var arr = txt.split(" ");
+    res.target = arr[0];
+    if (summons.indexOf(arr[1]) !== -1) {
+        res.target += " " + arr[1];
+    }
+
     return res;
 }
 
@@ -514,6 +530,9 @@ function parseAttackByText(txt) {
         res = parseSimpleAttack(txt, "swings wildly for");
     } else if (txt.indexOf("tries to attack") !== -1) {
         res = parseSimpleAttack(txt, "tries to attack");
+    } else {
+        // message like "Galbarad starts to lose coordination" or "Smelly Goblin is hit by a Magic Missile, for 1 damage."
+        res = parseStrangeAttack(txt);
     }
 
     //res = {aggressor:aggressor,target:target,success:txt.indexOf("damage") !== -1 ? 1 : 0};
@@ -523,6 +542,7 @@ function parseAttackByText(txt) {
 
 function getMessageActionByAttack(txt, battle) {
     var res = [];
+    var icon_action = {action:"icon",large_icon:"",small_icon:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     var attack_obj = parseAttackByText(txt);
     var aggressor_found = false, target_found = false, w, m, j, LnJ;
     if (attack_obj.aggressor) {
@@ -548,6 +568,9 @@ function getMessageActionByAttack(txt, battle) {
             if (!target_found) {
                 if (attack_obj.success && (battle.warlocks[i].name === attack_obj.target)) {
                     res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:attack_obj.target === attack_obj.aggressor ? "#10C9F5" : "#FEE2D6"});
+                    icon_action.large_icon = "heart";
+                    icon_action.text = battle.warlocks[i].hp;
+                    target_found = true;
                 } else {
                     w = battle.warlocks[i];
                     for (j = 0, LnJ = w.monsters; j < LnJ; ++j) {
@@ -565,23 +588,44 @@ function getMessageActionByAttack(txt, battle) {
                 break;
             }
         }
-    }
 
+        icon_action.small_icon = getMonsterIconByNameEx(attack_obj.aggressor);
+        if (icon_action.small_icon === "summon") {
+            icon_action.small_icon = "";
+        }
+        if (attack_obj.shield) {
+            icon_action.large_icon = "shield";
+        } else if (icon_action.large_icon === "") {
+            icon_action.large_icon = getMonsterIconByNameEx(attack_obj.target);
+        }
+        res.push(icon_action);
+    }
     console.log("getMessageActionByAttack", JSON.stringify(attack_obj), JSON.stringify(res));
     return res;
 }
 
-function getMessageActionByRow(row, battle) {
+function getMessageActionByDeath(msg, battle) {
     var res = [];
+    var icon = getMonsterIconByNameEx(msg);
+    if (icon === "summon") {
+        icon = "RIP2";
+    }
+
+    res.push({action:"icon",large_icon:icon,small_icon:"",text:"",background_color:"#210430",border_color:"#FEE2D6"});
+    return res;
+}
+
+function getMessageActionByRow(row, battle) {
+    //var res = [];
     if (row.txt.indexOf(" casts ") !== -1) {
         // process spell casting
         return getMessageActionBySpell(row.txt, battle);
     } else if (row.color === "#FF6666") {
-        // TODO process dies messages
+        return getMessageActionByDeath(row.txt, battle);
     } else {//if (row.txt.indexOf(" attacks ") !== -1) {
         // process attack message
         return getMessageActionByAttack(row.txt, battle);
     }
 
-    return res;
+    //return res;
 }

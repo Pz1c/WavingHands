@@ -125,8 +125,12 @@ function prepareTurnActionInfo(last_turn_hist) {
 
     for(i = 0, Ln = last_turn_hist.length; i < Ln; ++i) {
         var new_action = [];
-        if (battle.with_bot && (last_turn_hist[i].type === 0)) {
-            continue;
+        if ((last_turn_hist[i].type === 0)) {
+            // chat message
+            if (battle.with_bot) {
+                continue;
+            }
+            new_action.push({action:"icon",large_icon:"chat",small_icon:"",text:"",background_color:"#210430",border_color:"#E7FFFF"});
         } else if (last_turn_hist[i].type === 2) {
             continue;
         } else if (last_turn_hist[i].type === 1) {
@@ -155,6 +159,9 @@ function prepareMonster(m) {
 
     if ((m.name.indexOf(":") !== -1) && (m.strength > 0)) {
         m.icon = "new_" + BGU.getMonsterIconByName(BGU.getMonsterNameByStrength(m.strength));
+        if (m.icon.indexOf("elemental") !== -1) {
+            m.icon = "new_summon";
+        }
     } else {
         m.icon = BGU.getMonsterIconByName(m.name);
     }

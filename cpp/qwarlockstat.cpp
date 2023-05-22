@@ -74,30 +74,14 @@ void QWarlockStat::parseAndInit(QString Raw) {
 
 qint64 QWarlockStat::getLastActivityByColor(const QString Color) {
     qint64 curr_time = QDateTime::currentSecsSinceEpoch();
-    if (Color.compare("#00FF00") == 0) {
-        // 0 minutes
-    } else if (Color.compare("#11EE00") == 0) {
-        curr_time -= 60 * 2; // 2 minutes ago
-    } else if (Color.compare("#22DD00") == 0) {
-        curr_time -= 60 * 5; // 5 minutes ago
-    } else if (Color.compare("#33CC00") == 0) {
-        curr_time -= 60 * 15; // 15 minutes ago
-    } else if (Color.compare("#669900") == 0) {
-        curr_time -= 60 * 60 * 5; // 5 hours ago
+    int dec_sec;
+    if (MAP_COLOR_TO_SECONDS.contains(Color)) {
+        dec_sec = MAP_COLOR_TO_SECONDS[Color];
     } else {
-        bool ok;
-        QString tmp = Color;
-        tmp.replace("#", "");
-        int hex = tmp.toInt(&ok, 16);
-        qDebug() << "QWarlockStat::getLastActivityByColor" << Color << tmp << ok << hex << (hex <= 0xCC3300);
-        if (ok && (hex <= 0xCC3300)) {
-            curr_time -= 1 * 24 * 60 * 60; // more than 3 days ago
-        } else {
-            curr_time -= 3 * 24 * 60 * 60 + 1; // more than 3 days ago
-        }
+        dec_sec = 20000100;
     }
-
-    return curr_time;
+    qDebug() << "QWarlockStat::getLastActivityByColor" << _name << Color << curr_time << dec_sec << curr_time - dec_sec;
+    return curr_time - dec_sec;
 }
 
 bool QWarlockStat::ai() const

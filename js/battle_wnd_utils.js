@@ -16,10 +16,44 @@ function processHighlightHintAction(a, restore) {
     }
 }
 
+function prepareIconToHint() {
+    rTTIMainIcon.visible = false;
+    iTTIMainIcon.visible = false;
+    iTTISmallIcon.visible = false;
+    tTTIMainIconText.text = "";
+    tTTIMainIconText.visible = false;
+}
+
+function processHighlightIconAction(a, restore) {
+    console.log("processHighlightIconAction", JSON.stringify(a), restore);
+
+    if (restore) {
+        prepareIconToHint();
+    }else {
+        rTTIMainIcon.border.color = a.border_color;
+        rTTIMainIcon.color = a.background_color;
+        rTTIMainIcon.visible = true;
+        if (a.large_icon !== "") {
+            iTTIMainIcon.source = "qrc:/res/" + a.large_icon + ".png";
+            iTTIMainIcon.visible = true;
+        }
+        if (a.small_icon !== "") {
+            iTTISmallIcon.source = "qrc:/res/" + a.small_icon + ".png";
+            iTTISmallIcon.visible = true;
+        }
+        if (a.text !== "") {
+            tTTIMainIconText.color = a.border_color;
+            tTTIMainIconText.text = a.text;
+            tTTIMainIconText.visible = true;
+        }
+    }
+}
+
 function processHintAction(a, restore) {
     console.log("BWU.processHintAction", JSON.stringify(a), restore);
     switch(a.action) {
     case "highlight": return processHighlightHintAction(a, restore);
+    case "icon": return processHighlightIconAction(a, restore);
     }
 }
 
@@ -41,6 +75,7 @@ function prepareWarockToHint(restore) {
 function closeTutorial() {
     ltTutorial.visible = false;
     prepareWarockToHint(true);
+    prepareIconToHint();
 }
 
 function showTutorialData(diff, skip_restore) {
@@ -79,6 +114,7 @@ function showTutorialData(diff, skip_restore) {
     ltTutorial.color = hint.color_bg;
     ltTTT.text = hint.txt;
     prepareWarockToHint(false);
+    prepareIconToHint();
 
     processAllHintAction(ltTutorial.tutorialData[ltTutorial.tutorialDataIdx].actions, false);
 }

@@ -106,8 +106,12 @@ ApplicationWindow {
             closeChild(true);
             //showAfterRegWnd();
         }
-        onTopListChanged: showHallOfFameWindow()
-
+        onTopListChanged: {
+                if (needTopList === 1) {
+                    needTopList = 0;
+                    showHallOfFameWindow();
+                }
+            }
         Component.onCompleted: {
             console.log("Core.completed");
             core.setupAIServer();
@@ -1267,7 +1271,9 @@ ApplicationWindow {
         }
     }
 
+    property int needTopList: 0;
     function getHallOfFame() {
+        needTopList = 1;
         core.scanTopList(false, true);
         //WNDU.showTopWindow();
     }

@@ -53,6 +53,7 @@ function newUserRegistered() {
 }
 
 function fixActivBattleDesc(arr) {
+    var curr_date_sec = Math.floor((new Date()).getTime()/1000);
     for (var i = 0, Ln = arr.length; i < Ln; ++i) {
         var item = arr[i];
         if (!item || !item.el || (item.el.length < 2)) {
@@ -62,7 +63,7 @@ function fixActivBattleDesc(arr) {
         var str = core.getWarlockStats(item.el);
         //console.log("fixActivBattleDesc", item.el, str);
         var wd = JSON.parse(str);
-        arr[i].online = wd.online;
+        arr[i].online = wd.last_activity - curr_date_sec <= 5 * 60;
 
     }
 }
@@ -241,7 +242,7 @@ function startGameWithPlayer(WarlockName, FriendlyLevel) {
     if (!WarlockName) {
         showErrorWnd({id:-1,type:19});
     } else {
-        core.createNewChallenge(1, 0, 1, 1, FriendlyLevel, 1, "Welcome to fight", WarlockName);
+        core.createNewChallenge(1, 1, 1, 1, FriendlyLevel, 1, "Welcome to fight", WarlockName);
     }
 }
 
