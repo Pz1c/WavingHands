@@ -621,10 +621,12 @@ Item {
 
             if (l_warlock.pgL) {
                 setGesture("L", SG.getIconByGesture(l_warlock.pgL, true));
+                mainWindow.gBattle.actions["L"].g = l_warlock.pgL;
             }
 
             if (l_warlock.pgR) {
                 setGesture("R", SG.getIconByGesture(l_warlock.pgR, true));
+                mainWindow.gBattle.actions["R"].g = l_warlock.pgR;
             }
         } else {
             if (hands_visible) {

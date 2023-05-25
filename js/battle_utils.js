@@ -366,8 +366,8 @@ function prepareGUI() {
 function applyBattle() {
     var raw_battle = mainWindow.gBattle;
     prepareBattle(raw_battle);
-    prepareGUI();
     mainWindow.gBattle = battle;
+    prepareGUI();
 }
 
 function prepareOrder() {

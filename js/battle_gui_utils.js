@@ -445,18 +445,47 @@ function higlightWarlockGestureBySpell(warlock, spell_obj) {
     return {action:"none"};
 }
 
+function getSpellIconActionBySpell(spell_obj) {
+    var res = {action:"icon",large_icon:"",small_icon:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
+    var arr_g = map_spell_name_to_gesture[spell_obj.spell];
+    res.large_icon = map_spell_to_icon[arr_g[0]];
+    if (spell_obj.spell.indexOf("Cure") !== -1) {
+        res.background_color = "#0654C0";
+        res.border_color = "#210430";
+    } else {
+        var arr_dmg_spell = ['>','SD','WFP','WPFD','WDDc','DFFDD','FSSDD','PWPFSSSD'];
+        for (var i = 0, Ln = arr_g.length; i < Ln; ++i) {
+            if (arr_dmg_spell.indexOf(arr_g[i]) !== -1) {
+                res.background_color = "#FEE2D6";
+                res.border_color = "#210430";
+                break;
+            }
+        }
+    }
+
+    return res;
+}
+
 function getMessageActionBySpell(txt, battle) {
     var res = [];
     var spell_obj = parseSpellByText(txt);
     var target_found = false;
+    res.push(getSpellIconActionBySpell(spell_obj));
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].name === spell_obj.warlock) {
+            // hightlight spell gestures
             res.push(higlightWarlockGestureBySpell(battle.warlocks[i], spell_obj));
+            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === battle.warlocks[i].name ? "#10C9F5" : "#FEE2D6"});
         } else {
+            // switch off hightlighting to all other warlocks gestures
             res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
         }
         if (battle.warlocks[i].name === spell_obj.target) {
-            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === spell_obj.warlock ? "#10C9F5" : "#FEE2D6"});
+            if (spell_obj.spell === "Cause Heavy Wounds") {
+                battle.warlocks[i].got_heavy_wounds = true;
+            }
+
+            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:"#10C9F5"});
             target_found = true;
         }
         if (!target_found) {
@@ -464,6 +493,9 @@ function getMessageActionBySpell(txt, battle) {
             for (var j = 0, LnJ = w.monsters; j < LnJ; ++j) {
                 var m = w.monsters[j];
                 if (m.name === spell_obj.target) {
+                    if (spell_obj.spell === "Cause Heavy Wounds") {
+                        battle.warlocks[i].monsters[j].got_heavy_wounds = true;
+                    }
                     res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:"#FEE2D6"});
                     target_found = true;
                     break;
@@ -479,8 +511,9 @@ function getMessageActionBySpell(txt, battle) {
 
 function parseSimpleAttack(txt, stop_word) {
     var prepare_txt = stop_word ? txt.replace(stop_word, "attacks") : txt;
-    var arr = replaceAll(prepare_txt.replace(",", " #").replace("for", "#"), '  ', ' ').split(" ");
+    var arr = replaceAll(prepare_txt.replace(",", " #").replace("for", "#").replace(".", " ."), '  ', ' ').split(" ");
 
+    var damage = 0;
     var aggressor = arr[0];
     var target = "";
     var target_start = false;
@@ -494,6 +527,10 @@ function parseSimpleAttack(txt, stop_word) {
             continue;
         }
         if (arr[i] === '#') {
+            if (arr[i + 2] === "damage") {
+                damage = arr[i + 1];
+            }
+
             break;
         }
         if (target_start) {
@@ -505,19 +542,97 @@ function parseSimpleAttack(txt, stop_word) {
             aggressor += " " + arr[i];
         }
     }
-    var res = {aggressor:aggressor,target:target,success:txt.indexOf("damage") !== -1 ? 1 : 0,shield:txt.indexOf("shield") !== -1 ? 1 : 0};
+    var res = {aggressor:aggressor,target:target,damage:damage,success:damage > 0 ? 1 : 0,shield:txt.indexOf("shield") !== -1 ? 1 : 0};
     console.log("parseSimpleAttack", JSON.stringify(arr), JSON.stringify(res));
     return res;
 }
 
 function parseStrangeAttack(txt) {
-    var summons = ["Goblin", "Orge", "Troll", "Giant", "Elemental"];
-    var res = {aggressor:"",target:""};
-    var arr = txt.split(" ");
-    res.target = arr[0];
-    if (summons.indexOf(arr[1]) !== -1) {
-        res.target += " " + arr[1];
+    var res = {aggressor:"",target:"",spell_name:"",damage:0,shield:false,mirror:false,counter_spell:false};
+    if (txt.indexOf("Wounds appear") !== -1) {
+        txt = txt.replace("Wounds appear all over ", "").replace("body!", "is hit by a Cause Light Wounds for 2 damage");
+    } else if (txt.indexOf("reflected") !== -1) {
+        var idx1 = txt.indexOf(" spell");
+        res.spell_name = txt.substr(4, idx1 - 4).trim();
+        console.log("parseStrangeAttack magic mirror", res.spell_name);
+        idx1 = txt.indexOf("from") + 5;
+        var idx2 = txt.indexOf("'s", idx1);
+        txt = txt.substr(idx1, idx2 - idx1) + " is hit by a " + res.spell_name;
+        res.spell_name = "";
+        res.mirror = true;
     }
+
+
+    var arr = replaceAll(txt, ",", " semicolon").replace(".", " dot").replace("is hit by a", "attack_spell")
+            .replace("!", " !").replace("'s", " ").split(" ");
+    console.log("parseStrangeAttack", arr);
+    var target_finished = false, spell_started = false, spell_finished = false;
+    for(var i = 0, Ln = arr.length; i < Ln; ++i) {
+        if (arr[i] === "") {
+            continue;
+        }
+
+        var word_not_upper = arr[i].charAt(0).toUpperCase() !== arr[i].charAt(0);
+        target_finished = target_finished || word_not_upper;
+        if (!target_finished) {
+            res.target += " " + arr[i];
+            continue;
+        }
+        if (arr[i] === "attack_spell") {
+            spell_started = true;
+            continue;
+        }
+        spell_finished = spell_started && (spell_finished || word_not_upper);
+        if (spell_started && !spell_finished) {
+            res.spell_name += " " + arr[i];
+            continue;
+        }
+
+        if ((arr[i] === "damage") && (arr[i - 2] === "for")) {
+            res.damage = arr[i - 1];
+        }
+
+        if (!spell_started && ((arr[i] === "coordination") || (arr[i] === "maladroit"))) {
+            res.spell_name = "Confusion";
+        }
+
+        if (!spell_started && ((arr[i] === "intrigued") || (arr[i] === "charmed"))) {
+            res.spell_name = "Charm Person";
+        }
+
+        if (!spell_started && (arr[i] === "glassy-eyed")) {
+            res.spell_name = "Charm Monster";
+        }
+
+        if (!spell_started && ((arr[i] === "stiffen") || (arr[i] === "paralysed"))) {
+            res.spell_name = "Paralysis";
+        }
+
+        if (!spell_started && ((arr[i] === "fear") || (arr[i] === "par alysed"))) {
+            res.spell_name = "Fear";
+        }
+
+        if (!spell_started && ((arr[i] === "blank") || (arr[i] === "forgets"))) {
+            res.spell_name = "Amnesia";
+        }
+
+        if (!spell_started && ((arr[i] === "sick") || (arr[i] === "nauseous") || (arr[i] === "pale")
+                               || (arr[i] === "breathing") || (arr[i] === "feverishly") || (arr[i] === "weakly")
+                               || (arr[i] === "coughing"))) {
+            res.spell_name = "Disease";
+        }
+
+        if (!spell_started && ((arr[i] === "shimmering") || (arr[i] === "par alysed"))) {
+            res.spell_name = "Protection";
+        }
+
+        if (!spell_started && ((arr[i] === "glowing") || (arr[i] === "par alysed"))) {
+            res.spell_name = "Counter Spell";
+        }
+    }
+
+    res.target = res.target.trim();
+    res.spell_name = res.spell_name.trim();
 
     return res;
 }
@@ -544,8 +659,8 @@ function getMessageActionByAttack(txt, battle) {
     var res = [];
     var icon_action = {action:"icon",large_icon:"",small_icon:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     var attack_obj = parseAttackByText(txt);
-    var aggressor_found = false, target_found = false, w, m, j, LnJ;
-    if (attack_obj.aggressor) {
+    var aggressor_found = attack_obj.aggressor === "", target_found = res.target === "", w, m, j, LnJ;
+    if (attack_obj.aggressor || res.target) {
         for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
             //console.log("getMessageActionByAttack", i, Ln, battle.warlocks[i].name);
             if (!aggressor_found) {
@@ -591,8 +706,12 @@ function getMessageActionByAttack(txt, battle) {
 
         icon_action.small_icon = getMonsterIconByNameEx(attack_obj.aggressor);
         if (icon_action.small_icon === "summon") {
-            icon_action.small_icon = "";
+            icon_action.small_icon = "heart";
         }
+        if (attack_obj.damage > 0) {
+            icon_action.text = "- " + attack_obj.damage;
+        }
+
         if (attack_obj.shield) {
             icon_action.large_icon = "shield";
         } else if (icon_action.large_icon === "") {
@@ -601,6 +720,68 @@ function getMessageActionByAttack(txt, battle) {
         res.push(icon_action);
     }
     console.log("getMessageActionByAttack", JSON.stringify(attack_obj), JSON.stringify(res));
+    return res;
+}
+
+function getMessageActionByOther(msg, battle) {
+    var res = [];
+    var obj = parseStrangeAttack(msg);
+    console.log("getMessageActionByOther", msg, JSON.stringify(obj));
+    var icon_action = {action:"icon",large_icon:"",small_icon:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
+    var target_found = false;
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        if (battle.warlocks[i].name === obj.target) {
+            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
+            icon_action.large_icon = "heart";
+            icon_action.text = battle.warlocks[i].hp;
+            target_found = true;
+            if (obj.spell_name === "Disease") {
+                if (battle.warlocks[i].disease > 0) {
+                   icon_action.text = battle.warlocks[i].disease;
+                } else if (battle.warlocks[i].poison > 0) {
+                    icon_action.text = battle.warlocks[i].poison;
+                    obj.spell_name = "Poison";
+                 }
+            } else if (obj.spell_name === "Cause Light Wounds") {
+                if (battle.warlocks[i].got_heavy_wounds) {
+                    obj.spell_name = "Cause Heavy Wounds";
+                    obj.damage = 3;
+                }
+            }
+
+            break;
+        }
+    }
+
+    if (obj.damage > 0) {
+        icon_action.text = "- " + obj.damage;
+    }
+
+    if (!target_found) {
+        icon_action.large_icon = getMonsterIconByNameEx(obj.target);
+    }
+    if (obj.spell_name !== "") {
+        var arr_g = map_spell_name_to_gesture[obj.spell_name];
+        icon_action.small_icon = map_spell_to_icon[arr_g[0]];
+        if ((obj.spell_name === "Disease") || (obj.spell_name === "Poison")) {
+            icon_action.large_icon = "";
+        }
+    }
+    if (obj.shield) {
+        icon_action.large_icon = "shield";
+        icon_action.text = "";
+    }
+    if (obj.counter_spell) {
+        icon_action.large_icon = "mshield";
+        icon_action.text = "";
+    }
+    if (obj.mirror) {
+        icon_action.large_icon = "magic_mirror";
+        icon_action.text = "";
+    }
+
+    res.push(icon_action);
+    console.log("getMessageActionByOther", JSON.stringify(res));
     return res;
 }
 
@@ -622,9 +803,11 @@ function getMessageActionByRow(row, battle) {
         return getMessageActionBySpell(row.txt, battle);
     } else if (row.color === "#FF6666") {
         return getMessageActionByDeath(row.txt, battle);
-    } else {//if (row.txt.indexOf(" attacks ") !== -1) {
+    } else if ((row.txt.indexOf(" attack") !== -1) || (row.txt.indexOf(" swing ") !== -1)) {
         // process attack message
         return getMessageActionByAttack(row.txt, battle);
+    } else {
+        return getMessageActionByOther(row.txt, battle);
     }
 
     //return res;
