@@ -213,7 +213,7 @@ InfoWindow {
                 font.pixelSize: 28 * mainWindow.ratioFont
 
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 60 * mainWindow.ratioObject
+                anchors.bottomMargin: 54 * mainWindow.ratioObject
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 MouseArea {

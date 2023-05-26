@@ -187,7 +187,8 @@ BaseWindow {
                                         color: (lvSpellList.model[index].cast_type === 2) ? "#544653" : "snow"
                                         fontSizeMode: Text.VerticalFit
                                         horizontalAlignment: Text.AlignRight
-                                        text: lvSpellList.model[index].n
+                                        text: lvSpellList.model[index].n.indexOf("Elemental") !== -1 ?
+                                                  lvSpellList.model[index].n.replace("Summon ", "") : lvSpellList.model[index].n
                                     }
 
                                     Rectangle {

@@ -315,7 +315,8 @@ function finishPrepareWarlockList() {
     var curr_y = 0;
     var total_height = 0;
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-        if (!battle.warlocks[i] || !battle.warlocks[i].active) {
+        // https://github.com/Pz1c/WavingHands/issues/259
+        if (!battle.warlocks[i] || (!battle.warlocks[i].active && (battle.monsters[battle.warlocks[i].name].length === 0))) {
             continue;
         }
         var arr_m = battle.warlocks[i];

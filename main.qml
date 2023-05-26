@@ -451,62 +451,10 @@ ApplicationWindow {
         anchors.right: parent.right
         //color: "#210430"
 
-        BtnBig {
-            id: bbNewGame
-            text_color: "#ABF4F4"
-            text: warlockDictionary.getStringByCode("NewGame")
-            bg_color_active: "#551470"
-            border_color_active: "#551470"
-            radius: 30
-
-            gradient: Gradient {
-                GradientStop { position: 0.0 ; color: "#905B93" }
-                GradientStop { position: 0.75; color: "#551470" }
-                GradientStop { position: 1.0 ; color: "#551470" }
-            }
-
-            width: 366 * ratioObject
-            height: 96 * ratioObject
-            anchors.top: parent.top
-            anchors.topMargin: 144 * ratioObject
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            onClicked: {
-                console.log("start game btn 1");
-                logEvent("New_game_button", {});
-                WNDU.showNewGame();
-                //GUI.startGame(0);
-            }
-        }
-
-        BtnBig {
-            id: bbNewBotGame
-            text_color: "#A8F4F4"
-            text: warlockDictionary.getStringByCode("NewGameWithPlayer")
-            transparent: true
-            font.underline: true
-            border.width: 0
-            visible: false//core.allowedAdd || true
-
-            width: 0.5 * parent.width
-            height: 60 * ratioObject
-            font.pixelSize: 28 * ratioFont
-            fontSizeMode: Text.VerticalFit
-
-            anchors.top: bbNewGame.bottom
-            anchors.topMargin: 24 * ratioObject
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            onClicked: {
-                console.log("start game btn 2");
-                GUI.startGame(1);
-            }
-        }
-
         ScrollView {
             id: iBattleList
-            anchors.top: bbNewBotGame.bottom
-            anchors.topMargin: 130 * ratioObject
+            anchors.top: parent.top
+            //anchors.topMargin: 130 * ratioObject
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.leftMargin: 24 * ratioObject
@@ -521,11 +469,40 @@ ApplicationWindow {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: ltActiveBattle.height + lvActiveBattle.height + ltFinishedBattle.height + lvFinishedBattle.height
+                height: ((144 + 130) * ratioObject)+ bbNewGame.height + ltActiveBattle.height + lvActiveBattle.height + ltFinishedBattle.height + lvFinishedBattle.height
+
+                BtnBig {
+                    id: bbNewGame
+                    text_color: "#ABF4F4"
+                    text: warlockDictionary.getStringByCode("NewGame")
+                    bg_color_active: "#551470"
+                    border_color_active: "#551470"
+                    radius: 30
+
+                    gradient: Gradient {
+                        GradientStop { position: 0.0 ; color: "#905B93" }
+                        GradientStop { position: 0.75; color: "#551470" }
+                        GradientStop { position: 1.0 ; color: "#551470" }
+                    }
+
+                    width: 366 * ratioObject
+                    height: 96 * ratioObject
+                    anchors.top: parent.top
+                    anchors.topMargin: 144 * ratioObject
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    onClicked: {
+                        console.log("start game btn 1");
+                        logEvent("New_game_button", {});
+                        WNDU.showNewGame();
+                        //GUI.startGame(0);
+                    }
+                }
 
                 LargeText {
                     id: ltActiveBattle
-                    anchors.top: parent.top
+                    anchors.top: bbNewGame.bottom
+                    anchors.topMargin: 130 * ratioObject
                     anchors.left: parent.left
                     //anchors.right: parent.right
                     height: 48 * ratioObject
@@ -539,7 +516,8 @@ ApplicationWindow {
 
                 LargeText {
                     id: ltRefresh
-                    anchors.top: parent.top
+                    anchors.top: bbNewGame.bottom
+                    anchors.topMargin: 130 * ratioObject
                     anchors.left: ltActiveBattle.right
                     anchors.right: parent.right
                     height: 48 * ratioObject

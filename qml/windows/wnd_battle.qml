@@ -365,20 +365,14 @@ BaseWindow {
 
             Rectangle {
                 id: ltTutorial
-                /*anchors.top: parent.top
-                anchors.topMargin: 6 * mainWindow.ratioObject
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 18 * mainWindow.ratioObject
                 anchors.left: parent.left
-                anchors.leftMargin: 24 * mainWindow.ratioObject
                 anchors.right: parent.right
-                anchors.rightMargin: 24 * mainWindow.ratioObject*/
-                anchors.fill: parent
-                anchors.topMargin: -6 * mainWindow.ratioObject
+                height: 122 * mainWindow.ratioObject
                 z:2000
                 visible: false
                 color: "#FEE2D6"
-                radius: 10
+                //radius: 10
                 property var tutorialData: ([])
                 property int tutorialDataIdx: 0
                 property alias text: ltTTT.text
@@ -395,14 +389,14 @@ BaseWindow {
                     id: ltTTTPrev
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
-                    anchors.leftMargin: 6 * mainWindow.ratioObject
+                    anchors.leftMargin: 24 * mainWindow.ratioObject
                     width: 30 * mainWindow.ratioObject
                     height: 0.80 * parent.height
                     fontSizeMode: Text.VerticalFit
                     text: "<"
                     color: "#210430"
                     visible: ltTutorial.tutorialDataIdx > 0
-                    font.pixelSize: 21 * mainWindow.ratioFont
+                    font.pixelSize: 48 * mainWindow.ratioFont
                     onClicked: {
                         showTutorialData(-1);
                     }
@@ -437,7 +431,7 @@ BaseWindow {
                     font.underline: !(ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1)
                     text: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? ">" : "got it!"
                     color: "#210430"
-                    font.pixelSize: 21 * mainWindow.ratioFont
+                    font.pixelSize: (ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 48 : 21) * mainWindow.ratioFont
                     onClicked: {
                         ltTTT.clicked();
                     }
@@ -448,35 +442,49 @@ BaseWindow {
                     width: 128 * mainWindow.ratioObject
                     height: 128 * mainWindow.ratioObject
                     anchors.right: parent.right
+                    anchors.rightMargin: 36 * mainWindow.ratioObject
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 30 * mainWindow.ratioObject
+                    anchors.bottomMargin: 42 * mainWindow.ratioObject
 
                     Rectangle {
                         id: rTTIMainIcon
-                        width: 100 * mainWindow.ratioObject
-                        height: 100 * mainWindow.ratioObject
-                        anchors.left: parent.left
+                        //width: 100 * mainWindow.ratioObject
+                        //height: 100 * mainWindow.ratioObject
+                        //anchors.left: parent.left
                         //anchors.leftMargin: 15 * mainWindow.ratioObject
-                        anchors.top: parent.top
+                        //anchors.top: parent.top
                         //anchors.topMargin: 15 * mainWindow.ratioObject
+                        anchors.fill: parent
                         border.width: 2 * mainWindow.ratioObject
                         border.color: "#FEE2D6"
                         radius: 10
 
                         Image {
                             id: iTTIMainIcon
-                            anchors.fill: parent
-                            //width: 96 * mainWindow.ratioObject
-                            //height: 96 * mainWindow.ratioObject
+                            anchors.centerIn: parent
+                            width: 96 * mainWindow.ratioObject
+                            height: 96 * mainWindow.ratioObject
 
                             source: "qrc:/res/spellbook.png"
+                        }
+
+                        Text {
+                            id: tTTIMainIconTitle
+
+                            text: ""
+                            font.bold: true
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.top: parent.top
+                            anchors.topMargin: 6 * mainWindow.objectRatio
+                            font.pixelSize: 16 * mainWindow.ratioFont
                         }
 
                         Text {
                             id: tTTIMainIconText
 
                             text: ""
-                            anchors.centerIn: parent;
+                            font.bold: text.indexOf("- ") === 0
+                            anchors.centerIn: parent
                             font.pixelSize: 28 * mainWindow.ratioFont
                         }
                     }

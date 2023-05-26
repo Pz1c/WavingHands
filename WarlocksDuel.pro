@@ -73,9 +73,7 @@ QML_IMPORT_PATH =
 contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
     ANDROID_EXTRA_LIBS = \
     C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libcrypto_3.so \
-    C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libssl_3.so \
-    $$PWD/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
-    $$PWD/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libssl_3.so
+    C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libssl_3.so
 }
 
 #android: include(D:/Android/sdk/android_openssl/openssl.pri)
@@ -106,8 +104,6 @@ DISTFILES += \
 
 contains(ANDROID_TARGET_ARCH,arm64-v8a) {
     ANDROID_EXTRA_LIBS = \
-        C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libcrypto_3.so \
-        C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/armeabi-v7a/libssl_3.so \
-        $$PWD/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
-        $$PWD/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libssl_3.so
+        C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
+        C:/Work/WavingHands/../../Users/steel/AppData/Local/Android/Sdk/android_openssl/ssl_3/arm64-v8a/libssl_3.so
 }

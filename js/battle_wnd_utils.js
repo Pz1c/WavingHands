@@ -22,6 +22,8 @@ function prepareIconToHint() {
     iTTISmallIcon.visible = false;
     tTTIMainIconText.text = "";
     tTTIMainIconText.visible = false;
+    tTTIMainIconTitle.text = "";
+    tTTIMainIconTitle.visible = false;
 }
 
 function processHighlightIconAction(a, restore) {
@@ -34,6 +36,14 @@ function processHighlightIconAction(a, restore) {
         rTTIMainIcon.color = a.background_color;
         rTTIMainIcon.visible = true;
         if (a.large_icon !== "") {
+            if (a.large_icon === "heart") {
+                if ((a.text + " ").indexOf("- ") === 0) {
+                    a.large_icon = "heart_small";
+                } else {
+                    a.large_icon = "spellbook";
+                }
+            }
+
             iTTIMainIcon.source = "qrc:/res/" + a.large_icon + ".png";
             iTTIMainIcon.visible = true;
         }
@@ -45,6 +55,11 @@ function processHighlightIconAction(a, restore) {
             tTTIMainIconText.color = a.border_color;
             tTTIMainIconText.text = a.text;
             tTTIMainIconText.visible = true;
+        }
+        if (a.title !== "") {
+            tTTIMainIconTitle.color = a.border_color;
+            tTTIMainIconTitle.text = a.title;
+            tTTIMainIconTitle.visible = true;
         }
     }
 }

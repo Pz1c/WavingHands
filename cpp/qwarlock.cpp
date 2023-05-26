@@ -667,7 +667,7 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
             tea += m->getStrength();
         }
     }
-    qDebug() << "QWarlock::processMonster" << _evilMonster.size() << _friendMonster.size() << (elemental ? elemental->json(_name) : "NO ELEMENTAL");
+    qDebug() << "QWarlock::processMonster" << _evilMonster.size() << _friendMonster.size() << (elemental ? elemental->json(_name) : "NO ELEMENTAL") << tea;
 
     bool all_on_enemy = _evilMonster.empty();
     QString new_target = enemy->name();

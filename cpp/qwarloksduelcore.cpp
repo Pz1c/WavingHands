@@ -1751,7 +1751,7 @@ bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
         getChallengeList(true);
     }
     if (!_isAI && !_isAsService) {
-        if (QDateTime::currentSecsSinceEpoch() - _lastPlayersScan > 10 * 60) {
+        if (QDateTime::currentSecsSinceEpoch() - _lastPlayersScan > 2 * 60) {
             scanTopList(true);
         }
     }
