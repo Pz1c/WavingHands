@@ -35,7 +35,7 @@ function processHighlightIconAction(a, restore) {
         rTTIMainIcon.border.color = a.border_color;
         rTTIMainIcon.color = a.background_color;
         rTTIMainIcon.visible = true;
-        if (a.large_icon !== "") {
+        if (a.large_icon && (a.large_icon !== "")) {
             if (a.large_icon === "heart") {
                 if ((a.text + " ").indexOf("- ") === 0) {
                     a.large_icon = "heart_small";
@@ -47,16 +47,16 @@ function processHighlightIconAction(a, restore) {
             iTTIMainIcon.source = "qrc:/res/" + a.large_icon + ".png";
             iTTIMainIcon.visible = true;
         }
-        if (a.small_icon !== "") {
+        if (a.small_icon && (a.small_icon !== "")) {
             iTTISmallIcon.source = "qrc:/res/" + a.small_icon + ".png";
             iTTISmallIcon.visible = true;
         }
-        if (a.text !== "") {
+        if (a.text && (a.text !== "")) {
             tTTIMainIconText.color = a.border_color;
             tTTIMainIconText.text = a.text;
             tTTIMainIconText.visible = true;
         }
-        if (a.title !== "") {
+        if (a.title && (a.title !== "")) {
             tTTIMainIconTitle.color = a.border_color;
             tTTIMainIconTitle.text = a.title;
             tTTIMainIconTitle.visible = true;

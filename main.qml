@@ -1249,6 +1249,10 @@ ApplicationWindow {
         }
     }
 
+    function showBattleReadOnly(BattleID) {
+        console.log("main.qml.showBattleReadOnly", BattleID);
+    }
+
     property int needTopList: 0;
     function getHallOfFame() {
         needTopList = 1;

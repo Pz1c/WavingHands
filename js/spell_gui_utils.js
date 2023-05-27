@@ -120,15 +120,15 @@ function prepareDataType9(l_data, dict) {
     ltError.text = replaceAll(replaceAll(l_data.d, "''", '"'), '&quot;', '"');
 }
 
-function prepareDataType8(l_data, dict) {
+function prepareDataOrderSubmitted(l_data, dict) {
     ltTitle.text = "Orders Submitted";
     ltShortDesc.text = "Your orders are in for this turn. Players may take up to 3 days to submit orders.";
     ltError.text = l_data.d;
-    bbAction.text = "Force Turn";//dict.getStringByCode("MonsterSetTarget");
-    if (l_data.fst > 0) {
-        bbAction.visible = true;
-        l_data.action = "force";
-    }
+    bbAction.text = "View";
+    bbAction.visible = true;
+    bbSkipAction.text = "Force Turn";
+    bbSkipAction.visible = l_data.fst > 0;
+    l_data.action = "force";
 }
 
 function prepareMonsterDetails(l_data, dict) {

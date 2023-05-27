@@ -106,7 +106,7 @@ InfoWindow {
             Rectangle {
                 id: rDesc
                 anchors.top: ltShortDesc.bottom
-                anchors.topMargin: 108 * mainWindow.ratioObject
+                anchors.topMargin: 28 * mainWindow.ratioObject
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: "#FEE2D6"
                 width: 330 * mainWindow.ratioObject

@@ -152,7 +152,7 @@ InfoWindow {
                     } else if (l_data.action === "reg_info") {
                         Qt.openUrlExternally("https://games.ravenblack.net/rules/0/register.html");
                     } else if (l_data.action === "force") {
-                        mainWindow.gameCore.forceSurrender(l_data.id, l_data.fst);
+                        mainWindow.showBattleReadOnly(l_data.id);
                     } else if (l_data.under_control) {
                         mainWindow.chooseMonsterTarget(ltTitle.text);
                     }
@@ -192,6 +192,8 @@ InfoWindow {
                         mainWindow.showFeedbackWnd();
                     } else if (l_data.action === "private_challenge") {
                         mainWindow.gameCore.rejectChallenge(l_data.id);
+                    } else if (l_data.action === "force") {
+                        mainWindow.gameCore.forceSurrender(l_data.id, l_data.fst);
                     }
                 }
             }
@@ -300,7 +302,7 @@ InfoWindow {
             } else if (l_data.type && (l_data.type === 9)) {
                 SGU.prepareDataType9(l_data, dict);
             } else if (l_data.type && (l_data.type === 8)) {
-                SGU.prepareDataType8(l_data, dict);
+                SGU.prepareDataOrderSubmitted(l_data, dict);
             } else if (l_data.action === 'm') {
                 SGU.prepareMonsterDetails(l_data, dict);
             } else if (l_data.action === 'hp') {

@@ -496,8 +496,10 @@ function getMessageActionBySpell(txt, battle) {
         }
         if (!target_found) {
             var w = battle.warlocks[i];
-            for (var j = 0, LnJ = w.monsters; j < LnJ; ++j) {
+            console.log("getMessageActionBySpell", "check monsters", spell_obj.target, JSON.stringify(w.monsters));
+            for (var j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
                 var m = w.monsters[j];
+                console.log("getMessageActionBySpell", "check monster", JSON.stringify(m));
                 if (m.name === spell_obj.target) {
                     if (spell_obj.spell === "Cause Heavy Wounds") {
                         battle.warlocks[i].monsters[j].got_heavy_wounds = true;
@@ -506,13 +508,17 @@ function getMessageActionBySpell(txt, battle) {
                         if (!battle.warlocks[i].monsters[j].arr_distruption) {
                             battle.warlocks[i].monsters[j].arr_distruption = [];
                         }
-                        battle.warlocks[i].arr_distruption.push(spell_obj.spell);
+                        battle.warlocks[i].monsters[j].arr_distruption.push(spell_obj.spell);
+                        console.log("getMessageActionBySpell", "fill monster arr_distruption", JSON.stringify(battle.warlocks[i].monsters[j]));
                     }
                     res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:"#FEE2D6"});
                     target_found = true;
                     break;
                 }
             }
+        }
+        if (target_found) {
+            break;
         }
     }
 
@@ -605,7 +611,7 @@ function parseStrangeAttack(txt) {
 
         var word_not_upper = arr[i].charAt(0).toUpperCase() !== arr[i].charAt(0);
         target_finished = target_finished || word_not_upper;
-        if (!target_finished) {
+        if (!target_finished || (i === 0)) {
             res.target += " " + arr[i];
             continue;
         }
@@ -665,6 +671,19 @@ function parseStrangeAttack(txt) {
         if (!spell_started && ((arr[i] === "shimmer") || (arr[i] === "par alysed"))) {
             res.spell_name = "Invisibility";
         }
+
+        if (!spell_started && (((arr[i] === "sparkling") && (arr[i + 1] === "frost")) )) {
+            res.spell_name = "Resist Heat";
+        }
+
+        if (!spell_started && (((arr[i] === "warm") && (arr[i + 1] === "glow")) )) {
+            res.spell_name = "Resist Cold";
+        }
+
+        if (!spell_started && (((arr[i] === "grounded") && (arr[i - 2] === "energies")) )) {
+            res.spell_name = "Remove Enchantment";
+            //res.counter_spell = true;
+        }
     }
 
     res.target = res.target.trim();
@@ -705,7 +724,7 @@ function getMessageActionByAttack(txt, battle) {
                     aggressor_found = true;
                 } else {
                     w = battle.warlocks[i];
-                    for (j = 0, LnJ = w.monsters; j < LnJ; ++j) {
+                    for (j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
                         m = w.monsters[j];
                         if (m.name === attack_obj.aggressor) {
                             res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:"#10C9F5"});
@@ -725,7 +744,7 @@ function getMessageActionByAttack(txt, battle) {
                     target_found = true;
                 } else {
                     w = battle.warlocks[i];
-                    for (j = 0, LnJ = w.monsters; j < LnJ; ++j) {
+                    for (j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
                         m = w.monsters[j];
                         if (m.name === attack_obj.target) {
                             res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:attack_obj.target === attack_obj.aggressor ? "#10C9F5" : "#FEE2D6"});
@@ -767,34 +786,53 @@ function getMessageActionByOther(msg, battle) {
     var icon_action = {action:"icon",large_icon:"",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     var target_found = false;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-        if (battle.warlocks[i].name === obj.target) {
-            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
+        var w = battle.warlocks[i];
+        if (w.name === obj.target) {
+            res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
             icon_action.large_icon = "heart";
-            icon_action.text = battle.warlocks[i].hp;
-            icon_action.title = battle.warlocks[i].name;
+            icon_action.text = w.hp;
+            icon_action.title = w.name;
             target_found = true;
             if (obj.spell_name === "Disease") {
-                if (battle.warlocks[i].disease > 0) {
-                    icon_action.text = battle.warlocks[i].disease;
-                } else if (battle.warlocks[i].poison > 0) {
-                    icon_action.text = battle.warlocks[i].poison;
+                if (w.disease > 0) {
+                    icon_action.text = w.disease;
+                } else if (w.poison > 0) {
+                    icon_action.text = w.poison;
                     obj.spell_name = "Poison";
                 } else {
                     // looks like effect removed
                     icon_action.text = "Cured";
                 }
             } else if (obj.spell_name === "Cause Light Wounds") {
-                if (battle.warlocks[i].got_heavy_wounds) {
+                if (w.got_heavy_wounds) {
                     obj.spell_name = "Cause Heavy Wounds";
                     obj.damage = 3;
                 }
             } else if (obj.spell_name === "Distruption") {
-                if (battle.warlocks[i].arr_distruption) {
+                if (w.arr_distruption) {
                     obj.spell_name = battle.warlocks[i].arr_distruption.shift();
                 }
             }
-
+            target_found = true;
             break;
+        }
+
+        if (obj.spell_name === "Distruption") {
+            console.log("getMessageActionByOther", JSON.stringify(w.monsters));
+            for (var j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
+                var m = w.monsters[j];
+                console.log("getMessageActionByOther", JSON.stringify(m));
+                if (m.name === obj.target) {
+                    if (m.arr_distruption) {
+                        obj.spell_name = m.arr_distruption.shift();
+                    }
+                    target_found = true;
+                    break;
+                }
+            }
+            if (target_found) {
+                break;
+            }
         }
     }
 
@@ -807,7 +845,9 @@ function getMessageActionByOther(msg, battle) {
     }
     if (obj.spell_name !== "") {
         var arr_g = map_spell_name_to_gesture[obj.spell_name];
-        icon_action.small_icon = map_spell_to_icon[arr_g[0]];
+        if (arr_g) {
+            icon_action.small_icon = map_spell_to_icon[arr_g[0]];
+        }
         if ((obj.spell_name === "Disease") || (obj.spell_name === "Poison")) {
             icon_action.large_icon = "";
         }

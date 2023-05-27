@@ -130,7 +130,7 @@ function prepareTurnActionInfo(last_turn_hist) {
             if (battle.with_bot) {
                 continue;
             }
-            new_action.push({action:"icon",large_icon:"chat",small_icon:"",text:"",background_color:"#210430",border_color:"#E7FFFF"});
+            new_action.push({action:"icon",large_icon:"chat",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#E7FFFF"});
         } else if (last_turn_hist[i].type === 2) {
             continue;
         } else if (last_turn_hist[i].type === 1) {
