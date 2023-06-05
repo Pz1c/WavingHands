@@ -1,15 +1,19 @@
 #ifndef QBATTLEINFO_H
 #define QBATTLEINFO_H
 
-#include "qgameconstant.h"
+//#include "qgameconstant.h"
 
 #include <QDateTime>
+
+#include "qwarlock.h"
+
 
 class QBattleInfo
 {
 public:
     QBattleInfo();
     QBattleInfo(const QString &battle_info);
+    ~QBattleInfo();
 
     QString toJSON(const QString &Login = "") const;
     QString toString(bool Short = false) const;
@@ -38,8 +42,9 @@ public:
     void addHistory(int battle_turn, const QString &hist_msg);
     QString getHistory() const;
     QString getFullHist(const QString &Login) const;
+    QString getFinishedBattleInfo(const QString &Login) const;
     QString getTurnInfo(int Turn, const QString &Login) const;
-    void parseAllTurns(QString& Data);
+    void parseAllTurns(QString& Data, QString &Login, bool Last = false);
 
     bool active(const QString &login) const;
 
@@ -82,10 +87,16 @@ public:
     bool fullParsed() const;
 
     QString getEnemy(const QString &Login, bool All = false) const;
+
+    QString fullJSON() const;
+
 protected:
     QString prepareToPrint(QString str) const;
     void parseString(const QString &battle_info);
     void init();
+    void cleanLists();
+    void parseUnits(QString &Data, QString &Login);
+    void generateJSON(QString &Login);
 
 private:
     int _battleID;
@@ -109,6 +120,11 @@ private:
     QStringList _history;
     QString _winner;
     QString _sub_title;
+    QString _fullJSON;
+
+    QList<QMonster *> _Monsters;
+    QList<QWarlock *> _Warlock;
+
 };
 
 #endif // QBATTLEINFO_H

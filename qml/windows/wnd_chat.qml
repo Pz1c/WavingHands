@@ -217,7 +217,7 @@ InfoWindow {
         ltError.text = replaceAll(mainWindow.gERROR.text, "&quot;", '"');
         title_text = mainWindow.gERROR.title;
         setNewMsgText(mainWindow.gERROR.msg);
-
+        iAction.visible = !mainWindow.gERROR.read_only;
         mainWindow.gERROR = {};
     }
 

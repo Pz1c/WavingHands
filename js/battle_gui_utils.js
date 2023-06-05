@@ -6,7 +6,7 @@ var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paral
 
 var map_spell_to_icon = {"SWD":"scared","DSF":"confused","PSDF":"charmed","FFF":"paralized","WWP":"shield","SSFP":"coldproof","WWFP":"fireproof",
             "DWWFWD":"poison","DSFFFc":"disease","DPP":"amnesia","DSF":"maladroit","WWS":"mshield","WPP":"mshield","DWSSSP":"delay","PWPWWc":"haste",
-            "SPFPSDW":"permanency","DWFFd":"blindness","DWFWd":"blindness","PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice",
+            "SPFPSDW":"permanency","DWFFd":"blindness","DFWFd":"blindness","PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice",
             "WFPSFW":"giant","FPSFW":"troll","PSFW":"ogre","SFW":"goblin","P":"shield","SPPc":"time_stop","SPPFD":"time_stop",
             "cDPW":"dispel_magic","cw":"magic_mirror", "DFFDD":"lightning_bolt","DFPW":"cure_heavy_wounds","DFW":"cure_light_wounds",
             "FSSDD":"fireball","PDWP":"remove_enchantment","PSDD":"charm_monster","PWPFSSSD":"finger_of_death",
@@ -466,10 +466,12 @@ function getSpellIconActionBySpell(spell_obj) {
     return res;
 }
 
-function getMessageActionBySpell(txt, battle) {
+function getMessageActionBySpell(obj, battle) {
     var res = [];
-    var spell_obj = parseSpellByText(txt);
+    var spell_obj = parseSpellByText(obj.txt);
     var target_found = false;
+    obj.txt = spell_obj.spell;
+    obj.font_size = 42;
     res.push(getSpellIconActionBySpell(spell_obj));
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].name === spell_obj.warlock) {
@@ -885,7 +887,7 @@ function getMessageActionByRow(row, battle) {
     //var res = [];
     if (row.txt.indexOf(" casts ") !== -1) {
         // process spell casting
-        return getMessageActionBySpell(row.txt, battle);
+        return getMessageActionBySpell(row, battle);
     } else if (row.color === "#FF6666") {
         return getMessageActionByDeath(row.txt, battle);
     } else if (((row.txt.indexOf(" attack") !== -1) || (row.txt.indexOf(" swing ") !== -1)) &&

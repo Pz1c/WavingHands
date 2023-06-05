@@ -196,7 +196,12 @@ BaseWindow {
                 text: "Submit"
 
                 onClicked: {
-                    console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle.actions));
+                    console.log("wnd_battle.initBattleFields", mainWindow.gBattle.read_only, JSON.stringify(mainWindow.gBattle.actions));
+                    if (mainWindow.gBattle.read_only) {
+                        mainWindow.processEscape();
+                        return;
+                    }
+
                     mainWindow.showOrders(BU.getOrdersForReview(dict));
                     mainWindow.logEvent("Play_Submit_Clicked");
                 }
@@ -424,7 +429,7 @@ BaseWindow {
                     id: ltTTTNext
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: iTTIcons.left
-                    anchors.rightMargin: 6 * mainWindow.ratioObject
+                    anchors.rightMargin: 42 * mainWindow.ratioObject
                     width: 30 * mainWindow.ratioObject
                     height: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 0.80 * parent.height : 0.50 * parent.height
                     fontSizeMode: Text.VerticalFit
@@ -697,11 +702,12 @@ BaseWindow {
     }
 
     function battleChanged(FromGesture) {
+        var ro = mainWindow.gBattle.read_only;
         var old_state = bbSendOrders.active;
-        var new_state = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g);
-        if (old_state != new_state) {
+        var new_state = !(!mainWindow.gBattle.actions["L"].g || !mainWindow.gBattle.actions["R"].g) || ro;
+        if (old_state !== new_state) {
             bbSendOrders.active = new_state;
-            if (new_state) {
+            if (new_state && !ro) {
                 bbSendOrders.animate(1);
             }
         }

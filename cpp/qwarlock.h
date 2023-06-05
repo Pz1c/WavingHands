@@ -7,7 +7,7 @@
 #include <QDateTime>
 #include "qspell.h"
 //#include "qwarlockspellchecker.h"
-#include "qwarlockutils.h"
+//#include "qwarlockutils.h"
 #include "qmonster.h"
 
 #define WARLOCK_GESTURE_LENGTH 8

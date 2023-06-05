@@ -25,8 +25,8 @@
 #include <qgoogleanalytics.h>
 //#include "qwarlockutils.h"
 #include "qwarlockspellchecker.h"
-#include "qwarlockdictionary.h"
-#include "qgameconstant.h"
+//#include "qwarlockdictionary.h"
+//#include "qgameconstant.h"
 #include "qwarlock.h"
 #include "qwarlockstat.h"
 #include "qbattleinfo.h"
@@ -163,6 +163,7 @@ public slots:
     QString getSpellBook();
     int getLoadedBattleTurn();
     QString battleInfo();
+    QString battleReadOnly(int BattleID);
     QString playerJson();
     QString getTopList(bool ShowAll = false);
 
@@ -237,6 +238,8 @@ protected:
     void processWarlockGet(QString &Data);
     void processWarlockPut();
     void callAI(QString Login, int MagicBookLevel);
+
+    void processSpellBookLevelAfterBattle(QBattleInfo *bi);
 private:
     // user login
     bool _isLogined;
@@ -270,28 +273,22 @@ private:
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
-    //QStringList _shown_battles;
     QString _finishedBattle;
     QStringList _challenge;
     int _win_vs_bot;
     int _win_vs_warlock;
     int _play_training_game;
     int _play_pvp_game;
-    //QMap<int, QString> _battleDesc;
-    //QMap<int, int> _battleHint;
-    //QMap<int, int> _battleState; // -2 deleted, -1 not started, 0 wait, 1 ready, 2 finished
-    //QMap<int, int> _battleWait;
     QStringList _msg;
     QList<QValueName> _accounts;
     qint64 _lastPlayersScan;
     QMap<QString, QWarlockStat> _playerStats;
-    //QMap<int, QStringList> _battleHistory;
-    //QMap<int, QStringList> _battleChat;
     QString _inviteToBattle;
     QMap<int, QBattleInfo *> _battleInfo;
     QBattleInfo* _newBattle;
 
     // current battle
+    // TODO change to object perhaps use BattleInfo class
     int _loadedBattleID;
     int _loadedBattleType;
     int _loadedBattleTurn;
@@ -329,12 +326,13 @@ private:
     QString _topActive;
     QString _topAll;
 
-    // management
+    // system
     bool _isTimerActive;
     bool _isScanForced;
     bool _isAsService;
     bool _isAiBusy;
     qint64 _lastAnyAiCall;
+    int _appVersion;
 
     // Spell checker
     QWarlockSpellChecker *SpellChecker;

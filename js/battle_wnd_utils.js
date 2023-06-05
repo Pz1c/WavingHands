@@ -128,6 +128,9 @@ function showTutorialData(diff, skip_restore) {
     console.log("showTutorialData", diff, JSON.stringify(hint));
     ltTutorial.color = hint.color_bg;
     ltTTT.text = hint.txt;
+    if (hint.font_size && (hint.font_size >= 21) && (hint.font_size <= 48)) {
+        ltTTT.font.pixelSize = hint.font_size * mainWindow.ratioFont;
+    }
     prepareWarockToHint(false);
     prepareIconToHint();
 

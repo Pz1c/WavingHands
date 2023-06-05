@@ -145,5 +145,6 @@
         <file>qml/windows/wnd_hall_of_fame.qml</file>
         <file>qml/windows/wnd_warlock_popup.qml</file>
         <file>res/trophy_3d.png</file>
+        <file>qml/windows/wnd_battle_popup.qml</file>
     </qresource>
 </RCC>

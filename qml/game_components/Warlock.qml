@@ -603,12 +603,12 @@ Item {
     }
 
     function prepareHands() {
-        var hands_visible = l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed;
+        var hands_visible = (l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed);
         var lh_visible = hands_visible || (l_warlock.paralyzed_hand === "LH");
         var rh_visible = hands_visible || (l_warlock.paralyzed_hand === "RH");
         var ng;
-        //iiLeft.visible = lh_visible;
-        //iiRight.visible = rh_visible;
+        iiLeft.visible = !l_warlock.read_only;
+        iiRight.visible = !l_warlock.read_only;
         if (l_warlock.player) {
             var arr_lg = l_warlock.plg.split(",");
             if (arr_lg.length === 1) {

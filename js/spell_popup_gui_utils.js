@@ -23,7 +23,9 @@ function prepareDataTypeFinishedGame(l_data, dict) {
     ltGesture.text = l_data.t;
     ltTitle.text = dict.getStringByCode("FinishedGameResultTitle" + l_data.sc);
     ltShortDesc.text = l_data.st ? replaceAll(l_data.st, "<br>", " ") : "";
-    ltError.text = replaceAll(replaceAll(l_data.d, "''", '"'), '&quot;', '"');
+    ltError.text = "<font color=\"#0654C0\">LAst turn's chat</font><br />" + replaceAll(replaceAll(l_data.lc, "''", '"'), '&quot;', '"');
+    bbSkipAction.text = "Rematch " + l_data.enemy;
+    bbSkipAction.visible = !l_data.with_bot;
 }
 
 function prepareDataTypeSpell(spell_code, dict) {

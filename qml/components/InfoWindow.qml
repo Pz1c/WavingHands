@@ -23,12 +23,9 @@ Item {
     property alias content_item: bwBody
     property alias icon: iiIcon
     property alias title: tTitle.text
+    property alias titleHeight: rTitle.height
     property alias titleVisible: rTitle.visible
     property alias gradient: rOver.gradient
-    property int body_width_prc: 100
-    property int body_height_prc: 100
-    property int title_height_prc: 0
-    property int control_height_prc: 0
 
 	focus: true
 

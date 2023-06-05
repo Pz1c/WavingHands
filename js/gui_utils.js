@@ -61,9 +61,9 @@ function fixActivBattleDesc(arr) {
             continue;
         }
         var str = core.getWarlockStats(item.el);
-        //console.log("fixActivBattleDesc", item.el, str);
+        console.log("fixActivBattleDesc", item.el, str, curr_date_sec);
         var wd = JSON.parse(str);
-        arr[i].online = wd.last_activity - curr_date_sec <= 5 * 60;
+        arr[i].online = curr_date_sec - wd.last_activity <= 5 * 60;
 
     }
 }

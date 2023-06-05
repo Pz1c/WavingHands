@@ -10,6 +10,9 @@ QBattleInfo::QBattleInfo()
 QBattleInfo::QBattleInfo(const QString &battle_info) {
     init();
     parseString(battle_info);
+    if (_fullJSON.isEmpty()) {
+        _fullParsed = false;
+    }
 }
 
 void QBattleInfo::init() {
@@ -27,6 +30,22 @@ void QBattleInfo::init() {
     _for_bot = false;
     _with_bot = false;
     _fullParsed = false;
+}
+
+QBattleInfo::~QBattleInfo() {
+    cleanLists();
+}
+
+void QBattleInfo::cleanLists() {
+    foreach(QWarlock *w, _Warlock) {
+        delete w;
+    }
+
+    foreach(QMonster *m, _Monsters) {
+        delete m;
+    }
+    _Warlock.clear();
+    _Monsters.clear();
 }
 
 const QString &QBattleInfo::winner() const
@@ -431,7 +450,7 @@ QString QBattleInfo::getHistory() const {
 }
 
 QString QBattleInfo::prepareToPrint(QString str) const {
-    return str.replace("\n","<br>").replace("\r", "").replace('"', "&quot;").replace("\\", "\\\\");
+    return str.replace("\n","<br>").replace("\r", "").replace('"', "&quot;").replace("\\", "@bsol;");
 }
 
 QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
@@ -492,6 +511,13 @@ QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
     return res.append("]").prepend("[");
 }
 
+QString QBattleInfo::getFinishedBattleInfo(const QString &Login) const {
+    QString fh = prepareToPrint(_chat.last());
+    return QString("{\"type\":9,\"lc\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\",\"sc\":\"%5\",\"enemy\":\"%6\",\"level\":%7,\"with_bot\":%8}")
+        .arg(fh, intToStr(_battleID), getInListParticipant(Login), _sub_title, getInListStatus(Login),
+             getEnemy(Login), intToStr(_level), boolToStr(_for_bot || _with_bot));
+}
+
 QString QBattleInfo::getFullHist(const QString& Login) const {
     QString fh, tmp;
     if (!_description.isEmpty()) {
@@ -524,12 +550,15 @@ QString QBattleInfo::toJSON(const QString &Login) const {
 QString QBattleInfo::toString(bool Short) const {
     QString tmp_chat = Short ? "" : prepareToPrint(_chat.join("#END_TURN#"));
     QString tmp_hist = Short ? "" : prepareToPrint(_history.join("#END_TURN#"));
+    QByteArray json = _fullJSON.toUtf8();
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
-                   "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21")
+                   "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21^^^"
+                   "full_battle_json#=#%22")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), tmp_chat, tmp_hist, _winner, intToStr(_hint))
-            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","));
+            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","))
+            .arg(json.toBase64(QByteArray::Base64UrlEncoding));
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -584,28 +613,91 @@ void QBattleInfo::parseString(const QString &battle_info) {
             _sub_title = value;
         } else if (key.compare("challenged") == 0) {
             _challenged = value.split(",");
+        } else if (key.compare("full_battle_json") == 0) {
+            _fullJSON = QByteArray::fromBase64(value.toUtf8(), QByteArray::Base64UrlEncoding);
         }
     }
 }
 
-void QBattleInfo::parseAllTurns(QString& Data) {
-    _fullParsed = true;
+void QBattleInfo::parseUnits(QString &Data, QString &Login) {
+    cleanLists();
     cleanParticipant();
-    int idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="), last_idx = idx, first_idx = Data.indexOf("<U>Turn");
-    while (true) {
-        QString warlock = QWarlockUtils::getStringFromData(Data, "<a href=\"/player/", ">", "<", idx);
-        if (warlock.isEmpty()) {
-            break;
+
+    QString search1 = "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">";
+    QString search2 = "</TABLE>";
+    int idx1 = 0, idx2;
+    QString _errorMsg;
+    while((idx1 = Data.indexOf(search1, idx1)) != -1) {
+        idx1 += search1.length();
+        idx2 = Data.indexOf(search2, idx1);
+        QString data = Data.mid(idx1, idx2 - idx1);
+        if (data.indexOf("/player") != -1) {
+            if (!QWarlockUtils::parseWarlock(data, _Warlock, _errorMsg, Login.toLower())) {
+                return ;
+            }
+            addParticipant(_Warlock.last()->name());
+        } else {
+            if (!QWarlockUtils::parseMonster(data, _Monsters, _errorMsg)) {
+                return ;
+            }
         }
-        addParticipant(warlock);
+
+        idx1 = idx2 + search2.length();
     }
+
     setSize(_participant.size());
+
+}
+
+void QBattleInfo::parseAllTurns(QString &Data, QString &Login, bool Last) {
+    parseUnits(Data, Login);
+
+    int last_idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="), first_idx = Data.indexOf("<U>Turn");
     QString hist = Data.mid(first_idx, last_idx - first_idx).replace("<a href=\"/player", "<b atr=\"")
         .replace("<A CLASS=amonoturn HREF=\"/warlocks", "<b atr=\"").replace("</A>", "</b>").replace("</a>", "</b>")
         .replace("BLOCKQUOTE", "p").replace("WIDTH=\"100%\"", "").replace("WIDTH=\"50%\"", "").replace("<H2>", "").replace("</H2>", "")
         .replace("<p>", "").replace("</p>", "").replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
     QWarlockUtils::parseBattleHistory(hist, this);
+
+    _fullParsed = Last;
+
+    generateJSON(Login);
 }
+
+void QBattleInfo::generateJSON(QString &Login) {
+    QString _WarlockHtml, _MonstersHtml;
+    foreach(QMonster *m, _Monsters) {
+        if (!_MonstersHtml.isEmpty()) {
+            _MonstersHtml.append(",");
+        }
+        _MonstersHtml.append(m->json(Login));
+    }
+    _MonstersHtml.append("]").prepend("[");
+
+    foreach(QWarlock *m, _Warlock) {
+        if (!_WarlockHtml.isEmpty()) {
+            _WarlockHtml.append(",");
+        }
+        _WarlockHtml.append(m->separatedString());
+        qDebug() << "added" << m->name();
+    }
+    _WarlockHtml.prepend("[").append("]");
+
+    _fullJSON =  QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
+                        "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
+                        "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
+                        "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25}")
+                     .arg(intToStr(_battleID), boolToStr(_parafdf), "", "0", "0") // 1-5
+        .arg("", "", "", "", "", "") // 6-11
+        .arg("", _MonstersHtml, _WarlockHtml, "", "0",  boolToStr(_parafc), "[]", "[]", "") // 12 - 20
+                     .arg(getHistory(), getChat(), intToStr(_turn), boolToStr(_with_bot), getTurnInfo(_turn, Login)); // 21-25
+}
+
+QString QBattleInfo::fullJSON() const
+{
+    return _fullJSON;
+}
+
 void QBattleInfo::setSubTitle(const QString &newSub_title)
 {
     _sub_title = newSub_title;

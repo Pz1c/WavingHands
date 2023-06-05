@@ -816,7 +816,7 @@ ApplicationWindow {
 
     function showBattleChat(chat_history) {
         console.log("showBattleChat");
-        showErrorWnd({type:3,text:chat_history, title: "Battle #" + gBattle.id + " chat", msg: gBattle.actions.C});
+        showErrorWnd({type:3,text:chat_history, title: "Battle #" + gBattle.id + " chat", msg: gBattle.actions.C, read_only: gBattle.read_only});
     }
 
     function storeBattleChatMsg(msg) {
@@ -860,6 +860,7 @@ ApplicationWindow {
         var battle_str = core.battleInfo();
         console.log("showReadyBattle", battle_str);
         gBattle = JSON.parse(battle_str);
+        gBattle.read_only = false;
         WNDU.showBattle();
     }
 
@@ -1251,6 +1252,17 @@ ApplicationWindow {
 
     function showBattleReadOnly(BattleID) {
         console.log("main.qml.showBattleReadOnly", BattleID);
+        //GUI.mainMenuAction("show_read_only_battle", BattleID);
+        var battle_str = core.battleReadOnly(BattleID);
+        console.log("showBattleReadOnly", battle_str);
+        if (!battle_str) {
+            showErrorWnd({text:"Some problem with this battle, please contact viskgameua@gmail.com"});
+            return;
+        }
+
+        gBattle = JSON.parse(battle_str);
+        gBattle.read_only = true;
+        WNDU.showBattle();
     }
 
     property int needTopList: 0;

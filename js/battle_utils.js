@@ -9,6 +9,7 @@ const G_WARLOCK_HEIGHT = 474;
 
 function prepareWarlock(w) {
     w.monsters = battle.monsters[w.name];
+    w.read_only = battle.read_only;
     w.print_g = BGU.preparePrintGestures(w.L, w.R, w.smcL, w.smcR);
     if (!w.id) {
         w.id = battle.targetsMap[w.name];
@@ -69,15 +70,6 @@ function parseTargets(targets_str) {
         battle.targetsList.push(title);
         battle.targetsMap[title] = obj_id;
         battle.targetsMap[obj_id] = title;
-
-        /*if ((title.indexOf("LH:") === 0) || (title.indexOf("RH:") === 0)) {
-            m_owner = title.substr(3);
-            if (!battle.monsters[m_owner]) {
-                battle.monsters[m_owner] = [];
-            }
-            battle.monsters[m_owner].push({name:title,status:"",hp:title.substr(0, 1),owner:m_owner,icon:getMonsterIconByName(title),action:"m",action_idx:battle.actions.M.length,under_control:true});
-            battle.actions.M.push({id:obj_id,target:"",old_target:"",under_control:true,owner:m_owner,status:""});
-        }*/
     }
 }
 
@@ -141,7 +133,11 @@ function prepareTurnActionInfo(last_turn_hist) {
                 last_turn_hist[i].color = "#10C9F5";
             }
         }
-        new_hint.push({color_bg:last_turn_hist[i].color,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
+        if (!last_turn_hist[i].font_size) {
+            last_turn_hist[i].font_size = 21;
+        }
+
+        new_hint.push({color_bg:last_turn_hist[i].color,font_size:last_turn_hist[i].font_size,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
     }
 
     battle.hint = new_hint;
@@ -212,7 +208,7 @@ function prepareMonster(m) {
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: raw_battle.battle_hist,
-        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot};
+        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only};
     // L left  obj
     // R Right obj
     // C Chat  text
@@ -230,6 +226,7 @@ function prepareBattle(raw_battle) {
     var i, Ln;
     for (i = 0, Ln = raw_battle.monsters.length; i < Ln; ++i) {
         var m = raw_battle.monsters[i];
+        m.read_only = battle.read_only;
         console.log("JS.prepareBattle.monsters", JSON.stringify(m));
         if (prepareMonster(m)) {
             battle.monsters[m.owner].push(m);
@@ -316,7 +313,7 @@ function finishPrepareWarlockList() {
     var total_height = 0;
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         // https://github.com/Pz1c/WavingHands/issues/259
-        if (!battle.warlocks[i] || (!battle.warlocks[i].active && (battle.monsters[battle.warlocks[i].name].length === 0))) {
+        if (!battle.warlocks[i] || (!battle.read_only && !battle.warlocks[i].active && (battle.monsters[battle.warlocks[i].name].length === 0))) {
             continue;
         }
         var arr_m = battle.warlocks[i];
@@ -362,6 +359,7 @@ function prepareGUI() {
     prepareWarlocks();
     prepareChat();
     prepareHint();
+    bbSendOrders.text = battle.read_only ? "Back" : "Submit";
 }
 
 function applyBattle() {

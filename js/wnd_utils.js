@@ -15,6 +15,7 @@ var wnd_spell = "wnd_spell.qml";
 var wnd_search_warlock = "wnd_search_warlock.qml";
 var wnd_popup = "wnd_popup.qml";
 var wnd_spell_popup = "wnd_spell_popup.qml";
+var wnd_battle_popup = "wnd_battle_popup.qml";
 var wnd_warlock_popup = "wnd_warlock_popup.qml";
 var wnd_new_game = "wnd_new_game.qml";
 var wnd_after_reg = "wnd_after_registration.qml";
@@ -261,8 +262,10 @@ function showErrorWnd(error, chat) {
     case 22:
         wnd_name = wnd_popup;
         break;
-    case 7:
     case 9:
+        wnd_name = wnd_battle_popup;
+        break;
+    case 7:
     case 23:
         wnd_name = wnd_spell_popup;
         break;

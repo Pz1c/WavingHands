@@ -182,7 +182,7 @@ function prepareMonsterDetails(l_data, dict) {
 
     ltError.text = details;
     bbAction.text = dict.getStringByCode("MonsterSetTarget");
-    bbAction.visible = l_data.under_control;// || l_data.allow_choose_target;
+    bbAction.visible = l_data.under_control && !l_data.read_only;// || l_data.allow_choose_target;
 }
 
 function prepareHPDetails(l_data, dict) {
