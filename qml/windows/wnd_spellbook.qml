@@ -34,7 +34,7 @@ InfoWindow {
                 {g:'cw',t:0,n:'',sbl:2,sg:6},{g:'cDPW',t:0,n:'',sbl:3,sg:6},{g:'WPP',t:0,n:'',sbl:2,sg:6},
                 {g:'WWS',t:0,n:'',sbl:2,sg:6},{g:'PDWP',t:0,n:'',sbl:3,sg:6},
         {g:'Advanced Enchantments:',t:1,n:'',sbl:3},
-                {g:'PPws',t:0,n:'',sbl:3,sg:7},{g:'DWFFd',t:0,n:'',sbl:3,sg:7},{g:'DWFWd',t:0,n:'',sbl:3,sg:7},
+                {g:'PPws',t:0,n:'',sbl:3,sg:7},{g:'DWFFd',t:0,n:'',sbl:3,sg:7},{g:'DFWFd',t:0,n:'',sbl:3,sg:7},
                 {g:'SPPc',t:0,n:'',sbl:5},{g:'SPPFD',t:0,n:'',sbl:5,sg:7},{g:'PWPWWc',t:0,n:'',sbl:5,sg:7},
                 {g:'DSFFFc',t:0,n:'',sbl:3,sg:7},{g:'DWWFWD',t:0,n:'',sbl:5,sg:7},{g:'DWSSSP',t:0,n:'',sbl:5,sg:7},
                 {g:'SPFPSDW',t:0,n:'',sbl:5,sg:7},

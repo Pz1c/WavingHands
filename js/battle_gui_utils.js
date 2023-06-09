@@ -395,6 +395,7 @@ function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
     var R = replaceAll(Right, " ", "");
     L = L.substr(L.length - gl);
     R = R.substr(R.length - gl);
+    //console.log("checkIsSpellPossibeForWarlock", Gesture, L, R);
     var not_found;
     for (var i = gl - 1; i >= 0; --i) {
         not_found = true;
@@ -403,7 +404,7 @@ function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
         var Lg = L.substr(i, 1);
         var Rg = R.substr(i, 1);
         var need_both = g !== gU;
-        console.log("checkIsSpellPossibeForWarlock", g, need_both, L, R, Lg, Rg, i);
+        console.log("checkIsSpellPossibeForWarlock", g, need_both, L, R, Lg, Rg, i, JSON.stringify(res));
         if (need_both) {
             if ((Lg === gU) && (Rg === gU)) {
                 res = [gl - i, gl - i];
@@ -476,7 +477,13 @@ function getMessageActionBySpell(obj, battle) {
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].name === spell_obj.warlock) {
             // hightlight spell gestures
-            res.push(higlightWarlockGestureBySpell(battle.warlocks[i], spell_obj));
+            var hga = higlightWarlockGestureBySpell(battle.warlocks[i], spell_obj);
+            if (hga.action !== "none") {
+                res.push(hga);
+            } else {
+                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
+            }
+
             res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === battle.warlocks[i].name ? "#10C9F5" : "#FEE2D6"});
         } else {
             // switch off hightlighting to all other warlocks gestures
@@ -519,9 +526,9 @@ function getMessageActionBySpell(obj, battle) {
                 }
             }
         }
-        if (target_found) {
-            break;
-        }
+        //if (target_found) {
+        //    break;
+        //}
     }
 
 
@@ -686,6 +693,11 @@ function parseStrangeAttack(txt) {
             res.spell_name = "Remove Enchantment";
             //res.counter_spell = true;
         }
+
+        if (!spell_started && (((arr[i] === "banked") && (arr[i - 2] === "cast")) )) {
+            res.spell_name = "Delay Effect";
+            //res.counter_spell = true;
+        }
     }
 
     res.target = res.target.trim();
@@ -720,6 +732,10 @@ function getMessageActionByAttack(txt, battle) {
     if (attack_obj.aggressor || res.target) {
         for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
             //console.log("getMessageActionByAttack", i, Ln, battle.warlocks[i].name);
+            if (battle.warlocks[i].name !== attack_obj.aggressor) {
+                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
+            }
+
             if (!aggressor_found) {
                 if (battle.warlocks[i].name === attack_obj.aggressor) {
                     res.push(higlightWarlockGestureBySpell(battle.warlocks[i], {warlock:attack_obj.aggressor,spell:"Stab",target:attack_obj.target}));
@@ -789,6 +805,7 @@ function getMessageActionByOther(msg, battle) {
     var target_found = false;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         var w = battle.warlocks[i];
+        res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
         if (w.name === obj.target) {
             res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
             icon_action.large_icon = "heart";
@@ -816,7 +833,7 @@ function getMessageActionByOther(msg, battle) {
                 }
             }
             target_found = true;
-            break;
+            //break;
         }
 
         if (obj.spell_name === "Distruption") {
@@ -832,9 +849,9 @@ function getMessageActionByOther(msg, battle) {
                     break;
                 }
             }
-            if (target_found) {
-                break;
-            }
+            //if (target_found) {
+            //    break;
+            //}
         }
     }
 
@@ -878,14 +895,16 @@ function getMessageActionByDeath(msg, battle) {
     if (icon === "summon") {
         icon = "";
     }
-
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
+    }
     res.push({action:"icon",large_icon:"RIP2",small_icon:icon,title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"});
     return res;
 }
 
 function getMessageActionByRow(row, battle) {
     //var res = [];
-    if (row.txt.indexOf(" casts ") !== -1) {
+    if ((row.txt.indexOf(" casts ") !== -1) && (row.txt.indexOf(" banked ") === -1)) {
         // process spell casting
         return getMessageActionBySpell(row, battle);
     } else if (row.color === "#FF6666") {

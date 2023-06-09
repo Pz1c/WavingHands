@@ -278,7 +278,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("DFFDD", "Блискавка", "Молния", "Lightning Bolt");
     fillDictionary("DFPW", "Лікувати тяжкі рани", "Лечить тяжелые ранения", "Cure Heavy Wounds");
     fillDictionary("DFW", "Лікувати легкі рани", "Лечить легкие ранения", "Cure Light Wounds");
-    fillDictionary("DWFWd", "Сліпота", "Слепота", "Blindness");
+    fillDictionary("DFWFd", "Сліпота", "Слепота", "Blindness");
     fillDictionary("DWFFd", "Сліпота", "Слепота", "Blindness");
     fillDictionary("DPP", "Амнезія", "Амнезия", "Amnesia");
     fillDictionary("DSF", "Незграбність", "Неуклюжесть", "Maladroitness");

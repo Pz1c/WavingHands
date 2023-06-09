@@ -1093,6 +1093,10 @@ ApplicationWindow {
         logEvent("Play_Target_View", {Mode:"spell"});
     }
 
+    function battleWarlockPrepared() {
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareHintWithCheck();
+    }
+
     function chooseMonsterTarget(title) {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false, {n:title});
         logEvent("Play_Target_View", {Mode:"monster"});
