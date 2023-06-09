@@ -508,6 +508,13 @@ BaseWindow {
         }
     }
 
+    property int readyWarlocks: 0
+    function prepareHintWithCheck() {
+        if (++readyWarlocks >= mainWindow.gBattle.size) {
+            BU.prepareHint();
+        }
+    }
+
     function showTutorialData(diff, skip_restore) {
         BWU.showTutorialData(diff, skip_restore);
     }
@@ -539,15 +546,6 @@ BaseWindow {
                 //setTargetingOnOff(false, true);
                 target.target_name = data.action === "hp" ? data.warlock_name : data.name;
                 tTargetTitle.text = getTargetTitle(operationMode === 1, currentSpell.n);
-                //tTargetTitle.visible = true;
-                //mainWindow.setSpellTarget(target_name, permanency, delay, operationMode);
-                //operationMode = 0;
-                //if ((data.action === "m") && BU.checkIsMonsterCharmed(data)) {
-                    //open target window for charmed monster
-                    //data.under_control = true;
-                    //data.allow_choose_target = true;
-                    //iconDoubleClick(data);
-                //}
             } else {
                 mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
             }
@@ -766,6 +764,7 @@ BaseWindow {
         if (!mainWindow.gBattle || !mainWindow.gBattle.id) {
             return;
         }
+        readyWarlocks = 0;
         title_text = "Battle #" + mainWindow.gBattle.id;
         rTT.visible = false;
         BU.applyBattle();
