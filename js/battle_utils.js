@@ -206,7 +206,7 @@ function prepareMonster(m) {
 }
 
 function prepareBattle(raw_battle) {
-    battle = {id:raw_battle.id,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
+    battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: raw_battle.battle_hist,
         battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only};
     // L left  obj
@@ -243,6 +243,7 @@ function prepareBattle(raw_battle) {
         }
         prepareWarlock(w);
         battle.warlocks.unshift(w);
+        ++battle.size;
     }
     battle.actions.L.target = battle.player_target_L;
     battle.actions.L.g = battle.player_gesture_L;
@@ -349,7 +350,6 @@ function prepareHint() {
         ltTutorial.tutorialData = battle.hint;
         ltTutorial.tutorialDataIdx = -1;
         showTutorialData(1, true);
-        //ltTutorial.text = battle.hint[0];
         ltTutorial.visible = true;
     }
 }
@@ -358,7 +358,8 @@ function prepareGUI() {
     prepareElemental();
     prepareWarlocks();
     prepareChat();
-    prepareHint();
+    // need wait before warlocks finish creating
+    //prepareHint();
     bbSendOrders.text = battle.read_only ? "Back" : "Submit";
 }
 

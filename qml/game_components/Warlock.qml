@@ -569,29 +569,9 @@ Item {
                 }
             }
 
-            /*var sprite = l_IconInfoObj.createObject(parent, {l_data: arr_m,x: curr_x, y: 0, height: parent.height, width: parent.height,
-                                                        text: arr_m[code_value],
-                                                        source: "qrc:/res/"+arr_m.icon+".png", checkbox: arr_m.is_checkbox, radius: 20});
-            if (sprite === null) {
-                console.log("prepareDynamic Error creating object");
-                continue;
-            }
-            console.log("prepareDynamic looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width, JSON.stringify(arr_m));
-            sprite.clicked.connect(rWarlock.iconClick);
-            sprite.doubleClicked.connect(rWarlock.iconDoubleClick);
-
-            curr_x += incerment * (sprite.width + 18 * l_ratio);
-            total_width += sprite.width + 18 * l_ratio;
-            if (l_warlock.player && (type === "m") && (arr_m.name.indexOf(":") !== -1)) {
-                sprite.width = 0;
-                sprite.visible = false;
-            }*/
         }
         parent.model = arr;
 
-        //parent.height = total_height;
-        //parent.parent.contentWidth = total_width;
-        //console.log("prepareDynamic", total_width, parent.width, parent.parent.contentWidth, parent.parent.width);
     }
 
     function prepareMonsters() {
@@ -607,8 +587,8 @@ Item {
         var lh_visible = hands_visible || (l_warlock.paralyzed_hand === "LH");
         var rh_visible = hands_visible || (l_warlock.paralyzed_hand === "RH");
         var ng;
-        iiLeft.visible = !l_warlock.read_only;
-        iiRight.visible = !l_warlock.read_only;
+        iiLeft.visible = !l_warlock.read_only && !(!l_warlock.player && (mainWindow.gBattle.turn_num === 1));
+        iiRight.visible = !l_warlock.read_only && !(!l_warlock.player && (mainWindow.gBattle.turn_num === 1));
         if (l_warlock.player) {
             var arr_lg = l_warlock.plg.split(",");
             if (arr_lg.length === 1) {
@@ -693,6 +673,7 @@ Item {
         }
 
         iiBanked.visible = (l_warlock.banked_spell !== "");
+        mainWindow.battleWarlockPrepared();
         //iiBanked.enabled = iiBanked.visible && l_warlock.player;
     }
 }
