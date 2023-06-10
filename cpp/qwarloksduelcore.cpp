@@ -2403,16 +2403,30 @@ QString QWarloksDuelCore::getTopList(bool ShowAll) {
 }
 
 QString QWarloksDuelCore::getHintArray(int hint_id) {
-    QString res = "[", hint, hint_code;
+    QString res = "[", hint, hint_code, icon;
     bool first = true, search = true;
     int hint_idx = 0;
     while(search) {
+        icon.clear();
         hint_code = QString("hint_%1_%2").arg(intToStr(hint_id), intToStr(++hint_idx));
         hint = GameDictionary->getStringByCode(hint_code);
         if (hint.compare(hint_code) == 0) {
             search = false;
         } else {
-            res.append(QString("%1\"%2\"").arg(first ? "" : ",", hint));
+            if (hint_code.compare("hint_1_1") == 0) {
+                icon = "g_s";
+            } else if (hint_code.compare("hint_1_2") == 0) {
+                icon = "goblin";
+            } else if (hint_code.compare("hint_1_3") == 0) {
+                icon = "magic_missile";
+            } else if (hint_code.compare("hint_1_4") == 0) {
+                icon = "RIP2";
+            } else if (hint_code.compare("hint_1_5") == 0) {
+                icon = "spellbook";
+            } else {
+                icon = "target_default";
+            }
+            res.append(QString("%1{\"txt\":\"%2\",\"icon\":\"%3\"}").arg(first ? "" : ",", hint, icon));
         }
         if (first) {
             first = false;

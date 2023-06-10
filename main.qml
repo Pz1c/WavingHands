@@ -878,14 +878,6 @@ ApplicationWindow {
 
     function showSpellDetails(spell_code) {
         logEvent("spell_details", {code:spell_code});
-        //var short_desc_code = spell_code + "_short_desc";
-        //var short_desc = warlockDictionary.getStringByCode(spell_code + "_short_desc");
-        //var msg_txt = "";
-        //if (short_desc !== short_desc_code) {
-        //    msg_txt = short_desc + "<br>Details:<br>";
-        //}
-        //msg_txt += warlockDictionary.getStringByCode(spell_code + "_desc");
-
         showErrorWnd({type:23,spell:spell_code});
     }
 
@@ -939,15 +931,10 @@ ApplicationWindow {
         if (is_player) {
             gBattle["ng" + gBattle.currentHand] = new_gesture;
         }
-        var res = [], arr_cast_now = [], arr_cast_later = [];//[[],[],[],[],[],[],[],[],[]];
+        var res = [], arr_cast_now = [], arr_cast_later = [];
 
         console.log("mainWindow.getSpellList", gBattle.L, gBattle.R, gBattle.ngL, gBattle.ngR);
-        //var str = core.getSpellList(gBattle.L + gBattle.ngL, gBattle.R + gBattle.ngR, 0);
-        //console.log("mainWindow.getSpellList", str);
         var arr = gBattle.warlocks[warlock_idx].spells, s, idx;
-        /*if (new_gesture !== '') {
-            console.log("mainWindow.getSpellList", JSON.stringify(arr));
-        }*/
         var uncompleted_cnt = 0, i, Ln, charm_monster = 0, finished_high_lv_spell = 0, other_hand_finish_spell = 0, curr_hand_finish_two_hand_spell = 0;
         for (i = 0, Ln = arr.length; i < Ln; ++i) {
             s = arr[i];
@@ -989,7 +976,7 @@ ApplicationWindow {
                         idx = s.g.length - s.t + 1;
                         s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
                         s.cast_type = 2;
-                        arr_cast_later/*[s.sg]*/.push(s);
+                        arr_cast_later.push(s);
                         ++uncompleted_cnt;
                     }
                 }
@@ -998,7 +985,7 @@ ApplicationWindow {
                 idx = s.g.length - s.t;
                 s.gp = '<font color="#10C9F5">'+s.g.substr(0, idx)+'</font><font color="#FEE2D6">'+s.g.substr(idx)+'</font>';
                 s.cast_type = 3;
-                arr_cast_later/*[s.sg]*/.push(s);
+                arr_cast_later.push(s);
                 ++uncompleted_cnt;
             }
         }
@@ -1032,7 +1019,7 @@ ApplicationWindow {
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
             res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
-            if (def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0) && (other_hand_finish_spell > 0))) {
+            if (true || def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0) && (other_hand_finish_spell > 0))) {
                 res.push(def_spell);
             }
         } else {

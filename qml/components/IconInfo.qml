@@ -15,6 +15,7 @@ Rectangle {
     property int borderOnPressWidth: 3
     property alias text_color: btnText.color
     property alias text: btnText.text
+    property alias textObject: btnText
     property alias fontSizeMode: btnText.fontSizeMode
     property alias source: iIcon.source
     property alias iconVisible: iIcon.visible

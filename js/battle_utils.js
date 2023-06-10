@@ -112,7 +112,7 @@ function prepareTurnActionInfo(last_turn_hist) {
     console.log("battle_utils.prepareTurnActionInfo", JSON.stringify(last_turn_hist), JSON.stringify(battle.hint));
     var new_hint = [], i, Ln;
     for(i = 0, Ln = battle.hint.length; i < Ln; ++i) {
-        new_hint.push({txt:battle.hint[i],color_bg:"#FEE2D6",actions:[]});
+        new_hint.push({txt:battle.hint[i].txt,color_bg:"#FEE2D6",actions:[{action:"icon",large_icon:battle.hint[i].icon,small_icon:"",title:"",text:"",background_color:"#10C9F5",border_color:"#210430"}]});
     }
 
     for(i = 0, Ln = last_turn_hist.length; i < Ln; ++i) {
