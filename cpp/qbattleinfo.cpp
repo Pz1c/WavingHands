@@ -476,6 +476,7 @@ QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
         }
     }
     chm = _history.at(Turn);
+    chm = chm.replace("&quot;", "\"");
     if (!chm.isEmpty()) {
         int idx1;
         QString curr_color, def_color = "#FFFFFF";

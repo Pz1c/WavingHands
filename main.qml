@@ -730,11 +730,12 @@ ApplicationWindow {
                                 onClicked: {
                                     console.log("getFinishedBattle", index, JSON.stringify(lvFinishedBattle.model[index]));
                                     core.getBattle(lvFinishedBattle.model[index].id, lvFinishedBattle.model[index].s);
-                                    logEvent("Game_Finished_Clicked", {Id:lvActiveBattle.model[index].id});
+                                    logEvent("Game_Finished_Clicked", {Id:lvFinishedBattle.model[index].id});
                                 }
                             }
                         }
-                            Rectangle {
+
+                        Rectangle {
                             id: rdfBattleItemBG
                             radius: 30
                             color: "#544653"
@@ -744,7 +745,7 @@ ApplicationWindow {
                             anchors.right: parent.right
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 12 * ratioObject
-                            }
+                        }
                     }
                 }
             }

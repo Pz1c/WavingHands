@@ -362,8 +362,8 @@ Item {
     }
 
     function hintOnOff(Restore) {
-        iiLeft.visible = Restore;
-        iiRight.visible = Restore;
+        iiLeft.visible = Restore && (isHandsVisible === 1);
+        iiRight.visible = Restore && (isHandsVisible === 1);
     }
 
     function targetingOnOff(Enable, IsSpell, Permanency, Delay) {
@@ -582,13 +582,16 @@ Item {
         prepareDynamic("s", l_warlock.statusIcons, iCharm, "value", svCharm.width - svCharm.height, -1);
     }
 
+    property int isHandsVisible: 0
+
     function prepareHands() {
         var hands_visible = (l_warlock.player || l_warlock.control_paralyze || l_warlock.control_charmed);
         var lh_visible = hands_visible || (l_warlock.paralyzed_hand === "LH");
         var rh_visible = hands_visible || (l_warlock.paralyzed_hand === "RH");
         var ng;
-        iiLeft.visible = !l_warlock.read_only && !(!l_warlock.player && (mainWindow.gBattle.turn_num === 1));
-        iiRight.visible = !l_warlock.read_only && !(!l_warlock.player && (mainWindow.gBattle.turn_num === 1));
+        isHandsVisible = !l_warlock.read_only && !(!l_warlock.player && (mainWindow.gBattle.turn_num === 1)) ? 1 : 0;
+        iiLeft.visible = isHandsVisible === 1;
+        iiRight.visible = isHandsVisible === 1;
         if (l_warlock.player) {
             var arr_lg = l_warlock.plg.split(",");
             if (arr_lg.length === 1) {
