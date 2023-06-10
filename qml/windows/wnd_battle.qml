@@ -78,21 +78,7 @@ BaseWindow {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 120 * mainWindow.ratioObject
-
-            LargeText {
-               id: ltAll
-               text: "All"
-               anchors.top: parent.top
-               anchors.horizontalCenter: parent.horizontalCenter
-               height: 36 * mainWindow.ratioObject
-               width: 246 * mainWindow.ratioObject
-               bg_visible: true
-               bg_color: "#544653"
-               bg_radius: 10
-               color: "#FEE2D6"
-               border_visible: false
-               visible: false
-            }
+            z: 1000
 
             IconInfo {
                 id: iiSpellbook
@@ -502,6 +488,14 @@ BaseWindow {
                         height: 64 * mainWindow.ratioObject
 
                         source: "qrc:/res/spellbook.png"
+                    }
+
+                    MouseArea {
+                        id: maTutIcon
+                        anchors.fill: parent
+                        onClicked: {
+                            ltTTT.clicked();
+                        }
                     }
                 }
             }

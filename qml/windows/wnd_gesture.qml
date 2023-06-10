@@ -604,9 +604,19 @@ BaseWindow {
                 IconInfo {
                     id: iiSend
                     source: "qrc:/res/send_"+(active ? "1" : "0")+".png"
-                    textVisible: false
+                    //textVisible: false
+                    text: "Go"
+                    textAnchors.top:  iiSend.bottom
+                    textAnchors.horizontalCenter: iiSend.horizontalCenter
+                    textAnchors.right: undefined
+                    textAnchors.bottom: undefined
+                    textObject.font.pixelSize: 28 * mainWindow.ratioFont
+                    text_color: "#A8F4F4"
+                    fontSizeMode: Text.VerticalFit
                     height: 64 * mainWindow.ratioObject
                     width: 64 * mainWindow.ratioObject
+                    textHeight: 48 * mainWindow.ratioObject
+                    textWidth: 64 * mainWindow.ratioObject
                     anchors.right: parent.right
                     anchors.rightMargin: 62 * mainWindow.ratioObject
                     anchors.verticalCenter: parent.verticalCenter

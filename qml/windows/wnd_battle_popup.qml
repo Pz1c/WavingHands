@@ -223,7 +223,12 @@ InfoWindow {
     function initErrFields() {
         console.log("wnd_spell_popup.initFields.start", JSON.stringify(mainWindow.gERROR));
         battleID = mainWindow.gERROR.id;
-        battleLevel = mainWindow.gERROR.level;
+        if (mainWindow.gERROR.level) {
+            battleLevel = mainWindow.gERROR.level;
+        } else {
+            battleLevel = 2;
+        }
+
         warlockName = mainWindow.gERROR.enemy;
         SPGU.prepareDataTypeFinishedGame(mainWindow.gERROR, dict);
 
