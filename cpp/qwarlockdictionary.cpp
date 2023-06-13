@@ -251,6 +251,19 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("old_hint_10_2", "", "", "Common spells are Fire and Ice Elementals (cWSSW, cSWWS) and Storms (SWWc, WSSc)");
     fillDictionary("old_hint_10_3", "", "", "Resistance will protect you (WWFP, SSFP)");
     fillDictionary("old_hint_10_4", "", "", "Checkout the full rules at (https://games.ravenblack.net/rules)");
+    // https://github.com/Pz1c/WavingHands/issues/297
+    fillDictionary("hint_1_1_icon", "", "", "g_s");
+    fillDictionary("hint_1_2_icon", "", "", "goblin");
+    fillDictionary("hint_1_3_icon", "", "", "magic_missile");
+    fillDictionary("hint_1_4_icon", "", "", "RIP2");
+    fillDictionary("hint_1_5_icon", "", "", "spellbook");
+    fillDictionary("hint_2_1_icon", "", "", "amnesia");
+    fillDictionary("hint_2_2_icon", "", "", "target_nobody");
+    fillDictionary("hint_3_1_icon", "", "", "goblin");
+    fillDictionary("hint_3_2_icon", "", "", "goblin");
+    fillDictionary("hint_4_1_icon", "", "", "mshield");
+    fillDictionary("hint_4_2_icon", "", "", "heart_small");
+    fillDictionary("hint_5_1_icon", "", "", "stars");
 
     fillDictionary("BotSay_1", "", "", "Hi, warlock, I am a golem created for your training, try to beat me. Every letter represents a hand gesture. A set of gestures like DPP is a spell (Amnesia).");
     fillDictionary("BotSay_2", "", "", "Here are some more useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it. But P/P with both hands will make you surrender.");

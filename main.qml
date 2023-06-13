@@ -115,6 +115,7 @@ ApplicationWindow {
         Component.onCompleted: {
             console.log("Core.completed");
             core.setupAIServer();
+            core.scanTopList(1, 0);
             if (core.login === '') {
                 tbTop.visible = false;
                 rBody.visible = false;
@@ -945,7 +946,9 @@ ApplicationWindow {
                 if ((new_gesture !== '') && (s.ng === new_gesture) && (s.t === 1) && (s.th === 1)) {
                     s.gp = '<font color="#10C9F5">'+s.g+'</font>';
                     s.cast_type = 1;
-                    arr_cast_now.push(s);
+                    if (s.n !== "Magic Mirror") {
+                        arr_cast_now.push(s);
+                    }
                 } else if ((s.t === 1) && (s.a > 0)) {
                     console.log("mainWindow.getSpellList", i, JSON.stringify(s));
                     ++other_hand_finish_spell;
@@ -1019,7 +1022,7 @@ ApplicationWindow {
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
             res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
-            if (true || def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0) && (other_hand_finish_spell > 0))) {
+            if (def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0)/* && (other_hand_finish_spell > 0)*/)) {
                 res.push(def_spell);
             }
         } else {
@@ -1081,7 +1084,8 @@ ApplicationWindow {
         logEvent("Play_Target_View", {Mode:"spell"});
     }
 
-    function battleWarlockPrepared() {
+    function battleWarlockPrepared(warlock) {
+        console.log("main.qml.battleWarlockPrepared", warlock);
         WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareHintWithCheck();
     }
 

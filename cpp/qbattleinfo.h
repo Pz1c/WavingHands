@@ -121,6 +121,7 @@ private:
     QString _winner;
     QString _sub_title;
     QString _fullJSON;
+    int _app_version;
 
     QList<QMonster *> _Monsters;
     QList<QWarlock *> _Warlock;

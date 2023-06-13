@@ -13,6 +13,10 @@ QBattleInfo::QBattleInfo(const QString &battle_info) {
     if (_fullJSON.isEmpty()) {
         _fullParsed = false;
     }
+    if (_app_version < 214) {
+        _fullParsed = false;
+        _fullJSON.clear();
+    }
 }
 
 void QBattleInfo::init() {
@@ -30,6 +34,7 @@ void QBattleInfo::init() {
     _for_bot = false;
     _with_bot = false;
     _fullParsed = false;
+    _app_version = 0;
 }
 
 QBattleInfo::~QBattleInfo() {
@@ -269,28 +274,6 @@ void QBattleInfo::setTurn(int newTurn)
     _turn = newTurn;
 }
 
-/*
-    if (Title.isEmpty()) {
-        switch(State) {
-        case -2: return QString("Battle #%1 deleted").arg(intToStr(BattleID));
-        case -1: return "Waiting to start...";//QString("#%1 waiting to start...").arg(intToStr(BattleID));
-        case 0: return QString("Waiting opponent #%1...").arg(intToStr(BattleID));
-        case 1: return QString("Battle #%1 is ready").arg(intToStr(BattleID));
-        case 2: return QString("Battle #%1 finished").arg(intToStr(BattleID));
-        default: return QString("Battle #%1 in %2 state").arg(intToStr(BattleID), intToStr(State));
-        }
-    } else {
-        switch(State) {
-        //case -2: return QString("Battle #%1 deleted").arg(intToStr(BattleID));
-        case -1: return "Waiting to start...";//QString("Not started, %1").arg(Title);
-        case 0: return QString("Waiting for %1...").arg(Title);
-        //case 1: return QString("Battle #%1 is ready").arg(Title);
-        //case 2: return QString("Battle #%1 finished").arg(Title);
-        default: return Title;
-        }
-    }
-*/
-
 QString QBattleInfo::getInListParticipant(const QString &Login, bool Short) const  {
     QString res = QString("%1 vs ").arg(Login);
     QString tmp = Login.toLower();
@@ -450,7 +433,7 @@ QString QBattleInfo::getHistory() const {
 }
 
 QString QBattleInfo::prepareToPrint(QString str) const {
-    return str.replace("\n","<br>").replace("\r", "").replace('"', "&quot;").replace("\\", "@bsol;");
+    return str.replace("\n","<br>").replace("\r", "").replace('"', "&quot;").replace("\\", "&bsol;");
 }
 
 QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
@@ -476,19 +459,20 @@ QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
         }
     }
     chm = _history.at(Turn);
+    qDebug() << "QBattleInfo::getTurnInfo" << chm;
     chm = chm.replace("&quot;", "\"");
     if (!chm.isEmpty()) {
         int idx1;
         QString curr_color, def_color = "#FFFFFF";
         QStringList sl1, sl2;
-        slcm = chm.split("<FONT COLOR=\"");
+        slcm = chm.split("<FONT COLOR=\"", Qt::KeepEmptyParts, Qt::CaseInsensitive);
         foreach(QString m, slcm) {
             idx1 = m.indexOf('"');
             curr_color = m.mid(0, idx1);
             idx1 = m.indexOf(">", idx1);
             m = m.mid(idx1 + 1);
             qDebug() << "QBattleInfo::getTurnInfo" << m;
-            sl1 = m.split("</FONT>"); // should be only two
+            sl1 = m.split("</FONT>", Qt::KeepEmptyParts, Qt::CaseInsensitive); // should be only two
             foreach(QString ss1, sl1) {
                 sl2 = ss1.split("<br>");
                 foreach(QString ss2, sl2) {
@@ -520,7 +504,8 @@ QString QBattleInfo::getFinishedBattleInfo(const QString &Login) const {
 }
 
 QString QBattleInfo::getFullHist(const QString& Login) const {
-    QString fh, tmp;
+    return getFinishedBattleInfo(Login);
+    /*QString fh, tmp;
     if (!_description.isEmpty()) {
         fh.append("<p><font color=&quot;#10C9F5&quot; size=+1>Turn 0</font></p>");
         fh.append(_description);
@@ -537,6 +522,7 @@ QString QBattleInfo::getFullHist(const QString& Login) const {
     }
     return QString("{\"type\":9,\"d\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\",\"sc\":\"%5\"}")
             .arg(fh, intToStr(_battleID), getInListParticipant(Login), _sub_title, getInListStatus(Login));
+//*/
 }
 
 QString QBattleInfo::toJSON(const QString &Login) const {
@@ -552,14 +538,15 @@ QString QBattleInfo::toString(bool Short) const {
     QString tmp_chat = Short ? "" : prepareToPrint(_chat.join("#END_TURN#"));
     QString tmp_hist = Short ? "" : prepareToPrint(_history.join("#END_TURN#"));
     QByteArray json = _fullJSON.toUtf8();
+    //_app_version = APPLICATION_VERSION_INT;
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
                    "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21^^^"
-                   "full_battle_json#=#%22")
+                   "full_battle_json#=#%22^^^app_version#=#%23")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), tmp_chat, tmp_hist, _winner, intToStr(_hint))
             .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","))
-            .arg(json.toBase64(QByteArray::Base64UrlEncoding));
+            .arg(json.toBase64(QByteArray::Base64UrlEncoding), APPLICATION_VERSION);
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -616,6 +603,8 @@ void QBattleInfo::parseString(const QString &battle_info) {
             _challenged = value.split(",");
         } else if (key.compare("full_battle_json") == 0) {
             _fullJSON = QByteArray::fromBase64(value.toUtf8(), QByteArray::Base64UrlEncoding);
+        } else if (key.compare("app_version") == 0) {
+            _app_version = value.toInt();
         }
     }
 }
@@ -651,6 +640,7 @@ void QBattleInfo::parseUnits(QString &Data, QString &Login) {
 }
 
 void QBattleInfo::parseAllTurns(QString &Data, QString &Login, bool Last) {
+    qDebug() << "QBattleInfo::parseAllTurns" << Login << Last;
     parseUnits(Data, Login);
 
     int last_idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="), first_idx = Data.indexOf("<U>Turn");
