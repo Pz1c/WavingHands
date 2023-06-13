@@ -1001,7 +1001,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             _finishedBattle = battleInfo->getFinishedBattleInfo(_login);
             qDebug() << "after battleInfo->getFullHist" << _login << battleInfo->winner() << battleInfo->isWinner(_login) << battleInfo->with_bot();
             processSpellBookLevelAfterBattle(battleInfo);
+#ifndef _DEBUG
             storeFullParsedBattle(battleInfo);
+#endif
             QString params = QString("Id;%1;Players;%2;Winner;%3;").arg(intToStr(_loadedBattleID), battleInfo->getInListParticipant(_login, true), battleInfo->winner());
             logEvent("Game_End", params);
         }
@@ -1434,7 +1436,7 @@ void QWarloksDuelCore::generateBattleList() {
         if (battle_info->status() != BATTLE_INFO_STATUS_NO_START) {
             battle_info->setStatus(BATTLE_INFO_STATUS_WAIT);
         }
-        d = battle_info->getInListDescription(_login);//QWarlockUtils::getBattleShortTitle(_battleDesc[bid], _battleState[bid], bid);
+        d = battle_info->getInListDescription(_login);
         if (battle_info->status() == 0) {
             if (first) {
                 first = false;
@@ -1450,7 +1452,9 @@ void QWarloksDuelCore::generateBattleList() {
         }
     }
     if (!wait_str.isEmpty()) {
-        if (!first) {
+        if (first) {
+           first = false;
+        } else {
             _battleList.append(",");
         }
         _battleList.append(wait_str);
@@ -1491,7 +1495,6 @@ void QWarloksDuelCore::generateBattleList() {
                     .replace("NO BOT", "", Qt::CaseInsensitive);
             chalenge_str.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2 challenge by %3\",\"dt\":\"%4\",\"el\":\"%5\"}").
                                arg(intToStr(bid), battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "Open" : "Practice", battle_info->getEnemy(_login), ddd, battle_info->getEnemy(_login)));
-            //_battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
         }
     }
     if (/*with_any_challenge && */!with_challenge && (active_battle_cnt < 3)) {
@@ -2403,30 +2406,22 @@ QString QWarloksDuelCore::getTopList(bool ShowAll) {
 }
 
 QString QWarloksDuelCore::getHintArray(int hint_id) {
-    QString res = "[", hint, hint_code, icon;
+    QString res = "[", hint, hint_code, hint_icon, hint_icon_code;
     bool first = true, search = true;
     int hint_idx = 0;
     while(search) {
-        icon.clear();
         hint_code = QString("hint_%1_%2").arg(intToStr(hint_id), intToStr(++hint_idx));
+        hint_icon_code = QString("%1_icon").arg(hint_code);
         hint = GameDictionary->getStringByCode(hint_code);
         if (hint.compare(hint_code) == 0) {
             search = false;
         } else {
-            if (hint_code.compare("hint_1_1") == 0) {
-                icon = "g_s";
-            } else if (hint_code.compare("hint_1_2") == 0) {
-                icon = "goblin";
-            } else if (hint_code.compare("hint_1_3") == 0) {
-                icon = "magic_missile";
-            } else if (hint_code.compare("hint_1_4") == 0) {
-                icon = "RIP2";
-            } else if (hint_code.compare("hint_1_5") == 0) {
-                icon = "spellbook";
-            } else {
-                icon = "target_default";
+            hint_icon = GameDictionary->getStringByCode(hint_icon_code);
+            if (hint_icon.compare(hint_icon_code) == 0) {
+                hint_icon.clear();
             }
-            res.append(QString("%1{\"txt\":\"%2\",\"icon\":\"%3\"}").arg(first ? "" : ",", hint, icon));
+
+            res.append(QString("%1{\"txt\":\"%2\",\"icon\":\"%3\"}").arg(first ? "" : ",", hint, hint_icon));
         }
         if (first) {
             first = false;

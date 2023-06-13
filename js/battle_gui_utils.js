@@ -447,6 +447,7 @@ function higlightWarlockGestureBySpell(warlock, spell_obj) {
 }
 
 function getSpellIconActionBySpell(spell_obj) {
+    console.log("getSpellIconActionBySpell", JSON.stringify(spell_obj));
     var res = {action:"icon",large_icon:"",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     var arr_g = map_spell_name_to_gesture[spell_obj.spell];
     res.large_icon = map_spell_to_icon[arr_g[0]];

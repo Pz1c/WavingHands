@@ -219,6 +219,21 @@ InfoWindow {
                         }
 
                         Text {
+                            id: rdbifOnline
+                            anchors.verticalCenter: rdTopItem.verticalCenter
+                            anchors.left: rdbifTitle.right
+                            anchors.leftMargin: 10 * mainWindow.ratioObject
+                            height: 0.8 * rdTopItem.height
+                            font.pixelSize: 28 * mainWindow.ratioFont
+                            color: "#FEE2D6"
+                            horizontalAlignment: Text.AlignLeft
+                            verticalAlignment: Text.AlignVCenter
+                            text: "online"
+                            font.italic: true
+                            visible: lvSpellList.model[index].a
+                        }
+
+                        Text {
                             id: rdbifElo
                             anchors.verticalCenter: rdTopItem.verticalCenter
                             anchors.right: parent.right //rdbifInfo.left

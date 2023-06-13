@@ -112,7 +112,11 @@ function prepareTurnActionInfo(last_turn_hist) {
     console.log("battle_utils.prepareTurnActionInfo", JSON.stringify(last_turn_hist), JSON.stringify(battle.hint));
     var new_hint = [], i, Ln;
     for(i = 0, Ln = battle.hint.length; i < Ln; ++i) {
-        new_hint.push({txt:battle.hint[i].txt,color_bg:"#FEE2D6",actions:[{action:"icon",large_icon:battle.hint[i].icon,small_icon:"",title:"",text:"",background_color:"#10C9F5",border_color:"#210430"}]});
+        var action = [];
+        if (battle.hint[i].icon) {
+            action.push({action:"icon",large_icon:battle.hint[i].icon,small_icon:"",title:"",text:"",background_color:"#10C9F5",border_color:"#210430"});
+        }
+        new_hint.push({txt:battle.hint[i].txt,color_bg:"#FEE2D6",actions:action});
     }
 
     for(i = 0, Ln = last_turn_hist.length; i < Ln; ++i) {
@@ -207,7 +211,7 @@ function prepareMonster(m) {
 
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
-        monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: raw_battle.battle_hist,
+        monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
         battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only};
     // L left  obj
     // R Right obj

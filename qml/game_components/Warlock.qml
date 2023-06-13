@@ -370,23 +370,30 @@ Item {
         console.log("Warlock.targetingOnOff", l_warlock.name, Enable, IsSpell, Permanency, Delay);
         var opacity = Enable ? 0.3 : 1;
         var border_width = Enable ? 3 : 0;
-        lwGestures.opacity = opacity;
+        /*lwGestures.opacity = opacity;
         iiLeft.opacity = opacity;
         iiRight.opacity = opacity;
         iiLeft.active = !Enable;
         iiRight.active = !Enable;
         rBottomLine.visible = l_warlock.player || !Enable;
-        //iiHP.active = Enable;
-        //iiHP.border.width = border_width;
         if (iiBanked.visible) {
             iiBanked.opacity = opacity;
-        }
-        var item, i, Ln;
-        /*for (i = 0, Ln = iMonsters.children.length; i < Ln; ++i) {
-            item = iMonsters.children[i];
-            item.border.width = border_width;
-            //item.active = Enable;
         }*/
+        lwGestures.visible = !Enable;
+        iiLeft.visible = !Enable;
+        iiRight.visible = !Enable;
+        iiLeft.active = !Enable;
+        iiLeft.visible = !Enable;
+        iiRight.active = !Enable;
+        iiRight.visible = !Enable;
+        rBottomLine.visible = l_warlock.player || !Enable;
+        iiBanked.visible = (l_warlock.banked_spell !== "") && !Enable;
+        if (Enable) {
+           iiHP.animate(1);
+        }
+
+        var item, i, Ln;
+
         for (i = 0, Ln = iCharm.count; i < Ln; ++i) {
             item = iCharm.itemAtIndex(i);
 
@@ -409,11 +416,10 @@ Item {
                     }
                 }
                 item.active = Enable;// || perm_or_del_checked;
-
             } else {
                 item.opacity = opacity;
-                //item.active = !Enable;
             }
+            item.visible = !Enable || perm_or_del;
         }
     }
 
@@ -676,7 +682,7 @@ Item {
         }
 
         iiBanked.visible = (l_warlock.banked_spell !== "");
-        mainWindow.battleWarlockPrepared();
+        mainWindow.battleWarlockPrepared(l_warlock.name);
         //iiBanked.enabled = iiBanked.visible && l_warlock.player;
     }
 }

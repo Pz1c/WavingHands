@@ -228,8 +228,9 @@ InfoWindow {
         } else {
             battleLevel = 2;
         }
-
-        warlockName = mainWindow.gERROR.enemy;
+        if (mainWindow.gERROR.enemy) {
+            warlockName = mainWindow.gERROR.enemy;
+        }
         SPGU.prepareDataTypeFinishedGame(mainWindow.gERROR, dict);
 
         saClick.start();

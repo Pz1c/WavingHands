@@ -504,7 +504,9 @@ BaseWindow {
 
     property int readyWarlocks: 0
     function prepareHintWithCheck() {
+        console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
         if (++readyWarlocks >= mainWindow.gBattle.size) {
+            console.log("battle.prepareHintWithCheck", "run prepareHint");
             BU.prepareHint();
         }
     }
