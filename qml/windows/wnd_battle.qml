@@ -182,7 +182,7 @@ BaseWindow {
                 text: "Submit"
 
                 onClicked: {
-                    console.log("wnd_battle.initBattleFields", mainWindow.gBattle.read_only, JSON.stringify(mainWindow.gBattle.actions));
+                    console.log("wnd_battle.bbSendOrders", mainWindow.gBattle.read_only, JSON.stringify(mainWindow.gBattle.actions));
                     if (mainWindow.gBattle.read_only) {
                         mainWindow.processEscape();
                         return;
@@ -502,12 +502,24 @@ BaseWindow {
         }
     }
 
+    Timer {
+        id: tHintDelay
+        interval: 10
+        repeat: false
+        running: false
+        onTriggered: {
+            console.log("battle.prepareHintWithCheck", "run prepareHint");
+            BU.prepareHint();
+        }
+    }
+
     property int readyWarlocks: 0
+    property int readyWindow: 0
     function prepareHintWithCheck() {
         console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
         if (++readyWarlocks >= mainWindow.gBattle.size) {
-            console.log("battle.prepareHintWithCheck", "run prepareHint");
-            BU.prepareHint();
+            readyWarlocks = 0;
+            tHintDelay.start();
         }
     }
 
@@ -757,6 +769,7 @@ BaseWindow {
     function initBattleFields() {
         console.log("wnd_battle.initBattleFields", x, y, width, height, parent.x, parent.y, parent.width, parent.height);
         console.log("wnd_battle.initBattleFields", JSON.stringify(mainWindow.gBattle));
+        console.log("wnd_battle.initBattleFields", "readyWarlocks", readyWarlocks);
         if (!mainWindow.gBattle || !mainWindow.gBattle.id) {
             return;
         }

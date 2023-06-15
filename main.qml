@@ -947,8 +947,9 @@ ApplicationWindow {
                     s.gp = '<font color="#10C9F5">'+s.g+'</font>';
                     s.cast_type = 1;
                     if (s.n !== "Magic Mirror") {
-                        arr_cast_now.push(s);
+                        //arr_cast_now.push(s);
                     }
+                    ++other_hand_finish_spell;
                 } else if ((s.t === 1) && (s.a > 0)) {
                     console.log("mainWindow.getSpellList", i, JSON.stringify(s));
                     ++other_hand_finish_spell;
@@ -1022,7 +1023,7 @@ ApplicationWindow {
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
             res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
-            if (def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0)/* && (other_hand_finish_spell > 0)*/)) {
+            if (def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0) || (other_hand_finish_spell > 0))) {
                 res.push(def_spell);
             }
         } else {

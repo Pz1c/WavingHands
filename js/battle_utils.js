@@ -1,4 +1,5 @@
 .import "battle_gui_utils.js" as BGU
+
 .import QtQuick 2.0 as QQ
 
 var battle = {};
@@ -119,8 +120,9 @@ function prepareTurnActionInfo(last_turn_hist) {
         new_hint.push({txt:battle.hint[i].txt,color_bg:"#FEE2D6",actions:action});
     }
 
+    var real_actions = [], new_action;
     for(i = 0, Ln = last_turn_hist.length; i < Ln; ++i) {
-        var new_action = [];
+        new_action = [];
         if ((last_turn_hist[i].type === 0)) {
             // chat message
             if (battle.with_bot) {
@@ -128,20 +130,42 @@ function prepareTurnActionInfo(last_turn_hist) {
             }
             new_action.push({action:"icon",large_icon:"chat",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#E7FFFF"});
         } else if (last_turn_hist[i].type === 2) {
+            real_actions.push(last_turn_hist[i]);
             continue;
         } else if (last_turn_hist[i].type === 1) {
-            new_action = BGU.getMessageActionByRow(last_turn_hist[i], battle); // before change color
+            real_actions.push(last_turn_hist[i]);
+            continue;
+            /*new_action = BGU.getMessageActionByRow(last_turn_hist[i], battle); // before change color
             if ((last_turn_hist[i].color === "#FF6666") || (last_turn_hist[i].color === "#FF8888")) {
                 last_turn_hist[i].color = "#FEE2D6";
             } else {
                 last_turn_hist[i].color = "#10C9F5";
-            }
+            }*/
         }
         if (!last_turn_hist[i].font_size) {
             last_turn_hist[i].font_size = 21;
         }
 
         new_hint.push({color_bg:last_turn_hist[i].color,font_size:last_turn_hist[i].font_size,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
+    }
+
+    BGU.sortRealAction(real_actions, battle);
+
+    for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        //new_action = BGU.getMessageActionByRow(real_actions[i], battle); // before change color
+        if (real_actions[i].type >= 2) {
+            continue;
+        }
+
+        if ((real_actions[i].color === "#FF6666") || (real_actions[i].color === "#FF8888")) {
+            real_actions[i].color = "#FEE2D6";
+        } else {
+            real_actions[i].color = "#10C9F5";
+        }
+        if (!real_actions[i].font_size) {
+            real_actions[i].font_size = 21;
+        }
+        new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:BGU.replaceAll(real_actions[i].txt, '&quot;', '"'),actions:real_actions[i].new_action});
     }
 
     battle.hint = new_hint;
@@ -212,7 +236,7 @@ function prepareMonster(m) {
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
-        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only};
+        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit};
     // L left  obj
     // R Right obj
     // C Chat  text
