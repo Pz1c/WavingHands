@@ -382,9 +382,15 @@ function parseSpellByText(txt) {
     }
 
     spell_name = spell_name.trim();
+    var spell_fail = "";
+    if (txt.indexOf("but misses due to invisibility") !== -1) {
+        spell_fail = "Invisibility";
+    } else if (txt.indexOf("but misses due to bl") !== -1) {
+        spell_fail = "Blindness";
+    }
 
-    console.log("parseSpellByText", txt, walock_name, spell_name, target_name);
-    return {warlock:walock_name,spell:spell_name,target:target_name};
+    console.log("parseSpellByText", txt, walock_name, spell_name, target_name, spell_fail);
+    return {warlock:walock_name,spell:spell_name,target:target_name,fail:spell_fail};
 }
 
 function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
@@ -416,10 +422,15 @@ function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
             if ((Lg === gU) && ((i === gl - 1) || (res[0] === gl - i - 1))) {
                 res[0] = gl - i;
                 not_found = false;
+            } else {
+                res[0] = 0;
             }
+
             if ((Rg === gU) && ((i === gl - 1) || (res[1] === gl - i - 1))) {
                 res[1] = gl - i;
                 not_found = false;
+            } else {
+                res[1] = 0;
             }
         }
         if (not_found) {
@@ -447,8 +458,8 @@ function higlightWarlockGestureBySpell(warlock, spell_obj) {
 }
 
 function getSpellIconActionBySpell(spell_obj) {
-    console.log("getSpellIconActionBySpell", JSON.stringify(spell_obj));
-    var res = {action:"icon",large_icon:"",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
+    //console.log("getSpellIconActionBySpell", JSON.stringify(spell_obj));
+    var res = {action:"icon",large_icon:"",small_icon:spell_obj.fail,title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     var arr_g = map_spell_name_to_gesture[spell_obj.spell];
     res.large_icon = map_spell_to_icon[arr_g[0]];
     if (spell_obj.spell.indexOf("Cure") !== -1) {
@@ -470,10 +481,15 @@ function getSpellIconActionBySpell(spell_obj) {
 
 function getMessageActionBySpell(obj, battle) {
     var res = [];
-    var spell_obj = parseSpellByText(obj.txt);
+    var spell_obj = obj.obj;
     var target_found = false;
     obj.txt = spell_obj.spell;
     obj.font_size = 42;
+    if (spell_obj.fail !== "") {
+        obj.txt += " fail";
+        obj.font_size = 28;
+    }
+
     res.push(getSpellIconActionBySpell(spell_obj));
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].name === spell_obj.warlock) {
@@ -506,10 +522,10 @@ function getMessageActionBySpell(obj, battle) {
         }
         if (!target_found) {
             var w = battle.warlocks[i];
-            console.log("getMessageActionBySpell", "check monsters", spell_obj.target, JSON.stringify(w.monsters));
+            //console.log("getMessageActionBySpell", "check monsters", spell_obj.target, JSON.stringify(w.monsters));
             for (var j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
                 var m = w.monsters[j];
-                console.log("getMessageActionBySpell", "check monster", JSON.stringify(m));
+                //console.log("getMessageActionBySpell", "check monster", JSON.stringify(m));
                 if (m.name === spell_obj.target) {
                     if (spell_obj.spell === "Cause Heavy Wounds") {
                         battle.warlocks[i].monsters[j].got_heavy_wounds = true;
@@ -519,7 +535,7 @@ function getMessageActionBySpell(obj, battle) {
                             battle.warlocks[i].monsters[j].arr_distruption = [];
                         }
                         battle.warlocks[i].monsters[j].arr_distruption.push(spell_obj.spell);
-                        console.log("getMessageActionBySpell", "fill monster arr_distruption", JSON.stringify(battle.warlocks[i].monsters[j]));
+                        //console.log("getMessageActionBySpell", "fill monster arr_distruption", JSON.stringify(battle.warlocks[i].monsters[j]));
                     }
                     res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:"#FEE2D6"});
                     target_found = true;
@@ -533,7 +549,7 @@ function getMessageActionBySpell(obj, battle) {
     }
 
 
-    console.log("getMessageActionBySpell", JSON.stringify(spell_obj), JSON.stringify(res));
+    //console.log("getMessageActionBySpell", JSON.stringify(spell_obj), JSON.stringify(res));
     return res;
 }
 
@@ -571,12 +587,12 @@ function parseSimpleAttack(txt, stop_word) {
         }
     }
     var res = {aggressor:aggressor,target:target,damage:damage,success:damage > 0 ? 1 : 0,shield:txt.indexOf("shield") !== -1 ? 1 : 0};
-    console.log("parseSimpleAttack", JSON.stringify(arr), JSON.stringify(res));
+    //console.log("parseSimpleAttack", JSON.stringify(arr), JSON.stringify(res));
     return res;
 }
 
-function parseStrangeAttack(txt) {
-    var res = {aggressor:"",target:"",spell_name:"",damage:0,shield:false,mirror:false,counter_spell:false};
+function parseStrangeAttack(txt, battle) {
+    var res = {aggressor:"",target:"",spell:"",damage:0,shield:false,mirror:false,counter_spell:false};
     if (txt.indexOf("fizzles slightly") !== -1) {
         res.counter_spell = true;
         txt = txt.replace("shield fizzles slightly", "is hit by a Anti-spell");
@@ -600,19 +616,19 @@ function parseStrangeAttack(txt) {
         txt = txt.replace("Wounds appear all over ", "").replace("body!", "is hit by a Cause Light Wounds for 2 damage");
     } else if (txt.indexOf("reflected") !== -1) {
         var idx1 = txt.indexOf(" spell");
-        res.spell_name = txt.substr(4, idx1 - 4).trim();
-        console.log("parseStrangeAttack magic mirror", res.spell_name);
+        res.spell = txt.substr(4, idx1 - 4).trim();
+        //console.log("parseStrangeAttack magic mirror", res.spell);
         idx1 = txt.indexOf("from") + 5;
         var idx2 = txt.indexOf("'s", idx1);
-        txt = txt.substr(idx1, idx2 - idx1) + " is hit by a " + res.spell_name;
-        res.spell_name = "";
+        txt = txt.substr(idx1, idx2 - idx1) + " is hit by a " + res.spell;
+        res.spell = "";
         res.mirror = true;
     }
 
 
     var arr = replaceAll(txt, ",", " semicolon").replace(".", " dot").replace("is hit by a", "attack_spell")
             .replace("!", " !").replace("'s", " ").split(" ");
-    console.log("parseStrangeAttack", arr);
+    //console.log("parseStrangeAttack", arr);
     var target_finished = false, spell_started = false, spell_finished = false;
     for(var i = 0, Ln = arr.length; i < Ln; ++i) {
         if (arr[i] === "") {
@@ -631,7 +647,7 @@ function parseStrangeAttack(txt) {
         }
         spell_finished = spell_started && (spell_finished || word_not_upper);
         if (spell_started && !spell_finished) {
-            res.spell_name += " " + arr[i];
+            res.spell += " " + arr[i];
             continue;
         }
 
@@ -640,69 +656,73 @@ function parseStrangeAttack(txt) {
         }
 
         if (!spell_started && ((arr[i] === "coordination") || (arr[i] === "maladroit") || (arr[i] === "trips"))) {
-            res.spell_name = "Confusion";
+            res.spell = battle.maladroit ? "Maladroitness" : "Confusion";
         }
 
         if (!spell_started && ((arr[i] === "intrigued") || (arr[i] === "charmed"))) {
-            res.spell_name = "Charm Person";
+            res.spell = "Charm Person";
         }
 
-        if (!spell_started && (arr[i] === "glassy-eyed")) {
-            res.spell_name = "Charm Monster";
+        if (!spell_started && ((arr[i] === "glassy-eyed") || ((arr[i] === "instincts") && (arr[i - 1] === "baser")))) {
+            res.spell = "Charm Monster";
         }
 
         if (!spell_started && ((arr[i] === "stiffen") || (arr[i] === "paralysed") ||
                                ((arr[i] === "move") && (arr[i - 1] === "can't")))) {
-            res.spell_name = "Paralysis";
+            res.spell = "Paralysis";
         }
 
         if (!spell_started && ((arr[i] === "fear") || (arr[i] === "scared"))) {
-            res.spell_name = "Fear";
+            res.spell = "Fear";
         }
 
         if (!spell_started && ((arr[i] === "blank") || (arr[i] === "forgets"))) {
-            res.spell_name = "Amnesia";
+            res.spell = "Amnesia";
         }
 
         if (!spell_started && ((arr[i] === "sick") || (arr[i] === "nauseous") || (arr[i] === "pale")
                                || (arr[i] === "breathing") || (arr[i] === "feverishly") || (arr[i] === "weakly")
                                || (arr[i] === "coughing"))) {
-            res.spell_name = "Disease";
+            res.spell = "Disease";
         }
 
-        if (!spell_started && ((arr[i] === "shimmering") || (arr[i] === "par alysed"))) {
-            res.spell_name = "Protection";
+        if (!spell_started && ((arr[i] === "shimmering") && (arr[i - 1] === "thick"))) {
+            res.spell = "Protection";
+        }
+
+        if (!spell_started && ((arr[i] === "shimmering") && (arr[i - 1] !== "thick"))) {
+            res.spell = "Shield";
         }
 
         if (!spell_started && ((arr[i] === "glowing") || (arr[i] === "par alysed"))) {
-            res.spell_name = "Counter Spell";
+            res.spell = "Counter Spell";
         }
 
         if (!spell_started && ((arr[i] === "shimmer") || (arr[i] === "par alysed"))) {
-            res.spell_name = "Invisibility";
+            res.spell = "Invisibility";
         }
 
         if (!spell_started && (((arr[i] === "sparkling") && (arr[i + 1] === "frost")) )) {
-            res.spell_name = "Resist Heat";
+            res.spell = "Resist Heat";
         }
 
         if (!spell_started && (((arr[i] === "warm") && (arr[i + 1] === "glow")) )) {
-            res.spell_name = "Resist Cold";
+            res.spell = "Resist Cold";
         }
 
         if (!spell_started && (((arr[i] === "grounded") && (arr[i - 2] === "energies")) )) {
-            res.spell_name = "Remove Enchantment";
+            res.spell = "Remove Enchantment";
             //res.counter_spell = true;
         }
 
         if (!spell_started && (((arr[i] === "banked") && (arr[i - 2] === "cast")) )) {
-            res.spell_name = "Delay Effect";
+            res.spell = "Delay Effect";
             //res.counter_spell = true;
         }
     }
 
     res.target = res.target.trim();
-    res.spell_name = res.spell_name.trim();
+    res.spell = res.spell.trim();
 
     return res;
 }
@@ -717,18 +737,19 @@ function parseAttackByText(txt) {
         res = parseSimpleAttack(txt, "tries to attack");
     } else {
         // message like "Galbarad starts to lose coordination" or "Smelly Goblin is hit by a Magic Missile, for 1 damage."
-        res = parseStrangeAttack(txt);
+        // moved to getMessageActionByOther
+        // res = parseStrangeAttack(txt);
     }
 
     //res = {aggressor:aggressor,target:target,success:txt.indexOf("damage") !== -1 ? 1 : 0};
-    console.log("parseAttackByText", txt, JSON.stringify(res));
+    //console.log("parseAttackByText", txt, JSON.stringify(res));
     return res;
 }
 
-function getMessageActionByAttack(txt, battle) {
+function getMessageActionByAttack(attack_obj, battle) {
     var res = [];
     var icon_action = {action:"icon",large_icon:"",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
-    var attack_obj = parseAttackByText(txt);
+    //var attack_obj = parseAttackByText(txt);
     var aggressor_found = attack_obj.aggressor === "", target_found = res.target === "", w, m, j, LnJ;
     if (attack_obj.aggressor || res.target) {
         for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
@@ -794,14 +815,14 @@ function getMessageActionByAttack(txt, battle) {
         }
         res.push(icon_action);
     }
-    console.log("getMessageActionByAttack", JSON.stringify(attack_obj), JSON.stringify(res));
+    //console.log("getMessageActionByAttack", JSON.stringify(attack_obj), JSON.stringify(res));
     return res;
 }
 
-function getMessageActionByOther(msg, battle) {
+function getMessageActionByOther(obj, battle) {
     var res = [];
-    var obj = parseStrangeAttack(msg);
-    console.log("getMessageActionByOther", msg, JSON.stringify(obj));
+    //var obj = parseStrangeAttack(msg);
+    //console.log("getMessageActionByOther", JSON.stringify(obj));
     var icon_action = {action:"icon",large_icon:"",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     var target_found = false;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
@@ -813,38 +834,38 @@ function getMessageActionByOther(msg, battle) {
             icon_action.text = w.hp;
             icon_action.title = w.name;
             target_found = true;
-            if (obj.spell_name === "Disease") {
+            if (obj.spell === "Disease") {
                 if (w.disease > 0) {
                     icon_action.text = w.disease;
                 } else if (w.poison > 0) {
                     icon_action.text = w.poison;
-                    obj.spell_name = "Poison";
+                    obj.spell = "Poison";
                 } else {
                     // looks like effect removed
                     icon_action.text = "Cured";
                 }
-            } else if (obj.spell_name === "Cause Light Wounds") {
+            } else if (obj.spell === "Cause Light Wounds") {
                 if (w.got_heavy_wounds) {
-                    obj.spell_name = "Cause Heavy Wounds";
+                    obj.spell = "Cause Heavy Wounds";
                     obj.damage = 3;
                 }
-            } else if (obj.spell_name === "Distruption") {
+            } else if (obj.spell === "Distruption") {
                 if (w.arr_distruption) {
-                    obj.spell_name = battle.warlocks[i].arr_distruption.shift();
+                    obj.spell = battle.warlocks[i].arr_distruption.shift();
                 }
             }
             target_found = true;
             //break;
         }
 
-        if (obj.spell_name === "Distruption") {
-            console.log("getMessageActionByOther", JSON.stringify(w.monsters));
+        if (obj.spell === "Distruption") {
+            //console.log("getMessageActionByOther", JSON.stringify(w.monsters));
             for (var j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
                 var m = w.monsters[j];
-                console.log("getMessageActionByOther", JSON.stringify(m));
+                //console.log("getMessageActionByOther", JSON.stringify(m));
                 if (m.name === obj.target) {
                     if (m.arr_distruption) {
-                        obj.spell_name = m.arr_distruption.shift();
+                        obj.spell = m.arr_distruption.shift();
                     }
                     target_found = true;
                     break;
@@ -863,12 +884,12 @@ function getMessageActionByOther(msg, battle) {
     if (!target_found) {
         icon_action.large_icon = getMonsterIconByNameEx(obj.target);
     }
-    if (obj.spell_name !== "") {
-        var arr_g = map_spell_name_to_gesture[obj.spell_name];
+    if (obj.spell !== "") {
+        var arr_g = map_spell_name_to_gesture[obj.spell];
         if (arr_g) {
             icon_action.small_icon = map_spell_to_icon[arr_g[0]];
         }
-        if ((obj.spell_name === "Disease") || (obj.spell_name === "Poison")) {
+        if ((obj.spell === "Disease") || (obj.spell === "Poison")) {
             icon_action.large_icon = "";
         }
     }
@@ -886,13 +907,19 @@ function getMessageActionByOther(msg, battle) {
     }
 
     res.push(icon_action);
-    console.log("getMessageActionByOther", JSON.stringify(res));
+    //console.log("getMessageActionByOther", JSON.stringify(res));
     return res;
 }
 
-function getMessageActionByDeath(msg, battle) {
+function parseDeathMessage(msg) {
+    var res = {target:""};
+    res.target = msg.replace(" dies.", "");
+    return res;
+}
+
+function getMessageActionByDeath(obj, battle) {
     var res = [];
-    var icon = getMonsterIconByNameEx(msg);
+    var icon = getMonsterIconByNameEx(obj.target);
     if (icon === "summon") {
         icon = "";
     }
@@ -903,22 +930,96 @@ function getMessageActionByDeath(msg, battle) {
     return res;
 }
 
-function getMessageActionByRow(row, battle) {
-    //var res = [];
-    if ((row.txt.indexOf(" casts ") !== -1) && (row.txt.indexOf(" banked ") === -1)) {
+function getMessageTypeByRow(row) {
+    if (row.color === "#CCCCCC") {
+        return "gesture";
+    } else if ((row.txt.indexOf(" casts ") !== -1) && (row.txt.indexOf(" banked ") === -1)) {
         // process spell casting
-        return getMessageActionBySpell(row, battle);
+        return "spell";
     } else if (row.color === "#FF6666") {
-        return getMessageActionByDeath(row.txt, battle);
+        return "death";
     } else if (((row.txt.indexOf(" attack") !== -1) || (row.txt.indexOf(" swing ") !== -1)) &&
                (row.txt.indexOf("too scared") === -1) &&
                (row.txt.indexOf("can't move to attack") === -1)&&
                (row.txt.indexOf("trips on its feet") === -1)) {
         // process attack message
-        return getMessageActionByAttack(row.txt, battle);
+        return "attack";
     } else {
-        return getMessageActionByOther(row.txt, battle);
+        return "other";
+    }
+}
+
+function parseHistoryMessage(obj, battle) {
+    switch(obj.row_type) {
+    case "gesture": return {};
+    case "spell":   return parseSpellByText(obj.txt);
+    case "death":   return parseDeathMessage(obj.txt);
+    case "attack":  return parseAttackByText(obj.txt);
+    case "other":   return parseStrangeAttack(obj.txt, battle);
+    }
+}
+
+function getActionByHistoryMessage(obj, battle) {
+    switch(obj.row_type) {
+    case "gesture": return [];
+    case "spell":   return getMessageActionBySpell(obj, battle);
+    case "death":   return getMessageActionByDeath(obj.obj, battle);
+    case "attack":  return getMessageActionByAttack(obj.obj, battle);
+    case "other":   return getMessageActionByOther(obj.obj, battle);
+    }
+}
+
+
+function sortRealAction(actions, battle) {
+    var i, Ln, j, LnJ, tmp;
+    // first step, parse and set id
+    for (i = 0, Ln = actions.length; i < Ln; ++i) {
+        actions[i].id = i;
+        actions[i].depends_on = [];
+        actions[i].move_to = i;
+        actions[i].row_type = getMessageTypeByRow(actions[i]);
+        actions[i].obj = parseHistoryMessage(actions[i], battle);
+        actions[i].new_action = getActionByHistoryMessage(actions[i], battle);
+        actions[i].checked = (actions[i].row_type === "death") || (actions[i].color === "#F5C88E")
+                    || (actions[i].color === "#CCCCCC");
     }
 
-    //return res;
+    for (i = 0, Ln = actions.length; i < Ln; ++i) {
+        console.log("sortRealAction", i, actions[i].txt, JSON.stringify(actions[i].obj));
+        if (actions[i].checked) {
+            continue;
+        }
+        if ((actions[i].type === 2) && (actions[i].txt.indexOf("shakes his head") !== -1)) {
+            actions[i].type = 1;
+            actions[i].checked = true;
+            continue;
+        }
+
+        if (actions[i].row_type === "spell") {
+            if (actions[i].obj.fail !== "") {
+                actions[i].checked = true;
+                continue;
+            }
+
+            for (j = i + 1; j < Ln; ++j) {
+                console.log("sortRealAction", i, j, JSON.stringify(actions[j].obj));
+                if ((actions[i].obj.spell === actions[j].obj.spell) && (actions[i].obj.target === actions[j].obj.target)) {
+                    actions[j].depends_on.push(actions[i].id);
+                    actions[i].checked = true;
+                    actions[j].checked = true;
+                    console.log("sortRealAction", i, j, "FOUND");
+                    if (i !== j - 1) {
+                        actions.splice(j, 0, JSON.parse(JSON.stringify(actions[i])));
+                        actions[i].type = 3;
+                        ++Ln;
+                        /*console.log("sortRealAction", "AFTER SPLICE", i, Ln);
+                        for (var k = 0, LnK = actions.length; k < LnK; ++k) {
+                            console.log("sortRealAction", k, LnK, actions[k].txt, actions[k].type);
+                        }*/
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
