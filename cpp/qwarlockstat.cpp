@@ -109,11 +109,13 @@ QString QWarlockStat::toString() const {
 }
 
 QString QWarlockStat::toJSON() const {
+    qint64 curr_time = QDateTime::currentSecsSinceEpoch();
+    QString active = boolToIntS(curr_time - _lastActivity <= 300);
     return QString("{\"r\":%1,\"n\":\"%2\",\"l\":%3,\"m\":%4,\"p\":%5,\"w\":%6,\"d\":%7,\"e\":%8,\"c\":\"%9\","
-                   "\"la\":%10,\"mob\":%11}")
+                   "\"la\":%10,\"mob\":%11,\"a\":%12}")
             .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee) // 1-4
             ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
-            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile)); // 9-11
+            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile), active); // 9-12
 }
 
 

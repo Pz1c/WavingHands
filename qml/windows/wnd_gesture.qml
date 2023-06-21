@@ -606,6 +606,7 @@ BaseWindow {
                     source: "qrc:/res/send_"+(active ? "1" : "0")+".png"
                     //textVisible: false
                     text: "Go"
+                    textVisible: active
                     textAnchors.top:  iiSend.bottom
                     textAnchors.horizontalCenter: iiSend.horizontalCenter
                     textAnchors.right: undefined
