@@ -26,6 +26,7 @@ Item {
     property alias titleHeight: rTitle.height
     property alias titleVisible: rTitle.visible
     property alias gradient: rOver.gradient
+    property alias backgroundImage: iBg
 
 	focus: true
 

@@ -11,6 +11,15 @@ import "qrc:/js/spell_popup_gui_utils.js" as SPGU
 InfoWindow {
     id: dMainItem
     titleVisible: false
+    backgroundImage.visible: false
+    gradient: Gradient {
+                  /*GradientStop { position: 0.0;  color: "#210430" }
+                  GradientStop { position: 0.65; color: "#1f1e4a" }
+                  GradientStop { position: 1.0;  color: "#11c7f3" }*/
+        GradientStop { position: 0.0;  color: "#210430" }
+        GradientStop { position: 0.65; color: "#210430" }
+        GradientStop { position: 1.0;  color: "#10C9F5" }
+              }
 
     Item {
         id: dialogWindow
@@ -53,7 +62,7 @@ InfoWindow {
             wrapMode: Text.WordWrap
             font.pixelSize: 28 * mainWindow.ratioFont
             color: "#A8F4F4"
-            text: "This is a slow game, so it's best to play a few games at the same time."
+            text: "You will start with a small apprentice spellbook. After you've trained a bit, go ahead and play with other players."
         }
 
         Text {
@@ -66,7 +75,7 @@ InfoWindow {
             wrapMode: Text.WordWrap
             font.pixelSize: 28 * mainWindow.ratioFont
             color: "#A8F4F4"
-            text: "You can train against an AI bot, or play vs. other warlocks. Let's start with both :)"
+            text: "This can be one of the best games you've ever played, but it takes 2 to 3 games to master, so take your time :)<br><br>Let's play!"
         }
 
         IconInfo {

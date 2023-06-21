@@ -21,8 +21,8 @@ import "qrc:/qml"
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 410//600
-    height: 720//1068
+    width: 410//270
+    height: 720//600
     flags: /*Qt.FramelessWindowHint//|*/Qt.Window
     color: "#551470"
     visibility: isMobile() ? Window.FullScreen : Window.Windowed
@@ -850,7 +850,7 @@ ApplicationWindow {
 
     function afterRegAction() {
         processEscape();
-        GUI.startGameWithPlayerEx(true);
+        //GUI.startGameWithPlayerEx(true);
         GUI.startGameWithBotEx(true);
     }
 

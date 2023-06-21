@@ -146,5 +146,7 @@
         <file>qml/windows/wnd_warlock_popup.qml</file>
         <file>res/trophy_3d.png</file>
         <file>qml/windows/wnd_battle_popup.qml</file>
+        <file>res/eye.png</file>
+        <file>res/no-eye.png</file>
     </qresource>
 </RCC>

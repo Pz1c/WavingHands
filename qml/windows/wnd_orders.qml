@@ -348,6 +348,7 @@ BaseWindow {
         iiSend.width = (!is_surrender ? (64 + 30 + 80) : (64 + 30 + 120)) * mainWindow.ratioObject;
         iiSend.textWidth = (!is_surrender ? 80 : 120)* mainWindow.ratioObject;
         iiSend.text = is_surrender ? "SURRENDER!" : "Submit";
+        iiSend.animate(1);
         mainWindow.gERROR = {};
         mainWindow.logEvent("Play_Submit_Clicked", {Warning: is_surrender ? "surrendering" : "none"});
 

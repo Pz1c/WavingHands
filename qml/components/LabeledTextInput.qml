@@ -10,6 +10,7 @@ Item {
 
     property bool transparent: true
     property bool isPassword: false
+    property bool hidePassword: true
     property alias text_color: tiMain.color
     property alias text: tiMain.text
     property alias fontSizeMode: ltiTitle.fontSizeMode
@@ -66,7 +67,7 @@ Item {
             inputMethodHints: Qt.ImhNoPredictiveText
             validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
             color: "black"
-            echoMode: isPassword ? TextInput.Password : TextInput.Normal
+            echoMode: (isPassword && hidePassword) ? TextInput.Password : TextInput.Normal
             font.pixelSize: 0.3 * parent.height
             z: 11
 
@@ -85,6 +86,25 @@ Item {
                 visible: tiMain.text.length === 0
                 font.pixelSize: tiMain.font.pixelSize
                 z:10
+            }
+
+            Image {
+                id: iPassEye
+                anchors.right: parent.right
+                anchors.rightMargin: 0.03 * parent.height
+                anchors.verticalCenter: parent.verticalCenter
+                height: 0.9 * parent.height
+                width: parent.height
+                source: hidePassword ? "qrc:/res/no-eye.png" : "qrc:/res/eye.png"
+                visible: isPassword
+
+                MouseArea {
+                    id: maPassEye
+                    anchors.fill: parent
+                    onClicked: {
+                        hidePassword = !hidePassword;
+                    }
+                }
             }
         }
     }
