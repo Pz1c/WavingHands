@@ -187,7 +187,7 @@ InfoWindow {
                 width: 366 * ratioObject
                 height: 96 * ratioObject
                 anchors.bottom: bbBtn2.top
-                anchors.bottomMargin: 12 * ratioObject
+                anchors.bottomMargin: 50 * ratioObject
                 anchors.horizontalCenter: parent.horizontalCenter
 
 
@@ -213,7 +213,7 @@ InfoWindow {
                 font.pixelSize: 28 * mainWindow.ratioFont
 
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 54 * mainWindow.ratioObject
+                anchors.bottomMargin: 24 * mainWindow.ratioObject
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 MouseArea {

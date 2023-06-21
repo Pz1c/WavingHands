@@ -8,7 +8,8 @@ class QWarlockStat
 {
 public:
     QWarlockStat();
-    QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity);
+    QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo,
+                 QString Color, qint64 LastActivity, bool Mobile);
     QWarlockStat(QString Raw, bool FromIni = false);
 
     QString toString() const;
@@ -39,8 +40,10 @@ public:
 
     bool ai() const;
 
+    bool mobile() const;
+
 protected:
-    void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity);
+    void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile);
     qint64 getLastActivityByColor(const QString Color);
 private:
     QString _name;
@@ -54,6 +57,7 @@ private:
     int _elo;
     qint64 _lastActivity;
     QString _color;
+    bool _mobile;
 };
 
 #endif // QWARLOCKSTAT_H

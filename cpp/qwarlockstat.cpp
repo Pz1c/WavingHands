@@ -5,20 +5,20 @@ QWarlockStat::QWarlockStat() {
 
 }
 
-QWarlockStat::QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity)
+QWarlockStat::QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile)
 {
-    init(Name, Registered, Ladder, Melee, Played, Won, Died, Elo, Color, LastActivity);
+    init(Name, Registered, Ladder, Melee, Played, Won, Died, Elo, Color, LastActivity, Mobile);
 }
 
 QWarlockStat::QWarlockStat(QString Raw, bool FromIni) {
-    if (FromIni) {
+    if (FromIni || (Raw.indexOf("END_ROW") != -1)) {
         parseIniAndInit(Raw);
     } else {
         parseAndInit(Raw);
     }
 }
 
-void QWarlockStat::init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity)
+void QWarlockStat::init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile)
 {
     _name = Name;
     _registered = Registered;
@@ -35,11 +35,12 @@ void QWarlockStat::init(QString Name, bool Registered, int Ladder, int Melee, in
         _lastActivity = 0;
     }
     _ai = (_lstAI.indexOf(_name.toUpper()) != -1);
+    _mobile = Mobile;
 }
 
 void QWarlockStat::parseIniAndInit(QString Raw) {
     QStringList data = Raw.split(",");
-    bool Registered = data.at(0).compare("1");
+    bool Registered = data.at(0).compare("1") == 0;
     QString Name = data.at(1);
     int Ladder = data.at(2).toInt();
     int Melee = data.at(3).toInt();
@@ -48,11 +49,12 @@ void QWarlockStat::parseIniAndInit(QString Raw) {
     int Died = data.at(6).toInt();
     int Elo = data.at(7).toInt();
     //int Active = data.at(8).toInt();
-    QString Color = data.size() > 9 ? data.at(9) : "";
-    qint64 la = data.size() > 10 ? data.at(10).toInt() : 0;
-    //qDebug() << "QWarlockStat::parseIniAndInit" << Raw << Registered << Name << Ladder << Melee << Played << Won << Died << Elo << Active;
+    QString Color = data.size() > 8 ? data.at(8) : "";
+    qint64 la = data.size() > 9 ? data.at(9).toInt() : 0;
+    bool Mobile = (data.size() > 10 ? data.at(10).toInt() : 0) == 1;
+    qDebug() << "QWarlockStat::parseIniAndInit" << Raw << Registered << Name << Ladder << Melee << Played << Won << Died << Elo << la;
 
-    init(Name, Registered, Ladder, Melee, Played, Won, Died, Elo, Color, la);
+    init(Name, Registered, Ladder, Melee, Played, Won, Died, Elo, Color, la, Mobile);
 }
 
 void QWarlockStat::parseAndInit(QString Raw) {
@@ -69,7 +71,7 @@ void QWarlockStat::parseAndInit(QString Raw) {
     qint64 la = getLastActivityByColor(Color);
     //qDebug() << "QWarlockStat::parseAndInit" << Raw << Registered << Name << Ladder << Melee << Played << Won << Died << Elo << Active << Color;
 
-    init(Name, !Registered.isEmpty(), Ladder, Melee, Played, Won, Died, Elo, Color, la);
+    init(Name, !Registered.isEmpty(), Ladder, Melee, Played, Won, Died, Elo, Color, la, false);
 }
 
 qint64 QWarlockStat::getLastActivityByColor(const QString Color) {
@@ -84,6 +86,11 @@ qint64 QWarlockStat::getLastActivityByColor(const QString Color) {
     return curr_time - dec_sec;
 }
 
+bool QWarlockStat::mobile() const
+{
+    return _mobile;
+}
+
 bool QWarlockStat::ai() const
 {
     return _ai;
@@ -95,18 +102,18 @@ qint64 QWarlockStat::lastActivity() const
 }
 
 QString QWarlockStat::toString() const {
-    return QString("%1,%2,%3,%4,%5,%6,%7,%8,0,%9,%10")
+    return QString("%1,%2,%3,%4,%5,%6,%7,%8,0,%9,%10,%11")
             .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee) // 1-4
             ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
-            .arg(_color, intToStr(_lastActivity)); // 9-10
+            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile)); // 9-11
 }
 
 QString QWarlockStat::toJSON() const {
     return QString("{\"r\":%1,\"n\":\"%2\",\"l\":%3,\"m\":%4,\"p\":%5,\"w\":%6,\"d\":%7,\"e\":%8,\"c\":\"%9\","
-                   "\"la\":%10}")
+                   "\"la\":%10,\"mob\":%11}")
             .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee) // 1-4
             ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
-            .arg(_color, intToStr(_lastActivity)); // 9-10
+            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile)); // 9-11
 }
 
 

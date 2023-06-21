@@ -353,7 +353,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
             delete _battleInfo[bi->battleID()];
             _battleInfo.remove(bi->battleID());
         }
-        qDebug() << "finishChallengeList" << bi->toJSON(_login);
+        //qDebug() << "finishChallengeList" << bi->toJSON(_login);
         _battleInfo.insert(bi->battleID(), bi);
         if (_isAI) {
             if (bi->for_bot() && bi->active(_login)) {
@@ -371,7 +371,7 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
 
     if (!_isAI && (_challengeList.compare(list_str) != 0)) {
         _challengeList = list_str;
-        qDebug() << list;
+        //qDebug() << list;
         emit challengeListChanged();
         if (active_challenge || (_waiting_in_battles.count() + _ready_in_battles.count() == 0)) {
             generateBattleList();
@@ -389,7 +389,15 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
 
 void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl) {
     qDebug() << "finishTopList" << StatusCode << NewUrl;
-    int pos1 = Data.lastIndexOf("<TD CLASS=darkbg>"), pos2;
+    QStringList sl = Data.split("\r\n");
+    foreach(QString s, sl) {
+        if (s.trimmed().isEmpty()) {
+            continue;
+        }
+        QWarlockStat ws(s.trimmed());
+        _playerStats[ws.name().toLower()] = ws;
+    }
+    /*int pos1 = 0, pos2;
     //QList<QWarlockStat> wsl;
     while((pos1 = Data.indexOf("<TR>", pos1)) != -1) {
         pos2 = Data.indexOf("</TR>", pos1);
@@ -397,7 +405,7 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
         _playerStats[ws.name().toLower()] = ws;
         qDebug() << "QWarloksDuelCore::finishTopList" << ws.toString();
         pos1 = pos2 + 4;
-    }
+    }*/
     generateTopList();
     emit topListChanged();
 }
@@ -423,6 +431,7 @@ void QWarloksDuelCore::generateTopList() {
             _topAll.append(",");
         }
         _topAll.append(ws.toJSON());
+        qDebug() << "QWarloksDuelCore::generateTopList" << ws.name() << curr_time << ws.lastActivity() << curr_time - ws.lastActivity();
         if (curr_time - ws.lastActivity() < 3 * 24 * 60 * 60) {
             if (!_topActive.isEmpty()) {
                 _topActive.append(",");
@@ -635,10 +644,13 @@ void QWarloksDuelCore::getChallengeList(bool Silent) {
 }
 
 void QWarloksDuelCore::scanTopList(bool Silent, bool ForceFull) {
+    if (_isAI) {
+        return;
+    }
     setIsLoading(!Silent);
     qint64 udt = QDateTime::currentSecsSinceEpoch();
-    sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(ForceFull || (udt - _lastPlayersScan > (3 * 24 * 60 - 15) * 60) ? '1' : '0'));
     _lastPlayersScan = udt;
+    sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(_login));
 }
 
 bool QWarloksDuelCore::aiAcceptChallenge(int battle_id, bool changeAI) {
@@ -1828,7 +1840,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return finishLogin(data, statusCode, new_url);
     }
 
-    if (url.indexOf("/players") != -1) {
+    if (url.indexOf("robot_gateway/wh/top") != -1) {
         finishTopList(data, statusCode, new_url);
         return false;
     }
