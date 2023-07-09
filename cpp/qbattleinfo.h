@@ -113,6 +113,8 @@ private:
     bool _for_bot;
     bool _with_bot;
     bool _fullParsed;
+    bool _isOnline;
+
     QString _description;
     QStringList _participant;
     QStringList _challenged;

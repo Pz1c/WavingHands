@@ -261,6 +261,8 @@ InfoWindow {
                                 obj.died = obj.d;
                                 obj.lost = obj.l;
                                 obj.last_activity = obj.la;
+                                obj.online = obj.a;
+                                obj.mobile = obj.mob
                                 mainWindow.showUserScoreWnd(obj);
                             }
                         }

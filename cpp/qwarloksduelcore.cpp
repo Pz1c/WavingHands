@@ -97,8 +97,10 @@ void QWarloksDuelCore::aiCreateNewChallenge() {
     }
 }
 
-void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock) {
-    qDebug() << "QWarloksDuelCore::createNewChallenge" << Fast << Private << ParaFC << Maladroid << Count << FriendlyLevel << Description << Warlock;
+void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count,
+                                          int FriendlyLevel, QString Description, QString Warlock, int IsOnline) {
+    qDebug() << "QWarloksDuelCore::createNewChallenge" << Fast << Private << ParaFC << Maladroid << Count <<
+        FriendlyLevel << Description << Warlock << IsOnline;
     //Q_UNUSED(Fast);
     setIsLoading(true);
 
@@ -107,13 +109,14 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     if (!_newBattle) {
         _newBattle = new QBattleInfo();
     }
-    _newBattle->setFast(Fast); // ture by default
+    _newBattle->setFast(Fast); // true by default
     _newBattle->setDescription(Description);
     _newBattle->setParafc(ParaFC);
     _newBattle->setParafdf(false);
     _newBattle->setMaladroit(Maladroid);
     _newBattle->setSize(Count);
     _newBattle->setLevel(FriendlyLevel);
+
 
     bool l_p = Private;
     if (!Warlock.isEmpty() && (_playerStats.contains(Warlock.toLower()) || (_playerStats.size() == 0))) {

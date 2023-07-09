@@ -80,13 +80,27 @@ InfoWindow {
                 id: ltTitle
                 anchors.top: ltGesture.bottom
                 anchors.topMargin: 5 * mainWindow.ratioObject
-                anchors.left: parent.left
-                anchors.right: parent.right
+                anchors.horizontalCenter: parent.horizontalCenter
+                //anchors.right: parent.right
                 //height: 70 * mainWindow.ratioObject
                 font.pixelSize: 42 * mainWindow.ratioFont
                 color: "#10C9F5"
                 horizontalAlignment: Text.AlignHCenter
                 text: ""
+            }
+
+            Text {
+                id: ltTitleOnline
+                anchors.left: ltTitle.right
+                anchors.leftMargin: 5 * mainWindow.ratioObject
+                anchors.bottom: ltTitle.bottom
+                anchors.bottomMargin: 4 * mainWindow.ratioObject
+                font.pixelSize: 28 * mainWindow.ratioFont
+                color: "#FEE2D6"
+                horizontalAlignment: Text.AlignHCenter
+                text: "online"
+                font.italic: true
+                visible: false
             }
 
             Rectangle {
@@ -196,6 +210,8 @@ InfoWindow {
                     mainWindow.processEscape();
                     if (warlock_data.isPlayer) {
                         mainWindow.showHallOfFameWindow();
+                    } else if (warlock_data.online && warlock_data.mobile) {
+                        mainWindow.showOnlineGameStart(warlock_data.name, 1);
                     } else {
                         mainWindow.startWarlockGame(warlock_data.name, 1);
                     }
@@ -222,7 +238,11 @@ InfoWindow {
                     onClicked: {
                         console.log("btn2 practice action");
                         mainWindow.processEscape();
-                        mainWindow.startWarlockGame(warlock_data.name, 2);
+                        if (warlock_data.online && warlock_data.mobile) {
+                            mainWindow.showOnlineGameStart(warlock_data.name, 2);
+                        } else {
+                            mainWindow.startWarlockGame(warlock_data.name, 2);
+                        }
                     }
                 }
             }
@@ -261,7 +281,7 @@ InfoWindow {
         ltPlayed.text = "Played: " + warlock_data.played;
         bbBtn2.visible = !warlock_data.isPlayer;
         bbAction.text = warlock_data.isPlayer ? "Hall of Fame" : "Challenge";
-
+        ltTitleOnline.visible = warlock_data.online;
         saClick.start();
 
         //console.log("wnd_warlock_popup.initFields.end", ltTitle.text, ltShortDesc.text);

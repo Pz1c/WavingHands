@@ -1188,6 +1188,7 @@ ApplicationWindow {
         if (!data || (data.name === GUI.G_PROFILE.name)) {
             data = JSON.parse(JSON.stringify(GUI.G_PROFILE));
             data.isPlayer = true;
+            data.online = 1;
         } else {
             data.isPlayer = false;
         }
@@ -1219,8 +1220,13 @@ ApplicationWindow {
         GUI.startGameByCode('bot');
     }
 
-    function startWarlockGame(WarlockName, FriendlyLevel) {
-        GUI.startGameByCode('player', WarlockName, FriendlyLevel);
+    function showOnlineGameStart(Warlock, Level) {
+        console.log("main.qml.showOnlineGameStart", Warlock, Level);
+        showErrorWnd({id:-1,type:102,warlock:Warlock,Level,close_all:0,close_current:0});
+    }
+
+    function startWarlockGame(WarlockName, FriendlyLevel, OnlineGame) {
+        GUI.startGameByCode('player', WarlockName, FriendlyLevel, OnlineGame);
     }
 
     function startGameWithPlayer() {
