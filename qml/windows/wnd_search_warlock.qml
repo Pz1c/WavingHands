@@ -21,23 +21,38 @@ InfoWindow {
         anchors.fill: content_item
         //color: "transparent"
 
-        /*Text {
+        Text {
             id: ltTitle
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.leftMargin: 20 * mainWindow.ratioObject
             anchors.right: parent.right
             //height: 70 * mainWindow.ratioObject
-            font.pixelSize: 49 * mainWindow.ratioFont
+            font.pixelSize: 42 * mainWindow.ratioFont
             color: "#10C9F5"
             horizontalAlignment: Text.AlignLeft
             //fontSizeMode: Text.VerticalFit
             text: dict.getStringByCode("SearchWizardTitle")
-        }*/
+        }
+
+        Text {
+            id: ltSubTitle
+            anchors.top: ltTitle.bottom
+            anchors.left: parent.left
+            anchors.leftMargin: 20 * mainWindow.ratioObject
+            anchors.right: parent.right
+            //height: 70 * mainWindow.ratioObject
+            font.pixelSize: 28 * mainWindow.ratioFont
+            color: "#FEE2D6"
+            horizontalAlignment: Text.AlignLeft
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            //fontSizeMode: Text.VerticalFit
+            text: dict.getStringByCode("SearchWizardShortDesc")
+        }
 
         LabeledTextInput {
             id: ltiLogin
-            anchors.top: parent.top
+            anchors.top: ltSubTitle.bottom
             anchors.topMargin: 20 * mainWindow.ratioObject
             anchors.left: parent.left
             anchors.leftMargin: 20 * mainWindow.ratioObject
@@ -99,7 +114,7 @@ InfoWindow {
             }
         }
 
-        Text {
+        /*Text {
             id: ltShortDesc
             anchors.top: ltiLogin.bottom
             anchors.topMargin: 20 * mainWindow.ratioObject
@@ -112,11 +127,11 @@ InfoWindow {
             font.pixelSize: 28 * mainWindow.ratioFont
             text: dict.getStringByCode("SearchWizardShortDesc")
             wrapMode: Text.WordWrap
-        }
+        }*/
 
         Text {
             id: ltDesc
-            anchors.top: ltShortDesc.bottom
+            anchors.top: ltiLogin.bottom
             anchors.topMargin: 20 * mainWindow.ratioObject
             anchors.left: parent.left
             anchors.leftMargin: 20 * mainWindow.ratioObject
