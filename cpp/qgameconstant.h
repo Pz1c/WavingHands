@@ -19,7 +19,7 @@
 #define GAME_SERVER_URL_LOGIN "https://games.ravenblack.net/login"
 #define GAME_SERVER_URL_PLAYER "https://games.ravenblack.net/player"
 #define GAME_SERVER_URL_CHALLENGES "https://games.ravenblack.net/challenges"
-#define GAME_SERVER_URL_PLAYERS "https://visk.in.ua/robot_gateway/wh/top.php?l=%1"
+#define GAME_SERVER_URL_PLAYERS "https://visk.in.ua/robot_gateway/wh/top.php?l=%1&f=%2"
 #define GAME_SERVER_URL_ACCEPT_CHALLENGE "https://games.ravenblack.net/accept?back=%1&num=%2"
 #define GAME_SERVER_URL_REFUSE_CHALLENGE "https://games.ravenblack.net/refuse?back=player&num=%1"
 #define GAME_SERVER_URL_LEAVE_GAME "https://games.ravenblack.net/leave?num=%1"

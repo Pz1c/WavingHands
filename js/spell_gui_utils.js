@@ -20,7 +20,7 @@ function cleanUpWindow(ratioObject) {
     ltError.visible = true;
 }
 
-function prepareDataType12(l_data, dict) {
+function prepareUnstartedGame(l_data, dict) {
     console.log("spell_gui_utils.prepareDataType12", JSON.stringify(l_data));
     l_data.action = "leave";
     ltTitle.text = dict.getStringByCode('DefNotStartTitle');
@@ -74,9 +74,14 @@ function prepareDataType12(l_data, dict) {
         } else {
             ltError.text = "Warlocks challenged:<br>";
             var arr_c = l_data.battle_data.challenged.split(",");
+            var arr_r = l_data.battle_data.rejected.split(",");
             for(var j = 0, LnJ = arr_c.length; j < LnJ; ++j) {
                 var arr_wr = arr_c[j].split(":");
-                ltError.text += arr_wr[0] + '&nbsp;&nbsp;&nbsp;<a href="/reject/'+arr_wr[1]+'"><font color="#10C9F5">Cancel</font></a><br>';
+                if (arr_r.indexOf(arr_wr[0]) !== -1) {
+                    ltError.text += arr_wr[0] + '&nbsp;&nbsp;&nbsp;reject invitation<br>';
+                } else {
+                    ltError.text += arr_wr[0] + '&nbsp;&nbsp;&nbsp;<a href="/reject/'+arr_wr[1]+'"><font color="#10C9F5">Cancel invite</font></a><br>';
+                }
             }
         }
         //var tarr2 = tarr[1].split("/");

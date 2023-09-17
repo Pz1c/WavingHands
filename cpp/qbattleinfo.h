@@ -35,7 +35,7 @@ public:
     int battleID() const;
     void setBattleID(int newBattleID);
 
-    void addParticipant(const QString &login, bool Challenged = false);
+    void addParticipant(const QString &login, bool Challenged = false, bool Rejected = false);
     void cleanParticipant();
     void addChat(int battle_turn, const QString &chat_msg);
     QString getChat() const;
@@ -90,6 +90,8 @@ public:
 
     QString fullJSON() const;
 
+    void checkRejection();
+
 protected:
     QString prepareToPrint(QString str) const;
     void parseString(const QString &battle_info);
@@ -114,10 +116,12 @@ private:
     bool _with_bot;
     bool _fullParsed;
     bool _isOnline;
+    bool _inviteRejected;
 
     QString _description;
     QStringList _participant;
     QStringList _challenged;
+    QStringList _rejected;
     QStringList _chat;
     QStringList _history;
     QString _winner;

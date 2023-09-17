@@ -653,7 +653,7 @@ void QWarloksDuelCore::scanTopList(bool Silent, bool ForceFull) {
     setIsLoading(!Silent);
     qint64 udt = QDateTime::currentSecsSinceEpoch();
     _lastPlayersScan = udt;
-    sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(_login));
+    sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(_login, ForceFull ? "1" : "0"));
 }
 
 bool QWarloksDuelCore::aiAcceptChallenge(int battle_id, bool changeAI) {
@@ -1761,7 +1761,7 @@ bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
     }
     if (!_isAI && !_isAsService) {
         if (QDateTime::currentSecsSinceEpoch() - _lastPlayersScan >= 1 * 60) {
-            scanTopList(true);
+            scanTopList(false);
         }
     }
     return true;

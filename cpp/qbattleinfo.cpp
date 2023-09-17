@@ -35,6 +35,8 @@ void QBattleInfo::init() {
     _with_bot = false;
     _fullParsed = false;
     _app_version = 0;
+    _inviteRejected = false;
+    _isOnline = false;
 }
 
 QBattleInfo::~QBattleInfo() {
@@ -133,10 +135,11 @@ void QBattleInfo::setHint(int newHint)
 void QBattleInfo::cleanParticipant() {
     _participant.clear();
     _challenged.clear();
+    _rejected.clear();
     _with_bot = false;
 }
 
-void QBattleInfo::addParticipant(const QString &login, bool Challenged) {
+void QBattleInfo::addParticipant(const QString &login, bool Challenged, bool Rejected) {
     QString clean_login = login;
     int idx1 = clean_login.indexOf("(");
     if (idx1 != -1) {
@@ -145,6 +148,9 @@ void QBattleInfo::addParticipant(const QString &login, bool Challenged) {
     if (Challenged) {
         if (_challenged.indexOf(clean_login, Qt::CaseInsensitive) == -1) {
             _challenged.append(clean_login);
+        }
+        if (Rejected && (_rejected.indexOf(clean_login, Qt::CaseInsensitive) == -1)) {
+            _rejected.append(clean_login);
         }
     } else {
         if (_participant.indexOf(clean_login, Qt::CaseInsensitive) == -1) {
@@ -310,8 +316,25 @@ QString QBattleInfo::getInListStatus(const QString &Login) const {
     return "";
 }
 
+void QBattleInfo::checkRejection() {
+    if (!_inviteRejected && !_rejected.empty() && (_status == -1)) {
+        bool all_reject = true;
+        foreach(QString s, _challenged) {
+            if (_rejected.indexOf(s) == -1) {
+                all_reject = false;
+                break;
+            }
+        }
+        if (all_reject) {
+            _inviteRejected = true;
+        }
+    }
+}
+
 QString QBattleInfo::getInListDescription(const QString &Login) const  {
-    if (_status == -3) {
+    if (_inviteRejected) {
+        return QString("Invite rejected");
+    } else if (_status == -3) {
         return QString("Battle #%1 no info").arg(intToStr(_battleID));
     } else if (_status == -2) {
         return QString("Battle #%1 deleted").arg(intToStr(_battleID));
@@ -528,10 +551,12 @@ QString QBattleInfo::getFullHist(const QString& Login) const {
 QString QBattleInfo::toJSON(const QString &Login) const {
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
                    ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15,"
-                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"need\":%20,\"player\":\"%21\",\"challenged\":\"%22\"}")
-            .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
-            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
-            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login, _challenged.join(","));
+                   "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"need\":%20,\"player\":\"%21\",\"challenged\":\"%22\",\"rejected\":\"%23\""
+                   ",\"invite_rejected\":%24}")
+        .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
+        .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
+        .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login, _challenged.join(","), _rejected.join(","))
+        .arg(boolToStr(_inviteRejected));
 }
 
 QString QBattleInfo::toString(bool Short) const {
@@ -542,11 +567,11 @@ QString QBattleInfo::toString(bool Short) const {
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
                    "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21^^^"
-                   "full_battle_json#=#%22^^^app_version#=#%23")
+                   "full_battle_json#=#%22^^^app_version#=#%23^^^rejected#=#%24^^^invite_rejected#=#%25")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), tmp_chat, tmp_hist, _winner, intToStr(_hint))
             .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","))
-            .arg(json.toBase64(QByteArray::Base64UrlEncoding), APPLICATION_VERSION);
+            .arg(json.toBase64(QByteArray::Base64UrlEncoding), APPLICATION_VERSION, _rejected.join(","), boolToIntS(_inviteRejected));
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -605,6 +630,10 @@ void QBattleInfo::parseString(const QString &battle_info) {
             _fullJSON = QByteArray::fromBase64(value.toUtf8(), QByteArray::Base64UrlEncoding);
         } else if (key.compare("app_version") == 0) {
             _app_version = value.toInt();
+        } else if (key.compare("rejected") == 0) {
+            _rejected = value.split(",");
+        } else if (key.compare("invite_rejected") == 0) {
+            _inviteRejected = value.toInt() == 1;
         }
     }
 }
