@@ -501,7 +501,8 @@ function getMessageActionBySpell(obj, battle) {
                 res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
             }
 
-            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === battle.warlocks[i].name ? "#10C9F5" : "#FEE2D6"});
+            //https://github.com/Pz1c/WavingHands/issues/312
+            //res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === battle.warlocks[i].name ? "#10C9F5" : "#FEE2D6"});
         } else {
             // switch off hightlighting to all other warlocks gestures
             res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
@@ -970,7 +971,7 @@ function getActionByHistoryMessage(obj, battle) {
 }
 
 
-function sortRealAction(actions, battle) {
+function prepareAndSortRealAction(actions, battle) {
     var i, Ln, j, LnJ, tmp;
     // first step, parse and set id
     for (i = 0, Ln = actions.length; i < Ln; ++i) {

@@ -149,7 +149,7 @@ function prepareTurnActionInfo(last_turn_hist) {
         new_hint.push({color_bg:last_turn_hist[i].color,font_size:last_turn_hist[i].font_size,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
     }
 
-    BGU.sortRealAction(real_actions, battle);
+    BGU.prepareAndSortRealAction(real_actions, battle);
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         //new_action = BGU.getMessageActionByRow(real_actions[i], battle); // before change color

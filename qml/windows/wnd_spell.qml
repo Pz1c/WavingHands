@@ -294,7 +294,7 @@ InfoWindow {
             } else if (l_data.type && (l_data.type === 1013)) {
                 SGU.prepareNotReadyFunctionalMsg(l_data, dict);
             } else if (l_data.type && (l_data.type === 12)) {
-                SGU.prepareDataType12(l_data, dict);
+                SGU.prepareUnstartedGame(l_data, dict);
             } else if (l_data.type && (l_data.type === 11)) {
                 SGU.prepareDataType11(l_data, dict);
             } else if (l_data.type && (l_data.type === 10)) {

@@ -134,7 +134,8 @@ public slots:
     void forceSurrender(int battle_id, int turn);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
-    void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock = "");
+    void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel,
+                            QString Description, QString Warlock = "", int IsOnline = 0);
     void aiCreateNewChallenge();
     void regNewUser(const QString &Login, const QString &Email, const QString &Pass = "");
     void getBattle(int battle_id, int battle_type);
