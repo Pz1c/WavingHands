@@ -75,18 +75,16 @@ int main(int argc, char *argv[])
         qreal refHeight = 1776.;
         qreal refWidth = 1080.;
         */
-        /*qreal refDpi = 96;
-        qreal refHeight = 1068;
-        qreal refWidth = 600;
-*/
         qreal height = qMax(iheight, iwidth);
         qreal width = qMin(iheight, iwidth);
-        // qreal dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
-/*
+        qreal dpi = QGuiApplication::primaryScreen()->logicalDotsPerInch();
+        qreal refDpi = 96;
+        qreal refHeight = 1068;
+        qreal refWidth = 600;
         qreal m_ratio = qMin(height/refHeight, width/refWidth);
         qreal m_ratioFont = qMin(height*refDpi/(dpi*refHeight), width*refDpi/(dpi*refWidth));
         qDebug() << "BEFORE QML" << dpi << height << width << m_ratio << m_ratioFont;
-*/
+
         QWarlockDictionary::getInstance();
         //QGoogleAnalytics::getInstance();
         qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");
@@ -98,7 +96,7 @@ int main(int argc, char *argv[])
             { "realScreenWidth", QVariant::fromValue(width) },
             { "realScreenHeight", QVariant::fromValue(height) }/*,
             { "calculatedRatio", QVariant::fromValue(m_ratio) },
-            { "calculatedRatioFont", QVariant::fromValue(m_ratioFont) }*/
+            { "calculatedRatioFont", QVariant::fromValue(m_ratioFont) } */
         });
 
         engine.load(QUrl(QStringLiteral("qrc:///main.qml")));

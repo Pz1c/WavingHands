@@ -95,11 +95,12 @@ Item {
             }
         }
 
-        Text {
+        LargeText {
             id: tTitle
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: bwiExit.right
             anchors.right: iiIcon.left
+            height: 100 * mainWindow.ratioObject
             font.pixelSize: 41 * mainWindow.ratioFont
             color: "#FEE2D6"
             horizontalAlignment: Text.AlignHCenter

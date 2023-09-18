@@ -206,10 +206,12 @@ ApplicationWindow {
             height: 188 * ratioObject
             z: 10
 
-            Text {
+            LargeText {
                 id: dmIHi
                 anchors.top: parent.top
                 anchors.topMargin: 108 * ratioObject
+                anchors.bottom: dmRLine.top
+                anchors.bottomMargin: 2 * ratioObject
                 anchors.left: parent.left
                 anchors.leftMargin: 48 * ratioObject
                 anchors.right: parent.right
@@ -563,10 +565,10 @@ ApplicationWindow {
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 12 * ratioObject
 
-                                Text {
+                                LargeText {
                                     id: rdbiText2
                                     anchors.verticalCenter: rdBattleItem.verticalCenter
-                                    //height: 48 * ratioObject
+                                    height: 48 * ratioObject
                                     font.pixelSize: 28 * ratioFont
                                     anchors.left: rdBattleItem.left
                                     anchors.leftMargin: 36 * ratioObject
@@ -577,10 +579,10 @@ ApplicationWindow {
 
                                     text: lvActiveBattle.model[index].d
                                 }
-                                Text {
+                                LargeText {
                                     id: rdbiText3
                                     anchors.baseline: rdbiText2.baseline// rdBattleItem.verticalCenter
-                                    //height: 48 * ratioObject
+                                    height: 48 * ratioObject
                                     font.pixelSize: 21 * ratioFont
                                     anchors.left: rdbiText2.right
                                     anchors.leftMargin: 5 * ratioObject
@@ -1365,7 +1367,9 @@ ApplicationWindow {
         console.log("calculateRatio", "Height", Screen.height, Screen.desktopAvailableHeight, mainWindow.height, realScreenHeight);
 
         if ((calculatedRatio === 0) || !isMobile()) {
-            var dpi  = Screen.pixelDensity * Screen.devicePixelRatio;
+            //var dpi  = Screen.pixelDensity * Screen.devicePixelRatio;
+            //var dpi  = Screen.pixelDensity;
+            var dpi  = Screen.devicePixelRatio;
             var wh   = Math.max(w, h);
             var ww   = Math.min(w, h);
             var fwh   = Math.max(fw, fh);
@@ -1380,6 +1384,7 @@ ApplicationWindow {
             ratioObject = calculatedRatio;
             ratioFont = calculatedRatioFont;
         }
+        console.log("calculateRatio", "final", ratioObject, ratioFont);
 
         core.setUserProperties(Qt.platform.os, w + "x" + h, Qt.locale().name);
     }
