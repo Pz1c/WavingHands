@@ -199,6 +199,12 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("NewGameWithBotBtn1", "", "", "Training bot");
     fillDictionary("NewGameWithBotBtn2", "", "", "Friend");
     fillDictionary("NewGameWithBotBtn3", "", "", "Find a warlock by name");
+    fillDictionary("NewVFGameBtn1", "", "", "Training bot");
+    fillDictionary("NewVFGameBtn2", "", "", "Practice duel");
+    fillDictionary("NewVFGameBtn3", "", "", "Invite a friend");
+    fillDictionary("NewFGameBtn1", "", "", "Public");
+    fillDictionary("NewFGameBtn2", "", "", "Private");
+    fillDictionary("NewFGameBtn3", "", "", "Invite a friend");
     fillDictionary("TooMuchBotBatleWndTitle", "", "", "Training battle limit");
     fillDictionary("TooMuchBotBatleWndSDesc", "", "", "Please wait for your turn in current training battle");
     fillDictionary("FinishedGameResultTitleWin", "", "", "Yey! You won the game.");
@@ -207,7 +213,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("FinishedGameResultTitleUnknown", "", "", "Damn! What's going on?");
     fillDictionary("NewGameMoreOption", "", "", "More options");
     fillDictionary("NewGameAutoMatch", "", "", "Play");
-    fillDictionary("NewGameDuel", "", "", "Duel");
+    fillDictionary("NewGameDuel", "", "", "A New Duel:");
     fillDictionary("NewGamePractice", "", "", "Practice Mode:");
 
 
