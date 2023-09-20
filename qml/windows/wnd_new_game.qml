@@ -41,7 +41,7 @@ InfoWindow {
         BtnBig {
             id: bbTb
             text_color: "#ABF4F4"
-            text: warlockDictionary.getStringByCode("NewGameWithBotBtn1")
+            text: warlockDictionary.getStringByCode("NewVFGameBtn1")
             bg_color_active: "#551470"
             border_color_active: "#551470"
             radius: 30
@@ -71,7 +71,7 @@ InfoWindow {
         BtnBig {
             id: bbMo
             text_color: "#A8F4F4"
-            text: warlockDictionary.getStringByCode("NewGameMoreOption")
+            text: warlockDictionary.getStringByCode("NewVFGameBtn2")
             transparent: true
             font.underline: true
             border.width: 0
@@ -88,7 +88,8 @@ InfoWindow {
 
             onClicked: {
                 mainWindow.processEscape();
-                mainWindow.startTrainingGame();
+                mainWindow.showSearchWarlockWnd("vf");
+//                mainWindow.startTrainingGame();
             }
         }
 
@@ -117,7 +118,7 @@ InfoWindow {
         BtnBig {
             id: bbAm
             text_color: "#ABF4F4"
-            text: warlockDictionary.getStringByCode("NewGameAutoMatch")
+            text: warlockDictionary.getStringByCode("NewFGameBtn1")
             bg_color_active: "#551470"
             border_color_active: "#551470"
             radius: 30
@@ -147,7 +148,7 @@ InfoWindow {
         BtnBig {
             id: bbIf
             text_color: "#ABF4F4"
-            text: warlockDictionary.getStringByCode("ShareWndTitle")
+            text: warlockDictionary.getStringByCode("NewFGameBtn2")
             bg_color_active: "#551470"
             border_color_active: "#551470"
             radius: 30
@@ -170,14 +171,14 @@ InfoWindow {
             onClicked: {
                 console.log("start game btn 1");
                 mainWindow.processEscape();
-                mainWindow.callInviteFriends();
+                mainWindow.showSearchWarlockWnd("f");
             }
         }
 
         BtnBig {
             id: bbFbN
             text_color: "#A8F4F4"
-            text: warlockDictionary.getStringByCode("NewGameFindByName")
+            text: warlockDictionary.getStringByCode("NewFGameBtn3")
             transparent: true
             font.underline: true
             border.width: 0
@@ -194,7 +195,7 @@ InfoWindow {
 
             onClicked: {
                 mainWindow.processEscape();
-                mainWindow.showSearchWarlockWnd("f");
+                mainWindow.callInviteFriends();
             }
         }
     }

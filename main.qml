@@ -183,7 +183,14 @@ ApplicationWindow {
 
         Rectangle {
             id: dMenuBG
-            anchors.fill: parent
+            anchors.top: parent.top
+            anchors.topMargin: -0.1 * parent.height
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: -0.1 * parent.height
+            anchors.left: parent.left
+            anchors.right: parent.right
+
+
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "#544653" }
                 GradientStop { position: 1.0; color: "#210430" }
@@ -565,10 +572,10 @@ ApplicationWindow {
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 12 * ratioObject
 
-                                LargeText {
+                                Text {
                                     id: rdbiText2
                                     anchors.verticalCenter: rdBattleItem.verticalCenter
-                                    height: 48 * ratioObject
+                                    //height: 48 * ratioObject
                                     font.pixelSize: 28 * ratioFont
                                     anchors.left: rdBattleItem.left
                                     anchors.leftMargin: 36 * ratioObject
@@ -579,10 +586,11 @@ ApplicationWindow {
 
                                     text: lvActiveBattle.model[index].d
                                 }
-                                LargeText {
+
+                                Text {
                                     id: rdbiText3
                                     anchors.baseline: rdbiText2.baseline// rdBattleItem.verticalCenter
-                                    height: 48 * ratioObject
+                                    //height: 48 * ratioObject
                                     font.pixelSize: 21 * ratioFont
                                     anchors.left: rdbiText2.right
                                     anchors.leftMargin: 5 * ratioObject
@@ -1355,13 +1363,14 @@ ApplicationWindow {
             //    h = Screen.desktopAvailableHeight + (Screen.height - Screen.desktopAvailableHeight) / 2;
             //    mainWindow.height = h;
             //}
+            dMenu.height = 1.2 * realScreenHeight;
         } else {
             w = mainWindow.width;
             h = mainWindow.height;
             fw = w;
             fh = h;
         }
-        console.log("calculateRatio", "calculated", calculatedRatio, calculatedRatioFont);
+        console.log("calculateRatio", "calculated", calculatedRatio, calculatedRatioFont, dMenu.height);
         console.log("calculateRatio", "Px", Screen.devicePixelRatio, Screen.pixelDensity);
         console.log("calculateRatio", "Width", Screen.width, Screen.desktopAvailableWidth, mainWindow.width, realScreenWidth);
         console.log("calculateRatio", "Height", Screen.height, Screen.desktopAvailableHeight, mainWindow.height, realScreenHeight);
