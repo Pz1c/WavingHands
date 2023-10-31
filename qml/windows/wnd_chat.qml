@@ -55,7 +55,7 @@ InfoWindow {
                 anchors.right: parent.right
                 anchors.rightMargin: 16 * mainWindow.ratioObject
                 //height: 0.20 * dialogWindow.height
-                font.pixelSize: 41 * mainWindow.ratioFont
+                font.pixelSize: 28 * mainWindow.ratioFont
                 //width: dialogWindow.width
                 text: dict.getStringByCode("Say")
                 color: "#E7FFFF"
@@ -84,7 +84,7 @@ InfoWindow {
                     height: 0.98 * parent.height
                     inputMethodHints: Qt.ImhNoPredictiveText
                     color: "#E7FFFF"
-                    font.pixelSize: 48 * mainWindow.ratioFont
+                    font.pixelSize: 28 * mainWindow.ratioFont
                     z: 15
                     maximumLength: 255
 

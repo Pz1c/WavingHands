@@ -12,7 +12,7 @@ Item {
     property bool isPassword: false
     property bool hidePassword: true
     property alias text_color: tiMain.color
-    property alias text: tiMain.text
+    property string text: ""
     property alias fontSizeMode: ltiTitle.fontSizeMode
     property alias fontTitle: ltiTitle.font
     property alias fontEdit: tiMain.font
@@ -67,13 +67,36 @@ Item {
             inputMethodHints: Qt.ImhNoPredictiveText
             validator: RegularExpressionValidator { id: revValidator; regularExpression: /^[a-zA-Z0-9_-]{2,10}$/ }
             color: "black"
-            echoMode: (isPassword && hidePassword) ? TextInput.Password : TextInput.Normal
-            font.pixelSize: 0.3 * parent.height
+            //echoMode: (isPassword && hidePassword) ? TextInput.Password : TextInput.Normal
+            echoMode: TextInput.Normal
+            font.pixelSize: 28 * mainWindow.ratioFont
             z: 11
 
-            onTextChanged: {
+            onTextEdited: {
+                console.log("onTextChanged.1", tiMain.text, tiMain.text.length, lbiMain.text, lbiMain.text.length, tiMain.text.indexOf("*"));
+                if (isPassword && hidePassword) {
+                    if (tiMain.text.indexOf("*") === 0) {
+                        if (tiMain.text.length > lbiMain.text.length) {
+                            //console.log("onTextChanged.2", lbiMain.text.length, tiMain.text.length - lbiMain.text.length, "!" + tiMain.text.substring(lbiMain.text.length - 1, tiMain.text.length - lbiMain.text.length) + "!");
+
+                            lbiMain.text += tiMain.text.substring(lbiMain.text.length);
+                        } else {
+                            lbiMain.text = lbiMain.text.substring(0, tiMain.text.length);
+                        }
+                    } else {
+                        lbiMain.text = tiMain.text;
+                    }
+
+                    tiMain.text = generatePasswordMask(lbiMain.text.length);
+                } else {
+                    lbiMain.text = tiMain.text;
+                }//*/
                 lbiMain.inputChanged();
             }
+
+//            onEchoModeChanged: {
+//                font.pixelSize = 28 * mainWindow.ratioFont;
+//            }
 
             Text {
                 id: tPlaceHolder
@@ -103,10 +126,27 @@ Item {
                     anchors.fill: parent
                     onClicked: {
                         hidePassword = !hidePassword;
+                        if (hidePassword) {
+                            tiMain.text = generatePasswordMask(lbiMain.text.length);
+                        } else {
+                            tiMain.text = lbiMain.text;
+                        }
                     }
                 }
             }
         }
+    }
+
+    function replaceAll(str, find, replace) {
+      return str.replace(new RegExp(find, 'g'), replace);
+    }
+
+    function generatePasswordMask(length) {
+        var res = "";
+        for(var i = 0; i < length; ++i) {
+            res += "*";
+        }
+        return res;
     }
 
     function setFontSize(real_height) {
