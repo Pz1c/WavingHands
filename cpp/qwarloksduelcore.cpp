@@ -2470,6 +2470,7 @@ QString QWarloksDuelCore::getBattleHint(QBattleInfo *battle_info) {
 }
 
 QString QWarloksDuelCore::battleReadOnly(int BattleID) {
+    qDebug() << "QWarloksDuelCore::battleReadOnly" << BattleID << _loadedBattleID;
     QBattleInfo *battle_info = getBattleInfo(_loadedBattleID);
     QString res = battle_info->fullJSON();
     return res;
@@ -2526,12 +2527,12 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
     if (found) {
         stmp = _playerStats[clean_login].toString();
     } else {
-        stmp = QString("0,%1,0,0,0,0,0,1500,0,#000000,0").arg(DirtyLogin ? clean_login : WarlockName);
+        stmp = QString("0,%1,0,0,0,0,0,1500,0,#000000,0,0").arg(DirtyLogin ? clean_login : WarlockName);
     }
     // boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), intToStr(_active)
     QStringList sltmp = stmp.split(",");
-    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7,\"last_activity\":%8}").
-            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), sltmp.at(10));
+    return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7,\"last_activity\":%8,\"is_bot\":%9}").
+            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), sltmp.at(10), sltmp.at(11));
 }
 
 void QWarloksDuelCore::showNotification(const QString &msg) {

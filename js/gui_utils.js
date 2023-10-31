@@ -63,7 +63,7 @@ function fixActivBattleDesc(arr) {
         var str = core.getWarlockStats(item.el);
         console.log("fixActivBattleDesc", item.el, str, curr_date_sec);
         var wd = JSON.parse(str);
-        arr[i].online = curr_date_sec - wd.last_activity <= 5 * 60;
+        arr[i].online = wd.is_bot || (curr_date_sec - wd.last_activity <= 5 * 60);
 
     }
 }
