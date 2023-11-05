@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 public class MyService extends QtService
 {
-    private static final String TAG = "WarlockDuelService";
-    private static final String LOG_TAG = "WarlockDuelService";
+    private static final String TAG = "WarlocksDuelService";
+    private static final String LOG_TAG = "WarlocksDuelService";
 
     @Override
     public void onCreate() {
@@ -38,9 +38,14 @@ public class MyService extends QtService
 
     public int onStartCommand(Intent intent, int flags, int startId) {
     Log.d(LOG_TAG, "MyService onStartCommand");
-    readFlags(flags);
-    MyRun mr = new MyRun(startId);
-    new Thread(mr).start();
+    try {
+        readFlags(flags);
+        MyRun mr = new MyRun(startId);
+        new Thread(mr).start();
+    } catch (Exception e) {
+        e.printStackTrace();
+        //return "";
+    }
     return START_STICKY;
   }
 
@@ -49,10 +54,15 @@ public class MyService extends QtService
   }
 
   void readFlags(int flags) {
+      try {
     if ((flags&START_FLAG_REDELIVERY) == START_FLAG_REDELIVERY)
       Log.d(LOG_TAG, "START_FLAG_REDELIVERY");
     if ((flags&START_FLAG_RETRY) == START_FLAG_RETRY)
       Log.d(LOG_TAG, "START_FLAG_RETRY");
+      } catch (Exception e) {
+          e.printStackTrace();
+          //return "";
+      }
   }
 
   class MyRun implements Runnable {
@@ -60,8 +70,13 @@ public class MyService extends QtService
     int startId;
 
     public MyRun(int startId) {
-      this.startId = startId;
-      Log.d(LOG_TAG, "MyRun#" + startId + " create");
+      try {
+          this.startId = startId;
+          Log.d(LOG_TAG, "MyRun#" + startId + " create");
+      } catch (Exception e) {
+          e.printStackTrace();
+          //return "";
+      }
     }
 
     public void run() {
@@ -78,8 +93,13 @@ public class MyService extends QtService
     }
 
     void stop() {
-      Log.d(LOG_TAG, "MyRun#" + startId + " end, stopSelfResult("
-          + startId + ") = " + stopSelfResult(startId));
+        try{
+            Log.d(LOG_TAG, "MyRun#" + startId + " end, stopSelfResult("
+            + startId + ") = " + stopSelfResult(startId));
+        } catch (Exception e) {
+          e.printStackTrace();
+          //return "";
+        }
     }
   }
 }

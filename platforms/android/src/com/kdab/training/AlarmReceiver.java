@@ -11,36 +11,46 @@ import android.os.Build;
 
 public class AlarmReceiver extends BroadcastReceiver
 {
-    private static final String TAG = "WarlockDuel.AlarmReceiver";
+    private static final String TAG = "WarlocksDuel.AlarmReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        Intent in = new Intent(context, CheckStatus.class);
-        context.startService(in);
-        setAlarm(context, false);
+        try {
+            Intent in = new Intent(context, CheckStatus.class);
+            context.startService(in);
+            setAlarm(context, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
     }
 
     public void setAlarm(Context context, boolean Initial)
     {
         Log.d(TAG, "setAlarm");
-        AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-        Intent i = new Intent(context, AlarmReceiver.class);
-        PendingIntent pi;// = PendingIntent.getBroadcast(context, 0, i, 0);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-          pi = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
-        } else {
-          pi = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
-        }
-
-        assert am != null;
-        int next_alert_in_sec = getNextAlertTimeoutSec(context, Initial);
-        Log.d(TAG, "next_alert_in_sec = " + next_alert_in_sec);
         try {
-            am.cancel(pi); // https://developer.android.com/reference/android/app/AlarmManager#cancel(android.app.PendingIntent)
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (System.currentTimeMillis()/1000L + next_alert_in_sec) *1000L, pi); //Next alarm in 15s
+            AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+            Intent i = new Intent(context, AlarmReceiver.class);
+            PendingIntent pi;// = PendingIntent.getBroadcast(context, 0, i, 0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+              pi = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+            } else {
+              pi = PendingIntent.getBroadcast(context, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+            }
+
+            assert am != null;
+            int next_alert_in_sec = getNextAlertTimeoutSec(context, Initial);
+            Log.d(TAG, "next_alert_in_sec = " + next_alert_in_sec);
+            try {
+                am.cancel(pi); // https://developer.android.com/reference/android/app/AlarmManager#cancel(android.app.PendingIntent)
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (System.currentTimeMillis()/1000L + next_alert_in_sec) *1000L, pi); //Next alarm in 15s
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
+            //return "";
         }
         Log.d(TAG, "finish");
     }

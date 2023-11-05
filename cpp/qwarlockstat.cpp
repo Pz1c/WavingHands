@@ -129,10 +129,10 @@ qint64 QWarlockStat::lastActivity() const
 }
 
 QString QWarlockStat::toString() const {
-    return QString("%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11")
+    return QString("%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12")
             .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee) // 1-4
-            ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
-            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile)); // 9-11
+                 ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
+            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile), boolToIntS(_ai)); // 9-12
 }
 
 QString QWarlockStat::toJSON() const {

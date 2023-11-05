@@ -27,7 +27,7 @@ public class NotificationClient
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 int importance = NotificationManager.IMPORTANCE_DEFAULT;
                 NotificationChannel notificationChannel;
-                notificationChannel = new NotificationChannel("WarlockDuel", "Warlock Duel", importance);
+                notificationChannel = new NotificationChannel("WarlocksDuel", "Warlock Duel", importance);
                 m_notificationManager.createNotificationChannel(notificationChannel);
                 m_builder = new Notification.Builder(context, notificationChannel.getId());
             } else {
@@ -146,6 +146,11 @@ public class NotificationClient
     }
 
     public static void showToast(Context context, String msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+        try {
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
     }
 }
