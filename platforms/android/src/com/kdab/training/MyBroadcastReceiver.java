@@ -9,7 +9,7 @@ import android.os.Build;
 import com.kdab.training.AlarmReceiver;
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
-    private static final String TAG = "MyBroadcastReceiver";
+    private static final String TAG = "WarlocksDuelMyBroadcastReceiver";
     private static final int START_ID = 888888;
 
     @Override
@@ -21,8 +21,13 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 //        } else {
 //            context.startService(new Intent(context, MyService.class));
 //        }
-        AlarmReceiver alarm = new AlarmReceiver();
-        alarm.setAlarm(context, true);
+        try {
+            AlarmReceiver alarm = new AlarmReceiver();
+            alarm.setAlarm(context, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
     }
 
     public static void startService(Context context, String log_string) {
@@ -34,8 +39,12 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 //        } else {
 //            context.startService(new Intent(context, MyService.class));
 //        }
-
-        AlarmReceiver alarm = new AlarmReceiver();
-        alarm.setAlarm(context, true);
+        try {
+            AlarmReceiver alarm = new AlarmReceiver();
+            alarm.setAlarm(context, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
     }
 }

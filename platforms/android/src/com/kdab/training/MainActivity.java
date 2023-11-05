@@ -14,7 +14,7 @@ import com.android.installreferrer.api.ReferrerDetails;
 
 public class MainActivity extends QtActivity {
     private static final int STORAGE_PERMISSION_CODE = 1;
-    private static final String TAG = "WarlockDuelActivity";
+    private static final String TAG = "WarlocksDuelActivity";
 
     // variable for install referer client.
     InstallReferrerClient referrerClient;
@@ -24,9 +24,13 @@ public class MainActivity extends QtActivity {
         super.onCreate(savedInstanceState);
 
         // prepare service
-        AlarmReceiver alarm = new AlarmReceiver();
-        alarm.setAlarm(this, true);
-
+        try {
+            AlarmReceiver alarm = new AlarmReceiver();
+            alarm.setAlarm(this, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
         int need_check_ref = 0;
         try {
             Context context = getApplicationContext();
@@ -36,9 +40,15 @@ public class MainActivity extends QtActivity {
             e.printStackTrace();
         }
 
-        CheckStatus.hideNotification(this);
+        try {
+            CheckStatus.hideNotification(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
 
         if (need_check_ref == 0) {
+            try {
             // on below line we are building our install referrer client and building it.
             referrerClient = InstallReferrerClient.newBuilder(this).build();
 
@@ -114,13 +124,17 @@ public class MainActivity extends QtActivity {
                     //Toast.makeText(MainActivity.this, "Service disconnected..", Toast.LENGTH_SHORT).show();
                 }
             });
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
         }
     }
 
     @Override
     public void onResume () {
         super.onResume();
-
+        try {
         Intent intent = getIntent();
         Uri data = intent.getData();
         Bundle bundle = intent.getExtras();
@@ -151,5 +165,9 @@ public class MainActivity extends QtActivity {
                 }
             }
         }
+    } catch (Exception e) {
+        e.printStackTrace();
+        //return "";
+    }
     }
 }

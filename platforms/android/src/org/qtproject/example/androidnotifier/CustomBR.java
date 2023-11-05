@@ -11,7 +11,7 @@ import net.is.games.WarlocksDuel.R;
 
 public class CustomBR extends BroadcastReceiver {
 
-    private static final String D_TAG = "BR";
+    private static final String D_TAG = "WarlocksDuelBR";
 
     @Override
     public void onReceive(Context context, Intent intent) {

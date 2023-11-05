@@ -53,9 +53,11 @@ function newUserRegistered() {
 }
 
 function fixActivBattleDesc(arr) {
+    console.log("gui_utils.js.fixActivBattleDesc.1", JSON.stringify(arr));
     var curr_date_sec = Math.floor((new Date()).getTime()/1000);
     for (var i = 0, Ln = arr.length; i < Ln; ++i) {
         var item = arr[i];
+        console.log("gui_utils.js.fixActivBattleDesc.1", JSON.stringify(item));
         if (!item || !item.el || (item.el.length < 2)) {
             arr[i].online = false;
             continue;
@@ -70,13 +72,19 @@ function fixActivBattleDesc(arr) {
 
 function newBattleList() {
     var bl = core.battleList;
-    console.log("newBattleList", bl);
+    console.log("newBattleList.1", bl);
     G_BATTLE_LIST = JSON.parse(bl);
+    console.log("newBattleList.2", JSON.stringify(G_BATTLE_LIST));
     fixActivBattleDesc(G_BATTLE_LIST[0]);
+    console.log("newBattleList.3", JSON.stringify(G_BATTLE_LIST[0]));
     lvActiveBattle.model = G_BATTLE_LIST[0];
+    console.log("newBattleList.4", JSON.stringify(G_BATTLE_LIST[1]));
     lvFinishedBattle.model = G_BATTLE_LIST[1];
+    console.log("newBattleList.5", G_BATTLE_LIST[1].length);
     ltFinishedBattle.visible = G_BATTLE_LIST[1].length > 0;
+    console.log("newBattleList.6");
     logEvent("ListGames_View");
+    console.log("newBattleList.7");
 }
 
 function loadBattleList(filter) {

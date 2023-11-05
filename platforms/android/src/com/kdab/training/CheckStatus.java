@@ -40,13 +40,18 @@ class MyJavaNatives
 }
 
 public class CheckStatus extends Service {
-    private static final String TAG = "WarlockDuel.CheckStatus";
+    private static final String TAG = "WarlocksDuel.CheckStatus";
 
     // This method run only one time. At the first time of service created and running
     @Override
     public void onCreate() {
-        HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
-        thread.start();
+        try {
+            HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
+            thread.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
         Log.d(TAG, "After service created");
     }
 
@@ -57,6 +62,7 @@ public class CheckStatus extends Service {
         //String check_url = getCheckUrl(getApplicationContext());
         //Log.d(TAG, "check_url = " + check_url);
         //Toast.makeText(this, "Try check url:\n"+check_url, Toast.LENGTH_SHORT).show();
+        try {
         new Thread(new Runnable() {
             public void run() {
                 try{
@@ -168,7 +174,10 @@ public class CheckStatus extends Service {
             }
         }).start();
         //MyJavaNatives.checkWarlockProfile(check_url);
-
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
         return START_STICKY;
     }
 

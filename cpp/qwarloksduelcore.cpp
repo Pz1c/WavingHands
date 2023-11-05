@@ -2204,24 +2204,8 @@ void QWarloksDuelCore::loadGameParameters() {
     settings->endArray();
 
     size = settings->beginReadArray("ps");
-    bool checkSize = false;
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
-        if (settings->value("n").toString().toLower().compare(settings->value("n").toString()) != 0) {
-            _lastPlayersScan = 0;
-            _playerStats.clear();
-            break;
-        }
-        if (!checkSize) {
-            qDebug() << "QWarloksDuelCore::loadGameParameters" << settings->value("v").toString() << settings->value("v").toString().split(",").size();
-            if (settings->value("v").toString().split(",").size() == 11) {
-                checkSize = true;
-            } else {
-                _lastPlayersScan = 0;
-                _playerStats.clear();
-                break;
-            }
-        }
         _playerStats[settings->value("n").toString()] = QWarlockStat(settings->value("v").toString(), true);
     }
     settings->endArray();
@@ -2549,12 +2533,12 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
     if (found) {
         stmp = _playerStats[clean_login].toString();
     } else {
-        stmp = QString("0,%1,0,0,0,0,0,1500,0,#000000,0,0").arg(DirtyLogin ? clean_login : WarlockName);
+        stmp = QString("0,%1,0,0,0,0,0,1500,#000000,0,0,0").arg(DirtyLogin ? clean_login : WarlockName);
     }
     // boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), intToStr(_active)
     QStringList sltmp = stmp.split(",");
     return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7,\"last_activity\":%8,\"is_bot\":%9}").
-            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), sltmp.at(10), sltmp.at(11));
+            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), sltmp.at(9), sltmp.at(11));
 }
 
 void QWarloksDuelCore::showNotification(const QString &msg) {
