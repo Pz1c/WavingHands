@@ -35,6 +35,7 @@ public:
 
     void parseAndInit(QString Raw);
     void parseIniAndInit(QString Raw);
+    void parseSiteAndInit(QString Raw);
 
     qint64 lastActivity() const;
 

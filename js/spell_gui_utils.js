@@ -133,6 +133,11 @@ function prepareDataOrderSubmitted(l_data, dict) {
     bbAction.visible = true;
     bbSkipAction.text = "Force Turn";
     bbSkipAction.visible = l_data.fst > 0;
+    bbSkipAction.gradient = gDef;
+    bbSkipAction.transparent = false;
+    bbSkipAction.font.pixelSize = 42 * mainWindow.ratioFont;
+    bbSkipAction.height = 96 * ratioObject;
+    bbSkipAction.font.underline = false;
     l_data.action = "force";
 }
 

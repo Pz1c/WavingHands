@@ -650,10 +650,15 @@ void QWarloksDuelCore::scanTopList(bool Silent, bool ForceFull) {
     if (_isAI) {
         return;
     }
-    setIsLoading(!Silent);
     qint64 udt = QDateTime::currentSecsSinceEpoch();
-    _lastPlayersScan = udt;
-    sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(_login, ForceFull ? "1" : "0"));
+    if (udt - _lastPlayersScan > 30) {
+        _lastPlayersScan = udt;
+        setIsLoading(!Silent);
+        sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(_login, ForceFull ? "1" : "0"));
+    } else {
+        generateTopList();
+        emit topListChanged();
+    }
 }
 
 bool QWarloksDuelCore::aiAcceptChallenge(int battle_id, bool changeAI) {
@@ -2159,6 +2164,10 @@ void QWarloksDuelCore::loadGameParameters() {
     if (!_reg_in_app) {
         _exp_lv = 5;
     }
+    if (_appVersion < APPLICATION_VERSION_INT) {
+        qDebug() << "QWarloksDuelCore::loadGameParameters" << _appVersion << "<" << APPLICATION_VERSION_INT << "clean all settings";
+        settings->clear();
+    }
     _played = settings->value("played", "0").toInt();
     _won = settings->value("won", "0").toInt();
     _died = settings->value("died", "0").toInt();
@@ -2195,6 +2204,7 @@ void QWarloksDuelCore::loadGameParameters() {
     settings->endArray();
 
     size = settings->beginReadArray("ps");
+    bool checkSize = false;
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
         if (settings->value("n").toString().toLower().compare(settings->value("n").toString()) != 0) {
@@ -2202,10 +2212,22 @@ void QWarloksDuelCore::loadGameParameters() {
             _playerStats.clear();
             break;
         }
+        if (!checkSize) {
+            qDebug() << "QWarloksDuelCore::loadGameParameters" << settings->value("v").toString() << settings->value("v").toString().split(",").size();
+            if (settings->value("v").toString().split(",").size() == 11) {
+                checkSize = true;
+            } else {
+                _lastPlayersScan = 0;
+                _playerStats.clear();
+                break;
+            }
+        }
         _playerStats[settings->value("n").toString()] = QWarlockStat(settings->value("v").toString(), true);
     }
     settings->endArray();
-    generateTopList();
+    if (_playerStats.size() > 0) {
+        generateTopList();
+    }
 }
 
 bool QWarloksDuelCore::allowedAccept()

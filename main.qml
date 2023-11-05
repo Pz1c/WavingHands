@@ -181,15 +181,14 @@ ApplicationWindow {
         height: mainWindow.height
         edge: Qt.LeftEdge
 
-        Rectangle {
+        background: Rectangle {
             id: dMenuBG
-            anchors.top: parent.top
-            anchors.topMargin: -0.1 * parent.height
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: -0.1 * parent.height
-            anchors.left: parent.left
-            anchors.right: parent.right
-
+//            anchors.top: parent.top
+//            anchors.topMargin: -0.1 * parent.height
+//            anchors.bottom: parent.bottom
+//            anchors.bottomMargin: -0.1 * parent.height
+//            anchors.left: parent.left
+//            anchors.right: parent.right
 
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "#544653" }
@@ -201,8 +200,6 @@ ApplicationWindow {
                 source: "res/stars_bg.png"
                 anchors.fill: parent
             }
-
-            z: -1
         }
 
         Item {
@@ -1363,13 +1360,14 @@ ApplicationWindow {
             //    h = Screen.desktopAvailableHeight + (Screen.height - Screen.desktopAvailableHeight) / 2;
             //    mainWindow.height = h;
             //}
-            dMenu.height = 1.2 * realScreenHeight;
+            //dMenu.height = 1.2 * realScreenHeight;
         } else {
             w = mainWindow.width;
             h = mainWindow.height;
             fw = w;
             fh = h;
         }
+        //dMenu.height = 1.2 * fh;
         console.log("calculateRatio", "calculated", calculatedRatio, calculatedRatioFont, dMenu.height);
         console.log("calculateRatio", "Px", Screen.devicePixelRatio, Screen.pixelDensity);
         console.log("calculateRatio", "Width", Screen.width, Screen.desktopAvailableWidth, mainWindow.width, realScreenWidth);
