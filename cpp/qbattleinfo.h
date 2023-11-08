@@ -21,7 +21,7 @@ public:
     QString getInListParticipant(const QString &Login, bool Short = false) const;
     QString getInListStatus(const QString &Login) const;
     bool isWinner(const QString &Login) const;
-    bool canForceSurrendering() const;
+    bool canForceSurrendering(int checkTime = 75 * 60 * 60) const;
 
     int hint() const;
     void setHint(int newHint);
@@ -30,7 +30,7 @@ public:
     void setStatus(int newStatus);
 
     int wait_from() const;
-    void setWaitFrom(int newWait_from);
+    void setWaitFrom(int newWaitFrom);
 
     int battleID() const;
     void setBattleID(int newBattleID);
@@ -90,6 +90,7 @@ public:
 
     QString fullJSON() const;
 
+    bool isInviteRejected();
     void checkRejection();
 
 protected:
