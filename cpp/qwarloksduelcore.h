@@ -138,7 +138,7 @@ public slots:
                             QString Description, QString Warlock = "", int IsOnline = 0);
     void aiCreateNewChallenge();
     void regNewUser(const QString &Login, const QString &Email, const QString &Pass = "");
-    void getBattle(int battle_id, int battle_type);
+    void getBattle(int battle_id, int battle_type, bool silent = false);
     void getWarlockInfo(const QString &Login);
     void sendMessage(const QString &Msg);
     void autoLogin(int Idx);
@@ -293,6 +293,7 @@ private:
     int _loadedBattleID;
     int _loadedBattleType;
     int _loadedBattleTurn;
+    bool _loadedBattleSilent;
     QList<QValueName> _Targets;
     QMap<QString, QString> _WarlockID;
     QList<QMonster *> _Monsters;

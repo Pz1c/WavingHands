@@ -90,9 +90,13 @@ int QBattleInfo::wait_from() const
     return _wait_from;
 }
 
-void QBattleInfo::setWaitFrom(int newWait_from)
+void QBattleInfo::setWaitFrom(int newWaitFrom)
 {
-    _wait_from = newWait_from;
+    if (newWaitFrom == -2) {
+        _wait_from = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+    } else {
+        _wait_from = newWaitFrom;
+    }
 }
 
 int QBattleInfo::status() const
@@ -103,23 +107,23 @@ int QBattleInfo::status() const
 void QBattleInfo::setStatus(int newStatus)
 {
      if (_status == newStatus) {
-         if ((newStatus == BATTLE_INFO_STATUS_WAIT) && (_wait_from <= 0)) {
-             _wait_from = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+        if (((newStatus == BATTLE_INFO_STATUS_WAIT) || (newStatus == BATTLE_INFO_STATUS_NO_START)) && (_wait_from <= 0)) {
+            setWaitFrom(-2);
          }
          return;
      }
     if (newStatus == BATTLE_INFO_STATUS_READY) {
-        _wait_from = -1;
+        setWaitFrom(-1);
     }
     if ((_status == BATTLE_INFO_STATUS_READY) && (newStatus == BATTLE_INFO_STATUS_WAIT)) {
-        _wait_from = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+        setWaitFrom(-2);
     }
-     _status = newStatus;
+    _status = newStatus;
 }
 
-bool QBattleInfo::canForceSurrendering() const {
+bool QBattleInfo::canForceSurrendering(int checkTime) const {
     int curr_time = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
-    return ((_wait_from > 0) && ((curr_time - _wait_from) > 75 * 60 * 60));
+    return ((_wait_from > 0) && ((curr_time - _wait_from) > checkTime));
 }
 
 int QBattleInfo::hint() const
@@ -316,6 +320,10 @@ QString QBattleInfo::getInListStatus(const QString &Login) const {
     return "";
 }
 
+bool QBattleInfo::isInviteRejected() {
+    return _inviteRejected;
+}
+
 void QBattleInfo::checkRejection() {
     if (!_inviteRejected && !_rejected.empty() && (_status == -1)) {
         bool all_reject = true;
@@ -327,6 +335,7 @@ void QBattleInfo::checkRejection() {
         }
         if (all_reject) {
             _inviteRejected = true;
+            setWaitFrom(-2);
         }
     }
 }

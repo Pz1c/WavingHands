@@ -770,9 +770,10 @@ void QWarloksDuelCore::sendOrders(QString orders) {
     //prepareSpellHtmlList();
 }
 
-void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
+void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
     _loadedBattleID = battle_id;
     _loadedBattleType = battle_type;
+    _loadedBattleSilent = silent;
     qDebug() << "getBattle " << _loadedBattleID << " battle_type " << _loadedBattleType << _isLogined;
     if (!_isLogined) {
         loginToSite();
@@ -787,7 +788,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type) {
         }
     }
 
-    setIsLoading(true);
+    setIsLoading(!silent);
     sendGetRequest(QString(_loadedBattleType == 2 ? GAME_SERVER_URL_GET_FINISHED_BATTLE : GAME_SERVER_URL_GET_BATTLE).arg(QString::number(_loadedBattleID)));
 }
 
@@ -923,7 +924,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             battleInfo = bi;
             _finishedBattle = battleInfo->getFullHist(_login);
         }
-        emit finishedBattleChanged();
+        if (!_loadedBattleSilent) {
+            emit finishedBattleChanged();
+        }
         return false;
     }
 
@@ -933,19 +936,23 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         if (_finished_battles.indexOf(_loadedBattleID) != -1) {
             _finished_battles.removeAt(_finished_battles.indexOf(_loadedBattleID));
         }
-        _finishedBattle = "Sorry, but you battle already deleted from game server and we not store it on archive server";
-        emit finishedBattleChanged();
+        if (!_loadedBattleSilent) {
+            _finishedBattle = "Sorry, but you battle already deleted from game server and we not store it on archive server";
+            emit finishedBattleChanged();
+        }
         return false;
     } else if (_loadedBattleType == -1) { // unstarted
         QWarlockUtils::parseUnstartedBattle(Data, battleInfo);
-        _finishedBattle = QString("{\"type\":12,\"d\":\"\",\"id\":%1,\"battle_data\":%2}").arg(intToStr(_loadedBattleID), battleInfo->toJSON(_login));
-        emit finishedBattleChanged();
+        if (!_loadedBattleSilent) {
+            _finishedBattle = QString("{\"type\":12,\"d\":\"\",\"id\":%1,\"battle_data\":%2}").arg(intToStr(_loadedBattleID), battleInfo->toJSON(_login));
+            emit finishedBattleChanged();
+        }
         return false;
     }
 
     if ((old_state == 1) && (_loadedBattleType == 2)) {
         qDebug() << "finishGetFinishedBattle" << "check rate us" << _finished_battles.count();
-        if (!_rateus && battleInfo->isWinner(_login)) {
+        if (!_loadedBattleSilent && !_rateus && battleInfo->isWinner(_login)) {
             bool vsbot = battleInfo->with_bot();
             if (!vsbot || (_finished_battles.count() >= 7)) {
                 _rateus = true;
@@ -955,7 +962,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         }
 
         // to get full history, but not only last turn
-        getBattle(_loadedBattleID, 2);
+        getBattle(_loadedBattleID, 2, _loadedBattleSilent);
         scanState(true);
         return false;
     }
@@ -1027,14 +1034,18 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             QString params = QString("Id;%1;Players;%2;Winner;%3;").arg(intToStr(_loadedBattleID), battleInfo->getInListParticipant(_login, true), battleInfo->winner());
             logEvent("Game_End", params);
         }
-        emit finishedBattleChanged();
+        if (_loadedBattleSilent) {
+            emit finishedBattleChanged();
+        }
         return false;
     }
 
     int idx3 = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">", idx1);
     if (idx3 == -1) {
-        _errorMsg = "Wrong battle answer!!!";
-        emit errorOccurred();
+        if (!_loadedBattleSilent) {
+            _errorMsg = "Wrong battle answer!!!";
+            emit errorOccurred();
+        }
         return false;
     }
 
@@ -1043,11 +1054,13 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         // mean battle finished just now
         _errorMsg = "Looks like battle already finished, please wait for refresh";
         qDebug() << _errorMsg << ReadyData;
-        emit errorOccurred();
+        if (!_loadedBattleSilent) {
+            emit errorOccurred();
+        }
         return false;
     }
     bool res = parseReadyBattle(ReadyData);
-    if (res) {
+    if (!_loadedBattleSilent && res) {
         qDebug() << "Check spellbook levelup" << _loadedBattleTurn << battleInfo->with_bot();
 
         if (_loadedBattleTurn == 1) {
@@ -1667,6 +1680,23 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
                     ask_ai = true;
                     getBattle(bid, 0);
                 }
+            }
+
+            if (!_isAI && (_ready_in_battles.size() == 0)) {
+                if ((battle_info->status() == BATTLE_INFO_STATUS_WAIT) && battle_info->canForceSurrendering(7 * 24 * 60 * 60) && (battle_info->turn() > 0)) {
+                    battle_info->setWaitFrom(battle_info->wait_from() + 30 * 60);
+                    forceSurrender(bid, battle_info->turn());
+                }
+
+                if ((battle_info->status() == BATTLE_INFO_STATUS_NO_START)) {
+                    if (battle_info->isInviteRejected() && battle_info->canForceSurrendering(10 * 60)) {
+                        leaveBattle(bid);
+                    } else if (!battle_info->isInviteRejected() && battle_info->canForceSurrendering(24 * 60 * 60)) {
+                        battle_info->setWaitFrom(-2);
+                        getBattle(bid, 0, true);
+                    }
+                }
+
             }
         }
         if (!_isAI && !ask_ai) {
