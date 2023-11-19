@@ -1024,3 +1024,21 @@ function prepareAndSortRealAction(actions, battle) {
         }
     }
 }
+
+function processHintText(obj) {
+    console.log("processHintText.1", obj.txt, obj.font_size);
+    if (obj.txt.indexOf(" attacks ") !== -1) {
+        obj.txt = obj.txt.substring(0, obj.txt.indexOf(" attacks ") + 8);
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf(" is hit by a") !== -1) {
+        obj.txt = obj.txt.substring(0, obj.txt.indexOf(" is hit by a") + 7);
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf(" hand is paralysed") !== -1) {
+        obj.txt = obj.obj.target + " is paralyzed";
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf(" starts to lose coordination") !== -1) {
+        obj.txt = obj.txt.substring(0, obj.txt.indexOf(" starts to lose coordination")) + " loses coordination";
+        obj.font_size = 28;
+    }
+    console.log("processHintText.2", obj.txt, obj.font_size);
+}

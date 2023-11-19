@@ -9,9 +9,9 @@
 #define APPLICATION_NAME "WarloksDuel"
 #define APPLICATION_NAME_SERVICE "WarloksDuelService"
 #define APPLICATION_TITLE "Warloks Duel"
-#define APPLICATION_VERSION_PRINT "2.3.5"
-#define APPLICATION_VERSION       "2003005"
-#define APPLICATION_VERSION_INT   2003005
+#define APPLICATION_VERSION_PRINT "2.3.6"
+#define APPLICATION_VERSION       "2003006"
+#define APPLICATION_VERSION_INT   2003006
 #define APPLICATION_PACKAGE "net.is.games.WarlocksDuel"
 #define APPLICATION_INSTALLER_PACKAGE ""
 
@@ -143,7 +143,7 @@
 #define BATTLE_INFO_LEVEL_FRIENDLY 1
 #define BATTLE_INFO_LEVEL_LADDER 0
 
-#define SECONDS_AT_20210901 1630454400
+//#define SECONDS_AT_20210901 1630454400
 static QStringList POSSIBLE_GESTURES {"C", "W", "S", "D", "F", "P", ">"};
 static QMap<QString, QString> gestureParaCFMap{{"C","F"},{"S","D"},{"W","P"}};
 static QMap<QString, QString> gestureParaFCMap{{"F","C"},{"S","D"},{"W","P"}};

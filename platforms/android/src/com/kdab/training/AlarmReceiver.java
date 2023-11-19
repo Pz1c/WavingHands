@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.os.Build;
+import android.content.pm.PackageManager;
+import android.Manifest;
 
 public class AlarmReceiver extends BroadcastReceiver
 {
@@ -42,17 +44,35 @@ public class AlarmReceiver extends BroadcastReceiver
             assert am != null;
             int next_alert_in_sec = getNextAlertTimeoutSec(context, Initial);
             Log.d(TAG, "next_alert_in_sec = " + next_alert_in_sec);
-            try {
-                am.cancel(pi); // https://developer.android.com/reference/android/app/AlarmManager#cancel(android.app.PendingIntent)
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (System.currentTimeMillis()/1000L + next_alert_in_sec) *1000L, pi); //Next alarm in 15s
-            } catch (Exception e) {
-                e.printStackTrace();
+
+            if (context.checkCallingOrSelfPermission(Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED) {
+                try {
+                    am.cancel(pi); // https://developer.android.com/reference/android/app/AlarmManager#cancel(android.app.PendingIntent)
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (System.currentTimeMillis()/1000L + next_alert_in_sec) *1000L, pi); //Next alarm in 15s
+                    setAlarmAllowed(context, 1);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    setAlarmAllowed(context, 0);
+                }
+            } else {
+                setAlarmAllowed(context, 0);
             }
         } catch (Exception e) {
             e.printStackTrace();
             //return "";
         }
         Log.d(TAG, "finish");
+    }
+
+    public static void setAlarmAllowed(Context context, int value) {
+        try {
+          SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+          SharedPreferences.Editor editor = sharedPreferences.edit();
+          editor.putInt("set_alarm_allowed", value);
+          editor.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static int getLastActivity(Context context) {

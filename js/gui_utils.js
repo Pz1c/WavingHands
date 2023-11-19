@@ -9,7 +9,8 @@ var G_ACCOUNT_LIST = [];
 var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, {c:"top",t:"TopList"}, {c:"feedback",t:"Feedback"},
                      //{c:"battle_with_friend",t:"DuelWithFriend"}, /*{c:"switch_account",t:"SwitchAccount"},*/
                      {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"},
-                     {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/];
+                     {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/ ,{c:"enable_notif", t:"Notification"}
+        ];
 
 const SPELL_CHARM_MONSTER = 23;
 
@@ -32,6 +33,9 @@ function mainMenuActionEx(code) {
     case "logout": return confirmLogout();
     case "spellbook_levelup":
         def_type = 22;
+        break;
+    case "enable_notif":
+        def_type = 201;
         break;
     }
     showErrorWnd({id:-1,type:def_type});

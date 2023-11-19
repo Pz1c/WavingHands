@@ -93,7 +93,7 @@ int QBattleInfo::wait_from() const
 void QBattleInfo::setWaitFrom(int newWaitFrom)
 {
     if (newWaitFrom == -2) {
-        _wait_from = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+        _wait_from = QGameUtils::getCurrTimestamp2021();
     } else {
         _wait_from = newWaitFrom;
     }
@@ -122,7 +122,7 @@ void QBattleInfo::setStatus(int newStatus)
 }
 
 bool QBattleInfo::canForceSurrendering(int checkTime) const {
-    int curr_time = static_cast<int>(QDateTime::currentSecsSinceEpoch() - SECONDS_AT_20210901);
+    int curr_time = QGameUtils::getCurrTimestamp2021();
     return ((_wait_from > 0) && ((curr_time - _wait_from) > checkTime));
 }
 

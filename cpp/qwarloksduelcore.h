@@ -91,7 +91,6 @@ public:
     QString accountMenu();
     QString battleList();
 
-
 signals:
     void needLogin();
     void loginChanged();
@@ -147,11 +146,13 @@ public slots:
     void leaveBattle(int battle_id, int warlock_id = 0);
     void setParamValue(const QString &Parameter, const QString &Value);
     QString getWarlockStats(const QString &WarlockName, bool DirtyLogin = false);
+    QString findWarlockByName(const QString &warlockName);
     void getSharableLink(const QString &game_level = "vf");
     void setTimerInterval(int count, int msec);
     int getBotBattle();
     void setUserProperties(const QString &OS, const QString &Screen, const QString &Locale);
     void logEvent(QString EventName, QString EventParams);
+    void askPermissions();
 
 
     void slotReadyRead() override;
@@ -241,6 +242,8 @@ protected:
     void callAI(QString Login, int MagicBookLevel);
 
     void processSpellBookLevelAfterBattle(QBattleInfo *bi);
+
+    bool checkIsNotificationGranted();
 private:
     // user login
     bool _isLogined;
@@ -287,6 +290,7 @@ private:
     QString _inviteToBattle;
     QMap<int, QBattleInfo *> _battleInfo;
     QBattleInfo* _newBattle;
+    int _timeAskForNotification;
 
     // current battle
     // TODO change to object perhaps use BattleInfo class

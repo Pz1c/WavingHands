@@ -16,6 +16,12 @@ import android.view.View;
 import android.widget.Toast;
 import android.content.res.Resources;
 
+import android.content.pm.PackageManager;
+import android.Manifest;
+import androidx.core.app.ActivityCompat;
+
+import com.kdab.training.MainActivity;
+
 public class NotificationClient
 {
     public static void notify(Context context, String message) {
@@ -114,6 +120,34 @@ public class NotificationClient
             return "0,0";
         }
     }
+
+
+    public static String isNotificationAllowed(Context context, String message) {
+        try {
+          SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+          int res = sharedPreferences.getInt("set_alarm_allowed", 0);
+          SharedPreferences.Editor editor = sharedPreferences.edit();
+          editor.putInt("app_last_activity", Math.round(System.currentTimeMillis()/1000L));
+          editor.commit();
+          return String.valueOf(res);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "0";
+        }
+    }
+
+    public static void askPermission(Context context, String message) {
+        try {
+            MainActivity.appMainActivity.askPermission();
+            ActivityCompat.requestPermissions(MainActivity.appMainActivity,
+                                new String[]{Manifest.permission.SCHEDULE_EXACT_ALARM},
+                                123);
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return "";
+        }
+    }
+
 
     public static void setLastActivity(Context context, String message) {
         try {
