@@ -1582,6 +1582,7 @@ void QWarloksDuelCore::generateBattleList() {
 }
 
 void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
+    // ForceBattleList == true - mean scan just after battle orders submit
     qDebug() << "QWarloksDuelCore::parsePlayerInfo" << _login;
     QList<int> old_read(_ready_in_battles), old_wait(_waiting_in_battles), old_fin(_finished_battles);
     _challenge.clear();
@@ -1607,6 +1608,16 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         _allowedAdd = true;
         emit allowedAcceptChanged();
     }
+    QBattleInfo *battle_info;
+    if (!_isAI && ForceBattleList && (_ready_in_battles.count() == 0) && (QGameUtils::getTs20021DIffInSec(_timeAskForNotification) >= 31 * 24 * 60 * 60)) {
+        battle_info = getBattleInfo(_loadedBattleID);
+        if ((battle_info->turn() > 0) && !battle_info->with_bot()) {
+            _timeAskForNotification = QGameUtils::getCurrTimestamp2021();
+            _errorMsg = "{\"type\":201,\"id\":-1}";
+            emit errorOccurred();
+        }
+        ///
+    }
 
     qDebug() << "ready: " << _ready_in_battles;
     qDebug() << "waiting: " << _waiting_in_battles;
@@ -1631,7 +1642,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         changed = true;
         _isScanForced = false;
     }
-    QBattleInfo *battle_info;
+
     //if (!changed) {
         foreach(int bid, _ready_in_battles) {
             battle_info = getBattleInfo(bid);
@@ -1739,6 +1750,19 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         generateBattleList();
     }
     saveParameters();
+}
+
+bool QWarloksDuelCore::checkIsNotificationGranted() {
+    int allowed = 0;
+#ifdef Q_OS_ANDROID
+    QJniObject val = QJniObject::fromString("");
+    QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "isNotificationAllowed",
+                                                           "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
+                                                           QNativeInterface::QAndroidApplication::context(), val.object<jstring>());
+    allowed = string.toString().toInt();
+    qDebug() << "checkIsNotificationGranted" << allowed;
+#endif
+    return allowed == 1;
 }
 
 void QWarloksDuelCore::processRefferer() {
@@ -2138,7 +2162,7 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("exp_lv", _exp_lv);
     settings->setValue("allowed_add", _allowedAdd);
     settings->setValue("allowed_accept", _allowedAccept);
-    settings->setValue("accounts", accountToString());
+    //settings->setValue("accounts", accountToString());
     settings->setValue("finished_battles", finishedBattles());
     settings->setValue("played", _played);
     settings->setValue("won", _won);
@@ -2156,6 +2180,7 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("rate_us", _rateus);
     settings->setValue("reffrer_processed", _process_refferer);
     settings->setValue("last_players_scan", _lastPlayersScan);
+    settings->setValue("ts_notification_ask", _timeAskForNotification);
     settings->setValue("event_start_training", _event_start_training);
     settings->setValue("event_start_pvp", _event_start_pvp);
     settings->setValue("event_submit_turn", _event_submit_turn);
@@ -2220,8 +2245,9 @@ void QWarloksDuelCore::loadGameParameters() {
     _event_start_pvp = settings->value("event_start_pvp", "false").toBool();
     _event_submit_turn = settings->value("event_submit_turn", "false").toBool();
     _event_submit_turn5 = settings->value("event_submit_turn5", "false").toBool();
+    _timeAskForNotification = settings->value("ts_notification_ask", "0").toInt();
 
-    accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());
+    //accountsFromString(settings->value("accounts", _login.toLower() + "&" + _password).toString());
 
     int size  = settings->beginReadArray("battle_info");
     int battle_id;
@@ -2569,6 +2595,92 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
     QStringList sltmp = stmp.split(",");
     return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7,\"last_activity\":%8,\"is_bot\":%9}").
             arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), sltmp.at(9), sltmp.at(11));
+}
+
+QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
+    QList<QWarlockStat> wsl;
+    qint64 curr_time = QDateTime::currentSecsSinceEpoch();
+    QMap<QString, QWarlockStat>::iterator psi;
+    for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
+        if (warlockName.isEmpty()) {
+            if (curr_time - psi.value().lastActivity() <= 10 * 24 * 60 * 60) {
+                // active no more than 10 days ago
+                wsl.append(psi.value());
+            }
+        } else {
+            if (_login.compare(psi.value().name(), Qt::CaseInsensitive) == 0) {
+                continue;
+            }
+            if (psi.value().name().indexOf(warlockName, Qt::CaseInsensitive) == 0) {
+                // start with
+                wsl.append(psi.value());
+            }
+        }
+    }
+
+
+    if (warlockName.isEmpty()) {
+        struct {
+            bool operator()(const QWarlockStat &s1, const QWarlockStat &s2) const { return s1.elo() > s2.elo(); }
+        } customOrderWS;
+        std::sort(wsl.begin(), wsl.end(), customOrderWS);
+        QList<QWarlockStat> wsl2;
+        for (int i = 0, Ln = wsl.size(); i < Ln; ++i) {
+            if (_login.compare(wsl.at(i).name(), Qt::CaseInsensitive) == 0) {
+                for(int j = -4; j < 0; ++j) {
+                    if (i + j >= 0) {
+                        wsl2.append(wsl.at(i + j));
+                    }
+                }
+                for(int j = 1; j < 5; ++j) {
+                    if (i + j < wsl.size()) {
+                        wsl2.append(wsl.at(i + j));
+                    }
+                }
+                wsl.clear();
+                wsl.append(wsl2);
+                break;
+            }
+        }
+    } else {
+        struct {
+            bool operator()(const QWarlockStat &s1, const QWarlockStat &s2) const { return s1.name().compare(s1.name(), Qt::CaseInsensitive) > 0; }
+        } customOrderWS;
+        std::sort(wsl.begin(), wsl.end(), customOrderWS);
+    }
+    QString res = "[";
+    bool first = true;
+    foreach(QWarlockStat ws, wsl) {
+        QString name;
+        if (warlockName.isEmpty()) {
+            name = ws.name();
+        } else {
+            name = "<b>" + ws.name().mid(0, warlockName.length()) + "</b>" + ws.name().mid(warlockName.length());
+        }
+        res.append(QString("%1{\"n\":\"%2\",\"e\":%3,\"l\":\"%4\"}").arg(first ? "" : ",", name, warlockName.isEmpty() ? intToStr(ws.elo()) : "0", ws.name()));
+        if (first) {first = false;}
+    }
+    res.append("]");
+    return res;
+}
+
+void QWarloksDuelCore::askPermissions() {
+    qDebug() << "QWarloksDuelCore::askPermission";
+    if (_isAsService || _isAI) {
+        return;
+    }
+#ifdef Q_OS_ANDROID
+    QJniObject javaNotification = QJniObject::fromString("");
+    QJniObject::callStaticMethod<void>(
+        "org/qtproject/example/androidnotifier/NotificationClient",
+        "askPermission",
+        "(Landroid/content/Context;Ljava/lang/String;)V",
+        QNativeInterface::QAndroidApplication::context(),
+        javaNotification.object<jstring>());
+#else
+    //_errorMsg = QString("{\"id\":-1,\"type\":18,\"action\":\"play_with_friends\",\"link\":\"%1\"}").arg(s);
+    emit errorOccurred();
+#endif
 }
 
 void QWarloksDuelCore::showNotification(const QString &msg) {

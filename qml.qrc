@@ -149,5 +149,7 @@
         <file>res/eye.png</file>
         <file>res/no-eye.png</file>
         <file>qml/windows/wnd_start_online.qml</file>
+        <file>res/notification.png</file>
+        <file>qml/windows/wnd_notification_popup.qml</file>
     </qresource>
 </RCC>

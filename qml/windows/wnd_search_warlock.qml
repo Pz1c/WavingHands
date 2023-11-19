@@ -25,7 +25,7 @@ InfoWindow {
             id: ltTitle
             anchors.top: parent.top
             anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
+            anchors.leftMargin: 42 * mainWindow.ratioObject
             anchors.right: parent.right
             //height: 70 * mainWindow.ratioObject
             font.pixelSize: 42 * mainWindow.ratioFont
@@ -39,7 +39,7 @@ InfoWindow {
             id: ltSubTitle
             anchors.top: ltTitle.bottom
             anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
+            anchors.leftMargin: 42 * mainWindow.ratioObject
             anchors.right: parent.right
             //height: 70 * mainWindow.ratioObject
             font.pixelSize: 28 * mainWindow.ratioFont
@@ -55,7 +55,7 @@ InfoWindow {
             anchors.top: ltSubTitle.bottom
             anchors.topMargin: 20 * mainWindow.ratioObject
             anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
+            anchors.leftMargin: 42 * mainWindow.ratioObject
             anchors.right: iiCSend.left
             anchors.rightMargin: 5 * mainWindow.ratioObject
             height: 128 * mainWindow.ratioObject
@@ -73,20 +73,21 @@ InfoWindow {
             regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
 
             onInputChanged: {
-                var str = mainWindow.gameCore.getWarlockStats(ltiLogin.text);
+                var str = mainWindow.gameCore.findWarlockByName(ltiLogin.text);
                 console.log("onInputChanged", ltiLogin.text, str);
-                var ws = JSON.parse(str);
-                if (ws.found) {
-                    iiCSend.active = true;
-                    iiCSend.source = "qrc:/res/send_1.png"
-                    ltDesc.text = "Start " + (battleType === "vf" ? "training " : "") + "battle with " + ws.name + "?";
-                    ltWarlockDetails.text = "Score: " + ws.elo + "<br>Played: " + ws.played + "<br>Won: " + ws.won + "<br>Died: " + ws.died;
-                } else {
-                    iiCSend.active = false;
-                    iiCSend.source = "qrc:/res/send_0.png"
-                    ltDesc.text = "Not found warlock with name " + ws.name;
-                    ltWarlockDetails.text = "";
-                }
+                lvWarlockList.model = JSON.parse(str);
+//                var ws = JSON.parse(str);
+//                if (ws.found) {
+//                    iiCSend.active = true;
+//                    iiCSend.source = "qrc:/res/send_1.png"
+//                    ltDesc.text = "Start " + (battleType === "vf" ? "training " : "") + "battle with " + ws.name + "?";
+//                    ltWarlockDetails.text = "Score: " + ws.elo + "<br>Played: " + ws.played + "<br>Won: " + ws.won + "<br>Died: " + ws.died;
+//                } else {
+//                    iiCSend.active = false;
+//                    iiCSend.source = "qrc:/res/send_0.png"
+//                    ltDesc.text = "Not found warlock with name " + ws.name;
+//                    ltWarlockDetails.text = "";
+//                }
             }
         }
 
@@ -108,9 +109,7 @@ InfoWindow {
 
             onClicked: {
                 console.log("try to find", ltiLogin.text);
-                // bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock = ""
-                mainWindow.gameCore.createNewChallenge(true, true, true, true, 2, (battleType === "vf" ? 2 : 1), "Join to fun)", ltiLogin.text);
-                mainWindow.processEscape();
+                createChallenge(ltiLogin.text);
             }
         }
 
@@ -129,7 +128,7 @@ InfoWindow {
             wrapMode: Text.WordWrap
         }*/
 
-        Text {
+        /*Text {
             id: ltDesc
             anchors.top: ltiLogin.bottom
             anchors.topMargin: 20 * mainWindow.ratioObject
@@ -142,16 +141,16 @@ InfoWindow {
             text: ""
             horizontalAlignment: Text.AlignLeft
             //fontSizeMode: Text.VerticalFit
-        }
+        }*/
 
         ScrollView {
             id: svMain
-            anchors.top: ltDesc.bottom
+            anchors.top: ltiLogin.bottom
             anchors.topMargin: 20 * mainWindow.ratioObject
             anchors.left: parent.left
-            anchors.leftMargin: 20 * mainWindow.ratioObject
-            anchors.right: parent.right
-            anchors.rightMargin: 20 * mainWindow.ratioObject
+            anchors.leftMargin: 60 * mainWindow.ratioObject
+            anchors.right: iiCSend.left
+            anchors.rightMargin: 63 * mainWindow.ratioObject
             anchors.bottom: parent.bottom
             //anchors.bottomMargin: 20 * mainWindow.ratioObject
 
@@ -160,7 +159,7 @@ InfoWindow {
 
             contentWidth: -1
 
-            Text {
+            /*Text {
                 id: ltWarlockDetails
                 width: dialogWindow.width * 0.99
                 wrapMode: Text.Wrap
@@ -168,6 +167,73 @@ InfoWindow {
                 font.pixelSize: 28 * mainWindow.ratioFont
                 color: "#FEE2D6"
                 horizontalAlignment: Text.AlignJustify
+            }*/
+
+            ListView {
+                id: lvWarlockList
+                model: []
+                anchors.fill: parent
+//                anchors.top: parent.top
+//                anchors.left: parent.left
+//                anchors.leftMargin: 0.05 * parent.width
+//                anchors.right: parent.right
+//                anchors.rightMargin: 0.05 * parent.width
+                //height: contentHeight
+                //width: svMain.width
+                delegate: Item {
+                    id: idRoot
+                    width: lvWarlockList.width
+                    height: 50 * mainWindow.ratioObject
+
+                    Rectangle {
+                        id: rdWarlockItem
+                        color: "transparent"
+                        radius: 30
+                        anchors.centerIn: parent
+                        height: 0.95 * parent.height
+                        width: parent.width
+                        anchors.bottomMargin: 0.01 * dialogWindow.height
+
+                        Text {
+                            id: rdbiName
+                            //anchors.top: rdTopItem.top
+                            //anchors.topMargin: 0
+                            //anchors.bottom: rdTopItem.bottom
+                            anchors.verticalCenter: rdWarlockItem.verticalCenter
+                            anchors.left: rdWarlockItem.left
+                            //anchors.leftMargin: 20 * mainWindow.ratioObject
+                            //width: 80 * mainWindow.ratioObject
+                            font.pixelSize: 28 * mainWindow.ratioFont
+                            color: "#E7FFFF"
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignLeft
+                            text: lvWarlockList.model[index].n
+                        }
+
+                        Text {
+                            id: rdbifElo
+                            anchors.verticalCenter: rdWarlockItem.verticalCenter
+                            anchors.right: parent.right //rdbifInfo.left
+                            //anchors.rightMargin: 30 * mainWindow.ratioObject
+                            height: 0.8 * rdWarlockItem.height
+                            font.pixelSize: 28 * mainWindow.ratioFont
+                            color: "#E7FFFF"
+                            //fontSizeMode: Text.VerticalFit
+                            horizontalAlignment: Text.AlignRight
+                            verticalAlignment: Text.AlignVCenter
+                            text: lvWarlockList.model[index].e
+                            visible: lvWarlockList.model[index].e !== 0
+                        }
+
+                        MouseArea {
+                            id: maSpell
+                            anchors.fill: parent
+                            onClicked: {
+                                createChallenge(lvWarlockList.model[index].l);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -177,6 +243,12 @@ InfoWindow {
     }
 
     onCancel: {
+        mainWindow.processEscape();
+    }
+
+    function createChallenge(warlockName) {
+        // bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock = ""
+        mainWindow.gameCore.createNewChallenge(true, true, true, true, 2, (battleType === "vf" ? 2 : 1), "Join to fun)", warlockName);
         mainWindow.processEscape();
     }
 
@@ -204,6 +276,9 @@ InfoWindow {
         if (mainWindow.gERROR.bfl) {
             battleType = mainWindow.gERROR.bfl;
         }
+        var str = mainWindow.gameCore.findWarlockByName("");
+        //console.log("onInputChanged", ltiLogin.text, str);
+        lvWarlockList.model = JSON.parse(str);
 
         //ltError.text = replaceAll(mainWindow.gERROR.text, "&quot;", '"');
         //title_text = mainWindow.gERROR.title;

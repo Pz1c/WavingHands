@@ -21,6 +21,7 @@ var wnd_new_game = "wnd_new_game.qml";
 var wnd_after_reg = "wnd_after_registration.qml";
 var wnd_top = "wnd_hall_of_fame.qml";
 var wnd_start_online_match = "wnd_start_online.qml";
+var wnd_notification_popup = "wnd_notification_popup.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -278,6 +279,9 @@ function showErrorWnd(error, chat) {
         break;
     case 15:
         wnd_name = wnd_warlock_popup;
+        break;
+    case 201:
+        wnd_name = wnd_notification_popup;
         break;
     default:
         if (error.type >= 7) {

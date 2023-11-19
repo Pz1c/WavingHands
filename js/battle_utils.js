@@ -156,6 +156,8 @@ function prepareTurnActionInfo(last_turn_hist) {
         if (real_actions[i].type >= 2) {
             continue;
         }
+        // https://github.com/Pz1c/WavingHands/issues/311
+        BGU.processHintText(real_actions[i]);
 
         if ((real_actions[i].color === "#FF6666") || (real_actions[i].color === "#FF8888")) {
             real_actions[i].color = "#FEE2D6";
@@ -165,7 +167,9 @@ function prepareTurnActionInfo(last_turn_hist) {
         if (!real_actions[i].font_size) {
             real_actions[i].font_size = 21;
         }
-        new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:BGU.replaceAll(real_actions[i].txt, '&quot;', '"'),actions:real_actions[i].new_action});
+
+        //BGU.replaceAll(real_actions[i].txt, '&quot;', '"')
+        new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:real_actions[i].txt,actions:real_actions[i].new_action});
     }
 
     battle.hint = new_hint;

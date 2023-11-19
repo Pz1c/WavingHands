@@ -6,6 +6,7 @@
 #include <QDateTime>
 
 #include "qwarlock.h"
+#include <qgameutils.h>
 
 
 class QBattleInfo
