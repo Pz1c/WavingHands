@@ -74,26 +74,26 @@ InfoWindow {
 
             onInputChanged: {
                 var str = mainWindow.gameCore.findWarlockByName(ltiLogin.text);
-                console.log("onInputChanged", ltiLogin.text, str);
+                console.log("onInputChanged.1", ltiLogin.text, ltiLogin.text.length, str);
                 lvWarlockList.model = JSON.parse(str);
-//                var ws = JSON.parse(str);
-//                if (ws.found) {
-//                    iiCSend.active = true;
-//                    iiCSend.source = "qrc:/res/send_1.png"
+                //console.log("onInputChanged.2", lvWarlockList.model.length, lvWarlockList.model.length > 0 ? lvWarlockList.model[0].l.length : -1);
+                if ((lvWarlockList.model.length === 1) && (ltiLogin.text.length === lvWarlockList.model[0].l.length)) {
+                    iiCSend.active = true;
+                    iiCSend.source = "qrc:/res/send_1.png"
 //                    ltDesc.text = "Start " + (battleType === "vf" ? "training " : "") + "battle with " + ws.name + "?";
 //                    ltWarlockDetails.text = "Score: " + ws.elo + "<br>Played: " + ws.played + "<br>Won: " + ws.won + "<br>Died: " + ws.died;
-//                } else {
-//                    iiCSend.active = false;
-//                    iiCSend.source = "qrc:/res/send_0.png"
+                } else {
+                    iiCSend.active = false;
+                    iiCSend.source = "qrc:/res/send_0.png"
 //                    ltDesc.text = "Not found warlock with name " + ws.name;
 //                    ltWarlockDetails.text = "";
-//                }
+                }
             }
         }
 
         IconInfo {
             id: iiCSend
-            source: "qrc:/res/send_0.png"
+            source: "qrc:/res/send_" + (active ? "1" : "0") + ".png"
             textVisible: false
 
             height: 64 * mainWindow.ratioObject
