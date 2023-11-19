@@ -774,7 +774,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
     _loadedBattleID = battle_id;
     _loadedBattleType = battle_type;
     _loadedBattleSilent = silent;
-    qDebug() << "getBattle " << _loadedBattleID << " battle_type " << _loadedBattleType << _isLogined;
+    qDebug() << "getBattle " << _loadedBattleID << " battle_type " << _loadedBattleType << _isLogined << "silent" << _loadedBattleSilent;
     if (!_isLogined) {
         loginToSite();
         return;
@@ -1034,7 +1034,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             QString params = QString("Id;%1;Players;%2;Winner;%3;").arg(intToStr(_loadedBattleID), battleInfo->getInListParticipant(_login, true), battleInfo->winner());
             logEvent("Game_End", params);
         }
-        if (_loadedBattleSilent) {
+        if (!_loadedBattleSilent) {
             emit finishedBattleChanged();
         }
         return false;
@@ -1609,7 +1609,8 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         emit allowedAcceptChanged();
     }
     QBattleInfo *battle_info;
-    if (!_isAI && ForceBattleList && (_ready_in_battles.count() == 0) && (QGameUtils::getTs20021DIffInSec(_timeAskForNotification) >= 31 * 24 * 60 * 60)) {
+    if (!_isAI && ForceBattleList && (_ready_in_battles.count() == 0) && (QGameUtils::getTs20021DIffInSec(_timeAskForNotification) >= 31 * 24 * 60 * 60)
+            && !checkIsNotificationGranted()) {
         battle_info = getBattleInfo(_loadedBattleID);
         if ((battle_info->turn() > 0) && !battle_info->with_bot()) {
             _timeAskForNotification = QGameUtils::getCurrTimestamp2021();
