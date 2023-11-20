@@ -51,6 +51,7 @@ public:
     static int getStrengthByMonsterName(QString val);
     static void parseUnstartedBattle(QString &Data, QBattleInfo *bi);
     static int getRand(int Min, int Max);
+    static qint64 parseLastActivity(const QString &str);
 };
 
 #endif // QWARLOCKUTILS_H

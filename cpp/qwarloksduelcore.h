@@ -286,7 +286,7 @@ private:
     QStringList _msg;
     QList<QValueName> _accounts;
     qint64 _lastPlayersScan;
-    QMap<QString, QWarlockStat> _playerStats;
+    QMap<QString, QWarlockStat *> _playerStats;
     QString _inviteToBattle;
     QMap<int, QBattleInfo *> _battleInfo;
     QBattleInfo* _newBattle;

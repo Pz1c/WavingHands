@@ -2,6 +2,7 @@
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import Qt.labs.qmlmodels 1.0
 
 import "qrc:/qml/components"
 
@@ -180,58 +181,146 @@ InfoWindow {
 //                anchors.rightMargin: 0.05 * parent.width
                 //height: contentHeight
                 //width: svMain.width
-                delegate: Item {
-                    id: idRoot
-                    width: lvWarlockList.width
-                    height: 50 * mainWindow.ratioObject
+                delegate: chooser
+                DelegateChooser {
+                    id: chooser
+                    role: "rt"
+                    DelegateChoice {
+                        roleValue: "0"
+                        delegate: Item {
+                                    id: idRoot
+                                    width: lvWarlockList.width
+                                    height: 50 * mainWindow.ratioObject
 
-                    Rectangle {
-                        id: rdWarlockItem
-                        color: "transparent"
-                        radius: 30
-                        anchors.centerIn: parent
-                        height: 0.95 * parent.height
-                        width: parent.width
-                        anchors.bottomMargin: 0.01 * dialogWindow.height
+                                    Rectangle {
+                                        id: rdWarlockItem
+                                        color: "transparent"
+                                        radius: 30
+                                        anchors.centerIn: parent
+                                        height: 0.95 * parent.height
+                                        width: parent.width
+                                        anchors.bottomMargin: 0.01 * dialogWindow.height
 
-                        Text {
-                            id: rdbiName
-                            //anchors.top: rdTopItem.top
-                            //anchors.topMargin: 0
-                            //anchors.bottom: rdTopItem.bottom
-                            anchors.verticalCenter: rdWarlockItem.verticalCenter
-                            anchors.left: rdWarlockItem.left
-                            //anchors.leftMargin: 20 * mainWindow.ratioObject
-                            //width: 80 * mainWindow.ratioObject
-                            font.pixelSize: 28 * mainWindow.ratioFont
-                            color: "#E7FFFF"
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignLeft
-                            text: lvWarlockList.model[index].n
-                        }
+                                        Text {
+                                            id: rdbiName
+                                            //anchors.top: rdTopItem.top
+                                            //anchors.topMargin: 0
+                                            //anchors.bottom: rdTopItem.bottom
+                                            anchors.verticalCenter: rdWarlockItem.verticalCenter
+                                            anchors.left: rdWarlockItem.left
+                                            //anchors.leftMargin: 20 * mainWindow.ratioObject
+                                            //width: 80 * mainWindow.ratioObject
+                                            font.pixelSize: 28 * mainWindow.ratioFont
+                                            color: "#E7FFFF"
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignLeft
+                                            text: lvWarlockList.model[index].n
+                                        }
 
-                        Text {
-                            id: rdbifElo
-                            anchors.verticalCenter: rdWarlockItem.verticalCenter
-                            anchors.right: parent.right //rdbifInfo.left
-                            //anchors.rightMargin: 30 * mainWindow.ratioObject
-                            height: 0.8 * rdWarlockItem.height
-                            font.pixelSize: 28 * mainWindow.ratioFont
-                            color: "#E7FFFF"
-                            //fontSizeMode: Text.VerticalFit
-                            horizontalAlignment: Text.AlignRight
-                            verticalAlignment: Text.AlignVCenter
-                            text: lvWarlockList.model[index].e
-                            visible: lvWarlockList.model[index].e !== 0
-                        }
+                                        Text {
+                                            id: rdbifElo
+                                            anchors.verticalCenter: rdWarlockItem.verticalCenter
+                                            anchors.right: parent.right //rdbifInfo.left
+                                            //anchors.rightMargin: 30 * mainWindow.ratioObject
+                                            height: 0.8 * rdWarlockItem.height
+                                            font.pixelSize: 28 * mainWindow.ratioFont
+                                            color: "#E7FFFF"
+                                            //fontSizeMode: Text.VerticalFit
+                                            horizontalAlignment: Text.AlignRight
+                                            verticalAlignment: Text.AlignVCenter
+                                            text: lvWarlockList.model[index].e
+                                            visible: lvWarlockList.model[index].e !== 0
+                                        }
 
-                        MouseArea {
-                            id: maSpell
-                            anchors.fill: parent
-                            onClicked: {
-                                createChallenge(lvWarlockList.model[index].l);
-                            }
-                        }
+                                        MouseArea {
+                                            id: maSpell
+                                            anchors.fill: parent
+                                            onClicked: {
+                                                createChallenge(lvWarlockList.model[index].l);
+                                            }
+                                        }
+                                    }
+                                }
+                    }
+
+                    DelegateChoice {
+                        roleValue: "1"
+                        delegate: Item {
+                                    id: idRoot1
+                                    width: lvWarlockList.width
+                                    height: 50 * mainWindow.ratioObject
+
+                                    Item {
+                                        id: rdWarlockItem1
+                                        //color: "transparent"
+                                        //radius: 30
+                                        anchors.centerIn: parent
+                                        height: 0.95 * parent.height
+                                        width: parent.width
+                                        anchors.bottomMargin: 0.01 * dialogWindow.height
+
+                                        Text {
+                                            id: rdbiTitle
+                                            //anchors.top: rdTopItem.top
+                                            //anchors.topMargin: 0
+                                            //anchors.bottom: rdTopItem.bottom
+                                            anchors.verticalCenter: rdWarlockItem1.verticalCenter
+                                            anchors.left: rdWarlockItem1.left
+                                            //anchors.leftMargin: 20 * mainWindow.ratioObject
+                                            //width: 80 * mainWindow.ratioObject
+                                            font.pixelSize: 28 * mainWindow.ratioFont
+                                            color: "#10C9F5"
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignLeft
+                                            text: lvWarlockList.model[index].n
+                                        }
+                                    }
+                                }
+                    }
+
+                    DelegateChoice {
+                        roleValue: "2"
+                        delegate: Item {
+                                    id: idRoot2
+                                    width: lvWarlockList.width
+                                    height: 50 * mainWindow.ratioObject
+
+                                    Item {
+                                        id: rdWarlockItem2
+                                        //color: "transparent"
+                                        //radius: 30
+                                        anchors.centerIn: parent
+                                        height: 0.95 * parent.height
+                                        width: parent.width
+                                        anchors.bottomMargin: 0.01 * dialogWindow.height
+
+                                        Text {
+                                            id: rdbiTitle2
+                                            //anchors.top: rdTopItem.top
+                                            //anchors.topMargin: 0
+                                            //anchors.bottom: rdTopItem.bottom
+                                            anchors.verticalCenter: rdWarlockItem2.verticalCenter
+                                            anchors.left: rdWarlockItem2.left
+                                            //anchors.leftMargin: 20 * mainWindow.ratioObject
+                                            //width: 80 * mainWindow.ratioObject
+                                            font.pixelSize: 28 * mainWindow.ratioFont
+                                            font.underline: true
+                                            color: "#A8F4F4"
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignLeft
+                                            text: lvWarlockList.model[index].n
+                                        }
+
+                                        MouseArea {
+                                            id: maSpell2
+                                            anchors.fill: parent
+                                            onClicked: {
+                                                mainWindow.processEscape();
+                                                mainWindow.getHallOfFame();
+                                            }
+                                        }
+                                    }
+                                }
                     }
                 }
             }

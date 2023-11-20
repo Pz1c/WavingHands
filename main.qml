@@ -1196,12 +1196,12 @@ ApplicationWindow {
             data = JSON.parse(JSON.stringify(GUI.G_PROFILE));
             data.isPlayer = true;
             data.online = 1;
+            data.type = 15;
+            return showErrorWnd(data);
         } else {
             data.isPlayer = false;
+            return core.getWarlockInfo(data.name);
         }
-
-        data.type = 15;
-        return showErrorWnd(data);
     }
 
     function confirmOrdersEx() {

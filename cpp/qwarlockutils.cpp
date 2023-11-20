@@ -791,3 +791,30 @@ void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
 int QWarlockUtils::getRand(int Min, int Max) {
     return QRandomGenerator::global()->bounded(Min, Max);
 }
+
+
+qint64 QWarlockUtils::parseLastActivity(const QString &str) {
+    qDebug() << "QWarlockUtils::parseLastActivity" << str;
+    QStringList sl = str.split(" ");
+    if (sl.size() != 2) {
+        return -1;
+    }
+    int num = sl.at(0).toInt();
+    qDebug() << "QWarlockUtils::parseLastActivity" << num << sl.at(1);
+    if (num < 0) {
+        return -1;
+    }
+    int mult = 0;
+    if (sl.at(1).indexOf("min") != -1) {
+        qDebug() << "QWarlockUtils::parseLastActivity found minutes";
+        mult = 60;
+    } else if (sl.at(1).indexOf("hour") != -1) {
+        qDebug() << "QWarlockUtils::parseLastActivity found hours";
+        mult = 60 * 60;
+    } else if (sl.at(1).indexOf("day") != -1) {
+        qDebug() << "QWarlockUtils::parseLastActivity found day";
+        mult = 60 * 60 * 24;
+    }
+
+    return QDateTime::currentSecsSinceEpoch() - num * mult;
+}

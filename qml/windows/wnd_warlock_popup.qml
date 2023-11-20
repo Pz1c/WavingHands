@@ -273,7 +273,6 @@ InfoWindow {
         console.log("wnd_warlock_popup.initFields.start", JSON.stringify(warlock_data));
 
         ltTitle.text = warlock_data.name;
-
         ltLast.text = UPU.getLastActivityText(warlock_data.last_activity);
         ltScore.text = "Score: " + warlock_data.elo;
         ltWon.text = "Won: " + warlock_data.won;

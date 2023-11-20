@@ -43,8 +43,29 @@ public:
 
     bool mobile() const;
 
+    int warlockId() const;
+    void setWarlockId(int newWarlockId);
+
+    void setRegistered(bool newRegistered);
+
+    void setLadder(int newLadder);
+
+    void setMelee(int newMelee);
+
+    void setPlayed(int newPlayed);
+
+    void setWon(int newWon);
+
+    void setDied(int newDied);
+
+    void setElo(int newElo);
+
+    void setLastActivity(qint64 newLastActivity);
+
+    void setMobile(bool newMobile);
+
 protected:
-    void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile);
+    void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile, int warlockId = 0);
     qint64 getLastActivityByColor(const QString Color);
 private:
     QString _name;
@@ -56,6 +77,7 @@ private:
     int _won;
     int _died;
     int _elo;
+    int _warlockId;
     qint64 _lastActivity;
     QString _color;
     bool _mobile;

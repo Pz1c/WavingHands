@@ -20,7 +20,7 @@ QWarlockStat::QWarlockStat(QString Raw, bool FromIni) {
     }
 }
 
-void QWarlockStat::init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile)
+void QWarlockStat::init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile, int warlockId)
 {
     _name = Name;
     _registered = Registered;
@@ -38,6 +38,7 @@ void QWarlockStat::init(QString Name, bool Registered, int Ladder, int Melee, in
     }
     _ai = (_lstAI.indexOf(_name.toUpper()) != -1);
     _mobile = Mobile;
+    _warlockId = warlockId;
 }
 
 void QWarlockStat::parseSiteAndInit(QString Raw) {
@@ -79,9 +80,10 @@ void QWarlockStat::parseIniAndInit(QString Raw) {
     QString Color = data.at(8);
     qint64 la = data.at(9).toInt();
     bool Mobile = data.at(10).toInt() == 1;
-    qDebug() << "QWarlockStat::parseIniAndInit" << Raw << Registered << Name << Ladder << Melee << Played << Won << Died << Elo << la;
+    int id = data.at(11).toInt();
+    qDebug() << "QWarlockStat::parseIniAndInit" << Raw << Registered << Name << Ladder << Melee << Played << Won << Died << Elo << la << id;
 
-    init(Name, Registered, Ladder, Melee, Played, Won, Died, Elo, Color, la, Mobile);
+    init(Name, Registered, Ladder, Melee, Played, Won, Died, Elo, Color, la, Mobile, id);
 }
 
 void QWarlockStat::parseAndInit(QString Raw) {
@@ -113,6 +115,61 @@ qint64 QWarlockStat::getLastActivityByColor(const QString Color) {
     return curr_time - dec_sec;
 }
 
+void QWarlockStat::setMobile(bool newMobile)
+{
+    _mobile = newMobile;
+}
+
+void QWarlockStat::setLastActivity(qint64 newLastActivity)
+{
+    _lastActivity = newLastActivity;
+}
+
+void QWarlockStat::setElo(int newElo)
+{
+    _elo = newElo;
+}
+
+void QWarlockStat::setDied(int newDied)
+{
+    _died = newDied;
+}
+
+void QWarlockStat::setWon(int newWon)
+{
+    _won = newWon;
+}
+
+void QWarlockStat::setPlayed(int newPlayed)
+{
+    _played = newPlayed;
+}
+
+void QWarlockStat::setMelee(int newMelee)
+{
+    _melee = newMelee;
+}
+
+void QWarlockStat::setLadder(int newLadder)
+{
+    _ladder = newLadder;
+}
+
+void QWarlockStat::setRegistered(bool newRegistered)
+{
+    _registered = newRegistered;
+}
+
+int QWarlockStat::warlockId() const
+{
+    return _warlockId;
+}
+
+void QWarlockStat::setWarlockId(int newWarlockId)
+{
+    _warlockId = newWarlockId;
+}
+
 bool QWarlockStat::mobile() const
 {
     return _mobile;
@@ -132,17 +189,17 @@ QString QWarlockStat::toString() const {
     return QString("%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12")
             .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee) // 1-4
                  ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
-            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile), boolToIntS(_ai)); // 9-12
+            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile), intToStr(_warlockId)); // 9-12
 }
 
 QString QWarlockStat::toJSON() const {
     qint64 curr_time = QDateTime::currentSecsSinceEpoch();
     QString active = boolToIntS(curr_time - _lastActivity <= 300);
     return QString("{\"r\":%1,\"n\":\"%2\",\"l\":%3,\"m\":%4,\"p\":%5,\"w\":%6,\"d\":%7,\"e\":%8,\"c\":\"%9\","
-                   "\"la\":%10,\"mob\":%11,\"a\":%12}")
+                   "\"la\":%10,\"mob\":%11,\"a\":%12,\"id\":%13}")
             .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee) // 1-4
             ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
-            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile), active); // 9-12
+            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile), active, intToStr(_warlockId)); // 9-15
 }
 
 
