@@ -76,6 +76,7 @@ QWarloksDuelCore::~QWarloksDuelCore() {
     for (bii = _battleInfo.begin(); bii != _battleInfo.end(); ++bii) {
         delete bii.value();
     }
+    _battleInfo.clear();
     if (_newBattle) {
         delete _newBattle;
     }
@@ -84,6 +85,12 @@ QWarloksDuelCore::~QWarloksDuelCore() {
         _aiThread.quit();
         _aiThread.wait();
     }
+
+    QMap<QString, QWarlockStat *>::iterator psi;
+    for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
+        delete psi.value();
+    }
+    _playerStats.clear();
 }
 
 void QWarloksDuelCore::aiCreateNewChallenge() {
@@ -397,8 +404,8 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
         if (s.trimmed().isEmpty()) {
             continue;
         }
-        QWarlockStat ws(s.trimmed());
-        _playerStats[ws.name().toLower()] = ws;
+        QWarlockStat *ws = new QWarlockStat(s.trimmed());
+        _playerStats[ws->name().toLower()] = ws;
     }
     /*int pos1 = 0, pos2;
     //QList<QWarlockStat> wsl;
@@ -414,32 +421,32 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
 }
 
 void QWarloksDuelCore::generateTopList() {
-    QMap<QString, QWarlockStat>::iterator psi;
-    QList<QWarlockStat> wsl;
+    QMap<QString, QWarlockStat *>::iterator psi;
+    QList<QWarlockStat *> wsl;
     for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
         wsl.append(psi.value());
     }
     struct {
-            bool operator()(const QWarlockStat &s1, const QWarlockStat &s2) const { return s1.elo() > s2.elo(); }
+        bool operator()(const QWarlockStat *s1, const QWarlockStat *s2) const { return s1->elo() > s2->elo(); }
     } customOrderWS;
     std::sort(wsl.begin(), wsl.end(), customOrderWS);
     _topActive.clear();
     _topAll.clear();
     qint64 curr_time = QDateTime::currentSecsSinceEpoch();
-    foreach(QWarlockStat ws, wsl) {
-        if (ws.ai()) {
+    foreach(QWarlockStat *ws, wsl) {
+            if (ws->ai()) {
             continue;
         }
         if (!_topAll.isEmpty()) {
             _topAll.append(",");
         }
-        _topAll.append(ws.toJSON());
-        qDebug() << "QWarloksDuelCore::generateTopList" << ws.name() << curr_time << ws.lastActivity() << curr_time - ws.lastActivity();
-        if (curr_time - ws.lastActivity() < 3 * 24 * 60 * 60) {
+        _topAll.append(ws->toJSON());
+        qDebug() << "QWarloksDuelCore::generateTopList" << ws->name() << curr_time << ws->lastActivity() << curr_time - ws->lastActivity();
+        if (curr_time - ws->lastActivity() < 3 * 24 * 60 * 60) {
             if (!_topActive.isEmpty()) {
                 _topActive.append(",");
             }
-            _topActive.append(ws.toJSON());
+            _topActive.append(ws->toJSON());
         }
     }
     _topActive.append("]").prepend("[");
@@ -1517,7 +1524,7 @@ void QWarloksDuelCore::generateBattleList() {
 
             QString enemy = battle_info->getEnemy(_login).toLower();
             if (!with_challenge && _playerStats.contains(enemy)) {
-                if (qAbs(_playerStats[enemy].elo() - _elo) <= 150) {
+                if (qAbs(_playerStats[enemy]->elo() - _elo) <= 150) {
                     with_challenge = true;
                 }
             }
@@ -1531,12 +1538,12 @@ void QWarloksDuelCore::generateBattleList() {
         }
     }
     if (/*with_any_challenge && */!with_challenge && (active_battle_cnt < 3)) {
-        QMap<QString, QWarlockStat>::iterator psi;
+        QMap<QString, QWarlockStat *>::iterator psi;
         QList<QString> awailable_walocks;
         qint64 curr_time = QDateTime::currentSecsSinceEpoch();
         for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
-            if (!psi.value().ai() && (curr_time - psi.value().lastActivity() <= 3 * 24 * 60 * 60) &&
-               (psi.key().compare(_login.toLower()) != 0) && (qAbs(psi.value().elo() - _elo) <= 150)) {
+            if (!psi.value()->ai() && (curr_time - psi.value()->lastActivity() <= 3 * 24 * 60 * 60) &&
+                (psi.key().compare(_login.toLower()) != 0) && (qAbs(psi.value()->elo() - _elo) <= 150)) {
                 awailable_walocks.append(psi.key());
             }
         }
@@ -1547,7 +1554,7 @@ void QWarloksDuelCore::generateBattleList() {
             } else {
                 _battleList.append(",");
             }
-            QString enemy = _playerStats[awailable_walocks.at(idx)].name();
+            QString enemy = _playerStats[awailable_walocks.at(idx)]->name();
             _battleList.append(QString("{\"id\":0,\"s\":5,\"d\":\"New Match: %1\",\"dt\":\"Players we match you have played recently and are more or less your level\",\"el\":\"%3\"}").
                                arg(enemy, enemy));
         }
@@ -1830,7 +1837,10 @@ bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
 bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     qDebug() << "QWarloksDuelCore::finishScanWarlock" << Data;
     int pos = 0;
+    bool registered = Data.indexOf("<img width=\"12\" height=\"12\" src=\"/img/reg.png\" alt=\"Registered!\">") != -1;
+    bool mobile = Data.indexOf("I am using Android application") != -1;
     QString login = QWarlockUtils::getStringFromData(Data, "Info for", " ", " ", pos);
+    QString lastActive = QWarlockUtils::getStringFromData(Data, "Last Active:</TD>", "<TD>", " ago", pos);
     _warlockId = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=rcpt VALUE", "=", ">", pos);
     int played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>", pos);
     int won = QWarlockUtils::getIntFromPlayerData(Data, "Won:", "<TD>", "</TD>", pos);
@@ -1838,11 +1848,42 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     int ladder = QWarlockUtils::getIntFromPlayerData(Data, "Ladder Score:", "<TD>", "</TD>", pos);
     int melee = QWarlockUtils::getIntFromPlayerData(Data, "Melee Score:", "<TD>", "</TD>", pos);
     int elo = QWarlockUtils::getIntFromPlayerData(Data, "Elo:", "<TD>", "</TD>", pos);
-    QList<int> ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
-    QList<int> waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
-    QList<int> finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
 
-    _warlockInfo.clear();
+//    QList<int> ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
+//    QList<int> waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
+//    QList<int> finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
+
+    QString ll = login.toLower();
+    if (_playerStats.contains(ll)) {
+        _playerStats[ll]->setRegistered(registered);
+        _playerStats[ll]->setLadder(ladder);
+        _playerStats[ll]->setMelee(melee);
+        _playerStats[ll]->setPlayed(played);
+        _playerStats[ll]->setWon(won);
+        _playerStats[ll]->setDied(died);
+        _playerStats[ll]->setElo(elo);
+        _playerStats[ll]->setLastActivity(QWarlockUtils::parseLastActivity(lastActive));
+        _playerStats[ll]->setMobile(mobile);
+    } else {
+        // QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile);
+        _playerStats[ll] = new QWarlockStat(login, registered, ladder, melee, played, won, died, elo, "#FF0000", QWarlockUtils::parseLastActivity(lastActive), mobile);
+    }
+    QWarlockStat *wi = _playerStats[ll];
+    wi->setWarlockId(_warlockId.toInt());
+    //            ltTitle.text = warlock_data.name;
+    //            ltLast.text = UPU.getLastActivityText(warlock_data.last_activity);
+    //            ltScore.text = "Score: " + warlock_data.elo;
+    //            ltWon.text = "Won: " + warlock_data.won;
+    //            ltLost.text = "Lost: " + (warlock_data.played - warlock_data.won);
+    //            ltPlayed.text = "Played: " + warlock_data.played;
+    //            bbBtn2.visible = !warlock_data.isPlayer;
+    //            bbAction.text = warlock_data.isPlayer ? "Hall of Fame" : "Challenge";
+    //            ltTitleOnline.visible = warlock_data.online;
+    _errorMsg = QString("{\"type\":15,\"name\":\"%1\",\"last_activity\":%2,\"elo\":%3,\"won\":%4,\"played\":%5,\"isPlayer\":false,\"online\":%6}")
+                    .arg(login, intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()));
+    emit errorOccurred();
+
+    /*_warlockInfo.clear();
     int idx;
     if (ready_in_battles.count() > 0) {
         _warlockInfo.append(QString("<h4>%1: </h4><p>").arg(GameDictionary->getStringByCode("ReadyB")));
@@ -1888,9 +1929,10 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
             .arg(login, GameDictionary->getStringByCode("Played"), QString::number(played), GameDictionary->getStringByCode("Won"), QString::number(won),
                  GameDictionary->getStringByCode("Died"), QString::number(died), GameDictionary->getStringByCode("LadderScore"), QString::number(ladder))
             .arg(GameDictionary->getStringByCode("MeleeScore"), QString::number(melee), GameDictionary->getStringByCode("Elo"), QString::number(elo))
-            ).append("</html>");
+            ).append("</html>");*/
 
-    emit warlockInfoChanged();
+
+    //emit warlockInfoChanged();
     return true;
 }
 
@@ -2197,13 +2239,13 @@ void QWarloksDuelCore::saveGameParameters() {
     }
     settings->endArray();
 
-    QMap<QString, QWarlockStat>::iterator psi;
+    QMap<QString, QWarlockStat *>::iterator psi;
     settings->beginWriteArray("ps");
     i = 0;
     for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi, ++i) {
         settings->setArrayIndex(i);
         settings->setValue("n", psi.key());
-        settings->setValue("v", psi.value().toString());
+        settings->setValue("v", psi.value()->toString());
     }
     settings->endArray();
 }
@@ -2263,7 +2305,7 @@ void QWarloksDuelCore::loadGameParameters() {
     size = settings->beginReadArray("ps");
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
-        _playerStats[settings->value("n").toString()] = QWarlockStat(settings->value("v").toString(), true);
+        _playerStats[settings->value("n").toString()] = new QWarlockStat(settings->value("v").toString(), true);
     }
     settings->endArray();
     if (_playerStats.size() > 0) {
@@ -2588,7 +2630,7 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
     QString stmp;
     bool found = _playerStats.contains(clean_login);
     if (found) {
-        stmp = _playerStats[clean_login].toString();
+        stmp = _playerStats[clean_login]->toString();
     } else {
         stmp = QString("0,%1,0,0,0,0,0,1500,#000000,0,0,0").arg(DirtyLogin ? clean_login : WarlockName);
     }
@@ -2599,20 +2641,20 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
 }
 
 QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
-    QList<QWarlockStat> wsl;
+    QList<QWarlockStat *> wsl;
     qint64 curr_time = QDateTime::currentSecsSinceEpoch();
-    QMap<QString, QWarlockStat>::iterator psi;
+    QMap<QString, QWarlockStat *>::iterator psi;
     for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
         if (warlockName.isEmpty()) {
-            if (curr_time - psi.value().lastActivity() <= 10 * 24 * 60 * 60) {
+            if (curr_time - psi.value()->lastActivity() <= 10 * 24 * 60 * 60) {
                 // active no more than 10 days ago
                 wsl.append(psi.value());
             }
         } else {
-            if (_login.compare(psi.value().name(), Qt::CaseInsensitive) == 0) {
+            if (_login.compare(psi.value()->name(), Qt::CaseInsensitive) == 0) {
                 continue;
             }
-            if (psi.value().name().indexOf(warlockName, Qt::CaseInsensitive) == 0) {
+            if (psi.value()->name().indexOf(warlockName, Qt::CaseInsensitive) == 0) {
                 // start with
                 wsl.append(psi.value());
             }
@@ -2622,12 +2664,12 @@ QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
 
     if (warlockName.isEmpty()) {
         struct {
-            bool operator()(const QWarlockStat &s1, const QWarlockStat &s2) const { return s1.elo() > s2.elo(); }
+            bool operator()(const QWarlockStat *s1, const QWarlockStat *s2) const { return s1->elo() > s2->elo(); }
         } customOrderWS;
         std::sort(wsl.begin(), wsl.end(), customOrderWS);
-        QList<QWarlockStat> wsl2;
+        QList<QWarlockStat *> wsl2;
         for (int i = 0, Ln = wsl.size(); i < Ln; ++i) {
-            if (_login.compare(wsl.at(i).name(), Qt::CaseInsensitive) == 0) {
+            if (_login.compare(wsl.at(i)->name(), Qt::CaseInsensitive) == 0) {
                 for(int j = -4; j < 0; ++j) {
                     if (i + j >= 0) {
                         wsl2.append(wsl.at(i + j));
@@ -2645,21 +2687,27 @@ QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
         }
     } else {
         struct {
-            bool operator()(const QWarlockStat &s1, const QWarlockStat &s2) const { return s1.name().compare(s1.name(), Qt::CaseInsensitive) > 0; }
+            bool operator()(const QWarlockStat *s1, const QWarlockStat *s2) const { return s1->name().compare(s2->name(), Qt::CaseInsensitive) > 0; }
         } customOrderWS;
         std::sort(wsl.begin(), wsl.end(), customOrderWS);
     }
     QString res = "[";
-    bool first = true;
-    foreach(QWarlockStat ws, wsl) {
+    bool first = !warlockName.isEmpty();
+    if (warlockName.isEmpty()) {
+        res.append("{\"n\":\"Suggested\",\"e\":0,\"rt\":1}");
+    }
+    foreach(QWarlockStat *ws, wsl) {
         QString name;
         if (warlockName.isEmpty()) {
-            name = ws.name();
+            name = ws->name();
         } else {
-            name = "<b>" + ws.name().mid(0, warlockName.length()) + "</b>" + ws.name().mid(warlockName.length());
+            name = "<b>" + ws->name().mid(0, warlockName.length()) + "</b>" + ws->name().mid(warlockName.length());
         }
-        res.append(QString("%1{\"n\":\"%2\",\"e\":%3,\"l\":\"%4\"}").arg(first ? "" : ",", name, warlockName.isEmpty() ? intToStr(ws.elo()) : "0", ws.name()));
+        res.append(QString("%1{\"n\":\"%2\",\"e\":%3,\"l\":\"%4\",\"rt\":0}").arg(first ? "" : ",", name, warlockName.isEmpty() ? intToStr(ws->elo()) : "0", ws->name()));
         if (first) {first = false;}
+    }
+    if (warlockName.isEmpty()) {
+        res.append(",{\"n\":\"View More\",\"e\":0,\"rt\":2}");
     }
     res.append("]");
     return res;
