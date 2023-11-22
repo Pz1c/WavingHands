@@ -249,7 +249,7 @@ function showErrorWnd(error, chat) {
         error.close_current = 0;
     }
     if (error.close_all !== 1) {
-        error.close_all = 0;
+        error.close_all = error.type === 0 ? 1 : 0;
     }
     mainWindow.gERROR = error;
 

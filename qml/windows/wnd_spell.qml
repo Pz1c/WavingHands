@@ -222,6 +222,8 @@ InfoWindow {
                             mainWindow.showSearchWarlockWnd("f");
                         } else if (l_data.action === "game_with_bot") {
                             mainWindow.showSearchWarlockWnd("vf");
+                        } else if (l_data.action === "reg_info") {
+                            Qt.openUrlExternally("https://games.ravenblack.net/rules/0/register.html");
                         }
                     }
                 }

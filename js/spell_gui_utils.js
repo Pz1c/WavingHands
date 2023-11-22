@@ -110,11 +110,13 @@ function prepareDataType10(l_data, dict) {
     ltTitle.text = dict.getStringByCode('DefErrTitle');
     ltShortDesc.text = dict.getStringByCode('BattleCreateError');
     ltError.text = dict.getStringByCode('BattleCreateErrorDetails');
-    bbAction.gradient = undefined;
-    bbAction.font.underline = true;
-    bbAction.text = dict.getStringByCode('LearnMore');
-    bbAction.transparent = true;
-    bbAction.visible = true;
+    bbBtn3.text = dict.getStringByCode('LearnMore');
+    bbBtn3.visible = true;
+//    bbAction.gradient = undefined;
+//    bbAction.font.underline = true;
+//    bbAction.text = dict.getStringByCode('LearnMore');
+//    bbAction.transparent = true;
+//    bbAction.visible = true;
 }
 
 function prepareDataType9(l_data, dict) {

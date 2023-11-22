@@ -254,7 +254,8 @@ function startGameWithPlayer(WarlockName, FriendlyLevel, OnlineGame) {
     if (!WarlockName) {
         showErrorWnd({id:-1,type:19});
     } else {
-        core.createNewChallenge(1, 1, 1, 1, FriendlyLevel, 1, "Welcome to fight", WarlockName);
+        // void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock, int IsOnline)
+        core.createNewChallenge(1, 1, 1, 2, FriendlyLevel, 1, "Welcome to fight", WarlockName, OnlineGame);
     }
 }
 
@@ -262,7 +263,7 @@ function joinBattleDialogResult(accept) {
     if (accept && V_BEST_BATTLE_ID) {
         core.acceptChallenge(V_BEST_BATTLE_ID);
     } else {
-        core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
+        core.createNewChallenge(1, 0, 1, 2, 2, 1, "Welcome to fight");
     }
 }
 

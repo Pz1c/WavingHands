@@ -94,6 +94,9 @@ public:
     bool isInviteRejected();
     void checkRejection();
 
+    bool isOnline() const;
+    void setOnline(bool newOnline);
+
 protected:
     QString prepareToPrint(QString str) const;
     void parseString(const QString &battle_info);
@@ -134,6 +137,7 @@ private:
     QList<QMonster *> _Monsters;
     QList<QWarlock *> _Warlock;
 
+    Q_PROPERTY(bool isOnline READ isOnline CONSTANT FINAL)
 };
 
 #endif // QBATTLEINFO_H

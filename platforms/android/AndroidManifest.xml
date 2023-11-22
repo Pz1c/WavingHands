@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.is.games.WarlocksDuel" android:installLocation="auto" android:versionCode="1052" android:versionName="2.3.8">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.is.games.WarlocksDuel" android:installLocation="auto" android:versionCode="1052" android:versionName="2.4.0">
     <!-- %%INSERT_PERMISSIONS -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>

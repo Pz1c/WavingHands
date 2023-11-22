@@ -719,7 +719,16 @@ void QBattleInfo::generateJSON(QString &Login) {
                      .arg(intToStr(_battleID), boolToStr(_parafdf), "", "0", "0") // 1-5
         .arg("", "", "", "", "", "") // 6-11
         .arg("", _MonstersHtml, _WarlockHtml, "", "0",  boolToStr(_parafc), "[]", "[]", "") // 12 - 20
-                     .arg(getHistory(), getChat(), intToStr(_turn), boolToStr(_with_bot), getTurnInfo(_turn, Login)); // 21-25
+                    .arg(getHistory(), getChat(), intToStr(_turn), boolToStr(_with_bot), getTurnInfo(_turn, Login)); // 21-25
+}
+
+bool QBattleInfo::isOnline() const
+{
+    return _isOnline;
+}
+
+void QBattleInfo::setOnline(bool newOnline) {
+    _isOnline = newOnline;
 }
 
 QString QBattleInfo::fullJSON() const

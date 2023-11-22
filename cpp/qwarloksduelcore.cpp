@@ -123,6 +123,7 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     _newBattle->setMaladroit(Maladroid);
     _newBattle->setSize(Count);
     _newBattle->setLevel(FriendlyLevel);
+    _newBattle->setOnline(IsOnline);
 
 
     bool l_p = Private;
@@ -539,8 +540,9 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
 
 bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl NewUrl) {
     if (NewUrl.isEmpty()) {
-        _errorMsg = "Something goes wrong, can't send battle orders";
-        emit errorOccurred();
+        //_errorMsg = "Something goes wrong, can't send battle orders";
+        //emit errorOccurred();
+        showNotification("Something goes wrong, can't send battle orders");
         return false;
     }
     emit orderSubmitedChanged();
@@ -583,27 +585,31 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         QString search3 = "<FORM ACTION=\"newplayer?action=new\" METHOD=POST>";
         int idx1 = Data.indexOf(search1);
         if (idx1 == -1) {
-            _errorMsg = "Unknown error till registration";
-            emit errorOccurred();
+//            _errorMsg = "Unknown error till registration";
+//            emit errorOccurred();
+            showNotification("Unknown error till registration");
             return false;
         }
         idx1 = Data.indexOf(search2, idx1 + search1.length());
         if (idx1 == -1) {
-            _errorMsg = "Unknown error till registration.";
-            emit errorOccurred();
+//            _errorMsg = "Unknown error till registration.";
+//            emit errorOccurred();
+            showNotification("Unknown error till registration.");
             return false;
         }
         idx1 += search2.length();
         int idx2 = Data.indexOf(search3);
         if (idx2 == -1) {
-            _errorMsg = "Unknown error, till registration.";
-            emit errorOccurred();
+//            _errorMsg = "Unknown error, till registration.";
+//            emit errorOccurred();
+            showNotification("Unknown error till registration!");
             return false;
         }
 
         _errorMsg = Data.mid(idx1, idx2 - idx1);
         qDebug() << "Error: " << _errorMsg;
-        emit errorOccurred();
+        //emit errorOccurred();
+        showNotification(_errorMsg);
         return false;
     }
 
@@ -729,8 +735,9 @@ void QWarloksDuelCore::forceSurrender(int battle_id, int turn) {
 void QWarloksDuelCore::sendOrders(QString orders) {
     qDebug() << "sendOrders " << orders;
     if (orders.isEmpty()) {
-        _errorMsg = "Orders can't be empty";
-        emit errorOccurred();
+//        _errorMsg = "Orders can't be empty";
+//        emit errorOccurred();
+        showNotification("Orders can't be empty");
         return;
     }
     setIsLoading(true);
@@ -987,16 +994,18 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
             idx1 = Data.indexOf(point1);
         }
         if (idx1 == -1) {
-            _errorMsg = "Wrong battle answer!";
-            emit errorOccurred();
+//            _errorMsg = "Wrong battle answer!";
+//            emit errorOccurred();
+            showNotification("Orders can't be empty");
             return false;
         }
     }
     idx1 += point1.length();
     int idx2 = Data.indexOf(point2, idx1);
     if (idx2 == -1) {
-        _errorMsg = "Wrong battle answer!!";
-        emit errorOccurred();
+//        _errorMsg = "Wrong battle answer!!";
+//        emit errorOccurred();
+        showNotification("Wrong battle answer!!");
         return false;
     }
 
@@ -1050,8 +1059,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     int idx3 = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">", idx1);
     if (idx3 == -1) {
         if (!_loadedBattleSilent) {
-            _errorMsg = "Wrong battle answer!!!";
-            emit errorOccurred();
+//            _errorMsg = "Wrong battle answer!!!";
+//            emit errorOccurred();
+            showNotification("Wrong battle answer!!!");
         }
         return false;
     }
@@ -1062,7 +1072,8 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         _errorMsg = "Looks like battle already finished, please wait for refresh";
         qDebug() << _errorMsg << ReadyData;
         if (!_loadedBattleSilent) {
-            emit errorOccurred();
+            showNotification(_errorMsg);
+            //emit errorOccurred();
         }
         return false;
     }
@@ -1236,7 +1247,8 @@ void QWarloksDuelCore::calcBattleDecision() {
 
 bool QWarloksDuelCore::parseTargetList(QString &Data) {
     if (!QWarlockUtils::parseTargetList(Data, _Targets, _errorMsg)) {
-        emit errorOccurred();
+        //emit errorOccurred();
+        showNotification(_errorMsg);
         return false;
     }
     //foreach(QValueName vn, _Targets) {
@@ -1311,12 +1323,14 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
         QString data = Data.mid(idx1, idx2 - idx1);
         if (data.indexOf("/player") != -1) {
             if (!QWarlockUtils::parseWarlock(data, _Warlock, _errorMsg, _login.toLower())) {
-                emit errorOccurred();
+                //emit errorOccurred();
+                showNotification(_errorMsg);
                 return false;
             }
         } else {
             if (!QWarlockUtils::parseMonster(data, _Monsters, _errorMsg)) {
-                emit errorOccurred();
+                //emit errorOccurred();
+                showNotification(_errorMsg);
                 return false;
             }
         }
@@ -1380,31 +1394,36 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
     qDebug() << "QWarloksDuelCore::parseReadyBattle";
     if (!parseTargetList(Data)) {
         _errorMsg = "Can't parse targets";
-        emit errorOccurred();
+        //emit errorOccurred();
+        showNotification(_errorMsg);
         return false;
     }
 
     if (!QWarlockUtils::parseGestures(Data, _possibleLeftGestures, _possibleRightGestures, _errorMsg)) {
         _errorMsg = "Can't parse gestures";
-        emit errorOccurred();
+        //emit errorOccurred();
+        showNotification(_errorMsg);
         return false;
     }
 
     if (!parseUnits(Data)) {
         _errorMsg = "Can't parse units";
-        emit errorOccurred();
+        //emit errorOccurred();
+        showNotification(_errorMsg);
         return false;
     }
 
     if (!parseSpecReadyBattleValues(Data)) {
         _errorMsg = "Can't found current battle turn";
-        emit errorOccurred();
+        //emit errorOccurred();
+        showNotification(_errorMsg);
         return false;
     }
 
     if (!parseMonsterCommand(Data)) {
         _errorMsg = "Can't parse monsters command";
-        emit errorOccurred();
+        //emit errorOccurred();
+        showNotification(_errorMsg);
         return false;
     }
 
@@ -1958,7 +1977,8 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
             _isLogined = false;
             loginToSite();
             _errorMsg = "Can't receive player info, try reconnect";
-            emit errorOccurred();
+            //emit errorOccurred();
+            showNotification(_errorMsg);
             return false;
         }
         if (url.indexOf(".html") != -1) {
@@ -2066,7 +2086,8 @@ void QWarloksDuelCore::slotReadyRead() {
 void QWarloksDuelCore::slotError(QNetworkReply::NetworkError error) {
     setIsLoading(false);
     _errorMsg = "Network problem details: " + _reply->errorString();
-    emit errorOccurred();
+    //emit errorOccurred();
+    showNotification(_errorMsg);
     qDebug() << "slotError" << error << _reply->errorString();
 }
 
@@ -2078,8 +2099,8 @@ void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {
         _errorMsg.append(err.errorString());
         _errorMsg.append("\n");
     }
-
-    emit errorOccurred();
+    showNotification(_errorMsg);
+    //emit errorOccurred();
     qDebug() << "slotSslErrors " << error_list;
 }
 
