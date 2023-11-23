@@ -178,6 +178,7 @@ public slots:
 protected slots:
     void loginToSite();
     void timerFired();
+    void timeTimerFired();
     void processServiceTimer();
     void doAIAnswer(QString Login, int MagicBookLevel);
     void checkAIAnswer(int battle_id);
@@ -348,6 +349,7 @@ private:
     int _timerInterval;
     QTimer _timer;
     QTimer _serviceTimer;
+    QTimer _timeTimer;
 
     // AI service
     QWarloksDuelCore *_aiCore;

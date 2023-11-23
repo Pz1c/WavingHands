@@ -90,7 +90,6 @@ InfoWindow {
                 text: "Live Match"
                 border.width: 0
                 radius: 30
-                visible: false
                 z: 30
                 font.pixelSize: 49 * mainWindow.ratioFont
                 gradient: gDef

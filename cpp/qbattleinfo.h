@@ -97,6 +97,9 @@ public:
     bool isOnline() const;
     void setOnline(bool newOnline);
 
+    qint64 onlineValidBy() const;
+    void setOnlineValidBy(qint64 newOnlineValidBy);
+
 protected:
     QString prepareToPrint(QString str) const;
     void parseString(const QString &battle_info);
@@ -122,6 +125,7 @@ private:
     bool _fullParsed;
     bool _isOnline;
     bool _inviteRejected;
+    qint64 _onlineValidBy;
 
     QString _description;
     QStringList _participant;

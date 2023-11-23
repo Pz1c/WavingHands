@@ -561,11 +561,11 @@ QString QBattleInfo::toJSON(const QString &Login) const {
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
                    ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15,"
                    "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"need\":%20,\"player\":\"%21\",\"challenged\":\"%22\",\"rejected\":\"%23\""
-                   ",\"invite_rejected\":%24}")
+                   ",\"invite_rejected\":%24,\"online\":%25,\"valid_by\":%26}")
         .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
         .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
         .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login, _challenged.join(","), _rejected.join(","))
-        .arg(boolToStr(_inviteRejected));
+        .arg(boolToStr(_inviteRejected), boolToStr(_isOnline), intToStr(_onlineValidBy));
 }
 
 QString QBattleInfo::toString(bool Short) const {
@@ -576,11 +576,11 @@ QString QBattleInfo::toString(bool Short) const {
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
                    "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21^^^"
-                   "full_battle_json#=#%22^^^app_version#=#%23^^^rejected#=#%24^^^invite_rejected#=#%25")
+                   "full_battle_json#=#%22^^^app_version#=#%23^^^rejected#=#%24^^^invite_rejected#=#%25^^^online#=#%26^^^valid_by#=#%27")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), tmp_chat, tmp_hist, _winner, intToStr(_hint))
             .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","))
-            .arg(json.toBase64(QByteArray::Base64UrlEncoding), APPLICATION_VERSION, _rejected.join(","), boolToIntS(_inviteRejected));
+            .arg(json.toBase64(QByteArray::Base64UrlEncoding), APPLICATION_VERSION, _rejected.join(","), boolToIntS(_inviteRejected), boolToIntS(_isOnline), intToStr(_onlineValidBy));
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -643,6 +643,10 @@ void QBattleInfo::parseString(const QString &battle_info) {
             _rejected = value.split(",");
         } else if (key.compare("invite_rejected") == 0) {
             _inviteRejected = value.toInt() == 1;
+        } else if (key.compare("online") == 0) {
+            _isOnline = value.toInt() == 1;
+        } else if (key.compare("valid_by") == 0) {
+            _onlineValidBy = value.toULongLong();
         }
     }
 }
@@ -720,6 +724,16 @@ void QBattleInfo::generateJSON(QString &Login) {
         .arg("", "", "", "", "", "") // 6-11
         .arg("", _MonstersHtml, _WarlockHtml, "", "0",  boolToStr(_parafc), "[]", "[]", "") // 12 - 20
                     .arg(getHistory(), getChat(), intToStr(_turn), boolToStr(_with_bot), getTurnInfo(_turn, Login)); // 21-25
+}
+
+qint64 QBattleInfo::onlineValidBy() const
+{
+    return _onlineValidBy;
+}
+
+void QBattleInfo::setOnlineValidBy(qint64 newOnlineValidBy)
+{
+    _onlineValidBy = newOnlineValidBy;
 }
 
 bool QBattleInfo::isOnline() const

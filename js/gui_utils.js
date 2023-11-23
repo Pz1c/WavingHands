@@ -255,7 +255,7 @@ function startGameWithPlayer(WarlockName, FriendlyLevel, OnlineGame) {
         showErrorWnd({id:-1,type:19});
     } else {
         // void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel, QString Description, QString Warlock, int IsOnline)
-        core.createNewChallenge(1, 1, 1, 2, FriendlyLevel, 1, "Welcome to fight", WarlockName, OnlineGame);
+        core.createNewChallenge(1, 1, 1, 1, 2, FriendlyLevel, "Welcome to fight", WarlockName, OnlineGame);
     }
 }
 

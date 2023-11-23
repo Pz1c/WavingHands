@@ -136,24 +136,6 @@ ApplicationWindow {
             core.uuid
     }*/
 
-    Item {
-        id: iWndContainer
-        anchors.fill: parent
-        z: 500
-        focus: true
-
-        Keys.onBackPressed: processEscape();
-        Keys.onEscapePressed: processEscape();
-        Keys.onCancelPressed: processEscape();
-        Keys.onPressed: function (event) {logKeyEvent(event)};
-
-        //Keys.on
-    }
-
-    function logKeyEvent(event) {
-        console.log("LOG_KEY_EVENT", JSON.stringify(event));
-    }
-
     Rectangle {
         id: rLoading
         anchors.fill: parent
@@ -175,6 +157,24 @@ ApplicationWindow {
         }
     }
 
+    Item {
+        id: iWndContainer
+        anchors.fill: parent
+        z: 500
+        focus: true
+
+        Keys.onBackPressed: processEscape();
+        Keys.onEscapePressed: processEscape();
+        Keys.onCancelPressed: processEscape();
+        Keys.onPressed: function (event) {logKeyEvent(event)};
+
+        //Keys.on
+    }
+
+    function logKeyEvent(event) {
+        console.log("LOG_KEY_EVENT", JSON.stringify(event));
+    }
+
     Drawer {
         id: dMenu
         width: 516 * ratioObject
@@ -183,13 +183,6 @@ ApplicationWindow {
 
         background: Rectangle {
             id: dMenuBG
-//            anchors.top: parent.top
-//            anchors.topMargin: -0.1 * parent.height
-//            anchors.bottom: parent.bottom
-//            anchors.bottomMargin: -0.1 * parent.height
-//            anchors.left: parent.left
-//            anchors.right: parent.right
-
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "#544653" }
                 GradientStop { position: 1.0; color: "#210430" }
@@ -596,9 +589,9 @@ ApplicationWindow {
                                     color: "#2DA0A5"
                                     font.italic: true
                                     horizontalAlignment: Text.AlignLeft
-                                    visible: lvActiveBattle.model[index].online
+                                    visible: !!lvActiveBattle.model[index].online || !!lvActiveBattle.model[index].live
 
-                                    text: "ONLINE"
+                                    text: !!lvActiveBattle.model[index].live ? "Live" : "ONLINE"
                                 }
 
                                 Rectangle {
@@ -1229,7 +1222,7 @@ ApplicationWindow {
 
     function showOnlineGameStart(Warlock, Level) {
         console.log("main.qml.showOnlineGameStart", Warlock, Level);
-        showErrorWnd({id:-1,type:102,warlock:Warlock,Level,close_all:0,close_current:0});
+        showErrorWnd({id:-1,type:102,warlock:Warlock,level:Level,close_all:0,close_current:0});
     }
 
     function startWarlockGame(WarlockName, FriendlyLevel, OnlineGame) {

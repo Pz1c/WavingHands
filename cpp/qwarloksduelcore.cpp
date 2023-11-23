@@ -28,6 +28,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
         connect(&_serviceTimer, SIGNAL(timeout()), this, SLOT(processServiceTimer()));
         _serviceTimer.setInterval(10000);
         _serviceTimer.start();
+
+        connect(&_timeTimer, SIGNAL(timeout()), this, SLOT(timeTimerFired()));
+        _timeTimer.setInterval(1000);
     }
     _isLogined = false;
     _isAI = false;
@@ -124,6 +127,9 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     _newBattle->setSize(Count);
     _newBattle->setLevel(FriendlyLevel);
     _newBattle->setOnline(IsOnline);
+    if (IsOnline) {
+        _newBattle->setOnlineValidBy(QDateTime::currentSecsSinceEpoch() + 5 * 60);
+    }
 
 
     bool l_p = Private;
@@ -145,6 +151,12 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     }
     if (Maladroid) {
         desc.prepend("Maladroit ");
+    }
+    if (IsOnline) {
+        desc = QString("MOBILE GAME ONLY - Live match - ParaFC Maladroit - Valid by UTC %1 - Total:30:00m - Extra:45s - %2").arg(intToStr(_newBattle->onlineValidBy()), Description);
+        if (FriendlyLevel == 2) {
+            desc.append(" NO BOT");
+        }
     }
     p_data.append(QUrl::toPercentEncoding(desc));
 
@@ -1882,7 +1894,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
         _playerStats[ll]->setDied(died);
         _playerStats[ll]->setElo(elo);
         _playerStats[ll]->setLastActivity(QWarlockUtils::parseLastActivity(lastActive));
-        _playerStats[ll]->setMobile(mobile);
+        _playerStats[ll]->setMobile(mobile || _playerStats[ll]->mobile());
     } else {
         // QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile);
         _playerStats[ll] = new QWarlockStat(login, registered, ladder, melee, played, won, died, elo, "#FF0000", QWarlockUtils::parseLastActivity(lastActive), mobile);
@@ -1898,8 +1910,8 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     //            bbBtn2.visible = !warlock_data.isPlayer;
     //            bbAction.text = warlock_data.isPlayer ? "Hall of Fame" : "Challenge";
     //            ltTitleOnline.visible = warlock_data.online;
-    _errorMsg = QString("{\"type\":15,\"name\":\"%1\",\"last_activity\":%2,\"elo\":%3,\"won\":%4,\"played\":%5,\"isPlayer\":false,\"online\":%6}")
-                    .arg(login, intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()));
+    _errorMsg = QString("{\"type\":15,\"name\":\"%1\",\"last_activity\":%2,\"elo\":%3,\"won\":%4,\"played\":%5,\"isPlayer\":false,\"online\":%6,\"mobile\":%7}")
+                    .arg(login, intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()),intToStr(wi->mobile()));
     emit errorOccurred();
 
     /*_warlockInfo.clear();
@@ -2020,7 +2032,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return finishAccept(data, statusCode, new_url);
     }
 
-    if (/*(url.indexOf("/refuse") != -1) ||*/ (url.indexOf("/leave") != -1)) {
+    if ((url.indexOf("/refuse") != -1) || (url.indexOf("/leave") != -1)) {
         scanState();
         return false;
     }
@@ -2856,6 +2868,10 @@ void QWarloksDuelCore::timerFired() {
     //if (_login.isEmpty())
     scanState(true);
     saveParameters(false, false, true, false, false);
+}
+
+void QWarloksDuelCore::timeTimerFired() {
+    qDebug() << "QWarloksDuelCore::timeTimerFired";
 }
 
 void QWarloksDuelCore::processServiceTimer() {

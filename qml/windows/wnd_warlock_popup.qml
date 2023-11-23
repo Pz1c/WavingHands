@@ -206,7 +206,7 @@ InfoWindow {
 
 
                 onClicked: {
-                    console.log("chooseMonsterTarget", JSON.stringify(l_data));
+                    console.log("warlock_popup.bbAction", JSON.stringify(l_data));
                     mainWindow.processEscape();
                     if (warlock_data.isPlayer) {
                         mainWindow.showHallOfFameWindow();
@@ -236,7 +236,7 @@ InfoWindow {
                     id: maBtn2
                     anchors.fill: parent
                     onClicked: {
-                        console.log("btn2 practice action");
+                        console.log("warlock_popup.bbBtn2");
                         mainWindow.processEscape();
                         if (warlock_data.online && warlock_data.mobile) {
                             mainWindow.showOnlineGameStart(warlock_data.name, 2);
