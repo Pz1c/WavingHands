@@ -99,9 +99,10 @@ public:
 
     qint64 onlineValidBy() const;
     void setOnlineValidBy(qint64 newOnlineValidBy);
+    QString prepareToPrint(QString str) const;
 
 protected:
-    QString prepareToPrint(QString str) const;
+
     void parseString(const QString &battle_info);
     void init();
     void cleanLists();

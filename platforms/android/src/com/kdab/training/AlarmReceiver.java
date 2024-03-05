@@ -45,7 +45,7 @@ public class AlarmReceiver extends BroadcastReceiver
             int next_alert_in_sec = getNextAlertTimeoutSec(context, Initial);
             Log.d(TAG, "next_alert_in_sec = " + next_alert_in_sec);
 
-            if (context.checkCallingOrSelfPermission(Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED) {
+            // if (context.checkCallingOrSelfPermission(Manifest.permission.SCHEDULE_EXACT_ALARM) == PackageManager.PERMISSION_GRANTED) {
                 try {
                     am.cancel(pi); // https://developer.android.com/reference/android/app/AlarmManager#cancel(android.app.PendingIntent)
                     am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, (System.currentTimeMillis()/1000L + next_alert_in_sec) *1000L, pi); //Next alarm in 15s
@@ -54,9 +54,9 @@ public class AlarmReceiver extends BroadcastReceiver
                     e.printStackTrace();
                     setAlarmAllowed(context, 0);
                 }
-            } else {
-                setAlarmAllowed(context, 0);
-            }
+            // } else {
+            //     setAlarmAllowed(context, 0);
+            // }
         } catch (Exception e) {
             e.printStackTrace();
             //return "";

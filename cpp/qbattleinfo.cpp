@@ -465,7 +465,7 @@ QString QBattleInfo::getHistory() const {
 }
 
 QString QBattleInfo::prepareToPrint(QString str) const {
-    return str.replace("\n","<br>").replace("\r", "").replace('"', "&quot;").replace("\\", "&bsol;");
+    return str.replace("\n","<br>").replace("\t"," ").replace("\r", "").replace('"', "&quot;").replace("\\", "&bsol;");
 }
 
 QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {

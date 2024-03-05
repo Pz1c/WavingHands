@@ -21,8 +21,8 @@ import "qrc:/qml"
 ApplicationWindow {
     id: mainWindow
     visible: true
-    width: 410//270
-    height: 720//600
+    width: 410//410//270
+    height: 888//720//600
     flags: /*Qt.FramelessWindowHint//|*/Qt.Window
     color: "#551470"
     visibility: isMobile() ? Window.FullScreen : Window.Windowed
@@ -537,6 +537,7 @@ ApplicationWindow {
 
                 ListView {
                     id: lvActiveBattle
+                    interactive: false
                     model: GUI.loadBattleList(1)
                     anchors.top: ltActiveBattle.bottom
                     anchors.topMargin: 6 * ratioObject
@@ -677,6 +678,7 @@ ApplicationWindow {
 
                 ListView {
                     id: lvFinishedBattle
+                    interactive: false
                     model: GUI.loadBattleList(2)
                     anchors.top: ltFinishedBattle.bottom
                     //anchors.topMargin: 0.01 * mainWindow.height
@@ -851,7 +853,7 @@ ApplicationWindow {
     function afterRegAction() {
         processEscape();
         //GUI.startGameWithPlayerEx(true);
-        GUI.startGameWithBotEx(true);
+        GUI.startGameWithBotEx(false);
     }
 
     function showReadyBattle() {

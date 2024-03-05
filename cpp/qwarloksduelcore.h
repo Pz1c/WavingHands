@@ -299,6 +299,7 @@ private:
     int _loadedBattleType;
     int _loadedBattleTurn;
     bool _loadedBattleSilent;
+    bool _startBattleWithBot;
     QList<QValueName> _Targets;
     QMap<QString, QString> _WarlockID;
     QList<QMonster *> _Monsters;

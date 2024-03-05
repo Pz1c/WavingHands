@@ -16,6 +16,10 @@ import android.content.pm.PackageManager;
 import android.Manifest;
 import androidx.core.app.ActivityCompat;
 
+import android.widget.Toast;
+import android.os.Build;
+import android.view.Window;
+import android.view.WindowManager;
 
 public class MainActivity extends QtActivity {
     private static final int STORAGE_PERMISSION_CODE = 1;
@@ -28,6 +32,15 @@ public class MainActivity extends QtActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P){
+            WindowManager.LayoutParams attr = getWindow().getAttributes();
+            attr.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            getWindow().setAttributes(attr);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        }
+
         appMainActivity = this;
         // prepare service
         try {
@@ -218,5 +231,14 @@ public class MainActivity extends QtActivity {
             e.printStackTrace();
             //return "";
         }
+    }
+
+    public void showToast(String message) {
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+        // Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 }

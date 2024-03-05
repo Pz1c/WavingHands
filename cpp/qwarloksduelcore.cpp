@@ -25,9 +25,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _timerInterval = 0;
     if (!_isAsService) {
         connect(&_timer, SIGNAL(timeout()), this, SLOT(timerFired()));
-        connect(&_serviceTimer, SIGNAL(timeout()), this, SLOT(processServiceTimer()));
-        _serviceTimer.setInterval(10000);
-        _serviceTimer.start();
+        // connect(&_serviceTimer, SIGNAL(timeout()), this, SLOT(processServiceTimer()));
+        // _serviceTimer.setInterval(10000);
+        // _serviceTimer.start();
 
         connect(&_timeTimer, SIGNAL(timeout()), this, SLOT(timeTimerFired()));
         _timeTimer.setInterval(1000);
@@ -37,6 +37,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _botIdx = 0;
     _isScanForced = false;
     _newBattle = nullptr;
+    _startBattleWithBot = false;
 
     _played = 0;
     _won = 0;
@@ -130,7 +131,7 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     if (IsOnline) {
         _newBattle->setOnlineValidBy(QDateTime::currentSecsSinceEpoch() + 5 * 60);
     }
-
+    _startBattleWithBot = _newBattle->for_bot();
 
     bool l_p = Private;
     if (!Warlock.isEmpty() && (_playerStats.contains(Warlock.toLower()) || (_playerStats.size() == 0))) {
@@ -712,6 +713,12 @@ void QWarloksDuelCore::leaveBattle(int battle_id, int warlock_id) {
 void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card) {
     qDebug() << "QWarloksDuelCore::acceptChallenge" << battle_id << from_card;
     setIsLoading(true);
+
+    if (_isAI) {}
+    else {
+        QBattleInfo *bi = getBattleInfo(battle_id);
+        _startBattleWithBot = bi->with_bot();
+    }
 
     _loadedBattleID = battle_id;
     _loadedBattleType = 0;
@@ -1559,7 +1566,7 @@ void QWarloksDuelCore::generateBattleList() {
                     with_challenge = true;
                 }
             }
-            QString ddd = battle_info->description();
+            QString ddd = battle_info->prepareToPrint(battle_info->description());
             ddd = ddd.replace("Maladroit", "", Qt::CaseInsensitive)
                     .replace("ParaFC", "", Qt::CaseInsensitive)
                     .replace("Created with android app Warlock's Duel.", "", Qt::CaseInsensitive)
@@ -1647,15 +1654,15 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         emit allowedAcceptChanged();
     }
     QBattleInfo *battle_info;
-    if (!_isAI && ForceBattleList && (_ready_in_battles.count() == 0) && (QGameUtils::getTs20021DIffInSec(_timeAskForNotification) >= 31 * 24 * 60 * 60)
+    if (!_isAI && ForceBattleList && (_loadedBattleID > 0) && (_ready_in_battles.count() == 0)
+            && (QGameUtils::getTs20021DIffInSec(_timeAskForNotification) >= 31 * 24 * 60 * 60)
             && !checkIsNotificationGranted()) {
         battle_info = getBattleInfo(_loadedBattleID);
         if ((battle_info->turn() > 0) && !battle_info->with_bot()) {
             _timeAskForNotification = QGameUtils::getCurrTimestamp2021();
             _errorMsg = "{\"type\":201,\"id\":-1}";
             emit errorOccurred();
-        }
-        ///
+        }        ///
     }
 
     qDebug() << "ready: " << _ready_in_battles;
@@ -1664,6 +1671,10 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     //qDebug() << "shown: " << _shown_battles;
     emit playerInfoChanged();
     if (_ready_in_battles.count() > 0) {
+        if (_startBattleWithBot) {
+            setIsLoading(false);
+            _startBattleWithBot = false;
+        }
         setTimeState(false);
         if (_isAI) {
             _isAiBusy = true;
@@ -2091,7 +2102,9 @@ void QWarloksDuelCore::slotReadyRead() {
         return;
     }
 
-    setIsLoading(false);
+    if (!_startBattleWithBot) {
+        setIsLoading(false);
+    }
     processData(data, _httpResponceCode, url, new_url.toString());
 }
 
@@ -2677,6 +2690,7 @@ QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
     QList<QWarlockStat *> wsl;
     qint64 curr_time = QDateTime::currentSecsSinceEpoch();
     QMap<QString, QWarlockStat *>::iterator psi;
+    QString search = warlockName.toLower();
     for (psi = _playerStats.begin(); psi != _playerStats.end(); ++psi) {
         if (warlockName.isEmpty()) {
             if (curr_time - psi.value()->lastActivity() <= 10 * 24 * 60 * 60) {
@@ -2684,10 +2698,10 @@ QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
                 wsl.append(psi.value());
             }
         } else {
-            if (_login.compare(psi.value()->name(), Qt::CaseInsensitive) == 0) {
+            if (_login.toLower().compare(search) == 0) {
                 continue;
             }
-            if (psi.value()->name().indexOf(warlockName, Qt::CaseInsensitive) == 0) {
+            if (psi.key().indexOf(search) == 0) {
                 // start with
                 wsl.append(psi.value());
             }
@@ -2774,7 +2788,7 @@ void QWarloksDuelCore::showNotification(const QString &msg) {
     QJniObject javaNotification = QJniObject::fromString(msg);
     QJniObject::callStaticMethod<void>(
         "org/qtproject/example/androidnotifier/NotificationClient",
-        "notify",
+        "showToast",
         "(Landroid/content/Context;Ljava/lang/String;)V",
         QNativeInterface::QAndroidApplication::context(),
         javaNotification.object<jstring>());
@@ -2891,6 +2905,7 @@ void QWarloksDuelCore::setCheckUrl(const QString &check_url) {
     if (_isAsService || _isAI) {
         return;
     }
+    qDebug() << "QWarloksDuelCore::setCheckUrl" << check_url;
     #ifdef Q_OS_ANDROID
     QJniObject javaNotification = QJniObject::fromString(check_url);
     QJniObject::callStaticMethod<void>(

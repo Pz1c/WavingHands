@@ -181,7 +181,8 @@ public class NotificationClient
 
     public static void showToast(Context context, String msg) {
         try {
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+            MainActivity.appMainActivity.showToast(msg);
+            // Toast.makeText(MainActivity.appMainActivity, msg, Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
             //return "";

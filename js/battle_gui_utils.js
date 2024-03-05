@@ -1026,19 +1026,77 @@ function prepareAndSortRealAction(actions, battle) {
 }
 
 function processHintText(obj) {
-    console.log("processHintText.1", obj.txt, obj.font_size);
-    if (obj.txt.indexOf(" attacks ") !== -1) {
+    console.log("processHintText.1", obj.txt, obj.font_size, JSON.stringify(obj));
+    if (obj.txt === obj.obj.spell) {
+        return;
+    }
+    if (obj.txt.indexOf(" looks intrigued by ") !== -1) {
+        obj.txt = "..At " + obj.txt.substring(0, obj.txt.indexOf(" looks intrigued by "));
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf(" is charmed into making") !== -1) {
+        obj.txt = obj.txt.substring(0, obj.txt.indexOf(" is charmed into making") + 12);
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf(" attacks ") !== -1) {
         obj.txt = obj.txt.substring(0, obj.txt.indexOf(" attacks ") + 8);
         obj.font_size = 28;
     } else if (obj.txt.indexOf(" is hit by a") !== -1) {
         obj.txt = obj.txt.substring(0, obj.txt.indexOf(" is hit by a") + 7);
         obj.font_size = 28;
-    } else if (obj.txt.indexOf(" hand is paralysed") !== -1) {
+    } else if ((obj.txt.indexOf(" hand is paralysed") !== -1) || (obj.txt.indexOf(" hands start to stiffen") !== -1)) {
         obj.txt = obj.obj.target + " is paralyzed";
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf("Wounds appear") !== -1) {
+        obj.txt = obj.obj.target + " is wounded";
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf("is rendered maladroit") !== -1) {
+        obj.txt = obj.obj.target + " got maladroit";
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf("starts to look blank") !== -1) {
+        obj.txt = obj.obj.target + " look blank";
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf("is burnt in the raging") !== -1) {
+        obj.txt = obj.obj.target + " is burnt";
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf("is frozen by the raging") !== -1) {
+        obj.txt = obj.obj.target + " is frozen";
         obj.font_size = 28;
     } else if (obj.txt.indexOf(" starts to lose coordination") !== -1) {
         obj.txt = obj.txt.substring(0, obj.txt.indexOf(" starts to lose coordination")) + " loses coordination";
         obj.font_size = 28;
+    } else if (obj.txt.indexOf("shakes his head") !== -1) {
+        obj.txt = "Enchantments cancel each other";
+        obj.font_size = 28;
+    } else if ((obj.txt.indexOf("oblin dies") !== -1) || (obj.txt.indexOf("roll dies") !== -1) ||
+               (obj.txt.indexOf("gre dies") !== -1) || (obj.txt.indexOf("iant dies") !== -1) ||
+               (obj.txt.indexOf("is healed") !== -1)) {
+        obj.font_size = 28;
+    } else if (obj.obj && obj.obj.spell && (obj.obj.spell === "Counter spell")) {
+        obj.txt = obj.obj.target + " has magical shield";
+        obj.font_size = 28;
+    } else if (obj.obj && obj.obj.spell && (obj.obj.spell === "Protection")) {
+        obj.txt = obj.obj.target + " protected";
+        obj.font_size = 28;
+    } else if (obj.obj && obj.obj.spell && (obj.obj.spell === "Shield")) {
+        obj.txt = obj.obj.target + " has a shield";
+        obj.font_size = 28;
+    } else if (obj.obj && obj.obj.spell && (obj.obj.spell === "Maggic Mirror")) {
+        obj.txt = obj.obj.target + " has a reflective shield";
+        //obj.font_size = 28;
+    } else if (obj.obj && obj.obj.spell && (obj.obj.spell === "Disease")) {
+        if (obj.txt !== "Disease") {
+            obj.txt = obj.txt.replace(obj.obj.target + " ", "").trim();
+            obj.font_size = 28;
+        }
+    } else if (obj.txt.indexOf("A Fire Storm rages") !== -1) {
+        obj.txt = "A Fire Store rages!";
+        obj.font_size = 28;
+        obj.new_action.push({"action":"icon","large_icon":"fire_storm","small_icon":"","title":"","text":"","background_color":"#210430","border_color":"#FEE2D6"});
+    } else if (obj.txt.indexOf("An Ice Storm rages") !== -1) {
+        obj.txt = "An Ice Store rages!";
+        obj.font_size = 28;
+        obj.new_action.push({"action":"icon","large_icon":"ice_storm","small_icon":"","title":"","text":"","background_color":"#210430","border_color":"#FEE2D6"});
+    } else if (obj.txt.indexOf("surrender") !== -1) {
+        obj.font_size = 35;
     }
     console.log("processHintText.2", obj.txt, obj.font_size);
 }

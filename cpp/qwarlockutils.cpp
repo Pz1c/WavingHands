@@ -728,8 +728,8 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
         if (battle_id > 0) {
             QStringList lg = logins.split(",");
             qDebug() << "QWarlockUtils::parsePersonalChallenge" << desc;
-            result.append(QString("{\"id\":%1,\"s\":3,\"d\":\"Challenged by %2\",\"dt\":\"%3\",\"el\":\"%4\",\"live\":%5}")
-                              .arg(intToStr(battle_id), lg.at(0).trimmed(), desc, lg.at(0).trimmed(), desc.indexOf("Live Match") == -1 ? "0" : "1"));
+            result.append(QString("{\"id\":%1,\"s\":3,\"d\":\"Challenged by %2\",\"dt\":\"%3\",\"el\":\"%4\"}")
+                              .arg(intToStr(battle_id), lg.at(0).trimmed(), desc, lg.at(0).trimmed()));
         }
     }
 }
