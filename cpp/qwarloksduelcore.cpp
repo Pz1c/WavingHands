@@ -1,6 +1,5 @@
 #include "qwarloksduelcore.h"
 
-
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     QGameCore(parent)
 {
@@ -1541,6 +1540,8 @@ void QWarloksDuelCore::generateBattleList() {
     int active_battle_cnt = _waiting_in_battles.size() + _ready_in_battles.size();
     QString chalenge_str;
     bool with_challenge = false, with_any_challenge = false;
+    QStringList slChHash;
+    QString chHash;
     if (active_battle_cnt < 5) {
         QStringList sl = _challengeList.split(";");
         foreach (QString s, sl) {
@@ -1554,11 +1555,6 @@ void QWarloksDuelCore::generateBattleList() {
                  (battle_info->size() != 2) || !battle_info->active(_login)) {
                 continue;
             }
-            if (with_any_challenge) {
-                chalenge_str.append(",");
-            } else {
-                with_any_challenge = true;
-            }
 
             QString enemy = battle_info->getEnemy(_login).toLower();
             if (!with_challenge && _playerStats.contains(enemy)) {
@@ -1571,8 +1567,25 @@ void QWarloksDuelCore::generateBattleList() {
                     .replace("ParaFC", "", Qt::CaseInsensitive)
                     .replace("Created with android app Warlock's Duel.", "", Qt::CaseInsensitive)
                     .replace("NO BOT", "", Qt::CaseInsensitive);
+            QString lvl = battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "Open" : "Practice";
+
+            // issues #349
+            chHash.clear();
+            chHash.append(enemy);
+            chHash.append(lvl);
+            chHash.append(ddd);
+            if (slChHash.indexOf(chHash) != -1) {
+                continue;
+            }
+            slChHash.append(chHash);
+
+            if (with_any_challenge) {
+                chalenge_str.append(",");
+            } else {
+                with_any_challenge = true;
+            }
             chalenge_str.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2 challenge by %3\",\"dt\":\"%4\",\"el\":\"%5\"}").
-                               arg(intToStr(bid), battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "Open" : "Practice", battle_info->getEnemy(_login), ddd, battle_info->getEnemy(_login)));
+                               arg(intToStr(bid), lvl, battle_info->getEnemy(_login), ddd, battle_info->getEnemy(_login)));
         }
     }
     if (/*with_any_challenge && */!with_challenge && (active_battle_cnt < 3)) {

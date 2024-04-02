@@ -70,7 +70,6 @@ function fixActivBattleDesc(arr) {
         console.log("fixActivBattleDesc", item.el, str, curr_date_sec);
         var wd = JSON.parse(str);
         arr[i].online = wd.is_bot || (curr_date_sec - wd.last_activity <= 5 * 60);
-
     }
 }
 

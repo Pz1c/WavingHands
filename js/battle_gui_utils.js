@@ -1025,7 +1025,46 @@ function prepareAndSortRealAction(actions, battle) {
     }
 }
 
-function processHintText(obj) {
+// prefix should be with last space
+// sufix should be with leading space
+var ARR_HINT_PROCESS_RULES = [
+        {search: " looks intrigued by ", prefix: "..At ", sufix: "", addSubstr: true, addTarget: false, fontSize: 28, idxFrom: -1, idxFromSrch: "", idxFromAdd: 0, idxTo:-1, idxToSrch: "", idxToAdd: 0}
+       ,{search: " is charmed into making", addSubstr: true, idxToAdd: 12}
+       ,{search: " swings wildly ", textFn: (function(obj) { return obj.txt.replace(" swings wildly for ", " misses ").replace(", but misses", "").trim(); })}
+       ,{search: " attacks ", addSubstr: true, idxToAdd: 8}
+       ,{search: " is hit by a", addSubstr: true, idxToAdd: 7}
+       ,{search: " hand is paralysed", addTarget: true, sufix: " is paralyzed"}
+       ,{search: " hands start to stiffen", addTarget: true, sufix: " is paralyzed"}
+       ,{search: "Wounds appear", addTarget: true, sufix: " is wounded"}
+       ,{search: "is rendered maladroit", addTarget: true, sufix: " got maladroit"}
+       ,{search: "starts to look blank", addTarget: true, sufix: " look blank"}
+       ,{search: "is burnt in the raging", addTarget: true, sufix: " is burnt"}
+       ,{search: "is frozen by the raging", addTarget: true, sufix: " is frozen"}
+       ,{search: " starts to lose coordination", addTarget: true, sufix: " loses coordination"}
+       ,{search: "the same gestures as last", addTarget: true, sufix: " is forgetful!"}
+       ,{search: "shakes his head", prefix: "Enchantments cancel each other"}
+       ,{search: " dies", asIs: true}
+       ,{search: "is healed", asIs: true}
+       ,{search: "surrender", asIs: true, fontSize: 35}
+       ,{spell: "Counter spell", addTarget: true, sufix: " has a magical shield"}
+       ,{search: "is covered by a magical glowing", addTarget: true, sufix: " has a magical shield"}
+       ,{search: "shield blurs for a moment", sufix: "... is countered"}
+       ,{search: "missile bounces off", addTarget: true, sufix: " blocks Magic Missile"}
+       ,{search: "keeps the Fire Elemental at bay", addTarget: true, sufix: " blocks Fire Elemental"}
+       ,{search: "keeps the Ice Elemental at bay", addTarget: true, sufix: " blocks Ice Elemental"}
+       ,{search: " is burnt for 3", addTarget: true, sufix: " is burnt"}
+       ,{search: " is frozen for 3", addTarget: true, sufix: " is frozen"}
+       ,{search: " disappears", addTarget: true, sufix: " is invisible"}
+       ,{spell: "Counter spell", addTarget: true, sufix: " has a magical shield"}
+       ,{spell: "Protection", addTarget: true, sufix: " is protected"}
+       ,{spell: "Shield", addTarget: true, sufix: " has a shield"}
+       ,{spell: "Maggic Mirror", addTarget: true, sufix: " has a reflective shield"}
+       ,{spell: "Disease", textFn: (function(obj) { return obj.txt === "Disease" ? obj.txt : obj.txt.replace(obj.obj.target + " ", "").trim(); })}
+       ,{search: "A Fire Storm rages", prefix: "A Fire Store rages!", arrAction:[{"action":"icon","large_icon":"fire_storm","small_icon":"","title":"","text":"","background_color":"#210430","border_color":"#FEE2D6"}]}
+       ,{search: "An Ice Storm rages", prefix: "An Ice Store rages!", arrAction:[{"action":"icon","large_icon":"ice_storm","small_icon":"","title":"","text":"","background_color":"#210430","border_color":"#FEE2D6"}]}
+        ];
+
+function processHintTextOld(obj) {
     console.log("processHintText.1", obj.txt, obj.font_size, JSON.stringify(obj));
     if (obj.txt === obj.obj.spell) {
         return;
@@ -1071,10 +1110,10 @@ function processHintText(obj) {
                (obj.txt.indexOf("is healed") !== -1)) {
         obj.font_size = 28;
     } else if (obj.obj && obj.obj.spell && (obj.obj.spell === "Counter spell")) {
-        obj.txt = obj.obj.target + " has magical shield";
+        obj.txt = obj.obj.target + " has a magical shield";
         obj.font_size = 28;
     } else if (obj.obj && obj.obj.spell && (obj.obj.spell === "Protection")) {
-        obj.txt = obj.obj.target + " protected";
+        obj.txt = obj.obj.target + " is protected";
         obj.font_size = 28;
     } else if (obj.obj && obj.obj.spell && (obj.obj.spell === "Shield")) {
         obj.txt = obj.obj.target + " has a shield";
@@ -1097,6 +1136,68 @@ function processHintText(obj) {
         obj.new_action.push({"action":"icon","large_icon":"ice_storm","small_icon":"","title":"","text":"","background_color":"#210430","border_color":"#FEE2D6"});
     } else if (obj.txt.indexOf("surrender") !== -1) {
         obj.font_size = 35;
+    }
+    console.log("processHintText.2", obj.txt, obj.font_size);
+}
+
+function processHintText(obj) {
+    console.log("processHintText.1", obj.txt, obj.font_size, JSON.stringify(obj));
+    if (obj.txt === obj.obj.spell) {
+        return;
+    }
+    for(var i = 0, Ln = ARR_HINT_PROCESS_RULES.length; i < Ln; ++i) {
+        var rule = ARR_HINT_PROCESS_RULES[i];
+        console.log("processHintText.1.1", i, rule.search, rule.spell);
+        if (!(rule.search && (obj.txt.indexOf(rule.search) !== -1))
+           && !(rule.spell && obj.obj && obj.obj.spell && obj.obj.spell === rule.spell)
+           ) {
+        // if ((rule.search && (obj.txt.indexOf(rule.search) === -1)) ||
+        //     (rule.spell && (obj.obj && obj.obj.spell && (obj.obj.spell !== rule.spell)))) {
+            continue;
+        }
+        obj.font_size = rule.fontSize ? rule.fontSize : 28;
+
+        var oldStr = obj.txt;
+        if (rule.textFn) {
+            obj.txt = rule.textFn(obj);
+        } else {
+            obj.txt = rule.prefix ? rule.prefix : rule.asIs ? oldStr : "";
+            if (rule.addSubstr) {
+                var idxFrom = 0;
+                if (rule.idxFrom && (rule.idxFrom !== -1)) {
+                    idxFrom = rule.idxFrom;
+                } else if (rule.idxFromSrch && (rule.idxFromSrch !== "")) {
+                    idxFrom = oldStr.indexOf(rule.idxFromSrch);
+                }
+                if (rule.idxFromAdd && (rule.idxFromAdd !== 0)) {
+                    idxFrom += rule.idxFromAdd;
+                }
+                var strSearchTo = (rule.idxToSrch && (rule.idxToSrch !== "")) ? rule.idxToSrch : rule.search;
+                var idxTo = oldStr.length - 1;
+                if (rule.idxTo && (rule.idxTo !== -1)) {
+                    idxTo = rule.idxTo;
+                } else if (strSearchTo !== "") {
+                    idxTo = oldStr.indexOf(strSearchTo);
+                }
+                if (rule.idxToAdd && (rule.idxToAdd !== 0)) {
+                    idxTo += rule.idxToAdd;
+                }
+                obj.txt += oldStr.substring(idxFrom, idxTo - idxFrom);
+            }
+            if (rule.addTarget) {
+                obj.txt += obj.obj.target;
+            }
+            if (rule.sufix) {
+                obj.txt += rule.sufix;
+            }
+        }
+
+        if (rule.arrAction && Array.isArray(rule.arrAction) && (rule.arrAction.length > 0)) {
+            for(var aaI = 0, aaLn = rule.arrAction.length; aaI < aaLn; ++aaI) {
+                obj.new_action.push(rule.arrAction[aaI]);
+            }
+        }
+        break;
     }
     console.log("processHintText.2", obj.txt, obj.font_size);
 }

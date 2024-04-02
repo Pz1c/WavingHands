@@ -183,19 +183,24 @@ void QWarlock::parseStatus() {
 }
 
 void QWarlock::checkPossibleGesture() {
-    if (_amnesia > 0) {
+    if (_time_stop > 0) {
+        // issues #347
+    } else if (_amnesia > 0) {
         _possibleLeftGestures = _leftGestures.right(1);
         _possibleRightGestures = _rightGestures.right(1);
+        return;
     } else if (_scared > 0) {
         _possibleLeftGestures = "W,P";
         _possibleRightGestures = "W,P";
+        return;
     } else if ((_maladroit > 0) && _AI) {
         _possibleLeftGestures = "W,S,D,C,F";
         _possibleRightGestures = "W,S,D,C,F";
-    } else {
-        _possibleLeftGestures = "W,S,D,P,C,F";
-        _possibleRightGestures = "W,S,D,P,C,F";
+        return;
     }
+
+    _possibleLeftGestures = "W,S,D,P,C,F";
+    _possibleRightGestures = "W,S,D,P,C,F";
 }
 
 void QWarlock::setIsMaladroit(bool newIsMaladroit)

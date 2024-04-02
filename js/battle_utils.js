@@ -544,13 +544,16 @@ function getOrdersForReview(dictionary) {
     if ((actions.L.g === ">") && (actions.R.g === ">")) {
         res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_knifes"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
     }
-
+    var isTwoHabdedSpell = (actions.L.s && (actions.L.s.th === 1)) || (actions.R.s && (actions.R.s.th === 1));
     if (actions.D !== -1) {
-        res.push({row_type:"0",type:"D",v:BGU.getSpecActionText("D", actions.D, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
+        var locD = isTwoHabdedSpell && (actions.D === 2) ? 3 : actions.D;
+        res.push({row_type:"0",type:"D",v:BGU.getSpecActionText("D", locD, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point4", JSON.stringify(res));
     }
     if (actions.P !== -1) {
-        res.push({row_type:"0",type:"P",v:BGU.getSpecActionText("P", actions.P, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
+        var locP = isTwoHabdedSpell && (actions.P === 2) ? 3 : actions.P;
+        console.log("getOrdersForReview", "point5.1", locP, actions.P, JSON.stringify(actions.L), JSON.stringify(actions.R));
+        res.push({row_type:"0",type:"P",v:BGU.getSpecActionText("P", locP, dictionary),c:"snow",icon:"",icon_text:"",icon_visible:false,icon_width:0});
         console.log("getOrdersForReview", "point5", JSON.stringify(res));
     }
     if (actions.F === 1) {

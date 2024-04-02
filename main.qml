@@ -1101,16 +1101,24 @@ ApplicationWindow {
     function setSpellTarget(TargetName, lPermanent, lDelay, OperationType) {
         console.log("main.setSpellTarget", TargetName, lPermanent, lDelay, OperationType, gBattle.currentHand);
         if (OperationType === 1) {
+            var spell = gBattle.actions[gBattle.currentHand].s;
+            var isTwoHandedSpell = spell && (spell.th === 1);
+            console.log("main.setSpellTarget.2", isTwoHandedSpell, JSON.stringify(gBattle.actions[gBattle.currentHand]));
+
             gBattle.actions[gBattle.currentHand].target = TargetName;
             if (lPermanent === 1) {
-                gBattle.actions.P = gBattle.currentHandIdx;
+                // for two habded spell return RIGHT HAND
+                gBattle.actions.P = isTwoHandedSpell ? 2 : gBattle.currentHandIdx;
             } else {
                 lPermanent = 0;
+                gBattle.actions.P = -1;
             }
             if (lDelay === 1) {
-                gBattle.actions.D = gBattle.currentHandIdx;
+                // for two habded spell return RIGHT HAND
+                gBattle.actions.D = isTwoHandedSpell ? 2 : gBattle.currentHandIdx;
             } else {
                 lDelay = 0;
+                gBattle.actions.D = -1;
             }
 
             logEvent("Play_Target_Clicked", {Mode:"spell",Target:TargetName,Spell:gBattle.actions[gBattle.currentHand].n,Permanent:lPermanent,Delay:lDelay});
