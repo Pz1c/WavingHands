@@ -1763,10 +1763,11 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
 bool QWarloksDuelCore::checkIsNotificationGranted() {
     int allowed = 0;
 #ifdef Q_OS_ANDROID
+    QJniObject ctx = QNativeInterface::QAndroidApplication::context();
     QJniObject val = QJniObject::fromString("");
     QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "isNotificationAllowed",
                                                            "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
-                                                           QNativeInterface::QAndroidApplication::context(), val.object<jstring>());
+                                                           ctx.object<jobject>(), val.object<jstring>());
     allowed = string.toString().toInt();
     qDebug() << "checkIsNotificationGranted" << allowed;
 #endif
@@ -1787,10 +1788,11 @@ void QWarloksDuelCore::processRefferer() {
 
     QString full_reff;
     #ifdef Q_OS_ANDROID
+    QJniObject ctx = QNativeInterface::QAndroidApplication::context();
     QJniObject val = QJniObject::fromString(finished_battles);
     QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "get_refferer",
                                                            "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
-                                                           QNativeInterface::QAndroidApplication::context(), val.object<jstring>());
+                                                           ctx.object<jobject>(), val.object<jstring>());
     full_reff = string.toString();
     qDebug() << "CheckReffereef" << full_reff;
     #endif

@@ -52,10 +52,11 @@ int main(int argc, char *argv[])
 
         int iwidth =0, iheight = 0;
         #ifdef Q_OS_ANDROID
+        QJniObject ctx = QNativeInterface::QAndroidApplication::context();
         QJniObject val = QJniObject::fromString("dummy");
         QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "get_screen_size",
                                                            "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
-                                                           QNativeInterface::QAndroidApplication::context(), val.object<jstring>());
+                                                           ctx.object<jobject>(), val.object<jstring>());
         QString res = string.toString();
         qDebug() << "get_screen_size" << res;
         QStringList sl = res.split(",");

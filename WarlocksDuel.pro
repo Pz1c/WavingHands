@@ -8,12 +8,12 @@ QT += qml quick network
 #    QT += androidextras
 #}
 
-INCLUDEPATH += ../library/game/
-INCLUDEPATH += ../library/QGoogleAnalytics/
+INCLUDEPATH += cpp/game/
+INCLUDEPATH += cpp/QGoogleAnalytics/
 
 HEADERS += \
-    ../library/QGoogleAnalytics/qgaconstant.h \
-    ../library/QGoogleAnalytics/qgoogleanalytics.h \
+    cpp/QGoogleAnalytics/qgaconstant.h \
+    cpp/QGoogleAnalytics/qgoogleanalytics.h \
     cpp/qbattleinfo.h \
     cpp/qgameconstant.h \
     cpp/qmonster.h \
@@ -24,14 +24,14 @@ HEADERS += \
     cpp/qwarlockutils.h \
     cpp/qwarloksduelcore.h \
     cpp/qspell.h\
-    ../library/game/qcore.h \
-    ../library/game/qgamedictionary.h \
-    ../library/game/qgameutils.h \
-    ../library/game/qlevelitem.h \
-    ../library/game/qlevelmanager.h \
+    cpp/game/qcore.h \
+    cpp/game/qgamedictionary.h \
+    cpp/game/qgameutils.h \
+    cpp/game/qlevelitem.h \
+    cpp/game/qlevelmanager.h \
 
 SOURCES += main.cpp \
-    ../library/QGoogleAnalytics/qgoogleanalytics.cpp \
+    cpp/QGoogleAnalytics/qgoogleanalytics.cpp \
     cpp/nativeforjava.cpp \
     cpp/qbattleinfo.cpp \
     cpp/qmonster.cpp \
@@ -42,11 +42,11 @@ SOURCES += main.cpp \
     cpp/qwarlockutils.cpp \
     cpp/qwarloksduelcore.cpp \
     cpp/qspell.cpp\
-    ../library/game/qcore.cpp \
-    ../library/game/qgamedictionary.cpp \
-    ../library/game/qgameutils.cpp \
-    ../library/game/qlevelitem.cpp \
-    ../library/game/qlevelmanager.cpp
+    cpp/game/qcore.cpp \
+    cpp/game/qgamedictionary.cpp \
+    cpp/game/qgameutils.cpp \
+    cpp/game/qlevelitem.cpp \
+    cpp/game/qlevelmanager.cpp
 
 RESOURCES += qml.qrc
 
@@ -61,7 +61,7 @@ QML_IMPORT_PATH =
 #QTFIREBASE_CONFIG += analytics admob remote_config
 #QTFIREBASE_CONFIG += analytics admob
 # include QtFirebase
-#include(../library/QtFirebase/qtfirebase.pri)
+#include(cpp/QtFirebase/qtfirebase.pri)
 
 # Default rules for deployment.
 #include(deployment.pri)
@@ -83,10 +83,6 @@ DISTFILES += \
     platforms/android/build.gradle \
     platforms/android/gradle.properties \
     platforms/android/gradle.properties \
-    platforms/android/gradle/wrapper/gradle-wrapper.jar \
-    platforms/android/gradle/wrapper/gradle-wrapper.jar \
-    platforms/android/gradle/wrapper/gradle-wrapper.properties \
-    platforms/android/gradle/wrapper/gradle-wrapper.properties \
     platforms/android/gradlew \
     platforms/android/gradlew \
     platforms/android/gradlew.bat \
