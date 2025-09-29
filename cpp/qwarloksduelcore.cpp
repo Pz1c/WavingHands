@@ -1573,7 +1573,7 @@ void QWarloksDuelCore::generateBattleList() {
             chHash.clear();
             chHash.append(enemy);
             chHash.append(lvl);
-            chHash.append(ddd);
+            // chHash.append(ddd);
             if (slChHash.indexOf(chHash) != -1) {
                 continue;
             }

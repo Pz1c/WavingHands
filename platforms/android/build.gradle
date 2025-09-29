@@ -6,6 +6,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.google.gms.google-services:4.4.1
     }
 }
 
@@ -20,6 +21,10 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation "com.android.installreferrer:installreferrer:2.2"
     implementation "androidx.core:core:1.8.0"
+
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:32.8.1')
+
 }
 
 android {
