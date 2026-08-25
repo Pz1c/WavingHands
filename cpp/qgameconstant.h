@@ -15,11 +15,14 @@
 #define APPLICATION_PACKAGE "net.is.games.WarlocksDuel"
 #define APPLICATION_INSTALLER_PACKAGE ""
 
+
+#define GAME_VW_URL "https://games.8uy.at/"
+
 #define GAME_SERVER_URL "https://games.ravenblack.net/"
 #define GAME_SERVER_URL_LOGIN "https://games.ravenblack.net/login"
 #define GAME_SERVER_URL_PLAYER "https://games.ravenblack.net/player"
 #define GAME_SERVER_URL_CHALLENGES "https://games.ravenblack.net/challenges"
-#define GAME_SERVER_URL_PLAYERS "https://visk.in.ua/robot_gateway/wh/top.php?l=%1&f=%2"
+#define GAME_SERVER_URL_PLAYERS GAME_VW_URL "robot_gateway/wh/top.php?l=%1&f=%2"
 #define GAME_SERVER_URL_ACCEPT_CHALLENGE "https://games.ravenblack.net/accept?back=%1&num=%2"
 #define GAME_SERVER_URL_REFUSE_CHALLENGE "https://games.ravenblack.net/refuse?back=player&num=%1"
 #define GAME_SERVER_URL_LEAVE_GAME "https://games.ravenblack.net/leave?num=%1"
@@ -31,10 +34,10 @@
 #define GAME_SERVER_URL_NEW_CHALLENGE "https://games.ravenblack.net/newchallenge"
 #define GAME_SERVER_URL_NEW_PLAYER "https://games.ravenblack.net/newplayer?action=new"
 #define GAME_SERVER_URL_SENDMESS "https://games.ravenblack.net/sendmess"
-#define GAME_SERVER_URL_GET_FINISHED_BATTLE "https://visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&show_data=1"
-#define GAME_SERVER_URL_STORE_FINISHED_BATTLE "https://visk.in.ua/robot_gateway/wh/index.php?battle_id=%1&store_json=1"
-#define GAME_SERVER_URL_WARLOCK_GET "https://visk.in.ua/robot_gateway/wh/warlock_get.php?wn=%1"
-#define GAME_SERVER_URL_WARLOCK_PUT "https://visk.in.ua/robot_gateway/wh/warlock_put.php?wn=%1"
+#define GAME_SERVER_URL_GET_FINISHED_BATTLE GAME_VW_URL "robot_gateway/wh/index.php?battle_id=%1&show_data=1"
+#define GAME_SERVER_URL_STORE_FINISHED_BATTLE GAME_VW_URL "robot_gateway/wh/index.php?battle_id=%1&store_json=1"
+#define GAME_SERVER_URL_WARLOCK_GET GAME_VW_URL "robot_gateway/wh/warlock_get.php?wn=%1"
+#define GAME_SERVER_URL_WARLOCK_PUT GAME_VW_URL "robot_gateway/wh/warlock_put.php?wn=%1"
 #define GAME_SERVER_URL_LOGOUT "https://games.ravenblack.net/logout"
 #define GAME_SERVER_URL_INVITE_TO_CHALLENGE "https://games.ravenblack.net/chalplayer?victim=%1&num=%2"
 

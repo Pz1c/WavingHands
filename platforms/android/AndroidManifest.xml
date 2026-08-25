@@ -1,14 +1,14 @@
-<?xml version="1.0"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="net.is.games.WarlocksDuel" android:installLocation="auto" android:versionCode="1052" android:versionName="2.3.8">
+<?xml version='1.0'?>
+<manifest android:installLocation="auto" android:versionCode="1103" android:versionName="2.4.0" package="net.is.games.WarlocksDuel" xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- %%INSERT_PERMISSIONS -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <!-- %%INSERT_FEATURES -->
-    <uses-sdk android:targetSdkVersion="31" android:minSdkVersion="28"/>
+    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="33"/>
     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true"/>
     <!-- android:theme="@android:style/Theme.NoTitleBar.Fullscreen" -->
-    <application android:name="org.qtproject.qt.android.bindings.QtApplication" android:extractNativeLibs="true" android:hardwareAccelerated="true" android:label="WarlocksDuel" android:requestLegacyExternalStorage="true" android:allowNativeHeapPointerTagging="false" android:icon="@drawable/icon">
-        <activity android:name="com.kdab.training.MainActivity" android:exported="true" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:label="WarlocksDuel" android:launchMode="singleTop" android:screenOrientation="portrait">
+    <!--%%INSERT_FEATURES-->
+    <application android:allowNativeHeapPointerTagging="false" android:extractNativeLibs="true" android:hardwareAccelerated="true" android:icon="@drawable/icon" android:label="WarlocksDuel" android:name="org.qtproject.qt.android.bindings.QtApplication" android:requestLegacyExternalStorage="true">
+        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:exported="true" android:label="WarlocksDuel" android:launchMode="singleTop" android:name="com.kdab.training.MainActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -17,7 +17,7 @@
             <meta-data android:name="android.app.arguments" android:value="-- %%INSERT_APP_ARGUMENTS%% --"/>
             <meta-data android:name="android.app.extract_android_style" android:value="minimal"/>
         </activity>
-        <receiver android:name="org.qtproject.example.androidnotifier.CustomBR" android:enabled="true" android:exported="true">
+        <receiver android:enabled="true" android:exported="true" android:name="org.qtproject.example.androidnotifier.CustomBR">
             <intent-filter>
                 <action android:name="com.android.vending.INSTALL_REFERRER"/>
             </intent-filter>
@@ -35,8 +35,8 @@
             <meta-data android:name="android.app.static_init_classes" android:value="-- %%INSERT_INIT_CLASSES%% --"/>
             <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
         </service>
-        <receiver android:name="com.kdab.training.AlarmReceiver" android:process=":remote" android:exported="true"/>
-        <receiver android:name="com.kdab.training.MyBroadcastReceiver" android:exported="true">
+        <receiver android:exported="true" android:name="com.kdab.training.AlarmReceiver" android:process=":remote"/>
+        <receiver android:exported="true" android:name="com.kdab.training.MyBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>

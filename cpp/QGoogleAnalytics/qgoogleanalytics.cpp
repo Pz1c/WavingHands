@@ -169,7 +169,7 @@ void QGoogleAnalytics::slotSslErrors(QList<QSslError> error_list) {
 
 
 void QGoogleAnalytics::saveRequest(int httpResponceCode, QString url, QString &data) {
-    qDebug() << "QGoogleAnalytics::saveRequest" << data.length() << httpResponceCode;
+    qDebug() << "QGoogleAnalytics::saveRequest" << url << data.length() << httpResponceCode;
 #ifdef QT_DEBUG
     QString file_name = QString("ga4_request_%2.html").arg(QString::number(++_requestIdx));
     QFile file(file_name);
