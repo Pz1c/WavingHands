@@ -1,3 +1,5 @@
+package org.qtproject.example.androidnotifier;
+
 import android.util.Log;
 import android.app.Activity;
 import android.content.SharedPreferences;

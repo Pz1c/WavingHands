@@ -52,6 +52,12 @@ RESOURCES += qml.qrc
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/platforms/android
 
+# 16 KB page size support (required by Google Play for apps targeting Android 15+).
+# NDK r28+ does this by default; r27 and older need the flag explicitly.
+android {
+    QMAKE_LFLAGS += -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384
+}
+
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 

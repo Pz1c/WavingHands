@@ -16,10 +16,8 @@ import android.view.View;
 import android.widget.Toast;
 import android.content.res.Resources;
 
-import android.content.pm.PackageManager;
-import android.Manifest;
-import androidx.core.app.ActivityCompat;
 
+import com.kdab.training.CheckScheduler;
 import com.kdab.training.MainActivity;
 
 public class NotificationClient
@@ -125,11 +123,12 @@ public class NotificationClient
     public static String isNotificationAllowed(Context context, String message) {
         try {
           SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
-          int res = sharedPreferences.getInt("set_alarm_allowed", 0);
           SharedPreferences.Editor editor = sharedPreferences.edit();
           editor.putInt("app_last_activity", Math.round(System.currentTimeMillis()/1000L));
           editor.commit();
-          return String.valueOf(res);
+          // Asked live rather than read back from a "set_alarm_allowed" pref, so revoking
+          // notifications in system settings is reflected straight away.
+          return CheckScheduler.canPostNotifications(context) ? "1" : "0";
         } catch (Exception e) {
             e.printStackTrace();
             return "0";
@@ -138,10 +137,9 @@ public class NotificationClient
 
     public static void askPermission(Context context, String message) {
         try {
+            // MainActivity owns the whole flow: POST_NOTIFICATIONS at runtime, then the
+            // exact alarm settings screen. Requesting SCHEDULE_EXACT_ALARM here did nothing.
             MainActivity.appMainActivity.askPermission();
-            ActivityCompat.requestPermissions(MainActivity.appMainActivity,
-                                new String[]{Manifest.permission.SCHEDULE_EXACT_ALARM},
-                                123);
         } catch (Exception e) {
             e.printStackTrace();
             //return "";

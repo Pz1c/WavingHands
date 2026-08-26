@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.6.0'
+        classpath 'com.android.tools.build:gradle:8.13.0'
     }
 }
 repositories {
@@ -16,14 +16,21 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation "com.android.installreferrer:installreferrer:2.2"
     implementation "androidx.core:core:1.7.0"
+    // Background profile check: replaces AlarmManager exact alarms, which need the
+    // Play-restricted SCHEDULE_EXACT_ALARM permission.
+    implementation "androidx.work:work-runtime:2.11.2"
 }
 android {
     namespace "net.is.games.WarlocksDuel"
-    compileSdkVersion androidCompileSdkVersion.toInteger()
+    // API 36 requires compileSdk >= 36. androiddeployqt writes androidCompileSdkVersion
+    // either as a bare number ("36") or as a platform string ("android-36"), so pull the
+    // API level out of whatever it wrote and never fall below 36.
+    compileSdkVersion Math.max(((androidCompileSdkVersion =~ /(\d+)/)[0][1]).toInteger(), 36)
     buildToolsVersion androidBuildToolsVersion
     ndkVersion androidNdkVersion
 
-    packagingOptions.jniLibs.useLegacyPackaging true
+    // 16 KB page size support: keep .so files uncompressed and page-aligned in the APK
+    packagingOptions.jniLibs.useLegacyPackaging false
 
     sourceSets {
         main {
@@ -41,8 +48,8 @@ android {
         options.incremental = true
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     lintOptions {
         abortOnError false
@@ -54,7 +61,7 @@ android {
         applicationId "net.is.games.WarlocksDuel"
         resConfig "en"
         minSdkVersion qtMinSdkVersion
-        targetSdkVersion 35
+        targetSdkVersion 36
         ndk.abiFilters = qtTargetAbiList.split(",")
     }
 
