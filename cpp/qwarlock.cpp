@@ -1,6 +1,33 @@
 #include "qwarlock.h"
 #include "qwarlockspellchecker.h"
 
+// Gesture histories are time-aligned across every warlock in a battle: a warlock
+// that did not act on a tick - because someone else was hasted or time-stopped -
+// is padded with ' ', and a gesture this client may not see is '?'. Neither is a
+// real gesture, so "the gesture this hand last actually made" has to skip them.
+// A '-' IS a real choice (a deliberate null gesture) and is deliberately kept.
+static QString lastRealGesture(const QString &history) {
+    for (int i = history.length() - 1; i >= 0; --i) {
+        const QChar c = history.at(i);
+        if ((c != ' ') && (c != '?')) {
+            return QString(c);
+        }
+    }
+    return QString();
+}
+
+// A lowercase character in a spell pattern means the gesture must be made with
+// BOTH hands - see QWarlockSpellChecker::checkSpellChar, which rejects a match
+// when spell.isLower() and the two hands differ. Uppercase is single-handed, so
+// the other hand stays free for its own spell.
+static bool gestureNeedsBothHands(const QString &nextGesture) {
+    return !nextGesture.isEmpty() && nextGesture.at(0).isLower();
+}
+
+// Fallback when no gesture can be derived. An empty possible-gesture set makes
+// checkSpellPosible reject every spell, which leaves the AI with no move at all.
+static const QString DEFAULT_POSSIBLE_GESTURES = "W,S,D,P,C,F";
+
 QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player, bool isAI) :
     _scared(0), _confused(0), _charmed(0), _paralized(0), _shield(0), _coldproof(0), _fireproof(0), _hp(0), _poison(0), _disease(0), _amnesia(0),
     _maladroit(0), _bestSpellL(nullptr), _bestSpellR(nullptr)
@@ -14,6 +41,7 @@ QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString R
     _charmMonsterLeft = false;
     _charmMonsterRight = false;
     _forcedHand = 0;
+    _lockedParalyzedHand = WARLOCK_HAND_NONE;
     parseStatus();
     checkPossibleGesture();
     _SpellChecker = QWarlockSpellChecker::getInstance();
@@ -54,6 +82,7 @@ QWarlock::QWarlock(QWarlock *CopyFrom) {
     _blindness = CopyFrom->_blindness;
     _invisibility = CopyFrom->_invisibility;
     _forcedHand = CopyFrom->_forcedHand;
+    _lockedParalyzedHand = CopyFrom->_lockedParalyzedHand;
     _forcedGesture = CopyFrom->_forcedGesture;
     _SpellChecker = CopyFrom->_SpellChecker;
 }
@@ -108,13 +137,13 @@ void QWarlock::setParalyzedHand(int Hand, const QString &Gesture, bool SetPossib
         if (!Gesture.isEmpty()) {
             _possibleLeftGestures = Gesture;
         } else {
-            lastGesture = _leftGestures.right(1);
+            lastGesture = lastRealGesture(_leftGestures);
             if (_isParaFC && gestureParaFCMap.contains(lastGesture)) {
                 _possibleLeftGestures = gestureParaFCMap[lastGesture];
             } else if (!_isParaFC && gestureParaCFMap.contains(lastGesture)) {
                 _possibleLeftGestures = gestureParaCFMap[lastGesture];
             } else {
-                _possibleLeftGestures = lastGesture;
+                _possibleLeftGestures = lastGesture.isEmpty() ? DEFAULT_POSSIBLE_GESTURES : lastGesture;
             }
         }
         break;
@@ -122,13 +151,13 @@ void QWarlock::setParalyzedHand(int Hand, const QString &Gesture, bool SetPossib
         if (!Gesture.isEmpty()) {
             _possibleRightGestures = Gesture;
         } else {
-            lastGesture = _rightGestures.right(1);
+            lastGesture = lastRealGesture(_rightGestures);
             if (_isParaFC && gestureParaFCMap.contains(lastGesture)) {
                 _possibleRightGestures = gestureParaFCMap[lastGesture];
             } else if (!_isParaFC && gestureParaCFMap.contains(lastGesture)) {
                 _possibleRightGestures = gestureParaCFMap[lastGesture];
             } else {
-                _possibleRightGestures = lastGesture;
+                _possibleRightGestures = lastGesture.isEmpty() ? DEFAULT_POSSIBLE_GESTURES : lastGesture;
             }
         }
         break;
@@ -184,8 +213,14 @@ void QWarlock::parseStatus() {
 
 void QWarlock::checkPossibleGesture() {
     if (_amnesia > 0) {
-        _possibleLeftGestures = _leftGestures.right(1);
-        _possibleRightGestures = _rightGestures.right(1);
+        // Amnesia forces a repeat of the last gesture, but right(1) picks up the
+        // ' ' padding of a tick this warlock sat out (haste/time stop) or a '?'
+        // it could not see - neither is castable, and an empty or bogus set here
+        // makes every spell fail checkSpellPosible.
+        const QString lastL = lastRealGesture(_leftGestures);
+        const QString lastR = lastRealGesture(_rightGestures);
+        _possibleLeftGestures = lastL.isEmpty() ? DEFAULT_POSSIBLE_GESTURES : lastL;
+        _possibleRightGestures = lastR.isEmpty() ? DEFAULT_POSSIBLE_GESTURES : lastR;
     } else if (_scared > 0) {
         _possibleLeftGestures = "W,P";
         _possibleRightGestures = "W,P";
@@ -343,6 +378,16 @@ int QWarlock::forcedHand() const
     return _forcedHand;
 }
 
+int QWarlock::lockedParalyzedHand() const
+{
+    return _lockedParalyzedHand;
+}
+
+void QWarlock::setLockedParalyzedHand(int Hand)
+{
+    _lockedParalyzedHand = Hand;
+}
+
 int QWarlock::paralized() const
 {
     return _paralized;
@@ -469,7 +514,7 @@ void QWarlock::setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monste
             }
             break;
         case SPELL_SUMMON_ICE_ELEMENTAL:
-            if ((_coldproof_in == 0) || (_coldproof_in > spell->turnToCast() + 1)) {
+            if ((_coldproof == 0) || (_coldproof_in > spell->turnToCast() + 1)) {
                 spell->setPriority(-5);
             } else if (spell->alreadyCasted() > 0){
                 spell->setPriority(3);
@@ -1048,13 +1093,32 @@ void QWarlock::validateSpellForTurn() {
         if (_gestureR.isEmpty()) {
             _gestureL = "P";
             _gestureR = "D";
-        } else if ((_gestureR.compare(_bestSpellR->nextGesture()) != 0) || (_gestureR.compare("C") != 0)) {
+        } else if (gestureNeedsBothHands(_bestSpellR->nextGesture())) {
             _gestureL = _gestureR;
         }
     }
-    if (_gestureR.isEmpty()) {
-        if ((_gestureL.compare(_bestSpellL->nextGesture()) != 0) || (_gestureL.compare("C") != 0)) {
+    if (_gestureR.isEmpty() && _bestSpellL) {
+        if (gestureNeedsBothHands(_bestSpellL->nextGesture())) {
             _gestureR = _gestureL;
+        }
+    }
+
+    // P with both hands is a surrender (see BotSay_2). It must only ever be sent
+    // deliberately, never as a side effect of mirroring or of both hands
+    // independently reaching for a shield. Break the tie on the idle hand first,
+    // then on the lower-priority spell.
+    if ((_gestureL.compare("P") == 0) && (_gestureR.compare("P") == 0)) {
+        qDebug() << "QWarlock::validateSpellForTurn suppressing accidental P/P surrender";
+        if (!_bestSpellL) {
+            _gestureL = "D";
+        } else if (!_bestSpellR) {
+            _gestureR = "D";
+        } else if (_bestSpellL->realPriority() >= _bestSpellR->realPriority()) {
+            _gestureR = "D";
+            _bestSpellR = nullptr;
+        } else {
+            _gestureL = "D";
+            _bestSpellL = nullptr;
         }
     }
 

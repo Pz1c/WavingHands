@@ -1131,11 +1131,30 @@ QString QWarloksDuelCore::prepareBattleOrders() {
     qDebug() << "QWarloksDuelCore::prepareBattleOrders" << _paralyzeList << _charmPersonList;
     foreach(QWarlock *w, _Warlock) {
         qDebug() << "QWarloksDuelCore::prepareBattleOrders" << w->name() << w->id() << _WarlockID[w->name()];
+        // WARLOCK_HAND_LEFT is 1 and WARLOCK_HAND_RIGHT is 2, so a plain truth test
+        // selects "LH" for both and every paralysis/charm lands on the left hand,
+        // discarding the danger_hand that analyzeEnemy just computed.
+        const int wanted_hand = w->forcedHand();
+
+        // "If the target Warlock already had a paralysed hand, paralysed by the same
+        // caster, the caster will not have the choice - the same hand will be
+        // paralysed again." (rules/1/spells.html). The server restricts this in the
+        // rendered form only and does not revalidate the POST, and our orders are
+        // appended AFTER _extraOrderInfo so a duplicate key would silently win.
+        // Honour the rule here rather than exploiting that.
+        const int paralyze_hand = (w->lockedParalyzedHand() != WARLOCK_HAND_NONE)
+                                      ? w->lockedParalyzedHand()
+                                      : wanted_hand;
         if (_paralyzeList.indexOf(w->id() + ";") != -1) {
-            res.append(QString("PARALYZE%1$%2#").arg(w->id(), w->forcedHand() ? "LH" : "RH"));
+            if ((w->lockedParalyzedHand() != WARLOCK_HAND_NONE) && (paralyze_hand != wanted_hand)) {
+                qDebug() << "QWarloksDuelCore::prepareBattleOrders keeping already paralysed hand for"
+                         << w->name() << paralyze_hand << "instead of preferred" << wanted_hand;
+            }
+            res.append(QString("PARALYZE%1$%2#").arg(w->id(), (paralyze_hand == WARLOCK_HAND_RIGHT) ? "RH" : "LH"));
         }
         if (_charmPersonList.indexOf(w->id() + ";") != -1) {
-            res.append(QString("DIRECTHAND%1$%2#").arg(w->id(), w->forcedHand() ? "LH" : "RH"));
+            // Charm Person is not subject to the repeat-paralysis rule.
+            res.append(QString("DIRECTHAND%1$%2#").arg(w->id(), (wanted_hand == WARLOCK_HAND_RIGHT) ? "RH" : "LH"));
             res.append(QString("DIRECTGESTURE%1$-#").arg(w->id()));
         }
     }
@@ -1205,11 +1224,18 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         w->setIsParaFDF(_isParaFDF);
         w->setIsParaFC(_isParaFC);
         w->setIsMaladroit(_isMaladroit);
+        // Record which hand is ALREADY paralysed before analyzeEnemy overwrites
+        // _forcedHand with the hand it would prefer to lock this turn. The rules
+        // require a repeat paralysis to land on the same hand, and the server only
+        // enforces that by limiting the <SELECT> options it renders.
+        w->setLockedParalyzedHand(WARLOCK_HAND_NONE);
         if ((w->paralized() > 0) && (Data.indexOf(QString("%1's left hand is paralysed.").arg(w->name())) != -1)) {
             w->setParalyzedHand(WARLOCK_HAND_LEFT);
+            w->setLockedParalyzedHand(WARLOCK_HAND_LEFT);
         }
         if ((w->paralized() > 0) && (Data.indexOf(QString("%1's right hand is paralysed.").arg(w->name())) != -1)) {
             w->setParalyzedHand(WARLOCK_HAND_RIGHT);
+            w->setLockedParalyzedHand(WARLOCK_HAND_RIGHT);
         }
         if (_WarlockID.contains(w->name())) {
             w->setId(_WarlockID[w->name()]);

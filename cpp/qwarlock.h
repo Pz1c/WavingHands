@@ -60,6 +60,11 @@ public:
 
     int forcedHand() const;
 
+    // The hand that is ALREADY paralysed on this warlock, carried over from a
+    // previous turn. WARLOCK_HAND_NONE when it is not currently paralysed.
+    int lockedParalyzedHand() const;
+    void setLockedParalyzedHand(int Hand);
+
     void setMagicBookLevel(int newMagicBookLevel);
 
     int magicBookLevel() const;
@@ -128,6 +133,7 @@ private:
     QSpell *_bestSpellL;
     QSpell *_bestSpellR;
     int _forcedHand;
+    int _lockedParalyzedHand;
     QString _forcedGesture;
     bool _isParaFDF;
     bool _isParaFC;
