@@ -99,6 +99,13 @@ int main(int argc, char *argv[])
         //qmlRegisterSingletonType<QGoogleAnalytics>("ua.sp.GoogleAnalytics", 1, 0, "GoogleAnalytics", googleanalytics_qobject_singletontype_provider);
 
         QQmlApplicationEngine engine;
+        // A QML failure must not leave a running process with no window - that reads to the
+        // player as a launch that hangs. objectCreationFailed covers asynchronous failures;
+        // the rootObjects() check below catches the synchronous ones straight away.
+        QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
+                         &app, []() { QCoreApplication::exit(-1); },
+                         Qt::QueuedConnection);
+
         engine.setInitialProperties({
             { "realScreenWidth", QVariant::fromValue(width) },
             { "realScreenHeight", QVariant::fromValue(height) }/*,
@@ -106,7 +113,14 @@ int main(int argc, char *argv[])
             { "calculatedRatioFont", QVariant::fromValue(m_ratioFont) } */
         });
 
-        engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
+        const QUrl mainQml(QStringLiteral("qrc:///main.qml"));
+        engine.load(mainQml);
+        if (engine.rootObjects().isEmpty()) {
+            // qCritical survives QT_NO_DEBUG_OUTPUT and the release logging filter, so this
+            // is still visible in logcat on a shipped build.
+            qCritical() << "Failed to load" << mainQml << "- aborting";
+            return -1;
+        }
         return app.exec();
     //}
 }
