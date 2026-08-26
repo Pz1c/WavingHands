@@ -95,19 +95,12 @@ DISTFILES += \
     platforms/android/AndroidManifest.xml \
     platforms/android/build.gradle \
     platforms/android/gradle.properties \
-    platforms/android/gradle.properties \
-    platforms/android/gradlew \
-    platforms/android/gradlew \
-    platforms/android/gradlew.bat \
-    platforms/android/gradlew.bat \
+    platforms/android/gradle/wrapper/gradle-wrapper.properties \
     platforms/android/res/values/libs.xml \
-    platforms/android/res/values/libs.xml \
-    platforms/android/src/com/kdab/training/AlarmReceiver.java \
+    platforms/android/src/com/kdab/training/CheckScheduler.java \
     platforms/android/src/com/kdab/training/CheckStatus.java \
+    platforms/android/src/com/kdab/training/CheckStatusWorker.java \
     platforms/android/src/com/kdab/training/MainActivity.java \
-    platforms/android/src/com/kdab/training/MyBroadcastReceiver.java \
-    platforms/android/src/com/kdab/training/MyService.java \
-    platforms/android/src/org/qtproject/example/androidnotifier/CustomBR.java \
     platforms/android/src/org/qtproject/example/androidnotifier/NotificationClient.java
 #android: include(C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/openssl.pri)
 
