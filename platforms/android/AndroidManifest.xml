@@ -1,7 +1,11 @@
 <?xml version='1.0'?>
-<manifest android:installLocation="auto" android:versionCode="1201" android:versionName="2.4.1" package="net.is.games.WarlocksDuel" xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest android:installLocation="auto" android:versionCode="1210" android:versionName="2.4.2" package="net.is.games.WarlocksDuel" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <!-- %%INSERT_PERMISSIONS -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Qt6Core's android-dependencies.xml makes androiddeployqt inject this at the
+         marker above. Nothing here touches external storage, and it also drags in an
+         implied READ_EXTERNAL_STORAGE, so drop it from the merged manifest. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true"/>
     <!-- android:theme="@android:style/Theme.NoTitleBar.Fullscreen" -->
     <!--%%INSERT_FEATURES-->
