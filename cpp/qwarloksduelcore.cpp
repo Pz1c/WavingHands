@@ -168,11 +168,12 @@ void QWarloksDuelCore::sendMessage(const QString &Msg) {
     postData.append(QString("rcpt=%1&message=").arg(_warlockId));
     postData.append(QUrl::toPercentEncoding(Msg));
 
-    qDebug() << QString(postData);
+    qDebug() << "QWarloksDuelCore::sendMessage to" << _warlockId;
     sendPostRequest(GAME_SERVER_URL_SENDMESS, postData.toUtf8());
 }
 
 void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, const QString &Pass) {
+    Q_UNUSED(Email) // kept in the signature for the QML call site; the email field is disabled
     _login = Login;
     _password = Pass.isEmpty() ? QGameUtils::rand(10) : Pass;
     setIsLoading(true);
@@ -189,7 +190,7 @@ void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, co
                     "Warlock+duel%22+too+play+net.is.games.WarlockDuel&preferfast=4&me13=1&update=1");
 
 
-    qDebug() << postData << Email;
+    qDebug() << "QWarloksDuelCore::regNewUser" << _login;
     sendPostRequest(GAME_SERVER_URL_NEW_PLAYER, postData.toUtf8());
 }
 
@@ -207,7 +208,7 @@ void QWarloksDuelCore::loginToSite() {
     postData.append("&password=");
     postData.append(QUrl::toPercentEncoding(_password));
 
-    qDebug() << "Login to site: " << postData;
+    qDebug() << "QWarloksDuelCore::loginToSite" << _login;
 
     _waiting_in_battles.clear();
     _ready_in_battles.clear();
@@ -2043,7 +2044,7 @@ void QWarloksDuelCore::slotReadyRead() {
 
     QUrl new_url;
     if ((_httpResponceCode >= 500) && (_httpResponceCode < 600))  {
-        QTimer::singleShot(5000, this, SLOT(resendLastRequest));
+        QTimer::singleShot(5000, this, &QWarloksDuelCore::resendLastRequest);
         return;
     } else if ((_httpResponceCode >= 300) && (_httpResponceCode < 400))  {
         new_url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
@@ -2067,9 +2068,10 @@ void QWarloksDuelCore::slotReadyRead() {
 
 void QWarloksDuelCore::slotError(QNetworkReply::NetworkError error) {
     setIsLoading(false);
-    _errorMsg = "Network problem details: " + _reply->errorString();
+    QNetworkReply *reply = (QNetworkReply *)sender();
+    _errorMsg = "Network problem details: " + reply->errorString();
     emit errorOccurred();
-    qDebug() << "slotError" << error << _reply->errorString();
+    qDebug() << "slotError" << error << reply->errorString();
 }
 
 void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {

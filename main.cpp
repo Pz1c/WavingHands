@@ -8,6 +8,7 @@
 #include <QtQml>
 #include <QDebug>
 #include <QFontDatabase>
+#include <QLoggingCategory>
 #include <QScreen>
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
@@ -21,6 +22,13 @@
 
 int main(int argc, char *argv[])
 {
+#ifdef QT_NO_DEBUG
+    // QT_NO_DEBUG_OUTPUT only compiles qDebug() out of our own translation units. QML's
+    // console.log() is implemented inside the prebuilt Qt QML library, so it needs a
+    // runtime rule too. Warnings and above still get through.
+    QLoggingCategory::setFilterRules(QStringLiteral("*.debug=false"));
+#endif
+
     bool add_cert = QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
     QString s1 = QString("QSslSocket::sslLibraryBuildVersionString() %1 QSslSocket::sslLibraryVersionString() %2").arg(QSslSocket::sslLibraryBuildVersionString(), QSslSocket::sslLibraryVersionString());
     QString s2 = QString("loading embedded \"ISRG Root X1\" CA cert: %1").arg(add_cert);

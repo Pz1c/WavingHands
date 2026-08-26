@@ -52,7 +52,7 @@ const QString QGoogleAnalytics::parseEventParams(QString &params) const {
 }
 
 void QGoogleAnalytics::sendEvent(QString EventName, QString &EventParams) {
-    qDebug() << "QGoogleAnalytics::sendEvent" << _apiSecret << _measurementId << _clientId << EventName << EventParams;
+    qDebug() << "QGoogleAnalytics::sendEvent" << _measurementId << _clientId << EventName << EventParams;
     if (_apiSecret.isEmpty() || _measurementId.isEmpty() || _clientId.isEmpty() || EventName.isEmpty()) {
         return;
     }

@@ -4,6 +4,13 @@ QT += core
 QT += core-private
 QT += qml quick network
 
+# Release builds must not log. Several call sites print request bodies that carry the
+# account password, and the analytics secret. qDebug() is compiled out below; QML's
+# console.log() lives in the prebuilt Qt QML library and is silenced at runtime in main().
+CONFIG(release, debug|release) {
+    DEFINES += QT_NO_DEBUG_OUTPUT
+}
+
 #android {
 #    QT += androidextras
 #}
