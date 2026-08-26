@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
-<manifest android:installLocation="auto" android:versionCode="1103" android:versionName="2.4.0" package="net.is.games.WarlocksDuel" xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest android:installLocation="auto" android:versionCode="1201" android:versionName="2.4.1" package="net.is.games.WarlocksDuel" xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- %%INSERT_PERMISSIONS -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true"/>
