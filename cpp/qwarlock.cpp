@@ -650,10 +650,17 @@ bool QWarlock::buildAntiSpellRules(const QSpell *s, int minTurnToCast, QList<QAn
     const QList<int> none;
     const QList<int> no_mirror({SPELL_MAGIC_MIRROR});
 
-    // A mirror reflects a spell aimed at us; it does nothing about an area effect, and
-    // it is a poor bet when we are about to lose the hand anyway. Preserved from the
-    // cascade, minus its `danger() <= 3` clause, which never fired: the lowest danger
-    // in the dictionary is 10.
+    // A mirror reflects a spell aimed at us; it does nothing about an area effect, and it is
+    // a poor bet when the hand is about to be taken away anyway. The cascade this replaced
+    // also carried a `danger() <= 3` clause, which never fired - nothing in the dictionary
+    // scores below 10.
+    //
+    // Do not "restore" that clause on the real danger scale without measuring first: it was
+    // tried, and it made the bot WORSE at finishing a mirror it had already started, while
+    // not changing how often it starts one. The bot's habit of starting mirrors comes from
+    // attackEnemy()'s filler loop, not from here - calcPriority scores an unstarted "cw" at
+    // 10*1/3 = 3, above an unstarted Counter Spell or Protection at 2, and prices it as one
+    // hand when it actually costs two.
     const QList<int> shield_not_ids = _enemyParalyze ? no_mirror : none;
 
     rules.clear();
