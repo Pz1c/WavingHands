@@ -540,14 +540,31 @@ void QWarlock::setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monste
     //logSpellList(_possibleSpells, "QWarlock::setSpellPriority")
 }
 
-QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID, int Hand) const {
+// Single-type form, kept so the existing call sites read unchanged. -1 still means
+// "any type"; the list form spells that as an empty list.
+QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID, int Hand, bool OwnHands) const {
+    return getSpellByFilter(sl, CastFrom, CastTo,
+                            SpellType == -1 ? QList<int>() : QList<int>({SpellType}),
+                            notID, byID, Hand, OwnHands);
+}
+
+// OwnHands says `sl` is THIS warlock's spell list, so a match also has to be a spell these
+// hands can actually make a gesture for. _possibleSpells holds every unstarted spell in the
+// book at full priority - QWarlockSpellChecker::checkSpellPosible validates the gesture set
+// only for a spell already in progress - so without this the search hands back something
+// Fear (or amnesia, or a paralysed hand) forbids, the caller commits the hand to it, and
+// validateSpellForTurn has no choice left but to drop it and leave that hand idle.
+QSpell *QWarlock::getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, const QList<int> &spellTypes, const QList<int> &notID, const QList<int> &byID, int Hand, bool OwnHands) const {
     if (CastTo < CastFrom) return nullptr;
 
     foreach(QSpell *s, sl) {
         if ((s->turnToCast() < CastFrom) || (s->turnToCast() > CastTo)) {
             continue;
         }
-        if ((s->spellType() != SpellType) && (SpellType != -1)) {
+        if (OwnHands && !gestureAllowed(s->nextGesture(), s->hand())) {
+            continue;
+        }
+        if (!spellTypes.isEmpty() && (spellTypes.indexOf(s->spellType()) == -1)) {
             continue;
         }
         if (!notID.empty() && (notID.indexOf(s->spellID()) != -1)) {
@@ -591,6 +608,14 @@ bool QWarlock::checkAntiSpell(const QSpell *as, const QSpell *s) const {
     if ((as->spellType() == SPELL_TYPE_MAGIC_SHIELD) && (s->turnToCast() == as->turnToCast())) {
         return true;
     }
+    if ((as->spellType() == SPELL_TYPE_RESIST) && (as->turnToCast() <= s->turnToCast()) &&
+        ((s->spellType() == SPELL_TYPE_ELEMENTAL) || (s->spellType() == SPELL_TYPE_MASSIVE))) {
+        // A resist that is up by the time the storm lands already covers it, so the
+        // other hand does not need to answer the same threat a second time.
+        if (as->spellID() == (s->level() == 0 ? SPELL_RESIST_COLD : SPELL_RESIST_HEAT)) {
+            return true;
+        }
+    }
 
     return false;
 }
@@ -605,37 +630,136 @@ void QWarlock::setId(const QString &newId)
     _id = newId;
 }
 
+static QAntiSpellRule antiSpellRule(const QList<int> &types, const QList<int> &ids, const QList<int> &notIds, int fromTurn, int toTurn) {
+    QAntiSpellRule r;
+    r.searchTypes = types;
+    r.searchIDs = ids;
+    r.notIDs = notIds;
+    r.fromTurn = fromTurn;
+    r.toTurn = toTurn;
+    return r;
+}
+
+// The counter-set table: given an enemy spell, which of ours could answer it and when.
+// Returns false when nothing we hold is an answer, so the caller keeps the hand free
+// instead of spending a half-cast counter on something the counter cannot stop - a
+// Haste, a Charm Monster, a Shield, a Stab. That "no answer" case is the whole point
+// of the table; the cascade this replaced offered a Magic Shield against everything.
+bool QWarlock::buildAntiSpellRules(const QSpell *s, int minTurnToCast, QList<QAntiSpellRule> &rules) const {
+    const int t = s->turnToCast();
+    const QList<int> none;
+    const QList<int> no_mirror({SPELL_MAGIC_MIRROR});
+
+    // A mirror reflects a spell aimed at us; it does nothing about an area effect, and
+    // it is a poor bet when we are about to lose the hand anyway. Preserved from the
+    // cascade, minus its `danger() <= 3` clause, which never fired: the lowest danger
+    // in the dictionary is 10.
+    const QList<int> shield_not_ids = _enemyParalyze ? no_mirror : none;
+
+    rules.clear();
+
+    switch (s->spellType()) {
+    case SPELL_TYPE_SUMMON_MONSTER:
+        // Counter Spell aimed at the summoner stops it; Charm Monster takes the monster
+        // instead. A mirror does neither, so keep it out of the type search.
+        rules.append(antiSpellRule(QList<int>({SPELL_TYPE_CHARM_MONSTER, SPELL_TYPE_MAGIC_SHIELD}), none, no_mirror, t, t));
+        return true;
+
+    case SPELL_TYPE_POISON:
+        rules.append(antiSpellRule(QList<int>({SPELL_TYPE_MAGIC_SHIELD}), none, shield_not_ids, t, t));
+        // Poison and Disease are enchantments, so Remove Enchantment answers them too,
+        // but only as a fallback: a counter landing on the same turn stops the spell
+        // outright, which beats removing it afterwards.
+        rules.append(antiSpellRule(QList<int>({SPELL_TYPE_REMOVE_ENCHANTMENT}), none, none, t, t));
+        return true;
+
+    case SPELL_TYPE_CONFUSION:
+        if (s->spellID() != SPELL_ANTI_SPELL) {
+            // Two enchantments landing on the same warlock in the same turn cancel out
+            // (BotSay_3), so our own enchantment is an answer. Not in the JS table; kept
+            // from the cascade it replaced.
+            rules.append(antiSpellRule(QList<int>({SPELL_TYPE_CONFUSION}), none, QList<int>({SPELL_ANTI_SPELL}), t, t));
+        }
+        rules.append(antiSpellRule(QList<int>({SPELL_TYPE_MAGIC_SHIELD}), none, shield_not_ids, t, t));
+        return true;
+
+    case SPELL_TYPE_DEATH:
+    case SPELL_TYPE_DAMAGE:
+        if (s->spellID() == SPELL_FINGER_OF_DEATH) {
+            // The Finger ignores Shield, Protection and Counter Spell (BotSay_13). Only a
+            // mirror answers it once it is on its last gesture. Disrupting the hand before
+            // then is handled by the generic probes in getAntiSpell(), which already run
+            // over [min, t-1] - every id the JS table listed here (Anti-spell, Charm
+            // Person, Amnesia, Confusion, Paralysis) is covered by those two probes.
+            rules.append(antiSpellRule(QList<int>({SPELL_TYPE_MAGIC_SHIELD}), no_mirror, none, t, t));
+            return true;
+        }
+        if (s->spellID() == SPELL_MAGIC_MISSILE) {
+            // One point of damage does not justify spending a counter that is already
+            // half cast. The generic probes still apply, so a disruption already in
+            // flight can answer it.
+            return false;
+        }
+        rules.append(antiSpellRule(QList<int>({SPELL_TYPE_MAGIC_SHIELD}), none, shield_not_ids, t, t));
+        return true;
+
+    case SPELL_TYPE_MASSIVE:
+    case SPELL_TYPE_ELEMENTAL:
+        // Storms and elementals come in a cold and a hot flavour, level 0 and level 1
+        // respectively for both types (Ice Storm / Summon Ice Elemental are level 0).
+        // The matching resist is the real answer and it can go up any turn up to the
+        // one it lands on.
+        rules.append(antiSpellRule(none, QList<int>({s->level() == 0 ? SPELL_RESIST_COLD : SPELL_RESIST_HEAT}), none, minTurnToCast, t));
+        rules.append(antiSpellRule(QList<int>({SPELL_TYPE_MAGIC_SHIELD}), none, no_mirror, t, t));
+        return true;
+
+    case SPELL_TYPE_CURE:
+        // breakEnemy() filters cures out before they reach here with one deliberate
+        // exception - Cure Heavy Wounds while the enemy is diseased, which it wants
+        // broken. Answer it, or that intent goes dead.
+        rules.append(antiSpellRule(QList<int>({SPELL_TYPE_MAGIC_SHIELD}), none, shield_not_ids, t, t));
+        return true;
+
+    default:
+        // SHIELD, MAGIC_SHIELD, HASTLE, CHARM_MONSTER, SPEC, RESIST,
+        // REMOVE_ENCHANTMENT, STAB - nothing we can hold stops these.
+        return false;
+    }
+}
+
 QSpell *QWarlock::getAntiSpell(const QList<QSpell *> &sl, const QSpell *s, const QWarlock *enemy) const {
     int enemy_counter_spell = qMin(enemy->getTurnToCastBySpellID(SPELL_COUNTER_SPELL1, 3), enemy->getTurnToCastBySpellID(SPELL_COUNTER_SPELL2, 3));
     int min_turn_to_cast = 1;
     if (enemy_counter_spell == 1) {
         min_turn_to_cast = 2;
     }
-    QList<int> spell_ids_empty;
-    QList<int> spell_ids({SPELL_ANTI_SPELL});
-    QSpell *res = getSpellByFilter(sl, min_turn_to_cast, s->turnToCast() - 1, -1, spell_ids_empty, spell_ids);
+    // A disruption arriving on the turn the Finger of Death lands is too late: it changes
+    // what the enemy does NEXT turn, and by then the Finger has resolved.
+    const bool unblockable = (s->spellID() == SPELL_FINGER_OF_DEATH);
+    const int disrupt_by = unblockable ? s->turnToCast() - 1 : s->turnToCast();
+
+    const QList<int> none;
+    const QList<int> anti_spell_only({SPELL_ANTI_SPELL});
+
+    // Two generic probes, not keyed on the enemy spell type, run ahead of the table:
+    // an Anti-spell landing before the enemy finishes wipes the hand outright, and any
+    // enchantment landing in the window disrupts it. Both beat anything in the table.
+    QSpell *res = getSpellByFilter(sl, min_turn_to_cast, s->turnToCast() - 1, -1, none, anti_spell_only, -1, true);
     if (res) return res;
 
-    res = getSpellByFilter(sl, min_turn_to_cast, s->turnToCast(), SPELL_TYPE_CONFUSION, spell_ids, spell_ids_empty);
+    res = getSpellByFilter(sl, min_turn_to_cast, disrupt_by, SPELL_TYPE_CONFUSION, anti_spell_only, none, -1, true);
     if (res) return res;
 
+    QList<QAntiSpellRule> rules;
+    if (!buildAntiSpellRules(s, min_turn_to_cast, rules)) {
+        return nullptr;
+    }
 
-    if ((s->spellType() == SPELL_TYPE_CONFUSION) && (s->spellID() != SPELL_ANTI_SPELL)) {
-        res = getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_CONFUSION, spell_ids, spell_ids_empty);
+    foreach (const QAntiSpellRule &r, rules) {
+        res = getSpellByFilter(sl, r.fromTurn, r.toTurn, r.searchTypes, r.notIDs, r.searchIDs, -1, true);
         if (res) return res;
     }
-    spell_ids.clear();
-    spell_ids.append(ARR_COUNTER_SPELL);
-    spell_ids.append(SPELL_CHARM_MONSTER);
-    if (s->spellType() == SPELL_TYPE_SUMMON_MONSTER) {
-        res = getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), -1, spell_ids_empty, spell_ids);
-        if (res) return res;
-    }
-    spell_ids.clear();
-    if ((s->danger() <= 3) || (s->spellType() == SPELL_TYPE_ELEMENTAL) || (s->spellType() == SPELL_TYPE_MASSIVE) || _enemyParalyze) {
-        spell_ids.append(SPELL_MAGIC_MIRROR);
-    }
-    return getSpellByFilter(sl, s->turnToCast(), s->turnToCast(), SPELL_TYPE_MAGIC_SHIELD, spell_ids, spell_ids_empty);
+    return nullptr;
 }
 
 void QWarlock::analyzeMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
@@ -680,7 +804,11 @@ void QWarlock::processMonster(QList<QMonster *> &monsters, QWarlock *enemy) {
     // separate monster
     QMonster *elemental = nullptr;
     foreach(QMonster *m,  monsters) {
-        m->setAttackStrength(0);
+        // NOTE: do NOT reset attackStrength here. analyzeMonster() already zeroed it
+        // at the start of processDecision(), and targetSpell() has since booked this
+        // turn's spell damage into it. Clearing it again would hide those bookings
+        // from the allocation below, letting a spell and a monster both spend their
+        // damage killing the same victim.
         if (m->iceElemental() || m->fireElemental()) {
             elemental = m;
             elemental_attack = m->getStrength();
@@ -1006,6 +1134,55 @@ void QWarlock::processMaladroit() {
     qDebug() << "QWarlock::processMaladroit" << logSpellItem(_bestSpellL) << logSpellItem(_bestSpellR);
 }
 
+// Two spells cannot share a turn when the hands would fight over it: two
+// enchantments landing together cancel each other out, two counters on the same
+// turn are wasted, and checkValidSequence() rejects the gesture-level clashes -
+// a both-hands (lowercase) gesture the other hand does not mirror, which covers
+// the half clap, and a P in both hands, which is a surrender.
+bool QWarlock::spellsConflict(const QSpell *left, const QSpell *right) const {
+    if (!left || !right) {
+        return false;
+    }
+    if ((right->spellType() == SPELL_TYPE_CONFUSION) && (right->spellType() == left->spellType()) &&
+        (right->turnToCast() == left->turnToCast())) {
+        return true;
+    }
+    if ((right->spellType() == SPELL_TYPE_MAGIC_SHIELD) && (right->spellType() == left->spellType()) &&
+        (right->spellID() != SPELL_MAGIC_MIRROR) && (right->turnToCast() == left->turnToCast())) {
+        return true;
+    }
+    return !right->checkValidSequence(*left);
+}
+
+// Fear ("No CFDS"), amnesia, maladroitness and paralysis all narrow which gestures a hand
+// may make - see checkPossibleGesture() and setParalyzedHand(). Nothing in the spell search
+// consulted that set: QWarlockSpellChecker::checkSpellPosible only tests it for a spell
+// already in progress, so a spell that has NOT been started yet keeps its first gesture no
+// matter what, and the AI would happily order it. In play that reaches the server as an
+// illegal gesture and the hand ends up doing nothing at all.
+bool QWarlock::gestureAllowed(const QString &gesture, int hand) const {
+    if (gesture.isEmpty() || (gesture.compare(">") == 0)) {
+        return true; // no gesture, and stab, are always available
+    }
+    const QString &allowed = (hand == WARLOCK_HAND_LEFT) ? _possibleLeftGestures : _possibleRightGestures;
+    return allowed.indexOf(gesture.toUpper()) != -1;
+}
+
+// A legal gesture for a hand with nothing better to do. `avoid` keeps the two hands from
+// picking the same one, which matters for P: P with both hands is a surrender.
+QString QWarlock::firstAllowedGesture(int hand, const QString &avoid) const {
+    static const QStringList preference {"P", "D", "W", "S", "F", "C"};
+    foreach (const QString &g, preference) {
+        if (!avoid.isEmpty() && (avoid.compare(g) == 0)) {
+            continue;
+        }
+        if (gestureAllowed(g, hand)) {
+            return g;
+        }
+    }
+    return QString();
+}
+
 void QWarlock::attackEnemy(QWarlock *enemy) {
     qDebug() << "QWarlock::attackEnemy";
     Q_UNUSED(enemy);
@@ -1016,7 +1193,23 @@ void QWarlock::attackEnemy(QWarlock *enemy) {
     }
 
     if (_bestSpellR && _bestSpellL) {
-        return;
+        // breakEnemy() can fill both hands with two independent anti-spells, and that
+        // pair has never been checked against each other - it only rejects P/P itself.
+        // Validate it here, otherwise the only remaining check is the P/P guard in
+        // validateSpellForTurn() and an illegal pair reaches the server.
+        if (!spellsConflict(_bestSpellL, _bestSpellR)) {
+            return;
+        }
+        qDebug() << "QWarlock::attackEnemy incompatible pair from breakEnemy" << logSpellItem(_bestSpellL) << logSpellItem(_bestSpellR);
+        // Keep the hand that answers the more urgent threat; breakEnemy() scores that
+        // as realPriority. The loop below then looks for a partner for the survivor.
+        if (_bestSpellL->realPriority() >= _bestSpellR->realPriority()) {
+            _bestSpellR = nullptr;
+            _gestureR.clear();
+        } else {
+            _bestSpellL = nullptr;
+            _gestureL.clear();
+        }
     }
 
     QSpell *bL = _bestSpellL, *bR = _bestSpellR;
@@ -1025,31 +1218,39 @@ void QWarlock::attackEnemy(QWarlock *enemy) {
     bool erase_one;
     foreach(QSpell *s, _possibleSpells) {
         qDebug() << "QWarlock::attackEnemy process spell" << logSpellItem(s);
-        if (!bL && (s->hand() == WARLOCK_HAND_LEFT) && (_gestureL.isEmpty() || (_gestureL.compare(s->nextGesture()) == 0))) {
+        if (!bL && (s->hand() == WARLOCK_HAND_LEFT) && gestureAllowed(s->nextGesture(), WARLOCK_HAND_LEFT) &&
+            (_gestureL.isEmpty() || (_gestureL.compare(s->nextGesture()) == 0))) {
             bL = s;
         }
 
-        if (!bR && (s->hand() == WARLOCK_HAND_RIGHT) && (_gestureR.isEmpty() || (_gestureR.compare(s->nextGesture()) == 0))) {
+        if (!bR && (s->hand() == WARLOCK_HAND_RIGHT) && gestureAllowed(s->nextGesture(), WARLOCK_HAND_RIGHT) &&
+            (_gestureR.isEmpty() || (_gestureR.compare(s->nextGesture()) == 0))) {
             bR = s;
         }
 
         if (bR && bL) {
             qDebug() << "QWarlock::attackEnemy check erase" << logSpellItem(bL) << logSpellItem(bR);
-            erase_one = false;
-            if ((bR->spellType() == SPELL_TYPE_CONFUSION) && (bR->spellType() == bL->spellType())) {
-                if (bR->turnToCast() == bL->turnToCast()) {
-                    qDebug() << "QWarlock::attackEnemy erase 1";
-                    erase_one = true;
-                }
-            } else if ((bR->spellType() == SPELL_TYPE_MAGIC_SHIELD) && (bR->spellType() == bL->spellType()) && (bR->spellID() != SPELL_MAGIC_MIRROR) && (bR->turnToCast() == bL->turnToCast())) {
-                qDebug() << "QWarlock::attackEnemy erase 2";
-                erase_one = true;
-            } else if (!bR->checkValidSequence(*bL)) {
-                qDebug() << "QWarlock::attackEnemy erase 3";
-                erase_one = true;
-            }
+            // Was an if/else-if chain: two enchantments on DIFFERENT turns matched the
+            // first branch and so skipped the gesture check entirely, letting an
+            // illegal gesture pair through. spellsConflict() tests all three cases.
+            erase_one = spellsConflict(bL, bR);
             if (erase_one) {
-                if (bL->priority() + pbL > bR->priority() + pbR) {
+                // Which hand gives way. Raw priority alone is not enough: QSpell::calcPriority
+                // scales a spell by how far along it is, but setSpellPriority() then adds flat
+                // bonuses on top, so an UNSTARTED long spell can outscore one that completes
+                // this turn. Dropping the started spell throws away the gestures already spent,
+                // and because the same comparison recurs every turn the bot restarts for ever
+                // and finishes nothing - this is why a half-cast Magic Mirror kept losing to an
+                // unstarted Cure Heavy Wounds and the clap was never followed up.
+                bool keep_left;
+                if ((pbL > 0) != (pbR > 0)) {
+                    keep_left = pbL > 0; // breakEnemy() picked this hand to answer a threat
+                } else if ((bL->alreadyCasted() > 0) != (bR->alreadyCasted() > 0)) {
+                    keep_left = bL->alreadyCasted() > 0;
+                } else {
+                    keep_left = bL->priority() + pbL > bR->priority() + pbR;
+                }
+                if (keep_left) {
                     pbR = 0;
                     bR = nullptr;
                     _gestureR.clear();
@@ -1089,10 +1290,23 @@ void QWarlock::validateSpellForTurn() {
         _gestureR = "";
     }
 
+    // breakEnemy() picks anti-spells without consulting the gesture set either, so catch
+    // anything illegal here as well rather than ordering a gesture the hand cannot make.
+    if (!gestureAllowed(_gestureL, WARLOCK_HAND_LEFT)) {
+        qDebug() << "QWarlock::validateSpellForTurn dropping illegal LEFT gesture" << _gestureL << _possibleLeftGestures;
+        _bestSpellL = nullptr;
+        _gestureL.clear();
+    }
+    if (!gestureAllowed(_gestureR, WARLOCK_HAND_RIGHT)) {
+        qDebug() << "QWarlock::validateSpellForTurn dropping illegal RIGHT gesture" << _gestureR << _possibleRightGestures;
+        _bestSpellR = nullptr;
+        _gestureR.clear();
+    }
+
     if (_gestureL.isEmpty()) {
         if (_gestureR.isEmpty()) {
-            _gestureL = "P";
-            _gestureR = "D";
+            _gestureL = firstAllowedGesture(WARLOCK_HAND_LEFT, QString());
+            _gestureR = firstAllowedGesture(WARLOCK_HAND_RIGHT, _gestureL);
         } else if (gestureNeedsBothHands(_bestSpellR->nextGesture())) {
             _gestureL = _gestureR;
         }
@@ -1110,14 +1324,14 @@ void QWarlock::validateSpellForTurn() {
     if ((_gestureL.compare("P") == 0) && (_gestureR.compare("P") == 0)) {
         qDebug() << "QWarlock::validateSpellForTurn suppressing accidental P/P surrender";
         if (!_bestSpellL) {
-            _gestureL = "D";
+            _gestureL = firstAllowedGesture(WARLOCK_HAND_LEFT, "P");
         } else if (!_bestSpellR) {
-            _gestureR = "D";
+            _gestureR = firstAllowedGesture(WARLOCK_HAND_RIGHT, "P");
         } else if (_bestSpellL->realPriority() >= _bestSpellR->realPriority()) {
-            _gestureR = "D";
+            _gestureR = firstAllowedGesture(WARLOCK_HAND_RIGHT, "P");
             _bestSpellR = nullptr;
         } else {
-            _gestureL = "D";
+            _gestureL = firstAllowedGesture(WARLOCK_HAND_LEFT, "P");
             _bestSpellL = nullptr;
         }
     }

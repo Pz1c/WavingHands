@@ -14,6 +14,18 @@
 
 class QWarlockSpellChecker;
 
+// One probe of the anti-spell table: which of our own spells could answer a given
+// enemy spell, and the window of turns in which the answer has to land. Ported from
+// getAntispellFilter() in js/ai_utils.js, which was removed in 4ef4b8a.
+// Empty searchTypes / searchIDs mean "no restriction on this axis".
+struct QAntiSpellRule {
+    QList<int> searchTypes;
+    QList<int> searchIDs;
+    QList<int> notIDs;
+    int fromTurn;
+    int toTurn;
+};
+
 class QWarlock
 {
 public:
@@ -78,6 +90,9 @@ protected:
     void breakEnemy(QWarlock *enemy);
     void processMaladroit();
     void attackEnemy(QWarlock *enemy);
+    bool spellsConflict(const QSpell *left, const QSpell *right) const;
+    bool gestureAllowed(const QString &gesture, int hand) const;
+    QString firstAllowedGesture(int hand, const QString &avoid) const;
     void validateSpellForTurn();
     void parseStatus();
     void checkPossibleGesture();
@@ -85,7 +100,9 @@ protected:
     void setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monsters);
     void checkSpells();
     void targetSpell(const QWarlock *enemy, const QList<QMonster *> &monsters);
-    QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID, int Hand = -1) const;
+    QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, const QList<int> &spellTypes, const QList<int> &notID, const QList<int> &byID, int Hand = -1, bool OwnHands = false) const;
+    QSpell *getSpellByFilter(const QList<QSpell *> &sl, int CastFrom, int CastTo, int SpellType, const QList<int> &notID, const QList<int> &byID, int Hand = -1, bool OwnHands = false) const;
+    bool buildAntiSpellRules(const QSpell *s, int minTurnToCast, QList<QAntiSpellRule> &rules) const;
     QSpell *getAntiSpell(const QList<QSpell *> &sl, const QSpell *s, const QWarlock *enemy) const;
     bool checkAntiSpell(const QSpell *as, const QSpell *s) const;
     QString getTargetForSpell(const QSpell *spell, const QWarlock *enemy, const QList<QMonster *> &monsters);

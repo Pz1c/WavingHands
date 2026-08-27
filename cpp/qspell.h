@@ -66,7 +66,7 @@ public:
     void setRealPriority(qreal newRealPriority);
 
     int danger() const;
-    bool checkValidSequence(const QSpell &s);
+    bool checkValidSequence(const QSpell &s) const;
 
     int spellBookLevel() const;
 

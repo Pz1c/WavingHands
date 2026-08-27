@@ -180,7 +180,7 @@ QString QSpell::nextGesture() const {
     }
 }
 
-bool QSpell::checkValidSequence(const QSpell &s) {
+bool QSpell::checkValidSequence(const QSpell &s) const {
     QString gesture1 = _gesture.right(turnToCast()), gesture2 = s._gesture.right(s._turnToCast);
     QString char1, char2, char1U, char2U;
     bool both_hand;

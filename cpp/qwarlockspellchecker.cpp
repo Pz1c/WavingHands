@@ -76,7 +76,13 @@ bool QWarlockSpellChecker::checkSpellChar(QChar left, QChar right, QChar spell) 
 
 bool QWarlockSpellChecker::checkStriktSpell(QString left, QString right, QString spell) {
     int Ln = spell.length();
-    if (left.length() < Ln) {
+    // Both hands are indexed below, so both have to be long enough. Only `left` was
+    // checked, and the two can differ in length: QWarlock::targetSpell() appends this
+    // turn's gesture to each hand's history, and one hand is often idle, which leaves
+    // its string one character shorter. right.at(i) then read past the end - an assert
+    // in a debug build, and a silent out-of-bounds read in the shipping release build,
+    // where it makes the AI misidentify the spell it just cast.
+    if ((left.length() < Ln) || (right.length() < Ln)) {
         return false;
     }
 
