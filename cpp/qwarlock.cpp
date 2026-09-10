@@ -24,6 +24,13 @@ static bool gestureNeedsBothHands(const QString &nextGesture) {
     return !nextGesture.isEmpty() && nextGesture.at(0).isLower();
 }
 
+static bool gestureInSet(const QString &gesture, const QString &allowed) {
+    if (gesture.isEmpty() || (gesture.compare(">") == 0)) {
+        return true; // no gesture, and stab, are always available
+    }
+    return allowed.indexOf(gesture.toUpper()) != -1;
+}
+
 // Fallback when no gesture can be derived. An empty possible-gesture set makes
 // checkSpellPosible reject every spell, which leaves the AI with no move at all.
 static const QString DEFAULT_POSSIBLE_GESTURES = "W,S,D,P,C,F";
@@ -42,6 +49,12 @@ QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString R
     _charmMonsterRight = false;
     _forcedHand = 0;
     _lockedParalyzedHand = WARLOCK_HAND_NONE;
+    // Both are read by setParalyzedHand() to choose the gesture-transform map for a
+    // paralysed hand, and by getSpellsList() via isParaFDF(). QWarloksDuelCore sets them
+    // before either is used, but an uninitialised bool here would silently pick the wrong
+    // map for a paralysed hand, so do not rely on the caller's ordering.
+    _isParaFDF = false;
+    _isParaFC = false;
     parseStatus();
     checkPossibleGesture();
     _SpellChecker = QWarlockSpellChecker::getInstance();
@@ -84,6 +97,8 @@ QWarlock::QWarlock(QWarlock *CopyFrom) {
     _forcedHand = CopyFrom->_forcedHand;
     _lockedParalyzedHand = CopyFrom->_lockedParalyzedHand;
     _forcedGesture = CopyFrom->_forcedGesture;
+    _isParaFDF = CopyFrom->_isParaFDF;
+    _isParaFC = CopyFrom->_isParaFC;
     _SpellChecker = CopyFrom->_SpellChecker;
 }
 
@@ -1146,7 +1161,7 @@ void QWarlock::processMaladroit() {
 // turn are wasted, and checkValidSequence() rejects the gesture-level clashes -
 // a both-hands (lowercase) gesture the other hand does not mirror, which covers
 // the half clap, and a P in both hands, which is a surrender.
-bool QWarlock::spellsConflict(const QSpell *left, const QSpell *right) const {
+static bool spellPairConflicts(const QSpell *left, const QSpell *right) {
     if (!left || !right) {
         return false;
     }
@@ -1161,6 +1176,82 @@ bool QWarlock::spellsConflict(const QSpell *left, const QSpell *right) const {
     return !right->checkValidSequence(*left);
 }
 
+bool QWarlock::spellsConflict(const QSpell *left, const QSpell *right) const {
+    return spellPairConflicts(left, right);
+}
+
+// The post-decision check the user asked for, and the job isSpellsNormal() used to do.
+// Deliberately reports rather than repairs: every repair path in this file can only DELETE a
+// spell and drop a filler gesture into the emptied hand - it can never choose a DIFFERENT
+// spell, which is what setNextSpell() did with its per-hand banned-id lists. Until that
+// exists there is nothing honest to repair with, so this measures instead.
+int checkDecision(const QDecision &d) {
+    int flaws = DF_NONE;
+
+    if (!gestureInSet(d.gestureL, d.allowedL)) flaws |= DF_ILLEGAL_GESTURE_L;
+    if (!gestureInSet(d.gestureR, d.allowedR)) flaws |= DF_ILLEGAL_GESTURE_R;
+
+    if ((d.maladroit > 0) && !d.gestureL.isEmpty() && !d.gestureR.isEmpty() &&
+        (d.gestureL.compare(d.gestureR) != 0)) {
+        flaws |= DF_MALADROIT_SPLIT;
+    }
+
+    // P with both hands is a surrender (BotSay_2), never something to do by accident.
+    if ((d.gestureL.compare("P") == 0) && (d.gestureR.compare("P") == 0)) {
+        flaws |= DF_SURRENDER;
+    }
+
+    // A lowercase gesture must be made by BOTH hands or it is wasted - this is the "half
+    // clap" isSpellsNormal() rejected, since every clap in the dictionary is lowercase 'c'.
+    if (d.bestL && gestureNeedsBothHands(d.bestL->nextGesture()) && (d.gestureL.compare(d.gestureR) != 0)) {
+        flaws |= DF_UNMIRRORED_BOTH_HAND;
+    }
+    if (d.bestR && gestureNeedsBothHands(d.bestR->nextGesture()) && (d.gestureL.compare(d.gestureR) != 0)) {
+        flaws |= DF_UNMIRRORED_BOTH_HAND;
+    }
+
+    if (spellPairConflicts(d.bestL, d.bestR)) {
+        flaws |= DF_PAIR_CONFLICT;
+    }
+
+    if (d.gestureL.isEmpty()) flaws |= DF_IDLE_HAND_L;
+    if (d.gestureR.isEmpty()) flaws |= DF_IDLE_HAND_R;
+
+    return flaws;
+}
+
+QString decisionFlawsToString(int flaws) {
+    if (flaws == DF_NONE) {
+        return "none";
+    }
+    QStringList out;
+    if (flaws & DF_MALADROIT_SPLIT)      out << "MALADROIT_SPLIT";
+    if (flaws & DF_ILLEGAL_GESTURE_L)    out << "ILLEGAL_L";
+    if (flaws & DF_ILLEGAL_GESTURE_R)    out << "ILLEGAL_R";
+    if (flaws & DF_UNMIRRORED_BOTH_HAND) out << "UNMIRRORED_BOTH_HAND";
+    if (flaws & DF_SURRENDER)            out << "SURRENDER";
+    if (flaws & DF_PAIR_CONFLICT)        out << "PAIR_CONFLICT";
+    if (flaws & DF_IDLE_HAND_L)          out << "IDLE_L";
+    if (flaws & DF_IDLE_HAND_R)          out << "IDLE_R";
+    return out.join("|");
+}
+
+QDecision QWarlock::decision() const {
+    QDecision d;
+    d.gestureL = _gestureL;
+    d.gestureR = _gestureR;
+    d.bestL = _bestSpellL;
+    d.bestR = _bestSpellR;
+    d.allowedL = _possibleLeftGestures;
+    d.allowedR = _possibleRightGestures;
+    d.maladroit = _maladroit;
+    return d;
+}
+
+int QWarlock::decisionViolations() const {
+    return checkDecision(decision());
+}
+
 // Fear ("No CFDS"), amnesia, maladroitness and paralysis all narrow which gestures a hand
 // may make - see checkPossibleGesture() and setParalyzedHand(). Nothing in the spell search
 // consulted that set: QWarlockSpellChecker::checkSpellPosible only tests it for a spell
@@ -1168,11 +1259,7 @@ bool QWarlock::spellsConflict(const QSpell *left, const QSpell *right) const {
 // matter what, and the AI would happily order it. In play that reaches the server as an
 // illegal gesture and the hand ends up doing nothing at all.
 bool QWarlock::gestureAllowed(const QString &gesture, int hand) const {
-    if (gesture.isEmpty() || (gesture.compare(">") == 0)) {
-        return true; // no gesture, and stab, are always available
-    }
-    const QString &allowed = (hand == WARLOCK_HAND_LEFT) ? _possibleLeftGestures : _possibleRightGestures;
-    return allowed.indexOf(gesture.toUpper()) != -1;
+    return gestureInSet(gesture, (hand == WARLOCK_HAND_LEFT) ? _possibleLeftGestures : _possibleRightGestures);
 }
 
 // A legal gesture for a hand with nothing better to do. `avoid` keeps the two hands from
@@ -1512,6 +1599,13 @@ void QWarlock::processDecision(QWarlock *enemy, QList<QMonster *> &monsters, con
     attackEnemy(enemy);
     //
     validateSpellForTurn();
+    //
+    // Measurement only - deliberately does not alter the decision. See checkDecision().
+    const int flaws = decisionViolations();
+    if (flaws != DF_NONE) {
+        qDebug() << "QWarlock::processDecision FLAWED DECISION" << _name
+                 << _gestureL << _gestureR << decisionFlawsToString(flaws);
+    }
     //
     targetSpell(enemy, monsters);
     //

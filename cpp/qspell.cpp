@@ -34,6 +34,9 @@ int QSpell::calcPriority(bool Enemy) {
     qDebug() << "QSpell::calcPriority" << _gesture << (static_cast<qreal>(static_cast<int>(100 * res))/100) << _turnToCast << ln;
     qreal prc = (already_cast + 1)/(ln + 1);
     res *= prc;
+    if (twoHand()) {
+        res -= 1;
+    }
     qDebug() << "QSpell::calcPriority result" << res;
     return static_cast<int>(res);
 }
@@ -147,6 +150,11 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _damage = Spell->_damage;
     _basic = Spell->_basic;
     _priority = calcPriority(Enemy);
+    // Was never assigned here, so every per-hand spell carried an uninitialised _active.
+    // getSpellByFilter() gates on `!s->active()`, so the bot included or skipped each
+    // candidate according to whatever was on the stack - the same position could produce
+    // a different decision on every run.
+    _active = Spell->_active;
     _realPriority = Spell->_realPriority;
     _spellGroup = Spell->_spellGroup;
     _spellBookLevel = Spell->_spellBookLevel;

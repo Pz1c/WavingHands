@@ -14,6 +14,41 @@
 
 class QWarlockSpellChecker;
 
+// Flaws a finished decision can carry, reported as a bitmask by checkDecision(). Kept as a
+// free predicate over a plain value so a turn can be judged in a test without a battle, a
+// network or a QWarlock. Restores the job isSpellsNormal() did in js/ai_utils.js before
+// commit 4ef4b8a: validate the chosen PAIR once more before it is sent.
+//
+// Note what is NOT a flaw: a hand making no gesture is legal - QWarloksDuelCore::sendOrders
+// splits "LH$" into ("LH", "") and posts &LH=, exactly as the human client does. An idle
+// hand is a wasted hand, not an illegal one, so it is reported separately from the rest.
+enum QDecisionFlaw {
+    DF_NONE                 = 0,
+    DF_MALADROIT_SPLIT      = 1 << 0, // maladroitness forces both hands to the same gesture
+    DF_ILLEGAL_GESTURE_L    = 1 << 1, // gesture outside what the hand may make this turn
+    DF_ILLEGAL_GESTURE_R    = 1 << 2,
+    DF_UNMIRRORED_BOTH_HAND = 1 << 3, // a both-hands (lowercase) gesture the other hand did not match
+    DF_SURRENDER            = 1 << 4, // P with both hands
+    DF_PAIR_CONFLICT        = 1 << 5, // the two chosen spells cannot share this turn
+    DF_IDLE_HAND_L          = 1 << 6, // legal, but the hand contributes nothing
+    DF_IDLE_HAND_R          = 1 << 7
+};
+
+// Everything checkDecision() needs. Spell pointers are borrowed, never owned.
+struct QDecision {
+    QString gestureL, gestureR;
+    const QSpell *bestL;
+    const QSpell *bestR;
+    QString allowedL, allowedR;
+    int maladroit;
+
+    QDecision() : bestL(nullptr), bestR(nullptr), maladroit(0) {}
+};
+
+// Pure: reads only its argument, writes nothing, allocates nothing.
+int checkDecision(const QDecision &d);
+QString decisionFlawsToString(int flaws);
+
 // One probe of the anti-spell table: which of our own spells could answer a given
 // enemy spell, and the window of turns in which the answer has to land. Ported from
 // getAntispellFilter() in js/ai_utils.js, which was removed in 4ef4b8a.
@@ -82,6 +117,11 @@ public:
     int magicBookLevel() const;
 
     bool AI() const;
+
+    // Snapshot of the decision this warlock has just made, and its flaw bitmask. Public so a
+    // test harness can score a turn without reparsing printOrders().
+    QDecision decision() const;
+    int decisionViolations() const;
 
 protected:
     void analyzeMonster(QList<QMonster *> &monsters, QWarlock *enemy);
