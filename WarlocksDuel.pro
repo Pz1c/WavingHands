@@ -17,12 +17,15 @@ CONFIG(release, debug|release) {
 
 INCLUDEPATH += cpp/game/
 INCLUDEPATH += cpp/QGoogleAnalytics/
+INCLUDEPATH += cpp/net/
 
 HEADERS += \
     cpp/QGoogleAnalytics/qgaconstant.h \
     cpp/QGoogleAnalytics/qgoogleanalytics.h \
     cpp/qbattleinfo.h \
     cpp/qgameconstant.h \
+    cpp/net/qrosterlink.h \
+    cpp/net/qrosterwire.h \
     cpp/qmonster.h \
     cpp/qwarlock.h \
     cpp/qwarlockdictionary.h \
@@ -41,6 +44,8 @@ SOURCES += main.cpp \
     cpp/QGoogleAnalytics/qgoogleanalytics.cpp \
     cpp/nativeforjava.cpp \
     cpp/qbattleinfo.cpp \
+    cpp/net/qrosterlink.cpp \
+    cpp/net/qrosterwire.cpp \
     cpp/qmonster.cpp \
     cpp/qwarlock.cpp \
     cpp/qwarlockdictionary.cpp \

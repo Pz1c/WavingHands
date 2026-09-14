@@ -1,10 +1,34 @@
 #include "qcore.h"
 
+#include <QTimer>
+
+namespace {
+
+// Carried by every reply, so it can be retried and accounted for without any
+// state outside the reply itself.
+const char *const kPropBackground = "wh_background";
+const char *const kPropReleased = "wh_released";
+const char *const kPropVerb = "wh_verb";
+const char *const kPropBody = "wh_body";
+const char *const kPropAttempt = "wh_attempt";
+
+// Inactivity bound. Background replies no longer clear the overlay, so without
+// one a stalled request would keep the UI blocked until the OS gave up on it.
+const int kRequestTimeoutMs = 30000;
+const int kRetryDelayMs = 5000;
+const int kMaxRetries = 3;
+
+}
+
 QGameCore::QGameCore(QObject *parent) :
     QObject(parent)
 {
     _requestIdx = 0;
     _request_code = "dda";
+    _httpResponceCode = 0;
+    _isLoading = false;
+    _reply = nullptr;
+    _foregroundRequests = 0;
 
     ignoredSslErrors.clear();
     ignoredSslErrors.append(QSslError(QSslError::CertificateSignatureFailed));
@@ -47,9 +71,46 @@ bool QGameCore::isLoading() {
     return _isLoading;
 }
 
+QString QGameCore::cookieHeaderFor(const QUrl &url) const {
+    QNetworkCookieJar *jar = _nam.cookieJar();
+    if (!jar) {
+        return QString();
+    }
+
+    QStringList parts;
+    foreach(QNetworkCookie c, jar->cookiesForUrl(url)) {
+        parts.append(QString::fromUtf8(c.toRawForm(QNetworkCookie::NameAndValueOnly)));
+    }
+    QString header = parts.join("; ");
+
+    // The caster server rejects an empty or malformed cookie, and a rejection
+    // costs both a strike on the connection and a slot in its per-IP budget.
+    // Never send one: an unusable cookie means "stay on the HTTP roster".
+    QByteArray raw = header.toUtf8();
+    if (raw.isEmpty() || raw.size() > 4096) {
+        return QString();
+    }
+    foreach(char c, raw) {
+        if ((c < 0x20) || (c > 0x7E)) {
+            return QString();
+        }
+    }
+    return header;
+}
+
+QNetworkProxy QGameCore::currentProxy() const {
+    return _proxyHost.isEmpty() ? QNetworkProxy(QNetworkProxy::NoProxy) : _proxy;
+}
+
 
 void QGameCore::slotReadyRead() {
-    QNetworkReply *reply = (QNetworkReply *)sender();
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) {
+        return;
+    }
+    reply->deleteLater();
+    releaseRequest(reply);
+    releaseLoading();
 
     if (reply->error() != QNetworkReply::NoError) {
         return;
@@ -65,7 +126,8 @@ void QGameCore::slotReadyRead() {
 }
 
 void QGameCore::slotError(QNetworkReply::NetworkError error) {
-    qDebug() << "slotError" << error << _reply->errorString();
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    qDebug() << "slotError" << error << (reply ? reply->errorString() : QString());
 }
 
 void QGameCore::slotSslErrors(QList<QSslError> error_list) {
@@ -73,49 +135,92 @@ void QGameCore::slotSslErrors(QList<QSslError> error_list) {
 }
 
 void QGameCore::resendLastRequest() {
-    if (_lastRequestType.compare("POST") == 0) {
-        sendPostRequest(_lastRequestUrl, _lastRequestData);
-    } else {
-        sendGetRequest(_lastRequestUrl);
+    startRequest(_lastRequestType, _lastRequestUrl, _lastRequestData, false, 0, false);
+}
+
+bool QGameCore::isBackground(QNetworkReply *reply) {
+    return reply && reply->property(kPropBackground).toBool();
+}
+
+bool QGameCore::releaseRequest(QNetworkReply *reply) {
+    if (!reply || reply->property(kPropReleased).toBool()) {
+        return false;
+    }
+    reply->setProperty(kPropReleased, true);
+    if (isBackground(reply)) {
+        return false;
+    }
+    if (_foregroundRequests > 0) {
+        --_foregroundRequests;
+    }
+    return true;
+}
+
+void QGameCore::releaseLoading() {
+    if ((_foregroundRequests == 0) && !loadingHeld()) {
+        setIsLoading(false);
     }
 }
 
-void QGameCore::sendPostRequest(const QString &url, const QByteArray &data) {
-    _lastRequestType = "POST";
-    _lastRequestUrl = url;
-    _lastRequestData.clear();
-    _lastRequestData.append(data);
-    _httpResponceCode = 0;
-    saveRequest(_lastRequestUrl);
-
-    QNetworkRequest request;
-    request.setUrl(QUrl(url));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
-    request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
-    _reply = _nam.post(request, data);
-    //_reply->ignoreSslErrors(ignoredSslErrors);
-    _reply->ignoreSslErrors();
-    connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
-    connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
-    connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+bool QGameCore::loadingHeld() const {
+    return false;
 }
 
-void QGameCore::sendGetRequest(const QString &url) {
-    _lastRequestType = "GET";
-    _lastRequestUrl = url;
-    _lastRequestData.clear();
+bool QGameCore::retryRequest(QNetworkReply *reply) {
+    int attempt = reply->property(kPropAttempt).toInt();
+    if (attempt >= kMaxRetries) {
+        return false;
+    }
+    QString verb = reply->property(kPropVerb).toString();
+    QString url = reply->url().toString();
+    QByteArray body = reply->property(kPropBody).toByteArray();
+    bool background = isBackground(reply);
+    // The retry inherits this reply's share of the overlay, so a user action
+    // stays covered while it waits.
+    reply->setProperty(kPropReleased, true);
+    QTimer::singleShot(kRetryDelayMs, this, [this, verb, url, body, background, attempt]() {
+        startRequest(verb, url, body, background, attempt + 1, true);
+    });
+    return true;
+}
+
+QNetworkReply *QGameCore::sendPostRequest(const QString &url, const QByteArray &data, bool Background) {
+    return startRequest("POST", url, data, Background, 0, false);
+}
+
+QNetworkReply *QGameCore::sendGetRequest(const QString &url, bool Background) {
+    return startRequest("GET", url, QByteArray(), Background, 0, false);
+}
+
+QNetworkReply *QGameCore::startRequest(const QString &Verb, const QString &Url, const QByteArray &Data, bool Background, int Attempt, bool Counted) {
+    bool is_post = Verb.compare("POST") == 0;
+    _lastRequestType = is_post ? "POST" : "GET";
+    _lastRequestUrl = Url;
+    _lastRequestData = Data;
     _httpResponceCode = 0;
     saveRequest(_lastRequestUrl);
 
     QNetworkRequest request;
-    request.setUrl(QUrl(url));
+    request.setUrl(QUrl(Url));
+    if (is_post) {
+        request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
+    }
     request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
-    _reply = _nam.get(request);
+    request.setTransferTimeout(kRequestTimeoutMs);
+    _reply = is_post ? _nam.post(request, Data) : _nam.get(request);
     //_reply->ignoreSslErrors(ignoredSslErrors);
     _reply->ignoreSslErrors();
+    _reply->setProperty(kPropBackground, Background);
+    _reply->setProperty(kPropVerb, _lastRequestType);
+    _reply->setProperty(kPropBody, Data);
+    _reply->setProperty(kPropAttempt, Attempt);
+    if (!Background && !Counted) {
+        ++_foregroundRequests;
+    }
     connect(_reply, SIGNAL(finished()), this, SLOT(slotReadyRead()));
     connect(_reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)), this, SLOT(slotError(QNetworkReply::NetworkError)));
     connect(_reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(slotSslErrors(QList<QSslError>)));
+    return _reply;
 }
 
 /*

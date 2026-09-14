@@ -23,6 +23,7 @@
 
 #include <qcore.h>
 #include <qgoogleanalytics.h>
+#include <qrosterlink.h>
 //#include "qwarlockutils.h"
 #include "qwarlockspellchecker.h"
 //#include "qwarlockdictionary.h"
@@ -130,7 +131,7 @@ public slots:
     bool aiAcceptChallenge(int battle_id, bool changeAI = true);
     void rejectChallenge(int battle_id);
     void deleteMsg(QString msg_from);
-    void forceSurrender(int battle_id, int turn);
+    void forceSurrender(int battle_id, int turn, bool Silent = false);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
     void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel,
@@ -143,7 +144,7 @@ public slots:
     void autoLogin(int Idx);
     void aiLogin();
     void logout();
-    void leaveBattle(int battle_id, int warlock_id = 0);
+    void leaveBattle(int battle_id, int warlock_id = 0, bool Silent = false);
     void setParamValue(const QString &Parameter, const QString &Value);
     QString getWarlockStats(const QString &WarlockName, bool DirtyLogin = false);
     QString findWarlockByName(const QString &warlockName);
@@ -176,11 +177,19 @@ public slots:
     // https://github.com/Pz1c/WavingHands/issues/268
     void showNotification(const QString &msg);
 protected slots:
-    void loginToSite();
+    void loginToSite(bool Silent = false);
     void timerFired();
     void processServiceTimer();
     void doAIAnswer(QString Login, int MagicBookLevel);
     void checkAIAnswer(int battle_id);
+
+    // Roster over the caster link. Any of these may fire while a roster request
+    // is outstanding; all of them end at the publishTopList/finishRosterRequest
+    // funnel so the loading overlay can never be left up.
+    void onLinkAuthenticated(const QString &canonical, const QString &token);
+    void onRosterBlock(const QRosterBlock &block);
+    void onRosterFailed(const QString &code);
+    void onLinkTurnReady(const QString &by);
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -228,6 +237,16 @@ protected:
     int parseBattleDescription(QString &Data);
 
     void generateTopList();
+
+    // Roster plumbing. publishTopList() always emits: the Hall of Fame window
+    // opens only from onTopListChanged, so a silent path would wedge the UI.
+    // finishRosterRequest() is bookkeeping only, and is idempotent.
+    void startRosterLink();
+    void publishTopList();
+    void finishRosterRequest();
+    void httpTopList(bool ForceFull);
+    void applyRosterBlock(const QRosterBlock &block);
+    bool loadingHeld() const override;
 
     QString getHintArray(int hint_id);
     QString getBattleHint(QBattleInfo *battle_info);
@@ -286,6 +305,24 @@ private:
     QStringList _msg;
     QList<QValueName> _accounts;
     qint64 _lastPlayersScan;
+    // Caster link: the roster source when it is up, plus the delta watermark.
+    // See the throttle note in scanTopList before changing any of these.
+    QRosterLink *_rosterLink;
+    QString _rosterEpoch;
+    quint64 _rosterRevision;
+    QMap<QString, QString> _casterTokens;  // lowercased login -> device token
+    bool _rosterReqActive;
+    bool _rosterReqSilent;
+    bool _rosterReqForceFull;
+    QTimer _rosterGuard;
+    qint64 _lastForcedScan;
+    int _rosterEmptyBatches;
+    // Bumped per roster request. The HTTP reply and the WHO serving one carry its
+    // value, so a late result cannot end the request that replaced it.
+    quint32 _rosterReqSeq;
+    quint32 _rosterWhoSeq;
+    // The reply slotReadyRead is processing, for the finishXxx handlers.
+    QNetworkReply *_currentReply;
     QMap<QString, QWarlockStat *> _playerStats;
     QString _inviteToBattle;
     QMap<int, QBattleInfo *> _battleInfo;

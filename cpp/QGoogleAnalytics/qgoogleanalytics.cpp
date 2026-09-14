@@ -151,7 +151,11 @@ void QGoogleAnalytics::setUserId(const QString &newUserId)
 
 
 void QGoogleAnalytics::slotReadyRead() {
-    QNetworkReply *reply = (QNetworkReply *)sender();
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) {
+        return;
+    }
+    reply->deleteLater();
     QString url = reply->url().toString();
     QString data = reply->readAll();
     int httpResponceCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -159,7 +163,10 @@ void QGoogleAnalytics::slotReadyRead() {
 }
 
 void QGoogleAnalytics::slotError(QNetworkReply::NetworkError error) {
-    qDebug() << "QGoogleAnalytics::slotError" << error << _reply->errorString();
+    // sender(), not _reply: that is only the most recent request, and an older
+    // one may already be deleted.
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    qDebug() << "QGoogleAnalytics::slotError" << error << (reply ? reply->errorString() : QString());
 }
 
 void QGoogleAnalytics::slotSslErrors(QList<QSslError> error_list) {

@@ -14,6 +14,20 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     qDebug() << "QWarloksDuelCore::QWarloksDuelCore" << ini_path;
     QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, ini_path);
     setOrganization(ORGANIZATION_NAME, _isAsService ? APPLICATION_NAME_SERVICE : APPLICATION_NAME);
+    // The link must exist before init(): loadGameParameters() restores the delta
+    // watermark and the device tokens, and a link allocated later would have the
+    // next save write empty values straight back over them.
+    _rosterLink = AsService ? nullptr : new QRosterLink(this);
+    _rosterEpoch.clear();
+    _rosterRevision = 0;
+    _rosterReqActive = false;
+    _rosterReqSilent = true;
+    _rosterReqForceFull = false;
+    _lastForcedScan = 0;
+    _rosterEmptyBatches = 0;
+    _rosterReqSeq = 0;
+    _rosterWhoSeq = 0;
+    _currentReply = nullptr;
     init();
     if (_isAsService) {
         _login = "";
@@ -53,6 +67,30 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
 
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
+    if (_rosterLink) {
+        _rosterLink->setEndpoint(GAME_CASTER_HOST, GAME_CASTER_PORT);
+        connect(_rosterLink, &QRosterLink::authenticated, this, &QWarloksDuelCore::onLinkAuthenticated);
+        connect(_rosterLink, &QRosterLink::rosterBlock, this, &QWarloksDuelCore::onRosterBlock);
+        connect(_rosterLink, &QRosterLink::rosterFailed, this, &QWarloksDuelCore::onRosterFailed);
+        connect(_rosterLink, &QRosterLink::turnReady, this, &QWarloksDuelCore::onLinkTurnReady);
+        connect(_rosterLink, &QRosterLink::tokenRejected, this, [this]() {
+            _casterTokens.remove(_login.toLower());
+        });
+        // Last resort: nothing may leave the loading overlay up, whatever the
+        // link or the HTTP fallback does.
+        _rosterGuard.setSingleShot(true);
+        connect(&_rosterGuard, &QTimer::timeout, this, [this]() {
+            qDebug() << "QWarloksDuelCore roster guard fired";
+            publishTopList();
+            finishRosterRequest();
+        });
+        connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+            if ((state == Qt::ApplicationActive) && _rosterLink) {
+                _rosterLink->probeNow();
+            }
+        });
+    }
+
     prepareSpellHtmlList();
 
     // AI service
@@ -69,6 +107,12 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
 }
 
 QWarloksDuelCore::~QWarloksDuelCore() {
+    // First of all: no queued read slot may touch _playerStats while it is
+    // being deleted at the end of this function.
+    if (_rosterLink) {
+        _rosterLink->stop();
+    }
+
     saveParameters(true, true, true, true, true);
 
     // clean up
@@ -158,7 +202,8 @@ void QWarloksDuelCore::storeFullParsedBattle(QBattleInfo *bi) {
     }
     QString p_data = "json=";
     p_data.append(QUrl::toPercentEncoding(bi->toString()));
-    sendPostRequest(QString(GAME_SERVER_URL_STORE_FINISHED_BATTLE).arg(intToStr(bi->battleID())), p_data.toUtf8());
+    // Archiving for the web viewer: nothing the user is waiting on.
+    sendPostRequest(QString(GAME_SERVER_URL_STORE_FINISHED_BATTLE).arg(intToStr(bi->battleID())), p_data.toUtf8(), true);
 }
 
 void QWarloksDuelCore::sendMessage(const QString &Msg) {
@@ -194,13 +239,17 @@ void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, co
     sendPostRequest(GAME_SERVER_URL_NEW_PLAYER, postData.toUtf8());
 }
 
-void QWarloksDuelCore::loginToSite() {
+void QWarloksDuelCore::loginToSite(bool Silent) {
     if (_login.isEmpty()) {
         emit needLogin();
         return;
     }
 
-    setIsLoading(true);
+    // Silent: a re-login that a background request ran into, not one the user
+    // asked for.
+    if (!Silent) {
+        setIsLoading(true);
+    }
 
     QString postData;
     postData.append("name=");
@@ -212,7 +261,7 @@ void QWarloksDuelCore::loginToSite() {
 
     _waiting_in_battles.clear();
     _ready_in_battles.clear();
-    sendPostRequest(GAME_SERVER_URL_LOGIN, postData.toUtf8());
+    sendPostRequest(GAME_SERVER_URL_LOGIN, postData.toUtf8(), Silent);
 }
 
 void QWarloksDuelCore::processNewLogin(bool Silent) {
@@ -283,7 +332,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         // perhapse bad login
         if (Data.indexOf("Failed Login</TITLE>") != 0) {
             _errorMsg = "Wrong login or password";
-            setIsLoading(false);
+            releaseLoading();
             emit needLogin();
             emit errorOccurred();
             return false;
@@ -305,10 +354,15 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         }
         qDebug() << "final url " << url;
         setCheckUrl(QString(GAME_SERVER_URL_GET_PROFILE).arg(_login));
-        sendGetRequest(url);
+        // Same standing as the login it follows.
+        sendGetRequest(url, isBackground(_currentReply));
         processRefferer();
         saveParameters(true, true, true, true, true);
         setTimeState(!_isAsService);
+        // _isAI is only known from line above, so this cannot move any earlier:
+        // the bot accounts must never open a link. Fire and forget - it must not
+        // delay the redirect request issued just above.
+        startRosterLink();
         logEvent("login", "");
         return false;
     }
@@ -400,13 +454,32 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
 
 void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl) {
     qDebug() << "finishTopList" << StatusCode << NewUrl;
+    // Only the reply of the request still outstanding may end it. A late one,
+    // whose request the guard already gave up on, still merges and publishes.
+    bool current = _currentReply && (_currentReply->property("wh_roster_seq").toUInt() == _rosterReqSeq);
+    if (StatusCode != 200) {
+        // An error page would otherwise be parsed as roster rows.
+        publishTopList();
+        if (current) {
+            finishRosterRequest();
+        }
+        return;
+    }
     QStringList sl = Data.split("\r\n");
     foreach(QString s, sl) {
         if (s.trimmed().isEmpty()) {
             continue;
         }
         QWarlockStat *ws = new QWarlockStat(s.trimmed());
-        _playerStats[ws->name().toLower()] = ws;
+        QString key = ws->name().toLower();
+        if (key.isEmpty()) {
+            delete ws;
+            continue;
+        }
+        if (QWarlockStat *old = _playerStats.value(key, nullptr)) {
+            delete old;
+        }
+        _playerStats[key] = ws;
     }
     /*int pos1 = 0, pos2;
     //QList<QWarlockStat> wsl;
@@ -417,8 +490,10 @@ void QWarloksDuelCore::finishTopList(QString &Data, int StatusCode, QUrl NewUrl)
         qDebug() << "QWarloksDuelCore::finishTopList" << ws.toString();
         pos1 = pos2 + 4;
     }*/
-    generateTopList();
-    emit topListChanged();
+    publishTopList();
+    if (current) {
+        finishRosterRequest();
+    }
 }
 
 void QWarloksDuelCore::generateTopList() {
@@ -452,6 +527,152 @@ void QWarloksDuelCore::generateTopList() {
     }
     _topActive.append("]").prepend("[");
     _topAll.append("]").prepend("[");
+}
+
+void QWarloksDuelCore::publishTopList() {
+    // Always emits. The Hall of Fame window opens only from onTopListChanged, so
+    // a path that stays quiet leaves the button dead and the overlay up.
+    generateTopList();
+    emit topListChanged();
+}
+
+void QWarloksDuelCore::finishRosterRequest() {
+    if (!_rosterReqActive) {
+        return;
+    }
+    _rosterReqActive = false;
+    _rosterGuard.stop();
+    if (!_rosterReqSilent) {
+        // A silent poll never raised the overlay, so it must not lower one that
+        // another request is still relying on. Nor may this one while a
+        // foreground HTTP request is still out.
+        releaseLoading();
+    }
+}
+
+bool QWarloksDuelCore::loadingHeld() const {
+    // A Hall of Fame the user is waiting for holds the overlay, whichever
+    // transport ends up serving it.
+    return _rosterReqActive && !_rosterReqSilent;
+}
+
+void QWarloksDuelCore::httpTopList(bool ForceFull) {
+    // Called directly, never by re-entering scanTopList: that would hit the 30s
+    // gate the caller just stamped and quietly make no request at all.
+    // Always background: a roster request's overlay belongs to the request
+    // (loadingHeld), not to whichever transport serves it.
+    QNetworkReply *reply = sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(_login, ForceFull ? "1" : "0"), true);
+    reply->setProperty("wh_roster_seq", _rosterReqSeq);
+}
+
+void QWarloksDuelCore::startRosterLink() {
+    if (_isAsService || _isAI || !_isLogined || _login.isEmpty() || !_rosterLink) {
+        return;
+    }
+    _rosterLink->setProxy(currentProxy());
+    QString cookie = cookieHeaderFor(QUrl(GAME_SERVER_URL_PLAYER));
+    QString token = _casterTokens.value(_login.toLower());
+    if (cookie.isEmpty() && token.isEmpty()) {
+        // Nothing to prove an identity with. Stay on the HTTP roster rather than
+        // sending a handshake the server is bound to reject.
+        _rosterLink->stop();
+        return;
+    }
+    qDebug() << "QWarloksDuelCore::startRosterLink" << _login << "cookie bytes" << cookie.toUtf8().size() << "has token" << !token.isEmpty();
+    _rosterLink->start(_login, cookie, token);
+}
+
+void QWarloksDuelCore::onLinkAuthenticated(const QString &canonical, const QString &token) {
+    // canonical is the site own spelling of the name, for display only:
+    // _playerStats stays keyed by the lowercased login.
+    Q_UNUSED(canonical)
+    if (token.isEmpty() || _login.isEmpty()) {
+        return;
+    }
+    // Persist now rather than up to a minute later: a restart in between would
+    // waste the token and force another cookie handshake.
+    _casterTokens[_login.toLower()] = token;
+    saveParameters(false, false, true, false, false);
+}
+
+void QWarloksDuelCore::applyRosterBlock(const QRosterBlock &block) {
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+    foreach(QRosterRow r, block.rows) {
+        QString key = r.name.toLower();
+        if (key.isEmpty()) {
+            continue;
+        }
+        QWarlockStat *ws = _playerStats.value(key, nullptr);
+        if (!ws) {
+            // The structured constructor, never the auto-detecting one: field 9
+            // of a wire row is idle seconds, which the ini parser would take for
+            // an absolute timestamp.
+            _playerStats[key] = new QWarlockStat(r.name, r.registered, r.ladder, r.melee, r.played,
+                                                 r.won, r.died, r.elo, r.color, now - r.idleSeconds, r.mobile);
+            continue;
+        }
+        // Merge in place: replacing the record would leak the old one and drop
+        // the warlock id scraped from the player profile page.
+        ws->setRegistered(r.registered);
+        ws->setLadder(r.ladder);
+        ws->setMelee(r.melee);
+        ws->setPlayed(r.played);
+        ws->setWon(r.won);
+        ws->setDied(r.died);
+        ws->setElo(r.elo);
+        ws->setColor(r.color);
+        ws->setLastActivity(now - r.idleSeconds);
+        if (r.mobile) {
+            // A site scan can never observe this, so the wire 0 is structural
+            // rather than authoritative.
+            ws->setMobile(true);
+        }
+    }
+    foreach(QString name, block.removed) {
+        if (QWarlockStat *dead = _playerStats.take(name.toLower())) {
+            delete dead;
+        }
+    }
+}
+
+void QWarloksDuelCore::onRosterBlock(const QRosterBlock &block) {
+    qDebug() << "QWarloksDuelCore::onRosterBlock" << block.rows.count() << "rows" << block.badRows << "bad" << block.full << block.revision;
+    if ((block.badRows > 0) && block.rows.isEmpty() && (block.bodyLines > 0)) {
+        // Nothing at all parsed: that is a version mismatch, not bad data.
+        if ((++_rosterEmptyBatches >= 3) && _rosterLink) {
+            _rosterLink->disableForSession("all rows unparseable");
+        }
+        onRosterFailed("malformed");
+        return;
+    }
+    _rosterEmptyBatches = 0;
+    applyRosterBlock(block);
+    // Commit the watermark here and nowhere else, from the values END carried.
+    _rosterEpoch = block.epoch;
+    _rosterRevision = block.revision;
+    publishTopList();
+    if (_rosterWhoSeq == _rosterReqSeq) {
+        finishRosterRequest();
+    }
+}
+
+void QWarloksDuelCore::onRosterFailed(const QString &code) {
+    qDebug() << "QWarloksDuelCore::onRosterFailed" << code;
+    // A WHO the guard already gave up on must neither end nor start a fallback
+    // for the request that replaced it.
+    if (!_rosterReqActive || (_rosterWhoSeq != _rosterReqSeq)) {
+        return;
+    }
+    // Silent, always: a caster problem must never reach the user. It only means
+    // this roster request goes over HTTP instead.
+    _rosterGuard.start(12000);
+    httpTopList(_rosterReqForceFull);
+}
+
+void QWarloksDuelCore::onLinkTurnReady(const QString &by) {
+    // Received and logged only. Turning every opponent move into a /player round
+    // trip would cost more traffic than the poll it would be improving on.
+    qDebug() << "QWarloksDuelCore::onLinkTurnReady" << by;
 }
 
 bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl) {
@@ -539,9 +760,13 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
 }
 
 bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl NewUrl) {
+    // The background scan submits forced surrenders of stale battles too.
+    bool background = isBackground(_currentReply);
     if (NewUrl.isEmpty()) {
-        _errorMsg = "Something goes wrong, can't send battle orders";
-        emit errorOccurred();
+        if (!background) {
+            _errorMsg = "Something goes wrong, can't send battle orders";
+            emit errorOccurred();
+        }
         return false;
     }
     emit orderSubmitedChanged();
@@ -569,8 +794,10 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
         }
     }
 
-    sendGetRequest(url);
-    setIsLoading(true);
+    if (!background) {
+        setIsLoading(true);
+    }
+    sendGetRequest(url, background);
 
     return true;
 }
@@ -624,6 +851,7 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         _exp_lv = 1;
         emit registerNewUserChanged();
         saveParameters(false, false, true);
+        startRosterLink();
         return true;
     }
     return false;
@@ -632,7 +860,7 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
 void QWarloksDuelCore::scanState(bool Silent) {
     qDebug() << "scanState" << _isLogined << _isAI << _ready_in_battles.count() << _lstAI.count() << _botIdx << _isAsService;;
     if (!_isLogined) {
-        loginToSite();
+        loginToSite(Silent);
         return;
     }
 
@@ -642,7 +870,7 @@ void QWarloksDuelCore::scanState(bool Silent) {
         //_challengeList.clear();
     }
 
-    sendGetRequest(GAME_SERVER_URL_PLAYER);
+    sendGetRequest(GAME_SERVER_URL_PLAYER, Silent);
     logEvent(Silent ? "ListGames_Refresh_Auto" : "ListGames_Refresh_Clicked", "");
 }
 
@@ -651,22 +879,72 @@ void QWarloksDuelCore::getChallengeList(bool Silent) {
         setIsLoading(true);
     }
 
-    sendGetRequest(GAME_SERVER_URL_CHALLENGES);
+    sendGetRequest(GAME_SERVER_URL_CHALLENGES, Silent);
 }
 
 void QWarloksDuelCore::scanTopList(bool Silent, bool ForceFull) {
-    if (_isAI) {
+    if (_isAI || _isAsService) {
+        return;
+    }
+    // Three throttles interact here: _lastPlayersScan (30s, and persisted across
+    // runs), finishScan's own 60s check, and the 10s _serviceTimer that drives
+    // the silent caster poll. Changing any one of them changes both the caster
+    // cadence and the HTTP fallback cadence.
+    if (_login.isEmpty()) {
+        // top.php answers "Wrong Login" without one, and there is nobody to show
+        // a roster to yet.
+        publishTopList();
+        return;
+    }
+    if (_rosterReqActive) {
+        if (!Silent) {
+            // The Hall of Fame button while a request is already out: wait for
+            // that one instead of starting another. It publishes when it ends,
+            // which is what opens the window, and the guard it started bounds
+            // the wait.
+            _rosterReqForceFull = _rosterReqForceFull || ForceFull;
+            if (_rosterReqSilent) {
+                _rosterReqSilent = false;
+                setIsLoading(true);
+            }
+            return;
+        }
+        publishTopList();
         return;
     }
     qint64 udt = QDateTime::currentSecsSinceEpoch();
-    if (udt - _lastPlayersScan > 30) {
-        _lastPlayersScan = udt;
-        setIsLoading(!Silent);
-        sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(_login, ForceFull ? "1" : "0"));
-    } else {
-        generateTopList();
-        emit topListChanged();
+    if (ForceFull) {
+        // ForceFull is user-initiated only, and deliberately skips the 30s gate:
+        // the silent caster poll keeps _lastPlayersScan fresh, so the Hall of
+        // Fame button would otherwise never be able to open the throttle.
+        if (udt - _lastForcedScan < 3) {
+            publishTopList();
+            return;
+        }
+        _lastForcedScan = udt;
+    } else if (udt - _lastPlayersScan <= 30) {
+        publishTopList();
+        return;
     }
+    _lastPlayersScan = udt;
+    _rosterReqActive = true;
+    ++_rosterReqSeq;
+    _rosterReqSilent = Silent;
+    _rosterReqForceFull = ForceFull;
+    if (!Silent) {
+        setIsLoading(true);
+    }
+    _rosterGuard.start(12000);
+
+    // canRequestWho() is answered locally, so a down link costs nothing and we
+    // never wait on a connection attempt. Connecting happens off this path.
+    if (_rosterLink && _rosterLink->canRequestWho() &&
+        _rosterLink->requestWho(ForceFull ? QString() : _rosterEpoch,
+                                ForceFull ? 0 : _rosterRevision)) {
+        _rosterWhoSeq = _rosterReqSeq;
+        return;
+    }
+    httpTopList(ForceFull);
 }
 
 bool QWarloksDuelCore::aiAcceptChallenge(int battle_id, bool changeAI) {
@@ -680,14 +958,16 @@ bool QWarloksDuelCore::aiAcceptChallenge(int battle_id, bool changeAI) {
     return false;
 }
 
-void QWarloksDuelCore::leaveBattle(int battle_id, int warlock_id) {
-    setIsLoading(true);
+void QWarloksDuelCore::leaveBattle(int battle_id, int warlock_id, bool Silent) {
+    if (!Silent) {
+        setIsLoading(true);
+    }
     if (warlock_id> 0) {
         logEvent("Game_Kick_Out", QString("Id;%1;WarlockId;%2;").arg(intToStr(battle_id), intToStr(warlock_id)));
-        sendGetRequest(QString(GAME_SERVER_URL_LEAVE_GAME_OTHER).arg(intToStr(battle_id), intToStr(warlock_id)));
+        sendGetRequest(QString(GAME_SERVER_URL_LEAVE_GAME_OTHER).arg(intToStr(battle_id), intToStr(warlock_id)), Silent);
     } else {
         logEvent("Game_Leave", QString("Id;%1;Warlock;%2;").arg(intToStr(battle_id), _login));
-        sendGetRequest(QString(GAME_SERVER_URL_LEAVE_GAME).arg(intToStr(battle_id)));
+        sendGetRequest(QString(GAME_SERVER_URL_LEAVE_GAME).arg(intToStr(battle_id)), Silent);
     }
 
 }
@@ -717,13 +997,13 @@ void QWarloksDuelCore::deleteMsg(QString msg_from) {
     sendGetRequest(QString(GAME_SERVER_URL_DELLMESS).arg(msg_from));
 }
 
-void QWarloksDuelCore::forceSurrender(int battle_id, int turn) {
+void QWarloksDuelCore::forceSurrender(int battle_id, int turn, bool Silent) {
     _loadedBattleID = battle_id;
     _loadedBattleType = 1;
     QString postData;
     postData.append(QString("force=1&turn=%1&num=%2").arg(QString::number(turn), QString::number(battle_id)));
     qDebug() << postData;
-    sendPostRequest(GAME_SERVER_URL_SUBMIT, postData.toUtf8());
+    sendPostRequest(GAME_SERVER_URL_SUBMIT, postData.toUtf8(), Silent);
     logEvent("Game_Turn_Forced", QString("Id;%1;Turn;%2;IsBot;%3;Warlock;%4;").arg(QString::number(battle_id), QString::number(turn), boolToIntS(_isAI), _login));
 }
 
@@ -784,7 +1064,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
     _loadedBattleSilent = silent;
     qDebug() << "getBattle " << _loadedBattleID << " battle_type " << _loadedBattleType << _isLogined << "silent" << _loadedBattleSilent;
     if (!_isLogined) {
-        loginToSite();
+        loginToSite(silent);
         return;
     }
     if (_loadedBattleType == 2) {
@@ -796,8 +1076,11 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
         }
     }
 
-    setIsLoading(!silent);
-    sendGetRequest(QString(_loadedBattleType == 2 ? GAME_SERVER_URL_GET_FINISHED_BATTLE : GAME_SERVER_URL_GET_BATTLE).arg(QString::number(_loadedBattleID)));
+    // A silent load must leave alone an overlay some other request raised.
+    if (!silent) {
+        setIsLoading(true);
+    }
+    sendGetRequest(QString(_loadedBattleType == 2 ? GAME_SERVER_URL_GET_FINISHED_BATTLE : GAME_SERVER_URL_GET_BATTLE).arg(QString::number(_loadedBattleID)), silent);
 }
 
 void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
@@ -1721,7 +2004,7 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             if (_isAI && (_ready_in_battles.size() == 0) && battle_info->canForceSurrendering()) {
                 if (battle_info->turn() > 0) {
                     battle_info->setWaitFrom(battle_info->wait_from() + 30 * 60);
-                    forceSurrender(bid, battle_info->turn());
+                    forceSurrender(bid, battle_info->turn(), true);
                 } else if (!ask_ai) {
                     ask_ai = true;
                     getBattle(bid, 0);
@@ -1731,12 +2014,12 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
             if (!_isAI && (_ready_in_battles.size() == 0)) {
                 if ((battle_info->status() == BATTLE_INFO_STATUS_WAIT) && battle_info->canForceSurrendering(7 * 24 * 60 * 60) && (battle_info->turn() > 0)) {
                     battle_info->setWaitFrom(battle_info->wait_from() + 30 * 60);
-                    forceSurrender(bid, battle_info->turn());
+                    forceSurrender(bid, battle_info->turn(), true);
                 }
 
                 if ((battle_info->status() == BATTLE_INFO_STATUS_NO_START)) {
                     if (battle_info->isInviteRejected() && battle_info->canForceSurrendering(10 * 60)) {
-                        leaveBattle(bid);
+                        leaveBattle(bid, 0, true);
                     } else if (!battle_info->isInviteRejected() && battle_info->canForceSurrendering(24 * 60 * 60)) {
                         battle_info->setWaitFrom(-2);
                         getBattle(bid, 0, true);
@@ -1857,7 +2140,9 @@ bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
     }
     if (!_isAI && !_isAsService) {
         if (QDateTime::currentSecsSinceEpoch() - _lastPlayersScan >= 1 * 60) {
-            scanTopList(false);
+            // Background: the Hall of Fame button is the only roster request the
+            // user waits for.
+            scanTopList(true);
         }
     }
     return true;
@@ -1882,6 +2167,13 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
 //    QList<int> waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
 //    QList<int> finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
 
+    if (login.isEmpty()) {
+        // Not a profile page (a missing player, or an error page served as 200):
+        // an empty name would become a blank roster row that is saved and reloaded.
+        _errorMsg = "Can't load warlock info";
+        emit errorOccurred();
+        return true;
+    }
     QString ll = login.toLower();
     if (_playerStats.contains(ll)) {
         _playerStats[ll]->setRegistered(registered);
@@ -1909,7 +2201,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     //            bbAction.text = warlock_data.isPlayer ? "Hall of Fame" : "Challenge";
     //            ltTitleOnline.visible = warlock_data.online;
     _errorMsg = QString("{\"type\":15,\"name\":\"%1\",\"last_activity\":%2,\"elo\":%3,\"won\":%4,\"played\":%5,\"isPlayer\":false,\"online\":%6}")
-                    .arg(login, intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()));
+                    .arg(QWarlockUtils::jsonEscape(login), intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()));
     emit errorOccurred();
 
     /*_warlockInfo.clear();
@@ -1984,10 +2276,19 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
 
     if (url.indexOf("/player") != -1) {
         if (statusCode != 200) {
+            // A background scan re-logs in quietly; only a refresh the user asked
+            // for is reported.
+            bool background = isBackground(_currentReply);
             _isLogined = false;
-            loginToSite();
-            _errorMsg = "Can't receive player info, try reconnect";
-            emit errorOccurred();
+            if (_rosterLink) {
+                // The cookie the link authenticated with is dead too.
+                _rosterLink->stop();
+            }
+            loginToSite(background);
+            if (!background) {
+                _errorMsg = "Can't receive player info, try reconnect";
+                emit errorOccurred();
+            }
             return false;
         }
         if (url.indexOf(".html") != -1) {
@@ -2030,7 +2331,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
     }
 
     if (/*(url.indexOf("/refuse") != -1) ||*/ (url.indexOf("/leave") != -1)) {
-        scanState();
+        scanState(isBackground(_currentReply));
         return false;
     }
 
@@ -2061,56 +2362,83 @@ void QWarloksDuelCore::onProxyAuthenticationRequired(const QNetworkProxy &proxy,
 }
 
 void QWarloksDuelCore::slotReadyRead() {
-    //QGameCore::slotReadyRead();
-    QNetworkReply *reply = (QNetworkReply *)sender();
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) {
+        return;
+    }
+    // Replies are never reused, and scheduling it first means no exit below can
+    // leak one.
+    reply->deleteLater();
     QString url = reply->url().toString();
     QString data = reply->readAll();
     _httpResponceCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     saveRequest(data);
 
     QUrl new_url;
-    if ((_httpResponceCode >= 500) && (_httpResponceCode < 600))  {
-        QTimer::singleShot(5000, this, &QWarloksDuelCore::resendLastRequest);
+    // The best-effort roster is never retried: its 5xx goes on to finishTopList
+    // like any other failure, and the next poll asks again.
+    bool is_roster = url.indexOf("robot_gateway/wh/top") != -1;
+    if ((_httpResponceCode >= 500) && (_httpResponceCode < 600) && !is_roster)  {
+        // Retries this very request, never whatever went out last (that may be
+        // an order POST), and gives up after a few attempts.
+        if (retryRequest(reply)) {
+            return;
+        }
+        releaseRequest(reply);
+        releaseLoading();
+        if (!isBackground(reply)) {
+            _errorMsg = QString("Server problem (HTTP %1), please try again later").arg(_httpResponceCode);
+            emit errorOccurred();
+        }
         return;
     } else if ((_httpResponceCode >= 300) && (_httpResponceCode < 400))  {
         new_url = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
     }
 
+    // Before processing: whatever it starts next raises the overlay again itself.
+    releaseRequest(reply);
+    releaseLoading();
+
     if (!new_url.isEmpty() && (url.indexOf("/logout") != -1)) {
-        setIsLoading(false);
         emit needLogin();
         return;
     }
 
     if (url.indexOf("/chalplayer") != -1) {
-        setIsLoading(false);
-        scanState();
+        scanState(isBackground(reply));
         return;
     }
 
-    setIsLoading(false);
+    // processData and the finishXxx handlers read the reply through _currentReply
+    // (is it background, which roster request is it for).
+    QNetworkReply *outer_reply = _currentReply;
+    _currentReply = reply;
     processData(data, _httpResponceCode, url, new_url.toString());
+    _currentReply = outer_reply;
 }
 
 void QWarloksDuelCore::slotError(QNetworkReply::NetworkError error) {
-    setIsLoading(false);
-    QNetworkReply *reply = (QNetworkReply *)sender();
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) {
+        return;
+    }
+    qDebug() << "slotError" << error << reply->errorString() << reply->url();
+    // The overlay is left to slotReadyRead: finished always follows errorOccurred.
+    // Background work (timer scans, the roster, archiving) never interrupts the
+    // user, and a 5xx is retried and reported once from slotReadyRead.
+    int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    if (isBackground(reply) || ((status >= 500) && (status < 600))) {
+        return;
+    }
     _errorMsg = "Network problem details: " + reply->errorString();
     emit errorOccurred();
-    qDebug() << "slotError" << error << reply->errorString();
 }
 
 void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {
-    //QSslSocket::ignoreSslErrors();
-    setIsLoading(false);
-    _errorMsg = "Sll error details: \n";
-    foreach(QSslError err, error_list) {
-        _errorMsg.append(err.errorString());
-        _errorMsg.append("\n");
-    }
-
-    emit errorOccurred();
-    qDebug() << "slotSslErrors " << error_list;
+    // Every request already calls ignoreSslErrors(), so these never stop one; Qt
+    // reports them regardless. Log only: a modal here interrupted the user (and
+    // dropped the overlay mid-request) for something that has no effect.
+    qDebug() << "slotSslErrors" << error_list;
 }
 
 QString QWarloksDuelCore::getSpellList(QString left, QString right, bool Enemy) {
@@ -2122,6 +2450,19 @@ QString QWarloksDuelCore::getSpellBook() {
 }
 
 void QWarloksDuelCore::setLogin(QString Login, QString Password) {
+    // Nothing logs out here and _isLogined is not reset, so a live link would
+    // keep serving the previous account identity. The tokens are per account
+    // and are kept.
+    // Same ordering rule as logout(): drop the outstanding request before the
+    // link can report it as failed.
+    _rosterReqActive = false;
+    _rosterGuard.stop();
+    if (_rosterLink) {
+        _rosterLink->clearIdentity();
+    }
+    _rosterEpoch.clear();
+    _rosterRevision = 0;
+
     _login = Login;
     _password = Password;
     _finished_battles.clear();
@@ -2253,6 +2594,8 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("rate_us", _rateus);
     settings->setValue("reffrer_processed", _process_refferer);
     settings->setValue("last_players_scan", _lastPlayersScan);
+    settings->setValue("roster_epoch", _rosterEpoch);
+    settings->setValue("roster_revision", static_cast<qulonglong>(_rosterRevision));
     settings->setValue("ts_notification_ask", _timeAskForNotification);
     settings->setValue("event_start_training", _event_start_training);
     settings->setValue("event_start_pvp", _event_start_pvp);
@@ -2276,6 +2619,19 @@ void QWarloksDuelCore::saveGameParameters() {
         settings->setArrayIndex(i);
         settings->setValue("n", psi.key());
         settings->setValue("v", psi.value()->toString());
+    }
+    settings->endArray();
+
+    // Caster device tokens, keyed by lowercased login. A token authenticates on
+    // its own, with no name check, so one shared across accounts would sign in
+    // as the wrong player.
+    QMap<QString, QString>::iterator cti;
+    settings->beginWriteArray("ct");
+    i = 0;
+    for (cti = _casterTokens.begin(); cti != _casterTokens.end(); ++cti, ++i) {
+        settings->setArrayIndex(i);
+        settings->setValue("a", cti.key());
+        settings->setValue("t", cti.value());
     }
     settings->endArray();
 }
@@ -2314,6 +2670,12 @@ void QWarloksDuelCore::loadGameParameters() {
     _rateus = settings->value("rate_us", "false").toBool();
     _process_refferer = settings->value("reffrer_processed", "false").toBool();
     _lastPlayersScan = settings->value("last_players_scan", "0").toInt();
+    _rosterEpoch = settings->value("roster_epoch", "").toString();
+    _rosterRevision = settings->value("roster_revision", "0").toULongLong();
+    if (!QRosterWire::isEpochHex(_rosterEpoch)) {
+        _rosterEpoch.clear();
+        _rosterRevision = 0;
+    }
     _event_start_training = settings->value("event_start_training", "false").toBool();
     _event_start_pvp = settings->value("event_start_pvp", "false").toBool();
     _event_submit_turn = settings->value("event_submit_turn", "false").toBool();
@@ -2335,7 +2697,26 @@ void QWarloksDuelCore::loadGameParameters() {
     size = settings->beginReadArray("ps");
     for (int i = 0; i < size; ++i) {
         settings->setArrayIndex(i);
-        _playerStats[settings->value("n").toString()] = new QWarlockStat(settings->value("v").toString(), true);
+        QString ps_name = settings->value("n").toString();
+        if (ps_name.trimmed().isEmpty()) {
+            // Left behind by the old finishTopList, which stored a non-roster
+            // reply ("Wrong Login") under an empty name. Dropped here, the next
+            // save no longer writes it.
+            continue;
+        }
+        _playerStats[ps_name] = new QWarlockStat(settings->value("v").toString(), true);
+    }
+    settings->endArray();
+    if (_playerStats.isEmpty()) {
+        // No rows means the watermark describes nothing: ask for a full list.
+        _rosterEpoch.clear();
+        _rosterRevision = 0;
+    }
+
+    size = settings->beginReadArray("ct");
+    for (int i = 0; i < size; ++i) {
+        settings->setArrayIndex(i);
+        _casterTokens[settings->value("a").toString()] = settings->value("t").toString();
     }
     settings->endArray();
     if (_playerStats.size() > 0) {
@@ -2657,17 +3038,21 @@ QString QWarloksDuelCore::getWarlockStats(const QString &WarlockName, bool Dirty
     if (DirtyLogin && (clean_login.indexOf("(") != -1)) {
         clean_login = clean_login.mid(0, clean_login.indexOf("(") - 1);
     }
-    QString stmp;
-    bool found = _playerStats.contains(clean_login);
-    if (found) {
-        stmp = _playerStats[clean_login]->toString();
-    } else {
-        stmp = QString("0,%1,0,0,0,0,0,1500,#000000,0,0,0").arg(DirtyLogin ? clean_login : WarlockName);
-    }
-    // boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), intToStr(_active)
-    QStringList sltmp = stmp.split(",");
+    // Read from the record rather than by splitting toString() on commas, so the
+    // name can be escaped for JSON on the way out.
+    QWarlockStat *ws = _playerStats.value(clean_login, nullptr);
+    bool found = ws != nullptr;
+    // The JSON key has always been named "is_bot" but carried _warlockId. Now
+    // that roster rows are merged in place that id sticks, and gui_utils.js
+    // would render every profile ever opened as permanently online.
+    // Decided by name, as QWarlockStat::init does: a bot the roster never sent
+    // is still a bot.
+    bool is_bot = _lstAI.indexOf(clean_login.toUpper()) != -1;
+    QString name = found ? ws->name() : (DirtyLogin ? clean_login : WarlockName);
     return QString("{\"registered\":%1,\"name\":\"%2\",\"elo\":%3,\"played\":%4,\"won\":%5,\"died\":%6,\"found\":%7,\"last_activity\":%8,\"is_bot\":%9}").
-            arg(sltmp.at(0), sltmp.at(1), sltmp.at(7), sltmp.at(4), sltmp.at(5), sltmp.at(6), boolToStr(found), sltmp.at(9), sltmp.at(11));
+            arg(boolToIntS(found && ws->registered()), QWarlockUtils::jsonEscape(name), intToStr(found ? ws->elo() : 1500),
+                intToStr(found ? ws->played() : 0), intToStr(found ? ws->won() : 0), intToStr(found ? ws->died() : 0),
+                boolToStr(found), intToStr(found ? ws->lastActivity() : 0), boolToStr(is_bot));
 }
 
 QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
@@ -2733,7 +3118,7 @@ QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
         } else {
             name = "<b>" + ws->name().mid(0, warlockName.length()) + "</b>" + ws->name().mid(warlockName.length());
         }
-        res.append(QString("%1{\"n\":\"%2\",\"e\":%3,\"l\":\"%4\",\"rt\":0}").arg(first ? "" : ",", name, warlockName.isEmpty() ? intToStr(ws->elo()) : "0", ws->name()));
+        res.append(QString("%1{\"n\":\"%2\",\"e\":%3,\"l\":\"%4\",\"rt\":0}").arg(first ? "" : ",", QWarlockUtils::jsonEscape(name), warlockName.isEmpty() ? intToStr(ws->elo()) : "0", QWarlockUtils::jsonEscape(ws->name())));
         if (first) {first = false;}
     }
     if (warlockName.isEmpty()) {
@@ -2803,6 +3188,21 @@ void QWarloksDuelCore::getSharableLink(const QString &game_level) {
 }
 
 void QWarloksDuelCore::logout() {
+    // Drop the caster identity first. The settings wipe further down clears the
+    // ini, but the 60s timerFired() save writes the in-memory values straight
+    // back if they are left populated.
+    // Clear the outstanding request FIRST: clearIdentity() can emit rosterFailed
+    // synchronously, which would otherwise start an HTTP roster fetch for the
+    // account being abandoned.
+    _rosterReqActive = false;
+    _rosterGuard.stop();
+    if (_rosterLink) {
+        _rosterLink->clearIdentity();
+    }
+    _casterTokens.clear();
+    _rosterEpoch.clear();
+    _rosterRevision = 0;
+
     _isLogined = false;
     _login.clear();
     _password.clear();
@@ -2878,6 +3278,13 @@ void QWarloksDuelCore::processServiceTimer() {
     if (_isLogined) {
         processRefferer();
     }
+
+    // The only always-on roster tick: _timer is stopped whenever a battle is
+    // ready to play, which would otherwise freeze the roster for the whole
+    // battle. Silent and self-throttled, so a down link costs nothing here.
+    if (_rosterLink && _rosterLink->canRequestWho()) {
+        scanTopList(true, false);
+    }
 }
 
 void QWarloksDuelCore::setCheckUrl(const QString &check_url) {
@@ -2906,7 +3313,7 @@ void QWarloksDuelCore::doAIAnswer(QString Login, int MagicBookLevel) {
     }
     _isAiBusy = !Login.isEmpty();
     _exp_lv = MagicBookLevel;
-    sendGetRequest(QString(GAME_SERVER_URL_WARLOCK_GET).arg(Login));
+    sendGetRequest(QString(GAME_SERVER_URL_WARLOCK_GET).arg(Login), true);
 }
 
 void QWarloksDuelCore::checkAIAnswer(int battle_id) {
@@ -2929,7 +3336,7 @@ void QWarloksDuelCore::processWarlockPut() {
         data.append(QUrl::toPercentEncoding(bi->toString(true)));
         data.append(QUrl::toPercentEncoding("#SPLIT_POINT#"));
     }
-    sendPostRequest(QString(GAME_SERVER_URL_WARLOCK_PUT).arg(_login), data.toUtf8());
+    sendPostRequest(QString(GAME_SERVER_URL_WARLOCK_PUT).arg(_login), data.toUtf8(), true);
 }
 
 void QWarloksDuelCore::processWarlockGet(QString &Data) {
