@@ -96,7 +96,9 @@ private:
     int _spellBookLevel;
     bool _twoHand;
 
-    static int _orderType;
+    // Per thread: sort() sets it for the comparison it runs, and the bot service
+    // thread sorts spell lists at the same time as the UI thread.
+    static thread_local int _orderType;
 };
 
 #endif // QSPELL_H

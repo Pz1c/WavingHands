@@ -37,7 +37,6 @@ protected:
 
 private:
     explicit QWarlockSpellChecker(QObject *parent = nullptr);
-    static QWarlockSpellChecker *self;
 };
 
 #endif // QWARLOCKSPELLCHECKER_H

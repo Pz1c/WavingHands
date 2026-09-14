@@ -1,6 +1,6 @@
 #include "qspell.h"
 
-int QSpell::_orderType = 0;
+thread_local int QSpell::_orderType = 0;
 
 QSpell::QSpell(int SpellID, QString Gesture, QString Name, int SpellType, int Priority, int Level, int Danger, int DefTarget, int Damage,
                bool Active, bool Basic, int SpellGroup, int SpellBookLevel)

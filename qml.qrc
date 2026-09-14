@@ -6,15 +6,9 @@
         <file>js/wnd_utils.js</file>
         <file>qml/windows/wnd_new_user.qml</file>
         <file>qml/windows/wnd_error.qml</file>
-        <file>qml/components/AdsItem.qml</file>
-        <file>qml/components/AnalyticItem.qml</file>
         <file>qml/components/BaseWindow.qml</file>
         <file>qml/components/BtnBig.qml</file>
         <file>qml/components/BtnWithIcon.qml</file>
-        <file>qml/components/ColorItem.qml</file>
-        <file>qml/components/ColorPanel.qml</file>
-        <file>qml/components/GameParticlesSystem.qml</file>
-        <file>qml/components/GoldenStore.qml</file>
         <file>qml/components/LargeText.qml</file>
         <file>qml/components/LabeledTextInput.qml</file>
         <file>qml/windows/wnd_login.qml</file>
@@ -30,7 +24,6 @@
         <file>qml/game_components/Warlock.qml</file>
         <file>qml/components/IconInfo.qml</file>
         <file>res/heart.png</file>
-        <file>qml/components/IconInfoR.qml</file>
         <file>res/g_-.png</file>
         <file>res/g__.png</file>
         <file>res/g_c.png</file>

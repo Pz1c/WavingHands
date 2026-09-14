@@ -6,7 +6,6 @@ import QtQuick.Controls 2.15
 import "qrc:/qml/components"
 import "qrc:/js/battle_utils.js" as BU
 import "qrc:/js/battle_wnd_utils.js" as BWU
-import "qrc:/js/ai_utils.js" as AI
 import "qrc:/js/small_gui_utils.js" as SGU
 
 BaseWindow {
@@ -466,7 +465,7 @@ BaseWindow {
                             font.bold: true
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.top: parent.top
-                            anchors.topMargin: 6 * mainWindow.objectRatio
+                            anchors.topMargin: 6 * mainWindow.ratioObject
                             font.pixelSize: 16 * mainWindow.ratioFont
                         }
 

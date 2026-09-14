@@ -1,6 +1,5 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.12
 
 import ua.sp.warloksduel 2.0
 import ua.sp.warlockdictionary 1.0
@@ -11,11 +10,8 @@ import "qrc:/js/gui_utils.js" as GUI
 //import "qrc:/js/ga.js" as GA
 //import "qrc:/js/main_utils.js" as MUtils
 //import "qrc:/js/ai_utils.js" as AI
-import "qrc:/js/user_profile_utils.js" as UU
 import "qrc:/js/wnd_utils.js" as WNDU
-import "qrc:/qml/windows"
 import "qrc:/qml/components"
-import "qrc:/qml"
 
 
 ApplicationWindow {
@@ -71,14 +67,14 @@ ApplicationWindow {
                 logEvent("app_closed", {});
                 return Qt.quit();
             case 1: return confirmOrdersEx();
-            case 2: return joinBattleDialogResult(true);
+            case 2: return GUI.joinBattleDialogResult(true);
             case 3: return core.logout();
             }
         }
 
         onRejected: {
             if (dialogType == 2) {
-                joinBattleDialogResult(false);
+                GUI.joinBattleDialogResult(false);
             }
         }
     }

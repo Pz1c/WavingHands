@@ -61,13 +61,15 @@ void QGameDictionary::fillDictionary(const QString& Code, const QString& ua, con
 }
 
 QString QGameDictionary::getStringByCode(const QString &Code) {
+    // value(), not operator[]: the non-const operator inserts every missing code, and
+    // this singleton is read by the UI thread and the bot service thread at once.
     QString result;
     if (lang.compare("ua") == 0) {
-        result = dictionary_ua[Code];
+        result = dictionary_ua.value(Code);
     } else if (lang.compare("ru") == 0) {
-        result = dictionary_ru[Code];
+        result = dictionary_ru.value(Code);
     } else {
-        result = dictionary_en[Code];
+        result = dictionary_en.value(Code);
     }
     if (result.isNull()) {
         qDebug() << "getStringByCode" << lang << Code;

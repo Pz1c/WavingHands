@@ -1,7 +1,6 @@
 // source https://qt-project.org/forums/viewthread/26455
 
 import QtQuick 2.15
-import QtQuick.Controls 2.15
 
 import "qrc:/qml/components"
 

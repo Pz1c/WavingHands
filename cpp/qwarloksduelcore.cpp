@@ -3299,13 +3299,31 @@ void QWarloksDuelCore::setTimerInterval(int count, int msec) {
 
 void QWarloksDuelCore::setupAIServer() {
     if (!_aiCore && !_isAsService && !_isAI) {
-        qDebug() << "QWarloksDuelCore::timerFired" << "set AI SERVICE";
-        _aiCore = new QWarloksDuelCore(nullptr, true);
-        _aiCore->moveToThread(&_aiThread);
+        qDebug() << "QWarloksDuelCore::setupAIServer" << "set AI SERVICE";
+        // Built inside its thread, not moved there afterwards: moveToThread() only takes
+        // the object and its children, while the core's QNetworkAccessManager, QSettings
+        // and timers are plain members that would stay behind on this thread (every bot
+        // request logged "Cannot create children for a parent that is in a different
+        // thread"). Constructing it there also gives it that thread's own spell checker.
+        // Blocking is fine: construction only reads local settings.
+        _aiThread.start();
+        if (!_aiThread.isRunning()) {
+            // Without a running thread the blocking construction below would wait on the
+            // UI thread forever. Leave the bot service off instead.
+            qWarning() << "QWarloksDuelCore::setupAIServer" << "AI thread failed to start";
+            return;
+        }
+        QObject *starter = new QObject();
+        starter->moveToThread(&_aiThread);
+        QWarloksDuelCore *core = nullptr;
+        QMetaObject::invokeMethod(starter, [&core]() {
+            core = new QWarloksDuelCore(nullptr, true);
+        }, Qt::BlockingQueuedConnection);
+        starter->deleteLater();
+        _aiCore = core;
         connect(&_aiThread, &QThread::finished, _aiCore, &QObject::deleteLater);
         connect(this, &QWarloksDuelCore::needAIAnswer, _aiCore, &QWarloksDuelCore::doAIAnswer);
         connect(_aiCore, &QWarloksDuelCore::readyAIAnswer, this, &QWarloksDuelCore::checkAIAnswer);
-        _aiThread.start();
     }
 }
 
