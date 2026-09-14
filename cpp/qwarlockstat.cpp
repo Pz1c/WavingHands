@@ -197,9 +197,11 @@ qint64 QWarlockStat::lastActivity() const
 
 QString QWarlockStat::toString() const {
     return QString("%1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12")
-            .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee) // 1-4
-                 ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
-            .arg(_color, intToStr(_lastActivity), boolToIntS(_mobile), intToStr(_warlockId)); // 9-12
+            // One arg() call: a second pass would also substitute any %N that
+            // the first one inserted with the name.
+            .arg(boolToIntS(_registered), _name, intToStr(_ladder), intToStr(_melee), // 1-4
+                 intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), // 5-8
+                 _color, intToStr(_lastActivity), boolToIntS(_mobile), intToStr(_warlockId)); // 9-12
 }
 
 QString QWarlockStat::toJSON() const {
@@ -207,9 +209,11 @@ QString QWarlockStat::toJSON() const {
     QString active = boolToIntS(curr_time - _lastActivity <= 300);
     return QString("{\"r\":%1,\"n\":\"%2\",\"l\":%3,\"m\":%4,\"p\":%5,\"w\":%6,\"d\":%7,\"e\":%8,\"c\":\"%9\","
                    "\"la\":%10,\"mob\":%11,\"a\":%12,\"id\":%13}")
-            .arg(boolToIntS(_registered), QWarlockUtils::jsonEscape(_name), intToStr(_ladder), intToStr(_melee) // 1-4
-            ,intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo)) //5-8
-            .arg(QWarlockUtils::jsonEscape(_color), intToStr(_lastActivity), boolToIntS(_mobile), active, intToStr(_warlockId)); // 9-15
+            // One arg() call, as in toString(): escaping does not protect a %N in
+            // the name from a second pass.
+            .arg(boolToIntS(_registered), QWarlockUtils::jsonEscape(_name), intToStr(_ladder), intToStr(_melee), // 1-4
+                 intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), // 5-8
+                 QWarlockUtils::jsonEscape(_color), intToStr(_lastActivity), boolToIntS(_mobile), active, intToStr(_warlockId)); // 9-13
 }
 
 

@@ -29,6 +29,7 @@ QGameCore::QGameCore(QObject *parent) :
     _isLoading = false;
     _reply = nullptr;
     _foregroundRequests = 0;
+    _sessionEpoch = 0;
 
     ignoredSslErrors.clear();
     ignoredSslErrors.append(QSslError(QSslError::CertificateSignatureFailed));
@@ -166,6 +167,11 @@ bool QGameCore::loadingHeld() const {
     return false;
 }
 
+bool QGameCore::retryOutlivesSession(const QString &url) const {
+    Q_UNUSED(url)
+    return false;
+}
+
 bool QGameCore::retryRequest(QNetworkReply *reply) {
     int attempt = reply->property(kPropAttempt).toInt();
     if (attempt >= kMaxRetries) {
@@ -178,7 +184,17 @@ bool QGameCore::retryRequest(QNetworkReply *reply) {
     // The retry inherits this reply's share of the overlay, so a user action
     // stays covered while it waits.
     reply->setProperty(kPropReleased, true);
-    QTimer::singleShot(kRetryDelayMs, this, [this, verb, url, body, background, attempt]() {
+    int epoch = _sessionEpoch;
+    QTimer::singleShot(kRetryDelayMs, this, [this, verb, url, body, background, attempt, epoch]() {
+        if ((epoch != _sessionEpoch) && !retryOutlivesSession(url)) {
+            // The account changed meanwhile: resending would act for the previous
+            // one. Give back the overlay share this retry inherited.
+            if (!background && (_foregroundRequests > 0)) {
+                --_foregroundRequests;
+            }
+            releaseLoading();
+            return;
+        }
         startRequest(verb, url, body, background, attempt + 1, true);
     });
     return true;

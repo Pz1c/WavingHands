@@ -178,7 +178,7 @@ public slots:
     void showNotification(const QString &msg);
 protected slots:
     void loginToSite(bool Silent = false);
-    void timerFired();
+    void timerFired(bool Silent = true);
     void processServiceTimer();
     void doAIAnswer(QString Login, int MagicBookLevel);
     void checkAIAnswer(int battle_id);
@@ -247,6 +247,8 @@ protected:
     void httpTopList(bool ForceFull);
     void applyRosterBlock(const QRosterBlock &block);
     bool loadingHeld() const override;
+    void releaseAiBusy(const QString &url);
+    bool retryOutlivesSession(const QString &url) const override;
 
     QString getHintArray(int hint_id);
     QString getBattleHint(QBattleInfo *battle_info);

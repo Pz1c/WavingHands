@@ -87,6 +87,9 @@ protected:
     // Schedules this same request again (never "the last one sent"), keeping its
     // share of the overlay. False once the attempts are used up.
     bool retryRequest(QNetworkReply *reply);
+    // A retry of a request that does not depend on the logged-in account
+    // survives an account change (see _sessionEpoch).
+    virtual bool retryOutlivesSession(const QString &url) const;
 
     void saveParameters(bool user = false, bool proxy = false, bool game = false, bool stats = false, bool options = false);
     virtual void loadParameters();
@@ -134,6 +137,9 @@ protected:
     QByteArray _lastRequestData;
     // Foreground requests still outstanding (see releaseLoading).
     int _foregroundRequests;
+    // Bumped whenever the account changes: a retry scheduled for the previous
+    // one must not be sent on behalf of the new one.
+    int _sessionEpoch;
 
     void applyProxySettings();
     void saveRequest(QString &data);

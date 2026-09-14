@@ -219,6 +219,7 @@ void QWarloksDuelCore::sendMessage(const QString &Msg) {
 
 void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, const QString &Pass) {
     Q_UNUSED(Email) // kept in the signature for the QML call site; the email field is disabled
+    ++_sessionEpoch;
     _login = Login;
     _password = Pass.isEmpty() ? QGameUtils::rand(10) : Pass;
     setIsLoading(true);
@@ -379,6 +380,7 @@ void QWarloksDuelCore::aiLogin() {
         return;
     }
 
+    ++_sessionEpoch;
     _isLogined = false;
     if (_botIdx < 0) {
         _botIdx = _lstAI.count();
@@ -548,6 +550,23 @@ void QWarloksDuelCore::finishRosterRequest() {
         // foreground HTTP request is still out.
         releaseLoading();
     }
+}
+
+void QWarloksDuelCore::releaseAiBusy(const QString &url) {
+    // The bot service has no timer of its own, so a reply dropped instead of
+    // processed must not leave it busy for good: the main core's next scan calls
+    // callAI again. warlock_put and store_json have no follow-up and go out next
+    // to a running chain, so they must not clear it.
+    if (_isAsService && (url.indexOf("warlock_put") == -1) && (url.indexOf("store_json") == -1)) {
+        _isAiBusy = false;
+    }
+}
+
+bool QWarloksDuelCore::retryOutlivesSession(const QString &url) const {
+    // The gateway's archive and snapshot posts name their subject in the URL,
+    // carry their own body, use no site session, and nothing reads their reply.
+    return (url.indexOf("robot_gateway/wh/") != -1) &&
+           ((url.indexOf("store_json") != -1) || (url.indexOf("warlock_put") != -1));
 }
 
 bool QWarloksDuelCore::loadingHeld() const {
@@ -733,7 +752,9 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
     if (NewUrl.isEmpty()) {
         //bool battle_is_full = Data.indexOf("That battle is full") != 1;
         bool is_type_10 = Data.indexOf("Unregistered players may not be in more than 5 games at once") != -1;//&& !battle_is_full;
-        _errorMsg = QString("{\"type\":%1,\"d\":\"%2\"}").arg(is_type_10 ? "10" : "11", is_type_10 ? "" : Data);
+        // The page text goes into JSON escaped: its quotes and line breaks made the
+        // error window's JSON.parse throw, so nothing was shown at all.
+        _errorMsg = QString("{\"type\":%1,\"d\":\"%2\"}").arg(is_type_10 ? "10" : "11", is_type_10 ? QString() : QWarlockUtils::jsonEscape(Data));
         emit errorOccurred();
         return false;
     }
@@ -901,12 +922,19 @@ void QWarloksDuelCore::scanTopList(bool Silent, bool ForceFull) {
             // The Hall of Fame button while a request is already out: wait for
             // that one instead of starting another. It publishes when it ends,
             // which is what opens the window, and the guard it started bounds
-            // the wait.
+            // the wait. The tap takes on that request's scope: ForceFull only
+            // reaches the HTTP fallback should the WHO fail, and the next tap
+            // (_lastForcedScan is left unstamped) asks for a full list again.
             _rosterReqForceFull = _rosterReqForceFull || ForceFull;
             if (_rosterReqSilent) {
                 _rosterReqSilent = false;
                 setIsLoading(true);
             }
+            return;
+        }
+        if (!_rosterReqSilent) {
+            // Someone is waiting on this request: only its own end (or the guard)
+            // may publish, since publishing is what opens the Hall of Fame.
             return;
         }
         publishTopList();
@@ -2386,6 +2414,7 @@ void QWarloksDuelCore::slotReadyRead() {
         }
         releaseRequest(reply);
         releaseLoading();
+        releaseAiBusy(url);
         if (!isBackground(reply)) {
             _errorMsg = QString("Server problem (HTTP %1), please try again later").arg(_httpResponceCode);
             emit errorOccurred();
@@ -2398,6 +2427,25 @@ void QWarloksDuelCore::slotReadyRead() {
     // Before processing: whatever it starts next raises the overlay again itself.
     releaseRequest(reply);
     releaseLoading();
+
+    QNetworkReply::NetworkError reply_error = reply->error();
+    // No HTTP response at all (host not found, refused, unreachable), or Qt gave
+    // up mid-transfer and closed the reply (its status may already read 200).
+    bool no_response = (reply_error != QNetworkReply::NoError) && (_httpResponceCode == 0);
+    if (!is_roster && (no_response || (reply_error == QNetworkReply::TimeoutError) || (reply_error == QNetworkReply::OperationCanceledError))) {
+        // The empty body says nothing about what the server did, and parsing it
+        // would read as an empty battle list, a failed login or a wrong error
+        // window. slotError has already told a foreground user. The roster is
+        // exempt: finishTopList handles a failed reply safely.
+        releaseAiBusy(url);
+        if ((url.indexOf("/warlocksubmit") != -1) || (url.indexOf("/newchallenge") != -1) || (url.indexOf("/leave") != -1)) {
+            // The server may well have taken it: show what it actually recorded.
+            // Silently: the failure is reported already, and a foreground scan
+            // would cover that message with the overlay.
+            scanState(true);
+        }
+        return;
+    }
 
     if (!new_url.isEmpty() && (url.indexOf("/logout") != -1)) {
         emit needLogin();
@@ -2450,6 +2498,7 @@ QString QWarloksDuelCore::getSpellBook() {
 }
 
 void QWarloksDuelCore::setLogin(QString Login, QString Password) {
+    ++_sessionEpoch;
     // Nothing logs out here and _isLogined is not reset, so a live link would
     // keep serving the previous account identity. The tokens are per account
     // and are kept.
@@ -3188,6 +3237,7 @@ void QWarloksDuelCore::getSharableLink(const QString &game_level) {
 }
 
 void QWarloksDuelCore::logout() {
+    ++_sessionEpoch;
     // Drop the caster identity first. The settings wipe further down clears the
     // ini, but the 60s timerFired() save writes the in-memory values straight
     // back if they are left populated.
@@ -3241,7 +3291,9 @@ void QWarloksDuelCore::setTimerInterval(int count, int msec) {
     }
     setTimeState(true);
     if (msec == 0) {
-        timerFired();
+        // The launch login is one the user waits for: show it and report its
+        // failure. Later timer ticks stay silent.
+        timerFired(_isLogined);
     }
 }
 
@@ -3257,13 +3309,13 @@ void QWarloksDuelCore::setupAIServer() {
     }
 }
 
-void QWarloksDuelCore::timerFired() {
+void QWarloksDuelCore::timerFired(bool Silent) {
     qDebug() << "QWarloksDuelCore::timerFired" << _timerCount << _isAsService << _login;
     if ((_timerCount > 0) && (--_timerCount <= 0)) {
         _timer.setInterval((_isAI && !_isAsService) ? 30000 : 60000);
     }
     //if (_login.isEmpty())
-    scanState(true);
+    scanState(Silent);
     saveParameters(false, false, true, false, false);
 }
 

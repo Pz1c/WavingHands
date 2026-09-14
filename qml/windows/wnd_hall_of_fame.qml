@@ -250,6 +250,23 @@ InfoWindow {
                         MouseArea {
                             id: maSpell
                             anchors.fill: parent
+                            // A rebuild under a pressed row destroys this MouseArea
+                            // before its click: hold refreshes until the press ends.
+                            onPressedChanged: {
+                                dMainItem.rowPressed = pressed;
+                                if (!pressed && dMainItem.refreshPending) {
+                                    Qt.callLater(dMainItem.applyPendingRefresh);
+                                }
+                            }
+                            // Scrolled out of the cache while held (a mouse wheel during
+                            // a press): the delegate is torn down without a pressedChanged
+                            // that the handler above still gets to see.
+                            Component.onDestruction: {
+                                if (pressed) {
+                                    dMainItem.rowPressed = false;
+                                    Qt.callLater(dMainItem.applyPendingRefresh);
+                                }
+                            }
                             onClicked: {
                                 var str = JSON.stringify(lvSpellList.model[index]);
                                 console.log("top click", str);
@@ -291,10 +308,7 @@ InfoWindow {
     Connections {
         target: lvSpellList
         function onMovementEnded() {
-            if (dMainItem.refreshPending) {
-                dMainItem.refreshPending = false;
-                dMainItem.refreshShownTab();
-            }
+            dMainItem.applyPendingRefresh();
         }
     }
 
@@ -318,6 +332,7 @@ InfoWindow {
         modelAll = [];
         modelActive = [];
         refreshPending = false;
+        rowPressed = false;
         mainWindow.gERROR = {};
         switchState(0);
     }
@@ -356,8 +371,9 @@ InfoWindow {
         if (rowsSig(rows) === rowsSig(shown)) {
             return;
         }
-        if (lvSpellList.moving) {
-            // A rebuild stops a flick dead and cancels a press: wait for it to settle.
+        if (lvSpellList.moving || rowPressed) {
+            // A rebuild stops a flick dead and destroys a pressed row before its
+            // click: wait until the list settles and the finger is up.
             refreshPending = true;
             return;
         }
@@ -383,8 +399,25 @@ InfoWindow {
         lvSpellList.contentY = Math.max(0, Math.min(y, lvSpellList.contentHeight - lvSpellList.height));
     }
 
+    function applyPendingRefresh() {
+        if (refreshPending) {
+            refreshPending = false;
+            refreshShownTab();
+        }
+    }
+
     function switchState(Val) {
         console.log("switchState", switchStateValue, Val);
+        if (refreshPending) {
+            // The deferred refresh belonged to the tab being left: drop its cache
+            // so switching back reparses it instead of showing the older roster.
+            if (switchStateValue === 0) {
+                modelActive = [];
+            } else {
+                modelAll = [];
+            }
+            refreshPending = false;
+        }
         if ((Val >= 0) && (Val < 2)) {
             switchStateValue = Val;
         } else {
@@ -422,8 +455,10 @@ InfoWindow {
     }
 
     property int switchStateValue: 0
-    // A roster change arrived while the list was moving; applied when it stops.
+    // A roster change arrived while the list was moving or a row was pressed;
+    // applied once that ends.
     property bool refreshPending: false
+    property bool rowPressed: false
     // One row of the list; also what refreshShownTab scrolls by.
     readonly property real rowHeight: 100 * mainWindow.ratioObject
     Component.onCompleted: {
