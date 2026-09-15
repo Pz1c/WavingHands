@@ -19,6 +19,7 @@ const int kWhoSilentDeadlineMs  = 2500;
 const int kWhoUserDeadlineMs    = 1200;
 const int kPingDeadlineMs       = 2500;
 const int kLogoutDeadlineMs     = 2000;
+const int kTurnDeadlineMs       = 2500;
 
 const int kKeepaliveMs          = 240000;
 const int kKeepaliveSeconds     = 240;
@@ -32,6 +33,8 @@ const int kMaxAuthRetries       = 3;
 const int kMaxConnectTimeouts   = 3;
 const int kMaxMalformed         = 3;
 const int kMaxWrongPlayer       = 2;
+const int kMaxQueuedTurns       = 16;
+const int kTurnMaxAgeSeconds    = 600;     // past this a "just moved" hint is noise
 
 const int    kMaxRxBytes        = 65536;              // one line may not exceed 64 KiB
 const qint64 kMaxBlockBytes     = 8LL * 1024 * 1024;  // one block may not exceed 8 MiB
@@ -105,6 +108,7 @@ void QRosterLink::start(const QString &login, const QString &cookieHeader, const
     }
     if (key != _loginKey) {                                 // row 2
         resetSocket(Down, QStringLiteral("transport"));
+        _turnQueue.clear();                                 // moves of the previous account
         _deltaCapable = false;
         _wrongPlayer = 0;
         _canonical.clear();
@@ -150,6 +154,7 @@ void QRosterLink::clearIdentity() {
         resetSocket(Down, QStringLiteral("transport"));
     }
     _deltaCapable = false;
+    _turnQueue.clear();
     _cookie.clear();
     _token.clear();
     _login.clear();
@@ -164,6 +169,7 @@ void QRosterLink::disableForSession(const QString &reason) {
     _reconnectAllowed = false;
     _reconnect.stop();
     resetSocket(Disabled, QStringLiteral("transport"));
+    _turnQueue.clear();                     // after resetSocket, which re-queues a TURN in flight
     emit protocolMismatch(reason);
 }
 
@@ -228,12 +234,64 @@ bool QRosterLink::requestWho(const QString &epoch, quint64 sinceRevision) {
 }
 
 void QRosterLink::sendTurn(const QString &opponent) {
-    if (_state != Ready || _pending != PNone) {
+    if (_stickyDisabled || _loginKey.isEmpty()) {
         return;
     }
-    QByteArray line = "TURN\t";
-    line += opponent.toUtf8();
-    sendLine(line);
+    // Mirrors validName() on the server: a TURN it refuses goes through fail_auth,
+    // costing one of kMaxStrikes=5 AND a slot of the per-IP auth budget. On top of
+    // validWireName() that means no comma and no leading or trailing space.
+    const QString name = opponent.trimmed();
+    if (!QRosterWire::validWireName(name) || name.contains(QLatin1Char(',')) ||
+        (name.toLower() == _loginKey)) {
+        qDebug() << "QRosterLink::sendTurn skipped, unusable name" << name;
+        return;
+    }
+    const qint64 now = QDateTime::currentSecsSinceEpoch();
+    const int queued = queuedTurnIndex(name);
+    if (queued != -1) {
+        // One hint per opponent is enough, but it takes the time of the latest
+        // move, or the age cap could drop it while that move is still fresh.
+        _turnQueue[queued].second = now;
+        return;
+    }
+    if (_turnQueue.size() >= kMaxQueuedTurns) {
+        _turnQueue.removeFirst();
+    }
+    _turnQueue.append(qMakePair(name, now));
+    flushTurns();
+}
+
+void QRosterLink::flushTurns() {
+    // _deltaCapable as for WHO: a server too old for the 3-field WHO may not know
+    // TURN either, and its "unknown command" would be a strike.
+    if (_state != Ready || !_deltaCapable || _pending != PNone || !_sock) {
+        return;
+    }
+    const qint64 now = QDateTime::currentSecsSinceEpoch();
+    while (!_turnQueue.isEmpty()) {
+        const QPair<QString, qint64> turn = _turnQueue.takeFirst();
+        if (now - turn.second > kTurnMaxAgeSeconds) {
+            continue;
+        }
+        // A pending TURN of its own, so its OK/ERR can never be taken for the reply
+        // to a WHO, a PING or a LOGOUT written behind it.
+        _pending = PTurn;
+        _turnInFlight = turn;               // resetSocket() re-queues it if no reply comes
+        _deadline.start(kTurnDeadlineMs);
+        QByteArray line = "TURN\t";
+        line += turn.first.toUtf8();
+        sendLine(line);
+        return;
+    }
+}
+
+int QRosterLink::queuedTurnIndex(const QString &name) const {
+    for (int i = 0; i < _turnQueue.size(); ++i) {
+        if (_turnQueue.at(i).first.compare(name, Qt::CaseInsensitive) == 0) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 void QRosterLink::openSocket() {
@@ -258,6 +316,15 @@ void QRosterLink::openSocket() {
 // [FIX-1] THE ONLY TEARDOWN PRIMITIVE.
 void QRosterLink::resetSocket(State next, const QString &failCode) {
     const bool hadWho = (_pending == PWho);
+    if ((_pending == PTurn) && !_turnInFlight.first.isEmpty() &&
+        (queuedTurnIndex(_turnInFlight.first) == -1)) {
+        // The TURN got no reply (deadline, socket error, a server that idle-closed
+        // us while the app was suspended): send it again after the reconnect,
+        // unless a newer move against that player is queued already. The age cap
+        // in flushTurns() bounds the retries.
+        _turnQueue.prepend(_turnInFlight);
+    }
+    _turnInFlight = QPair<QString, qint64>();
     _pending = PNone;                       // cleared BEFORE anything can re-enter
     _inBlock = false; _block = QRosterBlock(); _blockBytes = 0;
     _rx.clear();
@@ -348,7 +415,11 @@ void QRosterLink::onReadyRead() {
         resetSocket(Down, QStringLiteral("transport"));
         bumpBackoff();
         scheduleReconnect();
+        return;
     }
+    // Every reply that frees the link (OK of a handshake, END, PONG, a TURN's own
+    // OK/ERR) arrives here, so this is where a queued TURN goes out.
+    flushTurns();
 }
 
 // Rows 7, 28 and E.2 #2/#3/#5/#6/#21/#22.
@@ -421,6 +492,8 @@ void QRosterLink::onDeadline() {
     // Row 27 [FIX-5]: a WHO deadline TEARS THE SOCKET DOWN. No socket means no
     // late reply, so no double rosterFailed, no second HTTP fetch, no late apply
     // racing an HTTP reply, and no malformed strike from ordinary latency.
+    // A TURN deadline takes the same path: its late OK/ERR would otherwise be
+    // taken for the reply to whatever request went out next.
     resetSocket(Down, QStringLiteral("timeout"));
     bumpBackoff();
     scheduleReconnect();
@@ -587,6 +660,13 @@ void QRosterLink::handleLine(const QByteArray &line) {
 
 // Rows 8, 9 and the LOGOUT ack of row 33.
 void QRosterLink::handleOk(const QList<QByteArray> &f) {
+    if (_pending == PTurn) {                                // OK<TAB>delivered | OK<TAB>offline
+        qDebug() << "QRosterLink::handleOk turn" << (f.size() > 1 ? f.at(1) : QByteArray());
+        _pending = PNone;
+        _turnInFlight = QPair<QString, qint64>();
+        _deadline.stop();
+        return;
+    }
     if (_pending == PLogout) {                              // OK<TAB>bye
         qDebug() << "QRosterLink::handleOk logout acknowledged";
         resetSocket(Down, QString());
@@ -657,6 +737,24 @@ void QRosterLink::handleErr(const QList<QByteArray> &f) {
             // a new client against an old server would throttle itself off entirely.
             disableForSession(QStringLiteral("WHO ") + code);
         }
+        return;
+    }
+    if (_pending == PTurn) {
+        _pending = PNone;
+        _turnInFlight = QPair<QString, qint64>();
+        _deadline.stop();
+        if (code == QLatin1String("need-auth")) {           // as for WHO, row 25
+            if (!_reauthedThisConn) {
+                _reauthedThisConn = true;
+                sendHandshake();
+            } else {
+                resetSocket(Down, QString());
+                bumpBackoff();
+                scheduleReconnect();
+            }
+        }
+        // Anything else drops only this hint. bad-request can only mean sendTurn's
+        // name check drifted from validName(), and every retry would be a strike.
         return;
     }
     if (_pending == PLogout) {

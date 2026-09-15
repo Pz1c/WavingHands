@@ -193,6 +193,16 @@ QString QBattleInfo::getEnemy(const QString &Login, bool All) const {
     return res;
 }
 
+QStringList QBattleInfo::getEnemies(const QString &Login) const {
+    QStringList res;
+    foreach(QString lp, _participant) {
+        if (!lp.trimmed().isEmpty() && (lp.compare(Login, Qt::CaseInsensitive) != 0)) {
+            res.append(lp);
+        }
+    }
+    return res;
+}
+
 bool QBattleInfo::fullParsed() const
 {
     return _fullParsed;

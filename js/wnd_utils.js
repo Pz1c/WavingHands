@@ -183,6 +183,10 @@ function closeChild() {
     mainWindow.keyListener.forceActiveFocus();
 }
 
+function isWndVisible(wnd_name) {
+    return arr_wnd_instance[wnd_name] ? arr_wnd_instance[wnd_name].visible === true : false;
+}
+
 function storeWnd(wnd) {
     if (!arr_wnd_instance[current_wnd_code]) {
         console.log("storeWnd", "add", current_wnd_code);

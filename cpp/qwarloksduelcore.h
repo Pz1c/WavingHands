@@ -124,6 +124,9 @@ signals:
     void battleListChanged();
     void needAIAnswer(QString Login, int MagicBookLevel);
     void readyAIAnswer(int battle_id);
+    // An opponent made a move (TURNREADY over the caster link), rate limited.
+    // QML decides whether the battle list may be refreshed right now.
+    void opponentTurnReady(QString by);
 
 public slots:
 
@@ -250,6 +253,7 @@ protected:
     void finishRosterRequest();
     void httpTopList(bool ForceFull);
     void applyRosterBlock(const QRosterBlock &block);
+    void notifyOpponentsOfTurn(int battle_id);
     bool loadingHeld() const override;
     void releaseAiBusy(const QString &url);
     bool retryOutlivesSession(const QString &url) const override;
@@ -327,6 +331,15 @@ private:
     // value, so a late result cannot end the request that replaced it.
     quint32 _rosterReqSeq;
     quint32 _rosterWhoSeq;
+    // Battle of the foreground order submit in flight: once the site accepts the
+    // orders its opponents are sent TURN over the caster link. 0 when none.
+    int _ordersBattleID;
+    // Battle whose ready page filled _extraOrderInfo, i.e. the one sendOrders posts.
+    int _extraOrderBattleID;
+    // TURNREADY coalescing: at most one battle-list refresh per gap.
+    QTimer _turnReadyTimer;
+    qint64 _lastTurnReadyRefresh;
+    QString _turnReadyBy;
     // The reply slotReadyRead is processing, for the finishXxx handlers.
     QNetworkReply *_currentReply;
     QMap<QString, QWarlockStat *> _playerStats;

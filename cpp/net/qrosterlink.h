@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QList>
+#include <QPair>
 #include <QString>
 #include <QTimer>
 #include <QNetworkProxy>
@@ -28,7 +30,7 @@ class QRosterLink : public QObject {
     Q_OBJECT
 public:
     enum State { Disabled, Down, Connecting, Handshaking, Ready };
-    enum Pending { PNone, PAuth, PLogin, PWho, PPing, PLogout };
+    enum Pending { PNone, PAuth, PLogin, PWho, PPing, PLogout, PTurn };
 
     explicit QRosterLink(QObject *parent = nullptr);
     ~QRosterLink() override;
@@ -60,7 +62,11 @@ public:
     // is emitted, always ASYNCHRONOUSLY (never from inside this call).  [FIX-1]
     bool requestWho(const QString &epoch, quint64 sinceRevision);
 
-    void sendTurn(const QString &opponent);          // reserved, unused today
+    // "I just made my move against <opponent>": the server pushes TURNREADY to
+    // every session of that player. Best effort: queued until the link is Ready
+    // and idle, one TURN per round trip, dropped when stale or on an identity
+    // change. A name the server's validName() would refuse is never sent.
+    void sendTurn(const QString &opponent);
 
 signals:
     // NOTE: carries only (name, token). The epoch/revision on the OK line are
@@ -92,6 +98,8 @@ private:
     void resetSocket(State next, const QString &failCode);
     void sendLine(const QByteArray &lineNoNewline);
     void sendHandshake();
+    void flushTurns();              // sends the oldest queued TURN if Ready and idle
+    int  queuedTurnIndex(const QString &name) const;   // case-insensitive, -1 if absent
     void handleLine(const QByteArray &line);
     void handleOk(const QList<QByteArray> &f);
     void handleErr(const QList<QByteArray> &f);
@@ -111,6 +119,12 @@ private:
     bool    _stickyDisabled = false;
 
     QString _login, _loginKey, _cookie, _token, _canonical;
+
+    // sendTurn() backlog: opponent name + enqueue time (secs since epoch),
+    // oldest first. Survives reconnects, not identity changes.
+    QList<QPair<QString, qint64>> _turnQueue;
+    // The TURN written and still waiting for its OK/ERR (valid while PTurn).
+    QPair<QString, qint64> _turnInFlight;
 
     QByteArray  _rx;
     bool        _inBlock = false;

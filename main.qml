@@ -86,6 +86,7 @@ ApplicationWindow {
         onBattleListChanged: GUI.newBattleList()
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
+        onOpponentTurnReady: function(by) { refreshAfterOpponentTurn(by); }
         onRegisterNewUserChanged: GUI.newUserRegistered()
         //onTimerStateChanged: changeTimerState()
         onChallengeListChanged: GUI.loadChallengeList()
@@ -868,6 +869,32 @@ ApplicationWindow {
         WNDU.showBattle();
     }
 
+    // An opponent moved (TURNREADY from the caster link). The battle window is
+    // cached, so once closed it is hidden rather than destroyed.
+    property bool turnRefreshPending: false
+    function refreshAfterOpponentTurn(by) {
+        if (WNDU.isWndVisible(WNDU.wnd_battle)) {
+            // Replayed by battleWindowHidden(): the scan timer is stopped while a
+            // battle is ready, so nothing else would refresh the list afterwards.
+            console.log("refreshAfterOpponentTurn deferred, battle window open", by);
+            turnRefreshPending = true;
+            return;
+        }
+        turnRefreshPending = false;
+        core.scanState(1);
+    }
+
+    function battleWindowHidden() {
+        // Later, not now: showBattle hides the cached window and shows it again in
+        // one go, and that is not leaving the battle.
+        Qt.callLater(function() {
+            if (turnRefreshPending && !WNDU.isWndVisible(WNDU.wnd_battle)) {
+                turnRefreshPending = false;
+                core.scanState(1);
+            }
+        });
+    }
+
     function openBattleOnline() {
         WNDU.closeChild();
         Qt.openUrlExternally(core.getOnlineUrl());
@@ -1200,6 +1227,9 @@ ApplicationWindow {
     }
 
     function confirmOrdersEx() {
+        // The order submit rescans the player page itself: that is the refresh a
+        // deferred TURNREADY was waiting for.
+        turnRefreshPending = false;
         WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
         WNDU.closeChilds();
         processAfterClose();

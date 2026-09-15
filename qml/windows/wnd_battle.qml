@@ -763,6 +763,7 @@ BaseWindow {
 
     function hideWnd() {
         visible = false;
+        mainWindow.battleWindowHidden();
     }
 
     function initBattleFields() {

@@ -1,5 +1,7 @@
 #include "qwarloksduelcore.h"
 
+// Least time between two battle-list refreshes set off by TURNREADY pushes.
+static const qint64 kTurnReadyRefreshGapMs = 10000;
 
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     QGameCore(parent)
@@ -27,6 +29,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _rosterEmptyBatches = 0;
     _rosterReqSeq = 0;
     _rosterWhoSeq = 0;
+    _ordersBattleID = 0;
+    _extraOrderBattleID = 0;
+    _lastTurnReadyRefresh = 0;
     _currentReply = nullptr;
     init();
     if (_isAsService) {
@@ -83,6 +88,16 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
             qDebug() << "QWarloksDuelCore roster guard fired";
             publishTopList();
             finishRosterRequest();
+        });
+        _turnReadyTimer.setSingleShot(true);
+        connect(&_turnReadyTimer, &QTimer::timeout, this, [this]() {
+            // Logged out or switched to a bot while it waited: a refresh now
+            // would log in again instead.
+            if (!_isLogined || _isAI) {
+                return;
+            }
+            _lastTurnReadyRefresh = QDateTime::currentMSecsSinceEpoch();
+            emit opponentTurnReady(_turnReadyBy);
         });
         connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
             if ((state == Qt::ApplicationActive) && _rosterLink) {
@@ -689,9 +704,33 @@ void QWarloksDuelCore::onRosterFailed(const QString &code) {
 }
 
 void QWarloksDuelCore::onLinkTurnReady(const QString &by) {
-    // Received and logged only. Turning every opponent move into a /player round
-    // trip would cost more traffic than the poll it would be improving on.
     qDebug() << "QWarloksDuelCore::onLinkTurnReady" << by;
+    if (_isAsService || _isAI || !_isLogined) {
+        return;
+    }
+    // Each refresh is a /player fetch from the site, and any authenticated
+    // client can push TURNREADY at will, so refresh at most once per gap. A push
+    // inside the gap folds into the refresh already scheduled: that one runs
+    // later, so it shows this move too.
+    _turnReadyBy = by;
+    if (_turnReadyTimer.isActive()) {
+        return;
+    }
+    qint64 wait = kTurnReadyRefreshGapMs - (QDateTime::currentMSecsSinceEpoch() - _lastTurnReadyRefresh);
+    _turnReadyTimer.start(static_cast<int>(qBound<qint64>(0, wait, kTurnReadyRefreshGapMs)));
+}
+
+void QWarloksDuelCore::notifyOpponentsOfTurn(int battle_id) {
+    if (!_rosterLink || _isAsService || _isAI || (battle_id <= 0) || !_battleInfo.contains(battle_id)) {
+        return;
+    }
+    foreach(QString enemy, _battleInfo[battle_id]->getEnemies(_login)) {
+        // Bots have no caster session: their answer comes back through callAI.
+        if (_lstAI.indexOf(enemy.trimmed().toUpper()) != -1) {
+            continue;
+        }
+        _rosterLink->sendTurn(enemy);
+    }
 }
 
 bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl) {
@@ -785,6 +824,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     bool background = isBackground(_currentReply);
     if (NewUrl.isEmpty()) {
         if (!background) {
+            _ordersBattleID = 0;
             _errorMsg = "Something goes wrong, can't send battle orders";
             emit errorOccurred();
         }
@@ -816,6 +856,10 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     }
 
     if (!background) {
+        // The site took the orders: tell the opponents over the caster link, so
+        // their apps refresh the battle list now rather than on their next poll.
+        notifyOpponentsOfTurn(_ordersBattleID);
+        _ordersBattleID = 0;
         setIsLoading(true);
     }
     sendGetRequest(url, background);
@@ -1026,6 +1070,11 @@ void QWarloksDuelCore::deleteMsg(QString msg_from) {
 }
 
 void QWarloksDuelCore::forceSurrender(int battle_id, int turn, bool Silent) {
+    if (!Silent) {
+        // Not a move of ours, and its reply is foreground like an order submit's.
+        // A background one leaves this alone: an order submit may be in flight.
+        _ordersBattleID = 0;
+    }
     _loadedBattleID = battle_id;
     _loadedBattleType = 1;
     QString postData;
@@ -1070,6 +1119,9 @@ void QWarloksDuelCore::sendOrders(QString orders) {
     }
 
     qDebug() << "QWarloksDuelCore::sendOrders" << postData;
+    // The battle these hidden fields belong to: a notification or a background
+    // load of another battle may have moved _loadedBattleID since.
+    _ordersBattleID = (_extraOrderBattleID > 0) ? _extraOrderBattleID : _loadedBattleID;
     sendPostRequest(GAME_SERVER_URL_SUBMIT, postData.toUtf8());
     _leftGestures = "";
     _rightGestures = "";
@@ -1687,6 +1739,7 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
     _extraOrderInfo.clear();
+    _extraOrderBattleID = _loadedBattleID;
     _paralyzedHands.clear();
     int idx1 = 0, idx2, idx3, idx4;
     while((idx1 = Data.indexOf("<INPUT TYPE=HIDDEN NAME=", idx1)) != -1) {
@@ -1702,6 +1755,9 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
             _extraOrderInfo.append("&");
         }
         _extraOrderInfo.append(QString("%1=%2").arg(par_name, par_val));
+        if ((par_name.compare("num", Qt::CaseInsensitive) == 0) && (par_val.toInt() > 0)) {
+            _extraOrderBattleID = par_val.toInt();      // the battle the POST itself names
+        }
         if (par_name.indexOf("PARALYZE") == 0) {
             if (!_paralyzedHands.isEmpty()) {
                 _paralyzedHands.append(",");
@@ -2511,6 +2567,9 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     }
     _rosterEpoch.clear();
     _rosterRevision = 0;
+    // Nothing of the previous account's turns may act for the new one.
+    _turnReadyTimer.stop();
+    _ordersBattleID = 0;
 
     _login = Login;
     _password = Password;
@@ -3252,6 +3311,8 @@ void QWarloksDuelCore::logout() {
     _casterTokens.clear();
     _rosterEpoch.clear();
     _rosterRevision = 0;
+    _turnReadyTimer.stop();
+    _ordersBattleID = 0;
 
     _isLogined = false;
     _login.clear();
