@@ -15,6 +15,9 @@ CONFIG(release, debug|release) {
 #    QT += androidextras
 #}
 
+# cpp/ too: the generated QML type registration (CONFIG += qmltypes below) includes
+# the registered classes' headers by bare name.
+INCLUDEPATH += cpp/
 INCLUDEPATH += cpp/game/
 INCLUDEPATH += cpp/QGoogleAnalytics/
 INCLUDEPATH += cpp/net/
@@ -70,8 +73,26 @@ android {
     QMAKE_LFLAGS += -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384
 }
 
+# QML types are registered declaratively (QML_NAMED_ELEMENT / QML_SINGLETON in the C++
+# headers). The build generates the registration code plus a .qmltypes description of
+# the C++ API into qmltypes/, where a hand-written qmldir turns it into an importable
+# module for qmllint and Qt Creator's code model.
+CONFIG += qmltypes
+QML_IMPORT_NAME = ua.sp.warloksduel
+QML_IMPORT_MAJOR_VERSION = 2
+QMLTYPES_FILENAME = $$PWD/qmltypes/ua/sp/warloksduel/warloksduel.qmltypes
+
 # Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH =
+QML_IMPORT_PATH = $$PWD/qmltypes
+
+# Settings for qmllint and the QML language server (qmlls), written with this checkout's
+# absolute paths so a plain `qmllint <file>` and the editor find qml.qrc and the
+# ua.sp.warloksduel module. Relative paths would not work: both tools resolve them
+# against each linted file's own folder. Both files are git-ignored.
+QMLLINT_INI = "[General]" "ResourcePath=$$PWD/qml.qrc" "AdditionalQmlImportPaths=$$PWD/qmltypes"
+write_file($$PWD/.qmllint.ini, QMLLINT_INI)
+QMLLS_INI = "[General]" "importPaths=$$PWD/qmltypes" "no-cmake-calls=true"
+write_file($$PWD/.qmlls.ini, QMLLS_INI)
 
 # Make these modules of QtFirebase
 # NOTE QTFIREBASE_SDK_PATH can be symlinked to match $$PWD/firebase_cpp_sdk
@@ -97,6 +118,7 @@ contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
 #android: include(D:/Android/sdk/android_openssl/openssl.pri)
 
 DISTFILES += \
+    qmltypes/ua/sp/warloksduel/qmldir \
     platforms/android/AndroidManifest.xml \
     platforms/android/build.gradle \
     platforms/android/gradle.properties \

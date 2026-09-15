@@ -2,7 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 import ua.sp.warloksduel 2.0
-import ua.sp.warlockdictionary 1.0
 //import ua.sp.GoogleAnalytics 1.0
 
 import "qrc:/js/game_constant.js" as GC

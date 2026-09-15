@@ -20,6 +20,7 @@
 #endif
 #include <QTimer>
 #include <QThread>
+#include <QtQml/qqmlregistration.h>
 
 #include <qcore.h>
 #include <qgoogleanalytics.h>
@@ -36,6 +37,9 @@
 class QWarloksDuelCore : public QGameCore
 {
     Q_OBJECT
+    // Registered for QML at build time (CONFIG += qmltypes in the .pro), which also
+    // describes the type to qmllint and Qt Creator's code model.
+    QML_NAMED_ELEMENT(WarlocksDuelCore)
     Q_PROPERTY(bool isNeedLogin READ isNeedLogin NOTIFY needLogin)
     Q_PROPERTY(QString login READ login NOTIFY loginChanged)
     Q_PROPERTY(QString password READ password NOTIFY passwordChanged)

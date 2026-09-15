@@ -92,10 +92,11 @@ int main(int argc, char *argv[])
         qreal m_ratioFont = qMin(height*refDpi/(dpi*refHeight), width*refDpi/(dpi*refWidth));
         qDebug() << "BEFORE QML" << dpi << height << width << m_ratio << m_ratioFont;
 
+        // Created before QML loads: the WarlockDictionary singleton (QWarlockDictionary::create)
+        // hands out this instance. WarlocksDuelCore and WarlockDictionary are registered
+        // automatically in module ua.sp.warloksduel 2.0 (QML_NAMED_ELEMENT, CONFIG += qmltypes).
         QWarlockDictionary::getInstance();
         //QGoogleAnalytics::getInstance();
-        qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");
-        qmlRegisterSingletonType<QWarlockDictionary>("ua.sp.warlockdictionary", 1, 0, "WarlockDictionary", gamedictionary_qobject_singletontype_provider);
         //qmlRegisterSingletonType<QGoogleAnalytics>("ua.sp.GoogleAnalytics", 1, 0, "GoogleAnalytics", googleanalytics_qobject_singletontype_provider);
 
         QQmlApplicationEngine engine;

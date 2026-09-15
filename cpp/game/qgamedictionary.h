@@ -43,12 +43,4 @@ public slots:
 
 };
 
-[[maybe_unused]] static QObject *gamedictionary_qobject_singletontype_provider(QQmlEngine *engine, QJSEngine *scriptEngine)
-{
-    Q_UNUSED(engine)
-    Q_UNUSED(scriptEngine)
-    qDebug() << "gamesdictionary_qobject_singletontype_provider";
-    return QGameDictionary::getInstance();
-}
-
 #endif // QGAMEDICTIONARY_H
