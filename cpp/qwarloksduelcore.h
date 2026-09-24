@@ -78,6 +78,7 @@ public:
     QString readyInBattles();
     QString waitingInBattles();
     QString finishedBattles();
+    QString shownBattles();
     QString finishedBattle();
     int readyBattle();
     int loadedBattleID();
@@ -183,6 +184,9 @@ public slots:
     void setSBL(int NewLevel);
     // https://github.com/Pz1c/WavingHands/issues/268
     void showNotification(const QString &msg);
+    // QML reports whether any window is up: a battle result the core announces on its own
+    // waits until none is, so it never covers one or replaces a result still being read.
+    void setUiBusy(bool busy);
 protected slots:
     void loginToSite(bool Silent = false);
     void timerFired(bool Silent = true);
@@ -207,7 +211,9 @@ protected:
     bool finishAccept(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishScan(QString &Data, bool ForceBattleList = false);
     bool finishScanWarlock(QString &Data);
-    bool finishGetFinishedBattle(QString &Data);
+    // Announce: the reply answers announceNextResult(), a request the player did not make,
+    // so it opens nothing but the result itself.
+    bool finishGetFinishedBattle(QString &Data, bool Announce = false);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
     bool butifyTurnMessage(QString &str, bool CleanGestures = false);
@@ -272,6 +278,13 @@ protected:
 
     void processSpellBookLevelAfterBattle(QBattleInfo *bi);
 
+    // Result announcement for battles that ended on the opponent's or the bot's move: asks
+    // for the newest finished battle whose result was never shown, when nothing else is
+    // going on. markResultShown() records a result as delivered (or as never coming).
+    void announceNextResult();
+    void markResultShown(int battle_id);
+    void releaseResultFetch(const QString &url);
+
     bool checkIsNotificationGranted();
 private:
     // user login
@@ -306,6 +319,17 @@ private:
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
+    // Battles whose Win/Lose/Draw result the player has already been shown. Persisted, so a
+    // restart does not replay results, and seeded from the first scan of an account so the
+    // whole existing history is not announced at once.
+    QList<int> _shown_battles;
+    bool _shownBattlesKnown;
+    // Automatic result requests made per battle this session; bounded by kMaxResultAttempts.
+    QMap<int, int> _resultAttempts;
+    // Result requests in flight: battle id -> made by announceNextResult().
+    QMap<int, bool> _resultFetches;
+    // Some window is up (setUiBusy).
+    bool _uiBusy;
     QString _finishedBattle;
     QStringList _challenge;
     int _win_vs_bot;

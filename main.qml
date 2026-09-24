@@ -835,8 +835,17 @@ ApplicationWindow {
         logEvent("showFinishedBattle", {battle_id:bit});
         console.log(txt);
 
+        var err = null;
         if (txt.indexOf("{") === 0) {
-            var err = JSON.parse(txt);
+            try {
+                err = JSON.parse(txt);
+            } catch (e) {
+                // Falls back to the plain window below: an exception here used to lose both
+                // the window and the refresh after it.
+                console.log("showFinishedBattle", "payload is not JSON", e);
+            }
+        }
+        if (err) {
             if (!err.type) {
                 err.type = 7;
             }

@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
-<manifest android:installLocation="auto" android:versionCode="1210" android:versionName="2.4.2" package="net.is.games.WarlocksDuel" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+<manifest android:installLocation="auto" package="net.is.games.WarlocksDuel" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <!-- %%INSERT_PERMISSIONS -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Qt6Core's android-dependencies.xml makes androiddeployqt inject this at the

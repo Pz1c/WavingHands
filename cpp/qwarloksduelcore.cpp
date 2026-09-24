@@ -1,7 +1,30 @@
 #include "qwarloksduelcore.h"
 
+#include <QUrlQuery>
+
 // Least time between two battle-list refreshes set off by TURNREADY pushes.
 static const qint64 kTurnReadyRefreshGapMs = 10000;
+// Automatic requests for one battle's result before it is left to the Finished list.
+static const int kMaxResultAttempts = 3;
+// Pause between the last window closing and a held-back result being announced.
+static const int kResultAnnounceDelayMs = 1500;
+
+// The archived result of a battle, the request behind every Win/Lose/Draw window.
+static bool isResultUrl(const QString &url) {
+    return (url.indexOf("robot_gateway/wh/index.php") != -1) && (url.indexOf("show_data=1") != -1);
+}
+
+// The battle a result or battle-page request is for; 0 when the URL names none.
+static int battleIdFromUrl(const QString &url) {
+    QUrlQuery query{QUrl(url)};
+    if (isResultUrl(url)) {
+        return query.queryItemValue("battle_id").toInt();
+    }
+    if (url.indexOf("/warlocks?") != -1) {
+        return query.queryItemValue("num").toInt();
+    }
+    return 0;
+}
 
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     QGameCore(parent)
@@ -33,6 +56,10 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _extraOrderBattleID = 0;
     _lastTurnReadyRefresh = 0;
     _currentReply = nullptr;
+    // Before init(), which restores it: reset afterwards, it re-seeded the shown list on every
+    // launch and swallowed each result that came in while the app was closed.
+    _shownBattlesKnown = false;
+    _uiBusy = false;
     init();
     if (_isAsService) {
         _login = "";
@@ -64,6 +91,11 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     //_rateus = true;
 
     _loadedBattleID = 0;
+    _loadedBattleType = 0;
+    _loadedBattleTurn = 0;
+    // Gates every finishedBattleChanged()/errorOccurred() in finishGetFinishedBattle(); an
+    // indeterminate true here would swallow a result popup before the first getBattle().
+    _loadedBattleSilent = false;
 
     _isParaFDF = false;
     _isParaFC = false;
@@ -1151,9 +1183,12 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
         QBattleInfo* bi = getBattleInfo(_loadedBattleID);
         if (bi->fullParsed()) {
             _finishedBattle = bi->getFinishedBattleInfo(_login);
+            markResultShown(_loadedBattleID);
             emit finishedBattleChanged();
             return;
         }
+        // Until its reply is handled, announceNextResult() keeps out of the battle slot.
+        _resultFetches.insert(_loadedBattleID, false);
     }
 
     // A silent load must leave alone an overlay some other request raised.
@@ -1281,19 +1316,26 @@ void QWarloksDuelCore::processSpellBookLevelAfterBattle(QBattleInfo *bi) {
     }
 }
 
-bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
-    qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType;
+bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
+    qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType << Announce;
     QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
     if ((_loadedBattleType == 2) && (Data.indexOf("id#=#") == 0)) {
         QBattleInfo *bi = new QBattleInfo(Data);
         if (bi->battleID() != _loadedBattleID) {
             delete bi;
             _finishedBattle = "Sorry, wrong answer, please contact with viskgameua@gmail.com";
+            if (Announce) {
+                // No apology for a request nobody made; a later scan asks again.
+                return false;
+            }
         } else {
             _battleInfo[_loadedBattleID] = bi;
             delete battleInfo;
             battleInfo = bi;
             _finishedBattle = battleInfo->getFullHist(_login);
+            if (!_loadedBattleSilent) {
+                markResultShown(_loadedBattleID);
+            }
         }
         if (!_loadedBattleSilent) {
             emit finishedBattleChanged();
@@ -1307,7 +1349,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         if (_finished_battles.indexOf(_loadedBattleID) != -1) {
             _finished_battles.removeAt(_finished_battles.indexOf(_loadedBattleID));
         }
-        if (!_loadedBattleSilent) {
+        // There is no result left to announce.
+        markResultShown(_loadedBattleID);
+        if (!_loadedBattleSilent && !Announce) {
             _finishedBattle = "Sorry, but you battle already deleted from game server and we not store it on archive server";
             emit finishedBattleChanged();
         }
@@ -1352,7 +1396,10 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
         }
         if (idx1 == -1) {
             _errorMsg = "Wrong battle answer!";
-            emit errorOccurred();
+            // Like the checks below: nothing for a load the player did not ask for.
+            if (!_loadedBattleSilent && !Announce) {
+                emit errorOccurred();
+            }
             return false;
         }
     }
@@ -1360,7 +1407,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
     int idx2 = Data.indexOf(point2, idx1);
     if (idx2 == -1) {
         _errorMsg = "Wrong battle answer!!";
-        emit errorOccurred();
+        if (!_loadedBattleSilent && !Announce) {
+            emit errorOccurred();
+        }
         return false;
     }
 
@@ -1385,6 +1434,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 
     if (_loadedBattleType != 1) {
         qDebug() << "battle is not ready end there" << _loadedBattleType;
+        bool is_result = false;
         int idx = _finishedBattle.indexOf("Your orders are in for this turn.");
         if (idx != -1) {
             idx += 33;
@@ -1404,8 +1454,12 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data) {
 #endif
             QString params = QString("Id;%1;Players;%2;Winner;%3;").arg(intToStr(_loadedBattleID), battleInfo->getInListParticipant(_login, true), battleInfo->winner());
             logEvent("Game_End", params);
+            is_result = true;
         }
-        if (!_loadedBattleSilent) {
+        if (!_loadedBattleSilent && (is_result || !Announce)) {
+            if (is_result) {
+                markResultShown(_loadedBattleID);
+            }
             emit finishedBattleChanged();
         }
         return false;
@@ -1986,6 +2040,9 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     // ForceBattleList == true - mean scan just after battle orders submit
     qDebug() << "QWarloksDuelCore::parsePlayerInfo" << _login;
     QList<int> old_read(_ready_in_battles), old_wait(_waiting_in_battles), old_fin(_finished_battles);
+    // The battle slot as this pass found it (see announceNextResult at the end).
+    int slot_id = _loadedBattleID, slot_type = _loadedBattleType;
+    bool slot_silent = _loadedBattleSilent;
     _challenge.clear();
     int Idx = 0;
     _played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>", Idx);
@@ -2145,6 +2202,30 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         }
     }
 
+    // The Win/Lose/Draw popup has exactly one trigger - finishedBattleChanged(), which is only
+    // ever emitted while answering a result request. A battle that ends on the opponent's or
+    // the bot's move is discovered here instead, and until now this scan only moved it into
+    // the Finished list: finished in the list, no modal. announceNextResult() asks for it.
+    // Only a complete page may seed or prune the shown list: a body cut short parses as
+    // "nothing finished", and pruning to that would announce the whole history again.
+    bool shown_changed = false;
+    if (!_isAI && !_isAsService && (Data.indexOf("</BODY>", 0, Qt::CaseInsensitive) != -1)) {
+        if (!_shownBattlesKnown) {
+            // First scan of this account: adopt the existing history as already seen rather than
+            // announcing a battle that finished long ago.
+            _shown_battles = _finished_battles;
+            _shownBattlesKnown = true;
+            shown_changed = true;
+        }
+        // _finished_battles only grows within a session, so bound its companion list to it.
+        for (int i = _shown_battles.size() - 1; i >= 0; --i) {
+            if (_finished_battles.indexOf(_shown_battles.at(i)) == -1) {
+                _shown_battles.removeAt(i);
+                shown_changed = true;
+            }
+        }
+    }
+
     // try to find refferrer
     processRefferer();
 
@@ -2152,6 +2233,86 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         generateBattleList();
     }
     saveParameters();
+    if (shown_changed) {
+        // Explicit flags: the bare saveParameters() above defaults every group to false and
+        // writes nothing, and the destructor that would otherwise persist this is not
+        // guaranteed to run when Android kills the app.
+        saveParameters(false, false, true);
+    }
+
+    // Last, and after the settings write: a result already parsed in full is emitted from
+    // inside announceNextResult(), which runs the QML handler - and its core.scanState(1) -
+    // before this call returns. Not when this pass started a battle load of its own: the
+    // slot is shared, and taking it over would misread that load's reply.
+    if ((slot_id == _loadedBattleID) && (slot_type == _loadedBattleType) && (slot_silent == _loadedBattleSilent)) {
+        announceNextResult();
+    }
+}
+
+void QWarloksDuelCore::announceNextResult() {
+    // Only when the screen is quiet: no window up (a result still being read included), no
+    // request the player is waiting on, no result request in flight - so one at a time.
+    if (_isAI || _isAsService || !_isLogined || !_shownBattlesKnown || _uiBusy ||
+            (_foregroundRequests > 0) || !_resultFetches.isEmpty()) {
+        return;
+    }
+    // Newest first: the site adds a battle to its Finished list as the battle ends.
+    for (int i = _finished_battles.size() - 1; i >= 0; --i) {
+        int bid = _finished_battles.at(i);
+        if (_shown_battles.indexOf(bid) != -1) {
+            continue;
+        }
+        if (_resultAttempts.value(bid, 0) >= kMaxResultAttempts) {
+            // Its result cannot be had: leave it to the Finished list instead of asking forever.
+            qDebug() << "announceNextResult" << "giving up on" << bid;
+            markResultShown(bid);
+            continue;
+        }
+        _resultAttempts[bid] = _resultAttempts.value(bid, 0) + 1;
+        qDebug() << "announceNextResult" << bid << "attempt" << _resultAttempts.value(bid);
+        _loadedBattleID = bid;
+        _loadedBattleType = 2;
+        _loadedBattleSilent = false;
+        QBattleInfo *bi = getBattleInfo(bid);
+        if (bi->fullParsed()) {
+            _finishedBattle = bi->getFinishedBattleInfo(_login);
+            markResultShown(bid);
+            emit finishedBattleChanged();
+            return;
+        }
+        _resultFetches.insert(bid, true);
+        // Background: no overlay and no error window for a request the player did not make.
+        // The result window still opens, since _loadedBattleSilent is false.
+        sendGetRequest(QString(GAME_SERVER_URL_GET_FINISHED_BATTLE).arg(intToStr(bid)), true);
+        return;
+    }
+}
+
+void QWarloksDuelCore::markResultShown(int battle_id) {
+    _resultAttempts.remove(battle_id);
+    if (_isAI || _isAsService || (battle_id <= 0) || (_shown_battles.indexOf(battle_id) != -1)) {
+        return;
+    }
+    _shown_battles.append(battle_id);
+    saveParameters(false, false, true);
+}
+
+void QWarloksDuelCore::releaseResultFetch(const QString &url) {
+    // A result request that ends with nothing to parse. The attempt stays counted, and a
+    // later scan asks again.
+    if (isResultUrl(url)) {
+        _resultFetches.remove(battleIdFromUrl(url));
+    }
+}
+
+void QWarloksDuelCore::setUiBusy(bool busy) {
+    bool freed = _uiBusy && !busy;
+    _uiBusy = busy;
+    if (freed) {
+        // A result held back by the window goes out once the list is in view again - after a
+        // moment, so a tap straight after closing it does not race the request.
+        QTimer::singleShot(kResultAnnounceDelayMs, this, &QWarloksDuelCore::announceNextResult);
+    }
 }
 
 bool QWarloksDuelCore::checkIsNotificationGranted() {
@@ -2398,7 +2559,25 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
 
     // battle parsing there
     if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1) || (url.indexOf("robot_gateway/wh/") != -1)) {
-        return !finishGetFinishedBattle(data);
+        int reply_id = battleIdFromUrl(url);
+        bool is_result = isResultUrl(url);
+        bool announce = is_result && _resultFetches.value(reply_id, false);
+        if (is_result) {
+            _resultFetches.remove(reply_id);
+        }
+        // The battle slot is shared and parsing reads it: a load started after this request
+        // (a tap, a background check, an announcement) has taken it over, and would be
+        // credited with this page. That load gets its own reply.
+        if (!_isAI && !_isAsService && (reply_id > 0) &&
+                ((reply_id != _loadedBattleID) || (is_result && (_loadedBattleType != 2)))) {
+            qDebug() << "processData" << "stale battle reply dropped" << reply_id << _loadedBattleID << _loadedBattleType;
+            if (announce) {
+                // Lost to the player's own activity, not the battle's fault: it does not count.
+                _resultAttempts[reply_id] = qMax(0, _resultAttempts.value(reply_id, 0) - 1);
+            }
+            return true;
+        }
+        return !finishGetFinishedBattle(data, announce);
     }
 
     if (url.indexOf("/newchallenge") != -1) {
@@ -2471,6 +2650,7 @@ void QWarloksDuelCore::slotReadyRead() {
         releaseRequest(reply);
         releaseLoading();
         releaseAiBusy(url);
+        releaseResultFetch(url);
         if (!isBackground(reply)) {
             _errorMsg = QString("Server problem (HTTP %1), please try again later").arg(_httpResponceCode);
             emit errorOccurred();
@@ -2494,6 +2674,7 @@ void QWarloksDuelCore::slotReadyRead() {
         // window. slotError has already told a foreground user. The roster is
         // exempt: finishTopList handles a failed reply safely.
         releaseAiBusy(url);
+        releaseResultFetch(url);
         if ((url.indexOf("/warlocksubmit") != -1) || (url.indexOf("/newchallenge") != -1) || (url.indexOf("/leave") != -1)) {
             // The server may well have taken it: show what it actually recorded.
             // Silently: the failure is reported already, and a foreground scan
@@ -2574,6 +2755,11 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     _login = Login;
     _password = Password;
     _finished_battles.clear();
+    // Reseed from the new account's first scan instead of announcing its whole history.
+    _shown_battles.clear();
+    _shownBattlesKnown = false;
+    _resultAttempts.clear();
+    _resultFetches.clear();
     saveParameters();
     loginToSite();
 }
@@ -2686,6 +2872,8 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("allowed_accept", _allowedAccept);
     //settings->setValue("accounts", accountToString());
     settings->setValue("finished_battles", finishedBattles());
+    settings->setValue("shown_battles", shownBattles());
+    settings->setValue("shown_battles_known", _shownBattlesKnown);
     settings->setValue("played", _played);
     settings->setValue("won", _won);
     settings->setValue("died", _died);
@@ -2759,6 +2947,15 @@ void QWarloksDuelCore::loadGameParameters() {
     if (_appVersion < APPLICATION_VERSION_INT) {
         qDebug() << "QWarloksDuelCore::loadGameParameters" << _appVersion << "<" << APPLICATION_VERSION_INT << "clean all settings";
         settings->clear();
+    }
+    _shownBattlesKnown = settings->value("shown_battles_known", "false").toBool();
+    _shown_battles.clear();
+    foreach(const QString &sb, settings->value("shown_battles", "").toString().split(",")) {
+        bool ok = false;
+        int bid = sb.toInt(&ok);
+        if (ok && (bid > 0) && (_shown_battles.indexOf(bid) == -1)) {
+            _shown_battles.append(bid);
+        }
     }
     _played = settings->value("played", "0").toInt();
     _won = settings->value("won", "0").toInt();
@@ -2965,6 +3162,17 @@ QString QWarloksDuelCore::waitingInBattles() {
 QString QWarloksDuelCore::finishedBattles() {
     QString res;
     foreach(int i, _finished_battles) {
+        if (!res.isEmpty()) {
+            res.append(",");
+        }
+        res.append(QString::number(i));
+    }
+    return res;
+}
+
+QString QWarloksDuelCore::shownBattles() {
+    QString res;
+    foreach(int i, _shown_battles) {
         if (!res.isEmpty()) {
             res.append(",");
         }
@@ -3319,6 +3527,10 @@ void QWarloksDuelCore::logout() {
     _password.clear();
 
     _finished_battles.clear();
+    _shown_battles.clear();
+    _shownBattlesKnown = false;
+    _resultAttempts.clear();
+    _resultFetches.clear();
     _reg_in_app = false;
     _exp_lv = 5;
     _played = 0;
