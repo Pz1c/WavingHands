@@ -1,12 +1,15 @@
 #include "qwarlockspellchecker.h"
 #include "qwarlock.h"
 
-QWarlockSpellChecker* QWarlockSpellChecker::self = nullptr;
 QWarlockSpellChecker *QWarlockSpellChecker::getInstance() {
-    if (!self) {
-        self = new QWarlockSpellChecker();
+    // One per thread. The checker flips its spells' active flags for each battle
+    // (getPosibleSpellsList, getSpellBook) and sorts its own list in place, so the bot
+    // service thread must not share an instance with the UI thread.
+    thread_local QWarlockSpellChecker *instance = nullptr;
+    if (!instance) {
+        instance = new QWarlockSpellChecker();
     }
-    return self;
+    return instance;
 }
 
 QWarlockSpellChecker::QWarlockSpellChecker(QObject *parent) :
@@ -76,7 +79,13 @@ bool QWarlockSpellChecker::checkSpellChar(QChar left, QChar right, QChar spell) 
 
 bool QWarlockSpellChecker::checkStriktSpell(QString left, QString right, QString spell) {
     int Ln = spell.length();
-    if (left.length() < Ln) {
+    // Both hands are indexed below, so both have to be long enough. Only `left` was
+    // checked, and the two can differ in length: QWarlock::targetSpell() appends this
+    // turn's gesture to each hand's history, and one hand is often idle, which leaves
+    // its string one character shorter. right.at(i) then read past the end - an assert
+    // in a debug build, and a silent out-of-bounds read in the shipping release build,
+    // where it makes the AI misidentify the spell it just cast.
+    if ((left.length() < Ln) || (right.length() < Ln)) {
         return false;
     }
 
@@ -281,15 +290,18 @@ QString QWarlockSpellChecker::getSpellBook(bool IsFDF, bool Sort, bool EnableSur
     Spells.at(SPELL_PARALYSIS_FDFD)->setActive(IsFDF);
     Spells.at(SPELL_SURRENDER)->setActive(EnableSurrender);
 
+    // Sort a copy: Spells must stay indexed by spell ID, which the Spells.at(SPELL_*)
+    // lookups above and in getPosibleSpellsList rely on.
+    QList<QSpell *> book = Spells;
     if (Sort) {
         /*struct {
                 bool operator()(const QSpell *s1, const QSpell *s2) const { return QSpell::sortDesc3(s1, s2); }
         } customOrder;
         std::sort(Spells.begin(), Spells.end(), customOrder);*/
-        QSpell::sort(Spells);
+        QSpell::sort(book);
     }
 
-    foreach(QSpell *vn, Spells) {
+    foreach(QSpell *vn, book) {
         if (!vn->active()) {
             continue;
         }

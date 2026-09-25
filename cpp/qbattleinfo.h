@@ -88,6 +88,7 @@ public:
     bool fullParsed() const;
 
     QString getEnemy(const QString &Login, bool All = false) const;
+    QStringList getEnemies(const QString &Login) const;
 
     QString fullJSON() const;
 

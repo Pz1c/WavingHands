@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.os.Bundle;
+import android.os.Build;
 import android.net.Uri;
 import android.content.SharedPreferences;
 
@@ -19,6 +20,7 @@ import androidx.core.app.ActivityCompat;
 
 public class MainActivity extends QtActivity {
     private static final int STORAGE_PERMISSION_CODE = 1;
+    private static final int NOTIFICATION_PERMISSION_CODE = 123;
     private static final String TAG = "WarlocksDuelActivity";
     public static MainActivity appMainActivity;
 
@@ -31,8 +33,7 @@ public class MainActivity extends QtActivity {
         appMainActivity = this;
         // prepare service
         try {
-            AlarmReceiver alarm = new AlarmReceiver();
-            alarm.setAlarm(this, true);
+            CheckScheduler.schedule(this, true);
         } catch (Exception e) {
             e.printStackTrace();
             //return "";
@@ -141,6 +142,13 @@ public class MainActivity extends QtActivity {
     public void onResume () {
         super.onResume();
         try {
+            // The user may have changed the notification setting while we were away, and
+            // the poll cadence depends on when they were last active - re-queue on resume.
+            CheckScheduler.schedule(this, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
         Intent intent = getIntent();
         Uri data = intent.getData();
         Bundle bundle = intent.getExtras();
@@ -181,42 +189,27 @@ public class MainActivity extends QtActivity {
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Log.d(TAG, "onRequestPermissionsResult: " + requestCode);
-        switch (requestCode) {
-            case 123: {
-                Log.d(TAG, "onRequestPermissionsResult: " + grantResults.length);
-                if (grantResults.length > 0) {
-                    Log.d(TAG, "onRequestPermissionsResult: " + grantResults[0] + " " + PackageManager.PERMISSION_GRANTED);
-                }
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // prepare service
-                    try {
-                        AlarmReceiver alarm = new AlarmReceiver();
-                        alarm.setAlarm(this, true);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        //return "";
-                    }
-                    //If user presses allow
-//                    Toast.makeText(Main2Activity.this, "Permission granted!", Toast.LENGTH_SHORT).show();
-//                    Intent in = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + num.getText().toString()));
-//                    startActivity(in);
-                } else {
-                    //If user presses deny
-//                    Toast.makeText(Main2Activity.this, "Permission denied", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+            boolean granted = (grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED);
+            Log.d(TAG, "POST_NOTIFICATIONS granted: " + granted);
+            CheckScheduler.schedule(this, true);
         }
     }
 
     public void askPermission() {
         try {
-            ActivityCompat.requestPermissions(this,
-                                new String[]{Manifest.permission.SCHEDULE_EXACT_ALARM},
-                                123);
+            // POST_NOTIFICATIONS is the only permission the notifications need now; the
+            // background poll runs on WorkManager and asks for nothing.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                    && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                                    NOTIFICATION_PERMISSION_CODE);
+                return;
+            }
+            CheckScheduler.schedule(this, true);
         } catch (Exception e) {
             e.printStackTrace();
-            //return "";
         }
     }
 }

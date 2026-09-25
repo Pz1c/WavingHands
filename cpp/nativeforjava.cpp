@@ -1,4 +1,7 @@
-#define NATIVE_JAVA_INCLUDED "NATIVE_JAVA_INCLUDED"
+// Q_OS_ANDROID comes from Qt, so it has to be pulled in before the guard below -
+// otherwise this whole file quietly compiles to nothing and the JNI hooks vanish.
+#include <QtGlobal>
+
 #ifdef Q_OS_ANDROID
 #include <jni.h>
 #include <QDebug>

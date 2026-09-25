@@ -40,7 +40,7 @@ BaseWindow {
                   //font.pointSize: 13 * height_koeff
                   wrapMode: Text.WordWrap
                   textFormat: Text.RichText
-                  onLinkActivated: UPUtils.linkActivated(link)
+                  onLinkActivated: function (link) { UPUtils.linkActivated(link) }
             }
         }
 
@@ -121,9 +121,9 @@ BaseWindow {
 
     function initProfileFields() {
         mainWindow.storeWnd(dMainItem);
-        console.log("user_profile.initProfileFields", Qt.show_info_self);
-        tPlayerInfo.text = Qt.show_info_self ? mainWindow.gameCore.playerInfo : mainWindow.gameCore.warlockInfo;
-        rSendMsg.visible = !Qt.show_info_self;
+        console.log("user_profile.initProfileFields", mainWindow.gERROR.show_info_self);
+        tPlayerInfo.text = mainWindow.gERROR.show_info_self ? mainWindow.gameCore.playerInfo : mainWindow.gameCore.warlockInfo;
+        rSendMsg.visible = !mainWindow.gERROR.show_info_self;
     }
 
     Component.onCompleted: initProfileFields()

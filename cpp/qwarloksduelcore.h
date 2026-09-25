@@ -20,9 +20,11 @@
 #endif
 #include <QTimer>
 #include <QThread>
+#include <QtQml/qqmlregistration.h>
 
 #include <qcore.h>
 #include <qgoogleanalytics.h>
+#include <qrosterlink.h>
 //#include "qwarlockutils.h"
 #include "qwarlockspellchecker.h"
 //#include "qwarlockdictionary.h"
@@ -35,6 +37,9 @@
 class QWarloksDuelCore : public QGameCore
 {
     Q_OBJECT
+    // Registered for QML at build time (CONFIG += qmltypes in the .pro), which also
+    // describes the type to qmllint and Qt Creator's code model.
+    QML_NAMED_ELEMENT(WarlocksDuelCore)
     Q_PROPERTY(bool isNeedLogin READ isNeedLogin NOTIFY needLogin)
     Q_PROPERTY(QString login READ login NOTIFY loginChanged)
     Q_PROPERTY(QString password READ password NOTIFY passwordChanged)
@@ -73,6 +78,7 @@ public:
     QString readyInBattles();
     QString waitingInBattles();
     QString finishedBattles();
+    QString shownBattles();
     QString finishedBattle();
     int readyBattle();
     int loadedBattleID();
@@ -119,6 +125,9 @@ signals:
     void battleListChanged();
     void needAIAnswer(QString Login, int MagicBookLevel);
     void readyAIAnswer(int battle_id);
+    // An opponent made a move (TURNREADY over the caster link), rate limited.
+    // QML decides whether the battle list may be refreshed right now.
+    void opponentTurnReady(QString by);
 
 public slots:
 
@@ -130,7 +139,7 @@ public slots:
     bool aiAcceptChallenge(int battle_id, bool changeAI = true);
     void rejectChallenge(int battle_id);
     void deleteMsg(QString msg_from);
-    void forceSurrender(int battle_id, int turn);
+    void forceSurrender(int battle_id, int turn, bool Silent = false);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
     void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel,
@@ -143,7 +152,7 @@ public slots:
     void autoLogin(int Idx);
     void aiLogin();
     void logout();
-    void leaveBattle(int battle_id, int warlock_id = 0);
+    void leaveBattle(int battle_id, int warlock_id = 0, bool Silent = false);
     void setParamValue(const QString &Parameter, const QString &Value);
     QString getWarlockStats(const QString &WarlockName, bool DirtyLogin = false);
     QString findWarlockByName(const QString &warlockName);
@@ -175,12 +184,23 @@ public slots:
     void setSBL(int NewLevel);
     // https://github.com/Pz1c/WavingHands/issues/268
     void showNotification(const QString &msg);
+    // QML reports whether any window is up: a battle result the core announces on its own
+    // waits until none is, so it never covers one or replaces a result still being read.
+    void setUiBusy(bool busy);
 protected slots:
-    void loginToSite();
-    void timerFired();
+    void loginToSite(bool Silent = false);
+    void timerFired(bool Silent = true);
     void processServiceTimer();
     void doAIAnswer(QString Login, int MagicBookLevel);
     void checkAIAnswer(int battle_id);
+
+    // Roster over the caster link. Any of these may fire while a roster request
+    // is outstanding; all of them end at the publishTopList/finishRosterRequest
+    // funnel so the loading overlay can never be left up.
+    void onLinkAuthenticated(const QString &canonical, const QString &token);
+    void onRosterBlock(const QRosterBlock &block);
+    void onRosterFailed(const QString &code);
+    void onLinkTurnReady(const QString &by);
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -191,7 +211,9 @@ protected:
     bool finishAccept(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishScan(QString &Data, bool ForceBattleList = false);
     bool finishScanWarlock(QString &Data);
-    bool finishGetFinishedBattle(QString &Data);
+    // Announce: the reply answers announceNextResult(), a request the player did not make,
+    // so it opens nothing but the result itself.
+    bool finishGetFinishedBattle(QString &Data, bool Announce = false);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
     bool butifyTurnMessage(QString &str, bool CleanGestures = false);
@@ -229,6 +251,19 @@ protected:
 
     void generateTopList();
 
+    // Roster plumbing. publishTopList() always emits: the Hall of Fame window
+    // opens only from onTopListChanged, so a silent path would wedge the UI.
+    // finishRosterRequest() is bookkeeping only, and is idempotent.
+    void startRosterLink();
+    void publishTopList();
+    void finishRosterRequest();
+    void httpTopList(bool ForceFull);
+    void applyRosterBlock(const QRosterBlock &block);
+    void notifyOpponentsOfTurn(int battle_id);
+    bool loadingHeld() const override;
+    void releaseAiBusy(const QString &url);
+    bool retryOutlivesSession(const QString &url) const override;
+
     QString getHintArray(int hint_id);
     QString getBattleHint(QBattleInfo *battle_info);
 
@@ -242,6 +277,13 @@ protected:
     void callAI(QString Login, int MagicBookLevel);
 
     void processSpellBookLevelAfterBattle(QBattleInfo *bi);
+
+    // Result announcement for battles that ended on the opponent's or the bot's move: asks
+    // for the newest finished battle whose result was never shown, when nothing else is
+    // going on. markResultShown() records a result as delivered (or as never coming).
+    void announceNextResult();
+    void markResultShown(int battle_id);
+    void releaseResultFetch(const QString &url);
 
     bool checkIsNotificationGranted();
 private:
@@ -277,6 +319,17 @@ private:
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
+    // Battles whose Win/Lose/Draw result the player has already been shown. Persisted, so a
+    // restart does not replay results, and seeded from the first scan of an account so the
+    // whole existing history is not announced at once.
+    QList<int> _shown_battles;
+    bool _shownBattlesKnown;
+    // Automatic result requests made per battle this session; bounded by kMaxResultAttempts.
+    QMap<int, int> _resultAttempts;
+    // Result requests in flight: battle id -> made by announceNextResult().
+    QMap<int, bool> _resultFetches;
+    // Some window is up (setUiBusy).
+    bool _uiBusy;
     QString _finishedBattle;
     QStringList _challenge;
     int _win_vs_bot;
@@ -286,6 +339,33 @@ private:
     QStringList _msg;
     QList<QValueName> _accounts;
     qint64 _lastPlayersScan;
+    // Caster link: the roster source when it is up, plus the delta watermark.
+    // See the throttle note in scanTopList before changing any of these.
+    QRosterLink *_rosterLink;
+    QString _rosterEpoch;
+    quint64 _rosterRevision;
+    QMap<QString, QString> _casterTokens;  // lowercased login -> device token
+    bool _rosterReqActive;
+    bool _rosterReqSilent;
+    bool _rosterReqForceFull;
+    QTimer _rosterGuard;
+    qint64 _lastForcedScan;
+    int _rosterEmptyBatches;
+    // Bumped per roster request. The HTTP reply and the WHO serving one carry its
+    // value, so a late result cannot end the request that replaced it.
+    quint32 _rosterReqSeq;
+    quint32 _rosterWhoSeq;
+    // Battle of the foreground order submit in flight: once the site accepts the
+    // orders its opponents are sent TURN over the caster link. 0 when none.
+    int _ordersBattleID;
+    // Battle whose ready page filled _extraOrderInfo, i.e. the one sendOrders posts.
+    int _extraOrderBattleID;
+    // TURNREADY coalescing: at most one battle-list refresh per gap.
+    QTimer _turnReadyTimer;
+    qint64 _lastTurnReadyRefresh;
+    QString _turnReadyBy;
+    // The reply slotReadyRead is processing, for the finishXxx handlers.
+    QNetworkReply *_currentReply;
     QMap<QString, QWarlockStat *> _playerStats;
     QString _inviteToBattle;
     QMap<int, QBattleInfo *> _battleInfo;

@@ -49,6 +49,19 @@ function closeChilds(close_current) {
     }
 }
 
+// The core announces a finished battle's result on its own, and holds it back while any
+// window is up. Visible items only: a cached window shown twice leaves a stale entry.
+function syncUiBusy() {
+    var busy = false;
+    for (var i = 0, Ln = arr_wnd_stack.length; i < Ln; ++i) {
+        if (arr_wnd_stack[i].item && arr_wnd_stack[i].item.visible) {
+            busy = true;
+            break;
+        }
+    }
+    mainWindow.gameCore.setUiBusy(busy);
+}
+
 function isSomeWndOpenned() {
     var str_tmp = "";
     for(var i = 0, Ln = arr_wnd_stack.length; i < Ln; ++i) {
@@ -97,6 +110,7 @@ function showWnd(wnd_name, close_current, close_all_stack, add_in_stack, only_cr
         if (add_in_stack) {
             console.log("arr_wnd_stack.push1", wnd_name);
             arr_wnd_stack.push({item:arr_wnd_instance[wnd_name],code:wnd_name});
+            syncUiBusy();
         }
         //Qt.loader.forceActiveFocus();
     } else if (wnd_obj.wnd.status === Component.Ready) {
@@ -126,6 +140,7 @@ function finishedShowWnd(wnd_obj) {
         if (wnd_obj.add_in_stack) {
             console.log("arr_wnd_stack.push2", wnd_obj.code);
             arr_wnd_stack.push({item:wnd_obj.item,code:wnd_obj.code});
+            syncUiBusy();
         }
         //Qt.loader.forceActiveFocus();
     } else if (wnd_obj.wnd.status === Component.Error) {
@@ -179,8 +194,13 @@ function closeChild() {
                 //tmp_wnd.item = 0;
             }
         }
+        syncUiBusy();
     }
     mainWindow.keyListener.forceActiveFocus();
+}
+
+function isWndVisible(wnd_name) {
+    return arr_wnd_instance[wnd_name] ? arr_wnd_instance[wnd_name].visible === true : false;
 }
 
 function storeWnd(wnd) {

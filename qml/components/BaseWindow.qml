@@ -5,8 +5,7 @@
 // that is the dialog itself. For demo purposes no fancy stuff in the popup
 
 import QtQuick 2.12
-import QtQuick.Controls 2.12
-import ua.sp.warlockdictionary 1.0
+import ua.sp.warloksduel 2.0
 
 Item {
     id: iRoot
@@ -62,7 +61,7 @@ Item {
         }
     }
 
-    Keys.onPressed: onKeyPressed
+    Keys.onPressed: function (event) { onKeyPressed(event); }
 
     Rectangle {
         id: rOver

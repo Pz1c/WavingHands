@@ -193,6 +193,16 @@ QString QBattleInfo::getEnemy(const QString &Login, bool All) const {
     return res;
 }
 
+QStringList QBattleInfo::getEnemies(const QString &Login) const {
+    QStringList res;
+    foreach(QString lp, _participant) {
+        if (!lp.trimmed().isEmpty() && (lp.compare(Login, Qt::CaseInsensitive) != 0)) {
+            res.append(lp);
+        }
+    }
+    return res;
+}
+
 bool QBattleInfo::fullParsed() const
 {
     return _fullParsed;
@@ -529,10 +539,12 @@ QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
 }
 
 QString QBattleInfo::getFinishedBattleInfo(const QString &Login) const {
-    QString fh = prepareToPrint(_chat.last());
+    // main.qml JSON.parse()s this. A backslash in the last turn's line (players sign off with
+    // \o/) or a tab left in the chat was an invalid string and cost the whole result window.
+    QString fh = QWarlockUtils::jsonEscape(prepareToPrint(_chat.last()));
     return QString("{\"type\":9,\"lc\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\",\"sc\":\"%5\",\"enemy\":\"%6\",\"level\":%7,\"with_bot\":%8}")
-        .arg(fh, intToStr(_battleID), getInListParticipant(Login), _sub_title, getInListStatus(Login),
-             getEnemy(Login), intToStr(_level), boolToStr(_for_bot || _with_bot));
+        .arg(fh, intToStr(_battleID), QWarlockUtils::jsonEscape(getInListParticipant(Login)), QWarlockUtils::jsonEscape(_sub_title),
+             getInListStatus(Login), QWarlockUtils::jsonEscape(getEnemy(Login)), intToStr(_level), boolToStr(_for_bot || _with_bot));
 }
 
 QString QBattleInfo::getFullHist(const QString& Login) const {

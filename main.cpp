@@ -8,6 +8,7 @@
 #include <QtQml>
 #include <QDebug>
 #include <QFontDatabase>
+#include <QLoggingCategory>
 #include <QScreen>
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
@@ -15,18 +16,23 @@
 #include <cpp/qgameconstant.h>
 #include "cpp/qwarloksduelcore.h"
 #include "cpp/qwarlockdictionary.h"
-#include "cpp/nativeforjava.cpp"
 
 #include <qgoogleanalytics.h>
 
 int main(int argc, char *argv[])
 {
+#ifdef QT_NO_DEBUG
+    // QT_NO_DEBUG_OUTPUT only compiles qDebug() out of our own translation units. QML's
+    // console.log() is implemented inside the prebuilt Qt QML library, so it needs a
+    // runtime rule too. Warnings and above still get through.
+    QLoggingCategory::setFilterRules(QStringLiteral("*.debug=false"));
+#endif
+
     bool add_cert = QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
     QString s1 = QString("QSslSocket::sslLibraryBuildVersionString() %1 QSslSocket::sslLibraryVersionString() %2").arg(QSslSocket::sslLibraryBuildVersionString(), QSslSocket::sslLibraryVersionString());
     QString s2 = QString("loading embedded \"ISRG Root X1\" CA cert: %1").arg(add_cert);
     qDebug() << s1;
     qDebug() << s2;
-    qDebug() << NATIVE_JAVA_INCLUDED;
 
     /*if (argc > 1 && qstrcmp(argv[1], "-service") == 0) {
         qDebug() << "Service starting with from the same .so file";
@@ -86,13 +92,21 @@ int main(int argc, char *argv[])
         qreal m_ratioFont = qMin(height*refDpi/(dpi*refHeight), width*refDpi/(dpi*refWidth));
         qDebug() << "BEFORE QML" << dpi << height << width << m_ratio << m_ratioFont;
 
+        // Created before QML loads: the WarlockDictionary singleton (QWarlockDictionary::create)
+        // hands out this instance. WarlocksDuelCore and WarlockDictionary are registered
+        // automatically in module ua.sp.warloksduel 2.0 (QML_NAMED_ELEMENT, CONFIG += qmltypes).
         QWarlockDictionary::getInstance();
         //QGoogleAnalytics::getInstance();
-        qmlRegisterType<QWarloksDuelCore>("ua.sp.warloksduel", 2, 0, "WarlocksDuelCore");
-        qmlRegisterSingletonType<QWarlockDictionary>("ua.sp.warlockdictionary", 1, 0, "WarlockDictionary", gamedictionary_qobject_singletontype_provider);
         //qmlRegisterSingletonType<QGoogleAnalytics>("ua.sp.GoogleAnalytics", 1, 0, "GoogleAnalytics", googleanalytics_qobject_singletontype_provider);
 
         QQmlApplicationEngine engine;
+        // A QML failure must not leave a running process with no window - that reads to the
+        // player as a launch that hangs. objectCreationFailed covers asynchronous failures;
+        // the rootObjects() check below catches the synchronous ones straight away.
+        QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
+                         &app, []() { QCoreApplication::exit(-1); },
+                         Qt::QueuedConnection);
+
         engine.setInitialProperties({
             { "realScreenWidth", QVariant::fromValue(width) },
             { "realScreenHeight", QVariant::fromValue(height) }/*,
@@ -100,7 +114,14 @@ int main(int argc, char *argv[])
             { "calculatedRatioFont", QVariant::fromValue(m_ratioFont) } */
         });
 
-        engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
+        const QUrl mainQml(QStringLiteral("qrc:///main.qml"));
+        engine.load(mainQml);
+        if (engine.rootObjects().isEmpty()) {
+            // qCritical survives QT_NO_DEBUG_OUTPUT and the release logging filter, so this
+            // is still visible in logcat on a shipped build.
+            qCritical() << "Failed to load" << mainQml << "- aborting";
+            return -1;
+        }
         return app.exec();
     //}
 }

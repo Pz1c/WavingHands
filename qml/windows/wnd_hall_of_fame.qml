@@ -2,7 +2,6 @@
 // source https://qt-project.org/forums/viewthread/26455
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import Qt.labs.qmlmodels 1.0
 
 import "qrc:/qml/components"
 
@@ -163,7 +162,7 @@ InfoWindow {
                 delegate: Item {
                     id: idRoot
                     width: lvSpellList.width
-                    height: 100 * mainWindow.ratioObject
+                    height: dMainItem.rowHeight
 
                     Rectangle {
                         id: rdTopItem
@@ -250,6 +249,23 @@ InfoWindow {
                         MouseArea {
                             id: maSpell
                             anchors.fill: parent
+                            // A rebuild under a pressed row destroys this MouseArea
+                            // before its click: hold refreshes until the press ends.
+                            onPressedChanged: {
+                                dMainItem.rowPressed = pressed;
+                                if (!pressed && dMainItem.refreshPending) {
+                                    Qt.callLater(dMainItem.applyPendingRefresh);
+                                }
+                            }
+                            // Scrolled out of the cache while held (a mouse wheel during
+                            // a press): the delegate is torn down without a pressedChanged
+                            // that the handler above still gets to see.
+                            Component.onDestruction: {
+                                if (pressed) {
+                                    dMainItem.rowPressed = false;
+                                    Qt.callLater(dMainItem.applyPendingRefresh);
+                                }
+                            }
                             onClicked: {
                                 var str = JSON.stringify(lvSpellList.model[index]);
                                 console.log("top click", str);
@@ -272,6 +288,29 @@ InfoWindow {
         }
     }
 
+    // An open window must follow the roster too: main.qml only reacts to
+    // topListChanged while it is waiting to open this window.
+    Connections {
+        target: mainWindow.gameCore
+        function onTopListChanged() {
+            // The hidden tab is not on screen: drop its cache so switchState()
+            // reparses it on the next tap instead of showing an older roster.
+            if (dMainItem.switchStateValue === 0) {
+                dMainItem.modelAll = [];
+            } else {
+                dMainItem.modelActive = [];
+            }
+            dMainItem.refreshShownTab();
+        }
+    }
+
+    Connections {
+        target: lvSpellList
+        function onMovementEnded() {
+            dMainItem.applyPendingRefresh();
+        }
+    }
+
     onCancel: {
         mainWindow.processEscape()
     }
@@ -287,12 +326,97 @@ InfoWindow {
 
     function initGFields() {
         console.log("wnd_hall_of_fame.initGFields", JSON.stringify(mainWindow.gERROR))
+        // The window is cached across close/reopen and the models are only
+        // refetched when empty, so without this a refreshed roster is invisible.
+        modelAll = [];
+        modelActive = [];
+        refreshPending = false;
+        rowPressed = false;
         mainWindow.gERROR = {};
         switchState(0);
     }
 
+    // A roster that cannot be parsed shows as an empty list instead of keeping
+    // the window from opening.
+    function loadTopList(tab) {
+        try {
+            var rows = JSON.parse(mainWindow.gameCore.getTopList(tab));
+            return Array.isArray(rows) ? rows : [];
+        } catch (e) {
+            console.log("wnd_hall_of_fame.loadTopList", tab, e);
+            return [];
+        }
+    }
+
+    // Only what a row shows decides whether the list is rebuilt: the activity
+    // timestamp and colour move on nearly every fetch for anyone online, and
+    // neither is displayed nor used on click (showUserScoreWnd refetches the
+    // profile by name).
+    function rowsSig(rows) {
+        var sig = [];
+        for (var i = 0; i < rows.length; ++i) {
+            sig.push(JSON.stringify([rows[i].n, rows[i].e, rows[i].a]));
+        }
+        return sig.join(",");
+    }
+
+    function refreshShownTab() {
+        if (!visible) {
+            return;
+        }
+        var tab = switchStateValue;
+        var shown = tab === 0 ? modelActive : modelAll;
+        var rows = loadTopList(tab);
+        if (rowsSig(rows) === rowsSig(shown)) {
+            return;
+        }
+        if (lvSpellList.moving || rowPressed) {
+            // A rebuild stops a flick dead and destroys a pressed row before its
+            // click: wait until the list settles and the finger is up.
+            refreshPending = true;
+            return;
+        }
+        // Keep the player at the top of the view in place, not the pixel offset:
+        // rows above them may have come, gone or moved.
+        var y = lvSpellList.contentY;
+        var top = Math.floor(y / rowHeight);
+        if ((top >= 0) && (top < shown.length)) {
+            for (var i = 0; i < rows.length; ++i) {
+                if (rows[i].n === shown[top].n) {
+                    y += (i - top) * rowHeight;
+                    break;
+                }
+            }
+        }
+        if (tab === 0) {
+            modelActive = rows;
+        } else {
+            modelAll = rows;
+        }
+        lvSpellList.model = rows;
+        lvSpellList.forceLayout();
+        lvSpellList.contentY = Math.max(0, Math.min(y, lvSpellList.contentHeight - lvSpellList.height));
+    }
+
+    function applyPendingRefresh() {
+        if (refreshPending) {
+            refreshPending = false;
+            refreshShownTab();
+        }
+    }
+
     function switchState(Val) {
         console.log("switchState", switchStateValue, Val);
+        if (refreshPending) {
+            // The deferred refresh belonged to the tab being left: drop its cache
+            // so switching back reparses it instead of showing the older roster.
+            if (switchStateValue === 0) {
+                modelActive = [];
+            } else {
+                modelAll = [];
+            }
+            refreshPending = false;
+        }
         if ((Val >= 0) && (Val < 2)) {
             switchStateValue = Val;
         } else {
@@ -309,7 +433,7 @@ InfoWindow {
             topSwitchAllText.color = "#A8F4F4";
             topSwitchAll.z = 17;
             if (modelActive.length == 0) {
-                modelActive = JSON.parse(mainWindow.gameCore.getTopList(0));
+                modelActive = loadTopList(0);
             }
             lvSpellList.model = modelActive;
             break;
@@ -321,7 +445,7 @@ InfoWindow {
             topSwitchActiveText.color = "#A8F4F4";
             topSwitchActive.z = 17;
             if (modelAll.length == 0) {
-                modelAll = JSON.parse(mainWindow.gameCore.getTopList(1));
+                modelAll = loadTopList(1);
             }
             lvSpellList.model = modelAll;
             break;
@@ -330,6 +454,12 @@ InfoWindow {
     }
 
     property int switchStateValue: 0
+    // A roster change arrived while the list was moving or a row was pressed;
+    // applied once that ends.
+    property bool refreshPending: false
+    property bool rowPressed: false
+    // One row of the list; also what refreshShownTab scrolls by.
+    readonly property real rowHeight: 100 * mainWindow.ratioObject
     Component.onCompleted: {
         mainWindow.storeWnd(dMainItem)
         initGFields()

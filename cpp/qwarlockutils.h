@@ -52,6 +52,8 @@ public:
     static void parseUnstartedBattle(QString &Data, QBattleInfo *bi);
     static int getRand(int Min, int Max);
     static qint64 parseLastActivity(const QString &str);
+    // Escapes a string for use between the quotes of a hand-built JSON value.
+    static QString jsonEscape(const QString &str);
 };
 
 #endif // QWARLOCKUTILS_H

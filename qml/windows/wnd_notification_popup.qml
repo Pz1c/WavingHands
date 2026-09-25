@@ -5,9 +5,6 @@ import QtQuick.Controls 2.15
 
 import "qrc:/qml/components"
 
-import "qrc:/js/battle_gui_utils.js" as BGU
-import "qrc:/js/spell_popup_gui_utils.js" as SPGU
-
 InfoWindow {
     id: dMainItem
     titleHeight: 60 * mainWindow.ratioObject

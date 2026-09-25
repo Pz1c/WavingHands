@@ -818,3 +818,35 @@ qint64 QWarlockUtils::parseLastActivity(const QString &str) {
 
     return QDateTime::currentSecsSinceEpoch() - num * mult;
 }
+
+QString QWarlockUtils::jsonEscape(const QString &str) {
+    QString res;
+    res.reserve(str.size());
+    for (const QChar c : str) {
+        switch (c.unicode()) {
+        case '"':
+            res.append("\\\"");
+            break;
+        case '\\':
+            res.append("\\\\");
+            break;
+        case '\n':
+            res.append("\\n");
+            break;
+        case '\r':
+            res.append("\\r");
+            break;
+        case '\t':
+            res.append("\\t");
+            break;
+        default:
+            if (c.unicode() < 0x20) {
+                res.append(QString("\\u%1").arg(static_cast<int>(c.unicode()), 4, 16, QChar('0')));
+            } else {
+                res.append(c);
+            }
+            break;
+        }
+    }
+    return res;
+}

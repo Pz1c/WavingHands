@@ -35,7 +35,7 @@ BaseWindow {
                 color: "lightgrey"
                 textFormat: Text.RichText
 
-                onLinkActivated: {
+                onLinkActivated: function (link) {
                     mainWindow.linkActivated(link);
                     mainWindow.processEscape();
                 }

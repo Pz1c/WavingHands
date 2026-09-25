@@ -1,7 +1,6 @@
 // source https://qt-project.org/forums/viewthread/26455
 
 import QtQuick 2.15
-import QtQuick.Controls 2.15
 import Qt.labs.qmlmodels 1.0
 
 import "qrc:/qml/components"
@@ -249,7 +248,7 @@ BaseWindow {
                                         case "LH":
                                             mainWindow.showGesture(true);
                                             break;
-                                        case "LH":
+                                        case "RH":
                                             mainWindow.showGesture(false);
                                             break;
                                         case "M":

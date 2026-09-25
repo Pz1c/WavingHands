@@ -336,7 +336,11 @@ Item {
         }
         console.log("showHideSummonIcon", JSON.stringify(spell));
         for (var i = 0, Ln = iMonsters.count; i < Ln; ++i) {
-            var item = iMonsters.itemAtIndex(i);
+            var item = iMonsters.itemAtIndex(i) as IconInfo;
+            if (!item) {
+                // Delegate not created (scrolled out of view): nothing to show or hide.
+                continue;
+            }
             var name = item.l_data && item.l_data.name ? item.l_data.name : "";
             if (name.indexOf(":") === -1) {
                 continue;
@@ -395,7 +399,11 @@ Item {
         var item, i, Ln;
 
         for (i = 0, Ln = iCharm.count; i < Ln; ++i) {
-            item = iCharm.itemAtIndex(i);
+            item = iCharm.itemAtIndex(i) as IconInfo;
+            if (!item) {
+                // Delegate not created (scrolled out of view): it gets its state when built.
+                continue;
+            }
 
             var has_action = item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action');
             var is_perm = has_action && (item.l_data.action === "permanency");

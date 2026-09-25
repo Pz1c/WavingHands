@@ -76,7 +76,7 @@ var C_SPELL_PARALYSIS_FDFD = 47;
 function copyObject(from, to, except) {
     var check_exclude = except && Array.isArray(except) && (except.length > 0);
     for(var key in from) {
-        if (check_exclude && except.include(key)) {
+        if (check_exclude && (except.indexOf(key) !== -1)) {
             continue;
         }
 
@@ -111,6 +111,11 @@ function getSpellIconByGesture(G) {
 
 function getFullSpellIconByGesture(G) {
     return "qrc:/res/" + getSpellIconByGesture(G) + ".png";
+}
+
+// icon name for a spell gesture code, undefined when there is no dedicated icon
+function getIconBySpell(spell_code) {
+    return map_spell_to_icon[spell_code];
 }
 
 function preparePrintGestures(GL, GR, mscL, mscR, maxLength) {
@@ -751,8 +756,8 @@ function getMessageActionByAttack(attack_obj, battle) {
     var res = [];
     var icon_action = {action:"icon",large_icon:"",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     //var attack_obj = parseAttackByText(txt);
-    var aggressor_found = attack_obj.aggressor === "", target_found = res.target === "", w, m, j, LnJ;
-    if (attack_obj.aggressor || res.target) {
+    var aggressor_found = attack_obj.aggressor === "", target_found = attack_obj.target === "", w, m, j, LnJ;
+    if (attack_obj.aggressor || attack_obj.target) {
         for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
             //console.log("getMessageActionByAttack", i, Ln, battle.warlocks[i].name);
             if (battle.warlocks[i].name !== attack_obj.aggressor) {

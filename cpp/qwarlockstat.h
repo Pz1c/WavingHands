@@ -43,6 +43,8 @@ public:
 
     bool mobile() const;
 
+    const QString &color() const;
+
     int warlockId() const;
     void setWarlockId(int newWarlockId);
 
@@ -64,23 +66,25 @@ public:
 
     void setMobile(bool newMobile);
 
+    void setColor(const QString &newColor);
+
 protected:
     void init(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile, int warlockId = 0);
     qint64 getLastActivityByColor(const QString Color);
 private:
     QString _name;
-    bool _registered;
-    bool _ai;
-    int _ladder;
-    int _melee;
-    int _played;
-    int _won;
-    int _died;
-    int _elo;
-    int _warlockId;
-    qint64 _lastActivity;
+    bool _registered = false;
+    bool _ai = false;
+    int _ladder = 0;
+    int _melee = 0;
+    int _played = 0;
+    int _won = 0;
+    int _died = 0;
+    int _elo = 0;
+    int _warlockId = 0;
+    qint64 _lastActivity = 0;
     QString _color;
-    bool _mobile;
+    bool _mobile = false;
 };
 
 #endif // QWARLOCKSTAT_H

@@ -1,9 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.12
 
 import ua.sp.warloksduel 2.0
-import ua.sp.warlockdictionary 1.0
 //import ua.sp.GoogleAnalytics 1.0
 
 import "qrc:/js/game_constant.js" as GC
@@ -11,11 +9,8 @@ import "qrc:/js/gui_utils.js" as GUI
 //import "qrc:/js/ga.js" as GA
 //import "qrc:/js/main_utils.js" as MUtils
 //import "qrc:/js/ai_utils.js" as AI
-import "qrc:/js/user_profile_utils.js" as UU
 import "qrc:/js/wnd_utils.js" as WNDU
-import "qrc:/qml/windows"
 import "qrc:/qml/components"
-import "qrc:/qml"
 
 
 ApplicationWindow {
@@ -71,14 +66,14 @@ ApplicationWindow {
                 logEvent("app_closed", {});
                 return Qt.quit();
             case 1: return confirmOrdersEx();
-            case 2: return joinBattleDialogResult(true);
+            case 2: return GUI.joinBattleDialogResult(true);
             case 3: return core.logout();
             }
         }
 
         onRejected: {
             if (dialogType == 2) {
-                joinBattleDialogResult(false);
+                GUI.joinBattleDialogResult(false);
             }
         }
     }
@@ -91,6 +86,7 @@ ApplicationWindow {
         onBattleListChanged: GUI.newBattleList()
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
+        onOpponentTurnReady: function(by) { refreshAfterOpponentTurn(by); }
         onRegisterNewUserChanged: GUI.newUserRegistered()
         //onTimerStateChanged: changeTimerState()
         onChallengeListChanged: GUI.loadChallengeList()
@@ -839,8 +835,17 @@ ApplicationWindow {
         logEvent("showFinishedBattle", {battle_id:bit});
         console.log(txt);
 
+        var err = null;
         if (txt.indexOf("{") === 0) {
-            var err = JSON.parse(txt);
+            try {
+                err = JSON.parse(txt);
+            } catch (e) {
+                // Falls back to the plain window below: an exception here used to lose both
+                // the window and the refresh after it.
+                console.log("showFinishedBattle", "payload is not JSON", e);
+            }
+        }
+        if (err) {
             if (!err.type) {
                 err.type = 7;
             }
@@ -871,6 +876,32 @@ ApplicationWindow {
         gBattle = JSON.parse(battle_str);
         gBattle.read_only = false;
         WNDU.showBattle();
+    }
+
+    // An opponent moved (TURNREADY from the caster link). The battle window is
+    // cached, so once closed it is hidden rather than destroyed.
+    property bool turnRefreshPending: false
+    function refreshAfterOpponentTurn(by) {
+        if (WNDU.isWndVisible(WNDU.wnd_battle)) {
+            // Replayed by battleWindowHidden(): the scan timer is stopped while a
+            // battle is ready, so nothing else would refresh the list afterwards.
+            console.log("refreshAfterOpponentTurn deferred, battle window open", by);
+            turnRefreshPending = true;
+            return;
+        }
+        turnRefreshPending = false;
+        core.scanState(1);
+    }
+
+    function battleWindowHidden() {
+        // Later, not now: showBattle hides the cached window and shows it again in
+        // one go, and that is not leaving the battle.
+        Qt.callLater(function() {
+            if (turnRefreshPending && !WNDU.isWndVisible(WNDU.wnd_battle)) {
+                turnRefreshPending = false;
+                core.scanState(1);
+            }
+        });
     }
 
     function openBattleOnline() {
@@ -1205,6 +1236,9 @@ ApplicationWindow {
     }
 
     function confirmOrdersEx() {
+        // The order submit rescans the player page itself: that is the refresh a
+        // deferred TURNREADY was waiting for.
+        turnRefreshPending = false;
         WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
         WNDU.closeChilds();
         processAfterClose();

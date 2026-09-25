@@ -71,8 +71,8 @@ InfoWindow {
                     font.pixelSize: 21 * mainWindow.ratioFont
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignJustify
-                    text: "Note: On each turn, the time counter continues counting once you enter the game,
-                           or when 1 minute passes from the time when you get notified of a new turn (the erlier of the two)"
+                    text: "Note: On each turn, the time counter continues counting once you enter the game,\n" +
+                          "                           or when 1 minute passes from the time when you get notified of a new turn (the erlier of the two)"
                     //onLinkActivated: function (link) { errorLinkActivated(link) }
                 }
             }
