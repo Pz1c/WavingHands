@@ -472,7 +472,7 @@ ApplicationWindow {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: ((144 + 130) * ratioObject)+ bbNewGame.height + ltActiveBattle.height + lvActiveBattle.height + ltFinishedBattle.height + lvFinishedBattle.height
+                height: ((144 + 130) * ratioObject)+ bbNewGame.height + ltActiveBattle.height + lvActiveBattle.height + ltFinishedBattle.height + lvFinishedBattle.height + (ltMoreFinishedBattle.visible ? ltMoreFinishedBattle.height + (12 + 24) * ratioObject : 0)
 
                 BtnBig {
                     id: bbNewGame
@@ -686,6 +686,8 @@ ApplicationWindow {
                     width: 0.9 * mainWindow.width
                     anchors.horizontalCenter: parent.horizontalCenter
                     height: model.length * 96 * ratioObject
+                    // finished games not shown until "Show more" is pressed
+                    property int hiddenCount: 0
                     delegate: Item {
                             id: idfRoot
                             width: lvFinishedBattle.width
@@ -750,6 +752,26 @@ ApplicationWindow {
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 12 * ratioObject
                         }
+                    }
+                }
+
+                LargeText {
+                    id: ltMoreFinishedBattle
+                    anchors.top: lvFinishedBattle.bottom
+                    anchors.topMargin: 12 * ratioObject
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: lvFinishedBattle.hiddenCount > 0
+                    height: visible ? 48 * ratioObject : 0
+                    width: 0.5 * parent.width
+                    font.pixelSize: 28 * ratioFont
+                    font.underline: true
+                    fontSizeMode: Text.VerticalFit
+                    color: "#A8F4F4"
+                    text: warlockDictionary.getStringByCode("ShowMoreGames")
+
+                    onClicked: {
+                        logEvent("Game_Finished_ShowMore", {Hidden:lvFinishedBattle.hiddenCount});
+                        GUI.showAllFinishedBattles();
                     }
                 }
             }
