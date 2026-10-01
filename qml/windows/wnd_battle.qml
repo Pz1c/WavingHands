@@ -489,6 +489,19 @@ BaseWindow {
                         source: "qrc:/res/spellbook.png"
                     }
 
+                    // the turn news step's icon pops in (BWU.playHintActions)
+                    ParallelAnimation {
+                        id: paHintMainIconPop
+                        NumberAnimation { target: rTTIMainIcon; property: "scale"; from: 0; to: 1; duration: 300; easing.type: Easing.OutBack }
+                        NumberAnimation { target: rTTIMainIcon; property: "opacity"; from: 0; to: 1; duration: 150 }
+                    }
+
+                    ParallelAnimation {
+                        id: paHintSmallIconPop
+                        NumberAnimation { target: iTTISmallIcon; property: "scale"; from: 0; to: 1; duration: 300; easing.type: Easing.OutBack }
+                        NumberAnimation { target: iTTISmallIcon; property: "opacity"; from: 0; to: 1; duration: 150 }
+                    }
+
                     MouseArea {
                         id: maTutIcon
                         anchors.fill: parent
@@ -509,6 +522,16 @@ BaseWindow {
         onTriggered: {
             console.log("battle.prepareHintWithCheck", "run prepareHint");
             BU.prepareHint();
+        }
+    }
+
+    // plays a turn news step frame by frame (BWU.playHintActions)
+    Timer {
+        id: tHintFrame
+        repeat: false
+        running: false
+        onTriggered: {
+            BWU.playNextHintFrame();
         }
     }
 
@@ -752,6 +775,22 @@ BaseWindow {
         setTargetingOnOff(true, is_spell, currentSpell.n);
     }
 
+    // wnd_target.qml closed: Done already stored the order through mainWindow.setSpellTarget,
+    // Back leaves target.target_name empty. Either way the spell is chosen.
+    function finishTargeting(target, spell) {
+        console.log("wnd_battle.finishTargeting", JSON.stringify(target), JSON.stringify(spell));
+        if (!mainWindow.gBattle || !mainWindow.gBattle.actions) {
+            // a new battle is on its way in, this window is about to be filled again
+            return;
+        }
+        currentSpell = spell;
+        showHideSummonIcon();
+        if ((target.action === "m") && BU.checkIsMonsterCharmed(target)) {
+            target.under_control = true;
+        }
+        battleChanged();
+    }
+
     function sendOrders() {
         BU.prepareOrder();
     }
@@ -774,6 +813,8 @@ BaseWindow {
             return;
         }
         readyWarlocks = 0;
+        // frames left over from the last battle must not touch the new warlocks
+        BWU.stopHintAnimation();
         title_text = "Battle #" + mainWindow.gBattle.id;
         rTT.visible = false;
         BU.applyBattle();

@@ -1271,7 +1271,7 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
     return res;
 }
 
-void QWarloksDuelCore::processSpellBookLevelAfterBattle(QBattleInfo *bi) {
+void QWarloksDuelCore::countFinishedBattle(QBattleInfo *bi) {
     if (bi->level() == 0) {
         switch(++_play_training_game) {
         case 1:
@@ -1297,6 +1297,10 @@ void QWarloksDuelCore::processSpellBookLevelAfterBattle(QBattleInfo *bi) {
             break;
         }
     }
+}
+
+void QWarloksDuelCore::processSpellBookLevelAfterBattle(QBattleInfo *bi) {
+    // The site's own "Won" counter skips very friendly games, so the app counts wins itself.
     if (bi->isWinner(_login)) {
         if (bi->with_bot()) {
             switch(++_win_vs_bot) {
@@ -1448,7 +1452,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             battleInfo->parseAllTurns(Data, _login, true);
             _finishedBattle = battleInfo->getFinishedBattleInfo(_login);
             qDebug() << "after battleInfo->getFullHist" << _login << battleInfo->winner() << battleInfo->isWinner(_login) << battleInfo->with_bot();
-            processSpellBookLevelAfterBattle(battleInfo);
+            countFinishedBattle(battleInfo);
 #ifndef _DEBUG
             storeFullParsedBattle(battleInfo);
 #endif
@@ -2051,6 +2055,11 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     _ladder = QWarlockUtils::getIntFromPlayerData(Data, "Ladder Score:", "<TD>", "</TD>", Idx);
     _melee = QWarlockUtils::getIntFromPlayerData(Data, "Melee Score:", "<TD>", "</TD>", Idx);
     _elo = QWarlockUtils::getIntFromPlayerData(Data, "Elo:", "<TD>", "</TD>", Idx);
+    if (!_isAI && !_isAsService && ((_elo > 1500) || (_won > 0))) {
+        // A player who already has results on the site is past the apprentice's first steps,
+        // whatever this install remembers (a fresh login, another account's level).
+        setSBL(3);
+    }
     _ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
     _waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
     _finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
@@ -2294,6 +2303,11 @@ void QWarloksDuelCore::markResultShown(int battle_id) {
         return;
     }
     _shown_battles.append(battle_id);
+    // First delivery of this result, by whichever road it came (a stored copy from the archive
+    // never passes through the parse of the raw page): the moment a win counts.
+    if (_battleInfo.contains(battle_id)) {
+        processSpellBookLevelAfterBattle(_battleInfo[battle_id]);
+    }
     saveParameters(false, false, true);
 }
 

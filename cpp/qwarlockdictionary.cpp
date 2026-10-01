@@ -98,6 +98,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("NewGameWithPlayer", "Грати з людиною", "Играть с человеком", "Warlock vs. Warlock");
     fillDictionary("ActiveGameTitle", "", "", "Your Games:");
     fillDictionary("FinishedGameTitle", "", "", "Completed Games:");
+    fillDictionary("ShowMoreGames", "", "", "Show more");
     fillDictionary("MonsterSetTarget", "", "", "Choose target");
     fillDictionary("MonsterOwnerTitle", "", "", "Owner");
     fillDictionary("MonsterTargetTitle", "", "", "Target");

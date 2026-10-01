@@ -28,12 +28,6 @@ int main(int argc, char *argv[])
     QLoggingCategory::setFilterRules(QStringLiteral("*.debug=false"));
 #endif
 
-    bool add_cert = QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
-    QString s1 = QString("QSslSocket::sslLibraryBuildVersionString() %1 QSslSocket::sslLibraryVersionString() %2").arg(QSslSocket::sslLibraryBuildVersionString(), QSslSocket::sslLibraryVersionString());
-    QString s2 = QString("loading embedded \"ISRG Root X1\" CA cert: %1").arg(add_cert);
-    qDebug() << s1;
-    qDebug() << s2;
-
     /*if (argc > 1 && qstrcmp(argv[1], "-service") == 0) {
         qDebug() << "Service starting with from the same .so file";
         #ifdef Q_OS_ANDROID
@@ -46,6 +40,15 @@ int main(int argc, char *argv[])
     } else {*/
         //QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
         QGuiApplication app(argc, argv);
+
+        // Must come after the QGuiApplication is constructed: Qt 6.11 loads the TLS backend
+        // through an application static that asserts if there is no QCoreApplication yet.
+        bool add_cert = QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
+        QString s1 = QString("QSslSocket::sslLibraryBuildVersionString() %1 QSslSocket::sslLibraryVersionString() %2").arg(QSslSocket::sslLibraryBuildVersionString(), QSslSocket::sslLibraryVersionString());
+        QString s2 = QString("loading embedded \"ISRG Root X1\" CA cert: %1").arg(add_cert);
+        qDebug() << s1;
+        qDebug() << s2;
+
         qint32 fontId = QFontDatabase::addApplicationFont(":/res/AgencyFB.ttf");
         qDebug() << "fontId" << fontId;
         if (fontId != -1) {
