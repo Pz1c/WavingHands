@@ -125,6 +125,13 @@
         <file>res/time_stop.png</file>
         <file>res/target_default.png</file>
         <file>res/sword.png</file>
+        <file>res/defense.png</file>
+        <file>res/defense_by_counter.png</file>
+        <file>res/defense_by_dispell.png</file>
+        <file>res/1damage.png</file>
+        <file>res/2damage.png</file>
+        <file>res/3damage.png</file>
+        <file>res/4damage.png</file>
         <file>res/anti_spell.png</file>
         <file>res/lightning_notice.png</file>
         <file>js/spell_popup_gui_utils.js</file>

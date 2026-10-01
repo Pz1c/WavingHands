@@ -125,6 +125,36 @@ Item {
                 iconInfoVisible: iMonsters.model[index].enchantment_icon !== ""
                 checkbox: false//iMonsters.model[index].is_checkbox
                 radius: 20
+
+                // the turn news lights the monster up when it attacks or when a spell or an attack gets to it
+                // https://github.com/Pz1c/WavingHands/issues/227
+                ParallelAnimation {
+                    id: paMonsterHighlight
+
+                    ColorAnimation {
+                        id: caMonsterHighlight
+                        target: iiDM
+                        property: "color"
+                        duration: 350
+                    }
+
+                    SequentialAnimation {
+                        NumberAnimation { target: iiDM; property: "scale"; to: 1.15; duration: 150; easing.type: Easing.OutQuad }
+                        NumberAnimation { target: iiDM; property: "scale"; to: 1; duration: 200; easing.type: Easing.InOutQuad }
+                    }
+                }
+
+                function highlightNews(news_color) {
+                    caMonsterHighlight.to = news_color;
+                    paMonsterHighlight.restart();
+                }
+
+                function restoreNews() {
+                    paMonsterHighlight.stop();
+                    scale = 1;
+                    color = bg_color;
+                }
+
                 onClicked: {
                     rWarlock.iconClick(l_data);
                 }
@@ -475,8 +505,11 @@ Item {
                 scrollGestures();
                 break;
             }
-        } else {
-            // monster
+        } else if (a.object_type === "monster") {
+            var mi = findMonsterItem(a.object);
+            if (mi) {
+                mi.highlightNews(a.color ? a.color : "#FEE2D6");
+            }
         }
     }
 
@@ -494,9 +527,23 @@ Item {
                 scrollGestures();
                 break;
             }
-        } else {
-            // monster
+        } else if (a.object_type === "monster") {
+            var mr = findMonsterItem(a.object);
+            if (mr) {
+                mr.restoreNews();
+            }
         }
+    }
+
+    // the IconInfo delegate of the monster with that name, null when it is not created (scrolled out of view)
+    function findMonsterItem(name) {
+        for (var i = 0, Ln = iMonsters.count; i < Ln; ++i) {
+            var item = iMonsters.itemAtIndex(i);
+            if (item && item.l_data && (item.l_data.name === name)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     function setGesture(Hand, GestureIcon, Gesture, Inside) {

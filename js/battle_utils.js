@@ -4,6 +4,9 @@
 
 var battle = {};
 var map_warlock_name_to_idx = {};
+// monster name -> index of the Warlock.qml item that shows it (the owner's), for the turn news
+// https://github.com/Pz1c/WavingHands/issues/227
+var map_monster_name_to_idx = {};
 var cWarlockObject,cIconObject;
 const G_WARLOCK_HEIGHT = 474;
 
@@ -367,6 +370,8 @@ function finishPrepareWarlockList() {
     }
     var curr_y = 0;
     var total_height = 0;
+    map_warlock_name_to_idx = {};
+    map_monster_name_to_idx = {};
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         // https://github.com/Pz1c/WavingHands/issues/259
         if (!battle.warlocks[i] || (!battle.read_only && !battle.warlocks[i].active && (battle.monsters[battle.warlocks[i].name].length === 0))) {
@@ -375,6 +380,9 @@ function finishPrepareWarlockList() {
         var arr_m = battle.warlocks[i];
         arr_m.warlock_idx = i;
         map_warlock_name_to_idx[arr_m.name] = i;
+        for (var j = 0, LnJ = arr_m.monsters.length; j < LnJ; ++j) {
+            map_monster_name_to_idx[arr_m.monsters[j].name] = i;
+        }
         //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
         if (sprite === null) {

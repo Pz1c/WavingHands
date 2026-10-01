@@ -1,6 +1,8 @@
 function processHighlightHintAction(a, restore) {
-    var warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
-    console.log("processHighlightHintAction", a.warlock_name, warlock_idx);
+    // a monster is shown inside the Warlock.qml item of its owner, a.object is the monster name
+    // https://github.com/Pz1c/WavingHands/issues/227
+    var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
+    console.log("processHighlightHintAction", a.object_type, a.warlock_name, a.object, warlock_idx);
     if (!a.warlock_name) {
         return;
     }
@@ -149,12 +151,22 @@ function playNextHintFrame() {
 }
 
 function playHintActions(actions) {
-    var letters = [], targets = [], icon = null, a, lf, i, j, Ln, frame_actions;
+    var letters = [], actors = [], targets = [], icon = null, a, lf, i, j, Ln, frame_actions;
     stopHintAnimation();
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
         a = actions[i];
         if ((a.action === "highlight") && (a.object_type === "warlock") && (a.object === "hp")) {
             targets.push(a);
+            continue;
+        }
+        // https://github.com/Pz1c/WavingHands/issues/227
+        // a monster that acts lights up before the icon pops, one that is hit after it, with the hearts
+        if ((a.action === "highlight") && (a.object_type === "monster")) {
+            if (a.role === "actor") {
+                actors.push(a);
+            } else {
+                targets.push(a);
+            }
             continue;
         }
         if ((a.action === "highlight") && (a.object_type === "warlock") && (a.object === "gestures")) {
@@ -181,6 +193,11 @@ function playHintActions(actions) {
             break;
         }
         hint_frames.push({delay:delay,actions:frame_actions});
+        delay = HINT_LETTER_DELAY;
+    }
+
+    if (actors.length > 0) {
+        hint_frames.push({delay:delay,actions:actors});
         delay = HINT_LETTER_DELAY;
     }
 
