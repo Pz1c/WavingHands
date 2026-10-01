@@ -775,6 +775,22 @@ BaseWindow {
         setTargetingOnOff(true, is_spell, currentSpell.n);
     }
 
+    // wnd_target.qml closed: Done already stored the order through mainWindow.setSpellTarget,
+    // Back leaves target.target_name empty. Either way the spell is chosen.
+    function finishTargeting(target, spell) {
+        console.log("wnd_battle.finishTargeting", JSON.stringify(target), JSON.stringify(spell));
+        if (!mainWindow.gBattle || !mainWindow.gBattle.actions) {
+            // a new battle is on its way in, this window is about to be filled again
+            return;
+        }
+        currentSpell = spell;
+        showHideSummonIcon();
+        if ((target.action === "m") && BU.checkIsMonsterCharmed(target)) {
+            target.under_control = true;
+        }
+        battleChanged();
+    }
+
     function sendOrders() {
         BU.prepareOrder();
     }
