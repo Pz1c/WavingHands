@@ -109,6 +109,25 @@ function parseParalyzedHands(arr) {
     }
 }
 
+// Turn news for a beginner (below the Master Warlock Spellbook, level 5) is limited to the three
+// things they can act on: somebody cast a spell, somebody took damage, a poison/disease counter
+// changed. Gestures, deaths, shields, counters, mirrors, charms etc. stay in the battle history.
+function isBeginnerTurnNews(row) {
+    switch (row.row_type) {
+    case "spell":
+        return true;
+    case "attack":
+        return row.obj.damage > 0;
+    case "other":
+        if ((row.obj.spell === "Poison") || (row.obj.spell === "Disease")) {
+            return true;
+        }
+        return (row.obj.damage > 0) && !row.obj.shield && !row.obj.counter_spell && !row.obj.mirror;
+    default:
+        return false;
+    }
+}
+
 function prepareTurnActionInfo(last_turn_hist) {
     console.log("battle_utils.prepareTurnActionInfo", JSON.stringify(last_turn_hist), JSON.stringify(battle.hint));
     var new_hint = [], i, Ln;
@@ -150,10 +169,14 @@ function prepareTurnActionInfo(last_turn_hist) {
     }
 
     BGU.prepareAndSortRealAction(real_actions, battle);
+    var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         //new_action = BGU.getMessageActionByRow(real_actions[i], battle); // before change color
         if (real_actions[i].type >= 2) {
+            continue;
+        }
+        if (beginner && !isBeginnerTurnNews(real_actions[i])) {
             continue;
         }
         // https://github.com/Pz1c/WavingHands/issues/311
