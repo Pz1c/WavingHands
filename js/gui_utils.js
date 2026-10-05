@@ -261,7 +261,7 @@ function startGameWithPlayerEx(skip_search) {
             desc += " Elo " + (G_PROFILE.elo - 200) + " or more please.";
         }
         logEvent("create_callenge", {source:"btn_new",Type:"Training",With:"Random warlock"});
-        core.createNewChallenge(1, 0, 1, 1, 2, 1, desc);
+        core.createNewChallenge(1, 0, 1, 1, 2, 2, desc);
     /*} else {
         V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;
         mdNoGesture.text = getJoinDialogText(G_CHALLENGE_LIST[best_idx]);
@@ -274,7 +274,7 @@ function startGameWithPlayer(WarlockName, FriendlyLevel, OnlineGame) {
     if (!WarlockName) {
         showErrorWnd({id:-1,type:19});
     } else {
-        core.createNewChallenge(1, 1, 1, 1, FriendlyLevel, 1, "Welcome to fight", WarlockName);
+        core.createNewChallenge(1, 1, 1, 1, 2, FriendlyLevel, "Welcome to fight", WarlockName);
     }
 }
 
@@ -282,7 +282,7 @@ function joinBattleDialogResult(accept) {
     if (accept && V_BEST_BATTLE_ID) {
         core.acceptChallenge(V_BEST_BATTLE_ID);
     } else {
-        core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
+        core.createNewChallenge(1, 0, 1, 1, 2, 2, "Welcome to fight");
     }
 }
 
