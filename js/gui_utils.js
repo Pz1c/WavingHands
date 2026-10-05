@@ -1,6 +1,8 @@
 var C_NG_PLAYER_CODE = 'player';
 var C_NG_BOT_CODE = 'bot';
 var G_BATTLE_LIST = [[],[]];
+var G_SHOW_ALL_FINISHED = false;
+var C_FINISHED_PREVIEW_COUNT = 7;
 var G_CHALLENGE_LIST = [];
 var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0,sbl:-1,win_vs_bot:0,win_vs_warlock:0,last_activity:0,online:1};
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
@@ -83,7 +85,9 @@ function newBattleList() {
     console.log("newBattleList.3", JSON.stringify(G_BATTLE_LIST[0]));
     lvActiveBattle.model = G_BATTLE_LIST[0];
     console.log("newBattleList.4", JSON.stringify(G_BATTLE_LIST[1]));
-    lvFinishedBattle.model = G_BATTLE_LIST[1];
+    // newest first: battle ids only grow
+    G_BATTLE_LIST[1].sort(function(a, b) { return b.id - a.id; });
+    updateFinishedBattleList();
     console.log("newBattleList.5", G_BATTLE_LIST[1].length);
     ltFinishedBattle.visible = G_BATTLE_LIST[1].length > 0;
     console.log("newBattleList.6");
@@ -91,8 +95,24 @@ function newBattleList() {
     console.log("newBattleList.7");
 }
 
+function getFinishedBattleModel() {
+    var all = G_BATTLE_LIST[1];
+    return G_SHOW_ALL_FINISHED ? all : all.slice(0, C_FINISHED_PREVIEW_COUNT);
+}
+
+function updateFinishedBattleList() {
+    var model = getFinishedBattleModel();
+    lvFinishedBattle.model = model;
+    lvFinishedBattle.hiddenCount = G_BATTLE_LIST[1].length - model.length;
+}
+
+function showAllFinishedBattles() {
+    G_SHOW_ALL_FINISHED = true;
+    updateFinishedBattleList();
+}
+
 function loadBattleList(filter) {
-    return G_BATTLE_LIST[filter === 1 ? 0 : 1];
+    return filter === 1 ? G_BATTLE_LIST[0] : getFinishedBattleModel();
 }
 
 function loadChallengeList() {
@@ -241,7 +261,7 @@ function startGameWithPlayerEx(skip_search) {
             desc += " Elo " + (G_PROFILE.elo - 200) + " or more please.";
         }
         logEvent("create_callenge", {source:"btn_new",Type:"Training",With:"Random warlock"});
-        core.createNewChallenge(1, 0, 1, 1, 2, 1, desc);
+        core.createNewChallenge(1, 0, 1, 1, 2, 2, desc);
     /*} else {
         V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;
         mdNoGesture.text = getJoinDialogText(G_CHALLENGE_LIST[best_idx]);
@@ -254,7 +274,7 @@ function startGameWithPlayer(WarlockName, FriendlyLevel, OnlineGame) {
     if (!WarlockName) {
         showErrorWnd({id:-1,type:19});
     } else {
-        core.createNewChallenge(1, 1, 1, 1, FriendlyLevel, 1, "Welcome to fight", WarlockName);
+        core.createNewChallenge(1, 1, 1, 1, 2, FriendlyLevel, "Welcome to fight", WarlockName);
     }
 }
 
@@ -262,7 +282,7 @@ function joinBattleDialogResult(accept) {
     if (accept && V_BEST_BATTLE_ID) {
         core.acceptChallenge(V_BEST_BATTLE_ID);
     } else {
-        core.createNewChallenge(1, 0, 1, 1, 2, 1, "Welcome to fight");
+        core.createNewChallenge(1, 0, 1, 1, 2, 2, "Welcome to fight");
     }
 }
 

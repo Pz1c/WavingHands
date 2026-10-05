@@ -464,7 +464,7 @@ function higlightWarlockGestureBySpell(warlock, spell_obj) {
 
 function getSpellIconActionBySpell(spell_obj) {
     //console.log("getSpellIconActionBySpell", JSON.stringify(spell_obj));
-    var res = {action:"icon",large_icon:"",small_icon:spell_obj.fail,title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
+    var res = {action:"icon",large_icon:"",small_icon:spell_obj.fail.toLowerCase(),title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     var arr_g = map_spell_name_to_gesture[spell_obj.spell];
     res.large_icon = map_spell_to_icon[arr_g[0]];
     if (spell_obj.spell.indexOf("Cure") !== -1) {
@@ -482,6 +482,64 @@ function getSpellIconActionBySpell(spell_obj) {
     }
 
     return res;
+}
+
+// https://github.com/Pz1c/WavingHands/issues/227
+// A Shield, a Counter Spell or a Dispel Magic cast at somebody earlier in the turn decides which
+// defense icon a deflected attack or an absorbed spell at him gets later in the turn news.
+function noteDefense(target, spell_obj) {
+    if (spell_obj.fail !== "") {
+        return;
+    }
+    switch (spell_obj.spell) {
+    case "Shield":
+    case "Protection":
+        target.defended_by = "shield";
+        break;
+    case "Counter Spell":
+        target.defended_by = "counter";
+        break;
+    case "Dispel Magic":
+        target.defended_by = "dispel";
+        break;
+    }
+}
+
+// the warlock or the monster with that name in the current battle, null when there is none
+function findBattleObject(battle, name) {
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        var w = battle.warlocks[i];
+        if (w.name === name) {
+            return w;
+        }
+        for (var j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
+            if (w.monsters[j].name === name) {
+                return w.monsters[j];
+            }
+        }
+    }
+    return null;
+}
+
+// defense.png / defense_by_counter.png / defense_by_dispell.png by what protected the target this turn;
+// by_counter is what the turn text itself says when no spell cast at the target was seen
+function getDefenseIcon(target, by_counter) {
+    var by = target && target.defended_by ? target.defended_by : (by_counter ? "counter" : "shield");
+    switch (by) {
+    case "counter": return "defense_by_counter";
+    case "dispel":  return "defense_by_dispell";
+    default:        return "defense";
+    }
+}
+
+// 1 to 4 points of damage have their own heart icon (1damage.png ... 4damage.png) that shows the
+// amount itself, more keeps the heart with the number on it
+function applyDamageIcon(icon_action, damage) {
+    var d = parseInt(damage, 10);
+    if ((d >= 1) && (d <= 4)) {
+        icon_action.large_icon = d + "damage";
+        icon_action.text = "";
+    }
 }
 
 function getMessageActionBySpell(obj, battle) {
@@ -516,6 +574,7 @@ function getMessageActionBySpell(obj, battle) {
             if (spell_obj.spell === "Cause Heavy Wounds") {
                 battle.warlocks[i].got_heavy_wounds = true;
             }
+            noteDefense(battle.warlocks[i], spell_obj);
             if (arr_distruption_spell.indexOf(spell_obj.spell) !== -1) {
                 if (!battle.warlocks[i].arr_distruption) {
                     battle.warlocks[i].arr_distruption = [];
@@ -536,6 +595,7 @@ function getMessageActionBySpell(obj, battle) {
                     if (spell_obj.spell === "Cause Heavy Wounds") {
                         battle.warlocks[i].monsters[j].got_heavy_wounds = true;
                     }
+                    noteDefense(battle.warlocks[i].monsters[j], spell_obj);
                     if (arr_distruption_spell.indexOf(spell_obj.spell) !== -1) {
                         if (!battle.warlocks[i].monsters[j].arr_distruption) {
                             battle.warlocks[i].monsters[j].arr_distruption = [];
@@ -543,7 +603,7 @@ function getMessageActionBySpell(obj, battle) {
                         battle.warlocks[i].monsters[j].arr_distruption.push(spell_obj.spell);
                         //console.log("getMessageActionBySpell", "fill monster arr_distruption", JSON.stringify(battle.warlocks[i].monsters[j]));
                     }
-                    res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:"#FEE2D6"});
+                    res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],role:"target",color:"#FEE2D6"});
                     target_found = true;
                     break;
                 }
@@ -773,7 +833,7 @@ function getMessageActionByAttack(attack_obj, battle) {
                     for (j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
                         m = w.monsters[j];
                         if (m.name === attack_obj.aggressor) {
-                            res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:"#10C9F5"});
+                            res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],role:"actor",color:"#10C9F5"});
                             aggressor_found = true;
                             break;
                         }
@@ -793,7 +853,7 @@ function getMessageActionByAttack(attack_obj, battle) {
                     for (j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
                         m = w.monsters[j];
                         if (m.name === attack_obj.target) {
-                            res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],color:attack_obj.target === attack_obj.aggressor ? "#10C9F5" : "#FEE2D6"});
+                            res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],role:"target",color:attack_obj.target === attack_obj.aggressor ? "#10C9F5" : "#FEE2D6"});
                             target_found = true;
                             break;
                         }
@@ -814,8 +874,11 @@ function getMessageActionByAttack(attack_obj, battle) {
             icon_action.text = "- " + attack_obj.damage;
         }
 
+        // https://github.com/Pz1c/WavingHands/issues/227
         if (attack_obj.shield) {
-            icon_action.large_icon = "shield";
+            icon_action.large_icon = getDefenseIcon(findBattleObject(battle, attack_obj.target), false);
+        } else if (icon_action.large_icon === "heart") {
+            applyDamageIcon(icon_action, attack_obj.damage);
         } else if (icon_action.large_icon === "") {
             icon_action.large_icon = getMonsterIconByNameEx(attack_obj.target);
         }
@@ -864,27 +927,33 @@ function getMessageActionByOther(obj, battle) {
             //break;
         }
 
-        if (obj.spell === "Distruption") {
-            //console.log("getMessageActionByOther", JSON.stringify(w.monsters));
-            for (var j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
-                var m = w.monsters[j];
-                //console.log("getMessageActionByOther", JSON.stringify(m));
-                if (m.name === obj.target) {
-                    if (m.arr_distruption) {
-                        obj.spell = m.arr_distruption.shift();
-                    }
-                    target_found = true;
-                    break;
-                }
+        // the row is about one of this warlock's monsters: "Smelly Goblin is hit by a Magic Missile",
+        // "Green Troll is covered by a shimmering shield", "Big Goblin is summoned to serve Bob"
+        // https://github.com/Pz1c/WavingHands/issues/227
+        for (var j = 0, LnJ = w.monsters.length; j < LnJ; ++j) {
+            var m = w.monsters[j];
+            if (m.name !== obj.target) {
+                continue;
             }
-            //if (target_found) {
-            //    break;
-            //}
+            if (obj.spell === "Distruption") {
+                if (m.arr_distruption) {
+                    obj.spell = m.arr_distruption.shift();
+                }
+                target_found = true;
+            }
+            // hit by a spell or an attack: the hit color; nothing happened to it (it just appeared): the actor color
+            res.push({action:"highlight",warlock_name:m.name,object_type:"monster",object:m.name,data:[],role:"target",
+                      color:((obj.spell !== "") || (obj.damage > 0)) ? "#FEE2D6" : "#10C9F5"});
+            break;
         }
     }
 
     if (obj.damage > 0) {
         icon_action.text = "- " + obj.damage;
+        // https://github.com/Pz1c/WavingHands/issues/227
+        if (icon_action.large_icon === "heart") {
+            applyDamageIcon(icon_action, obj.damage);
+        }
     }
 
     if (!target_found) {
@@ -898,13 +967,18 @@ function getMessageActionByOther(obj, battle) {
         if ((obj.spell === "Disease") || (obj.spell === "Poison")) {
             icon_action.large_icon = "";
         }
+        // a warlock is now protected ("is covered by a glowing / shimmering / thick shimmering shield"):
+        // the defense icon, the small one tells by which spell
+        // https://github.com/Pz1c/WavingHands/issues/227
+        if (target_found && !(obj.damage > 0) &&
+                ((obj.spell === "Shield") || (obj.spell === "Counter Spell") || (obj.spell === "Protection"))) {
+            icon_action.large_icon = "defense";
+            icon_action.text = "";
+        }
     }
-    if (obj.shield) {
-        icon_action.large_icon = "shield";
-        icon_action.text = "";
-    }
-    if (obj.counter_spell) {
-        icon_action.large_icon = "mshield";
+    // https://github.com/Pz1c/WavingHands/issues/227
+    if (obj.shield || obj.counter_spell) {
+        icon_action.large_icon = getDefenseIcon(findBattleObject(battle, obj.target), obj.counter_spell);
         icon_action.text = "";
     }
     if (obj.mirror) {

@@ -851,7 +851,7 @@ BaseWindow {
             if (actionType === 0) {
                 mainWindow.gBattle.spellIdx = 0;
             }
-            arrSpell = [{gp:">",n:"Stab",t:1,choose:1,row_type:1}];
+            arrSpell = [{gp:">",g:">",n:"Stab",t:1,choose:1,row_type:1,sg:2}];
             //arrSpellLater = [];
         } else {
             arrSpell = mainWindow.getSpellList(new_gesture, warlockIdx, handIdx);

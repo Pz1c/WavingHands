@@ -63,8 +63,8 @@ android {
         minSdkVersion qtMinSdkVersion
         targetSdkVersion 36
         ndk.abiFilters = qtTargetAbiList.split(",")
-        versionCode = 1221
-        versionName = "2.4.4"
+        versionCode = 1231
+        versionName = "2.4.5"
     }
 
     signingConfigs {

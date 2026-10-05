@@ -472,7 +472,7 @@ ApplicationWindow {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                height: ((144 + 130) * ratioObject)+ bbNewGame.height + ltActiveBattle.height + lvActiveBattle.height + ltFinishedBattle.height + lvFinishedBattle.height
+                height: ((144 + 130) * ratioObject)+ bbNewGame.height + ltActiveBattle.height + lvActiveBattle.height + ltFinishedBattle.height + lvFinishedBattle.height + (ltMoreFinishedBattle.visible ? ltMoreFinishedBattle.height + (12 + 24) * ratioObject : 0)
 
                 BtnBig {
                     id: bbNewGame
@@ -686,6 +686,8 @@ ApplicationWindow {
                     width: 0.9 * mainWindow.width
                     anchors.horizontalCenter: parent.horizontalCenter
                     height: model.length * 96 * ratioObject
+                    // finished games not shown until "Show more" is pressed
+                    property int hiddenCount: 0
                     delegate: Item {
                             id: idfRoot
                             width: lvFinishedBattle.width
@@ -750,6 +752,26 @@ ApplicationWindow {
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 12 * ratioObject
                         }
+                    }
+                }
+
+                LargeText {
+                    id: ltMoreFinishedBattle
+                    anchors.top: lvFinishedBattle.bottom
+                    anchors.topMargin: 12 * ratioObject
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: lvFinishedBattle.hiddenCount > 0
+                    height: visible ? 48 * ratioObject : 0
+                    width: 0.5 * parent.width
+                    font.pixelSize: 28 * ratioFont
+                    font.underline: true
+                    fontSizeMode: Text.VerticalFit
+                    color: "#A8F4F4"
+                    text: warlockDictionary.getStringByCode("ShowMoreGames")
+
+                    onClicked: {
+                        logEvent("Game_Finished_ShowMore", {Hidden:lvFinishedBattle.hiddenCount});
+                        GUI.showAllFinishedBattles();
                     }
                 }
             }
@@ -1101,14 +1123,28 @@ ApplicationWindow {
             console.log("NEED_TARGET", gBattle.actions.P, gBattle.currentHandIdx);
             spell.permanency = (gBattle.actions.P === -1) || (gBattle.actions.P !== gBattle.currentHandIdx) ? 0 : 1;
             spell.delay = (gBattle.actions.D === -1) || (gBattle.actions.D !== gBattle.currentHandIdx) ? 0 : 1;
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, spell);
-        } else {
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].currentSpell = {n:"",h:gBattle.currentHand === "L" ? 1 : 2,g:""};
-            WNDU.arr_wnd_instance[WNDU.wnd_battle].battleChanged(true);
+            // the gesture window goes first, the target window then sits on top of the battle
+            WNDU.processEscape();
+            showTargetWnd(true, spell);
+            return;
         }
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].currentSpell = {n:"",h:gBattle.currentHand === "L" ? 1 : 2,g:""};
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].battleChanged(true);
         WNDU.processEscape();
     }
 
+    // wnd_target.qml: spell = the hand's spell object, or {n: <monster popup title>} to direct a monster
+    function showTargetWnd(is_spell, spell) {
+        gERROR = {is_spell:is_spell,spell:spell};
+        WNDU.showTarget();
+    }
+
+    // the target window is done (target.target_name === "" when it was cancelled)
+    function finishTargeting(target, spell) {
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].finishTargeting(target, spell);
+    }
+
+    // long press on one of the player's hands: choose the target of its spell again
     function chooseTargetForSpell(isLeft) {
         gBattle.currentHand = isLeft ? "L" : "R";
         gBattle.otherHand   = isLeft ? "R" : "L";
@@ -1118,8 +1154,14 @@ ApplicationWindow {
         if (!gBattle.actions[gBattle.currentHand].g) {
             return;
         }
+        var spell = gBattle.actions[gBattle.currentHand].s;
+        if (!spell || !spell.n || (spell.n === "None")) {
+            return;
+        }
+        spell.permanency = (gBattle.actions.P === -1) || (gBattle.actions.P !== gBattle.currentHandIdx) ? 0 : 1;
+        spell.delay = (gBattle.actions.D === -1) || (gBattle.actions.D !== gBattle.currentHandIdx) ? 0 : 1;
 
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(true, gBattle.actions[gBattle.currentHand].n);
+        showTargetWnd(true, spell);
         logEvent("Play_Target_View", {Mode:"spell"});
     }
 
@@ -1129,9 +1171,8 @@ ApplicationWindow {
     }
 
     function chooseMonsterTarget(title) {
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].prepareToTargeting(false, {n:title});
+        showTargetWnd(false, {n:title});
         logEvent("Play_Target_View", {Mode:"monster"});
-        //WNDU.processEscape();
     }
 
     function setSpellTarget(TargetName, lPermanent, lDelay, OperationType) {
@@ -1142,14 +1183,21 @@ ApplicationWindow {
                 gBattle.actions.P = gBattle.currentHandIdx;
             } else {
                 lPermanent = 0;
+                // the toggle was switched off for this hand
+                if (gBattle.actions.P === gBattle.currentHandIdx) {
+                    gBattle.actions.P = -1;
+                }
             }
             if (lDelay === 1) {
                 gBattle.actions.D = gBattle.currentHandIdx;
             } else {
                 lDelay = 0;
+                if (gBattle.actions.D === gBattle.currentHandIdx) {
+                    gBattle.actions.D = -1;
+                }
             }
 
-            logEvent("Play_Target_Clicked", {Mode:"spell",Target:TargetName,Spell:gBattle.actions[gBattle.currentHand].n,Permanent:lPermanent,Delay:lDelay});
+            logEvent("Play_Target_Clicked", {Mode:"spell",Target:TargetName,Spell:gBattle.actions[gBattle.currentHand].s.n,Permanent:lPermanent,Delay:lDelay});
         } else if (OperationType === 2) {
             console.log("before", gBattle.currentMonsterIdx, JSON.stringify(gBattle.actions.M[gBattle.currentMonsterIdx]));
             gBattle.actions.M[gBattle.currentMonsterIdx].target = TargetName;

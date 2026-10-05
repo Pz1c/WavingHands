@@ -49,6 +49,24 @@ Item {
         }
     }
 
+    // the turn news lights the heart up when a spell or an attack gets to this warlock
+    // https://github.com/Pz1c/WavingHands/issues/306
+    ParallelAnimation {
+        id: paHPHighlight
+
+        ColorAnimation {
+            id: caHPHighlight
+            target: iiHP
+            property: "color"
+            duration: 350
+        }
+
+        SequentialAnimation {
+            NumberAnimation { target: iiHP; property: "scale"; to: 1.15; duration: 150; easing.type: Easing.OutQuad }
+            NumberAnimation { target: iiHP; property: "scale"; to: 1; duration: 200; easing.type: Easing.InOutQuad }
+        }
+    }
+
     IconInfo {
         id: iiBanked
         source: "qrc:/res/banked_spell.png";
@@ -107,6 +125,36 @@ Item {
                 iconInfoVisible: iMonsters.model[index].enchantment_icon !== ""
                 checkbox: false//iMonsters.model[index].is_checkbox
                 radius: 20
+
+                // the turn news lights the monster up when it attacks or when a spell or an attack gets to it
+                // https://github.com/Pz1c/WavingHands/issues/227
+                ParallelAnimation {
+                    id: paMonsterHighlight
+
+                    ColorAnimation {
+                        id: caMonsterHighlight
+                        target: iiDM
+                        property: "color"
+                        duration: 350
+                    }
+
+                    SequentialAnimation {
+                        NumberAnimation { target: iiDM; property: "scale"; to: 1.15; duration: 150; easing.type: Easing.OutQuad }
+                        NumberAnimation { target: iiDM; property: "scale"; to: 1; duration: 200; easing.type: Easing.InOutQuad }
+                    }
+                }
+
+                function highlightNews(news_color) {
+                    caMonsterHighlight.to = news_color;
+                    paMonsterHighlight.restart();
+                }
+
+                function restoreNews() {
+                    paMonsterHighlight.stop();
+                    scale = 1;
+                    color = bg_color;
+                }
+
                 onClicked: {
                     rWarlock.iconClick(l_data);
                 }
@@ -194,6 +242,13 @@ Item {
                             GradientStop { position: lwGestures.model[index].la ? 0.25 : 0.15; color: lwGestures.model[index].la ? "#E7FFFF" : "#544653" }
                             GradientStop { position: 1.0;  color: lwGestures.model[index].la ? "#FEE2D6" : "#544653" }
                         }
+
+                    // the turn news lights the spell's letters up one by one, each one pops
+                    SequentialAnimation on scale {
+                        running: lwGestures.model[index].lp === true
+                        NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
+                        NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
+                    }
                 }
 
                 IconInfo {
@@ -214,6 +269,12 @@ Item {
                         GradientStop { position: 0.0;  color: lwGestures.model[index].ra ? "#E7FFFF" : "#756F79" }
                         GradientStop { position: lwGestures.model[index].ra ? 0.25 : 0.15; color: lwGestures.model[index].ra ? "#E7FFFF" : "#544653" }
                         GradientStop { position: 1.0;  color: lwGestures.model[index].ra ? "#FEE2D6" : "#544653" }
+                    }
+
+                    SequentialAnimation on scale {
+                        running: lwGestures.model[index].rp === true
+                        NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
+                        NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
                     }
                 }
             }
@@ -436,15 +497,19 @@ Item {
         if (a.object_type === "warlock") {
             switch(a.object) {
             case "hp":
-                iiHP.color = a.color ? a.color : iiHP.bg_color_checked;
+                caHPHighlight.to = a.color ? a.color : iiHP.bg_color_checked;
+                paHPHighlight.restart();
                 break;
             case "gestures":
                 lwGestures.model = a.data;
                 scrollGestures();
                 break;
             }
-        } else {
-            // monster
+        } else if (a.object_type === "monster") {
+            var mi = findMonsterItem(a.object);
+            if (mi) {
+                mi.highlightNews(a.color ? a.color : "#FEE2D6");
+            }
         }
     }
 
@@ -453,6 +518,8 @@ Item {
         if (a.object_type === "warlock") {
             switch(a.object) {
             case "hp":
+                paHPHighlight.stop();
+                iiHP.scale = 1;
                 iiHP.color = iiHP.bg_color;
                 break;
             case "gestures":
@@ -460,9 +527,23 @@ Item {
                 scrollGestures();
                 break;
             }
-        } else {
-            // monster
+        } else if (a.object_type === "monster") {
+            var mr = findMonsterItem(a.object);
+            if (mr) {
+                mr.restoreNews();
+            }
         }
+    }
+
+    // the IconInfo delegate of the monster with that name, null when it is not created (scrolled out of view)
+    function findMonsterItem(name) {
+        for (var i = 0, Ln = iMonsters.count; i < Ln; ++i) {
+            var item = iMonsters.itemAtIndex(i);
+            if (item && item.l_data && (item.l_data.name === name)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     function setGesture(Hand, GestureIcon, Gesture, Inside) {

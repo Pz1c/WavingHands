@@ -276,6 +276,9 @@ protected:
     void processWarlockPut();
     void callAI(QString Login, int MagicBookLevel);
 
+    void countFinishedBattle(QBattleInfo *bi);
+    // A win raises the spellbook. Called once per battle, when its result is first delivered
+    // (markResultShown), because a result reaches the app by more than one road.
     void processSpellBookLevelAfterBattle(QBattleInfo *bi);
 
     // Result announcement for battles that ended on the opponent's or the bot's move: asks

@@ -1,0 +1,37 @@
+{
+    // Android debug build for the phone, the steps are in android.ps1.
+    // Ctrl+Shift+B: build, install and run on the phone. Others: Terminal > Run Task...
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Android: build, install and run on phone",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/.vscode/android.ps1", "-Action", "Deploy"],
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": { "base": "$gcc", "fileLocation": ["autoDetect", "${workspaceFolder}/build/vscode-android-arm64-debug"] }
+        },
+        {
+            "label": "Android: build APK",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/.vscode/android.ps1", "-Action", "Build"],
+            "group": "build",
+            "problemMatcher": { "base": "$gcc", "fileLocation": ["autoDetect", "${workspaceFolder}/build/vscode-android-arm64-debug"] }
+        },
+        {
+            "label": "Android: install and run last APK",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/.vscode/android.ps1", "-Action", "Run"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Android: app log (logcat)",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/.vscode/android.ps1", "-Action", "Logcat"],
+            "problemMatcher": []
+        }
+    ]
+}

@@ -4,6 +4,9 @@
 
 var battle = {};
 var map_warlock_name_to_idx = {};
+// monster name -> index of the Warlock.qml item that shows it (the owner's), for the turn news
+// https://github.com/Pz1c/WavingHands/issues/227
+var map_monster_name_to_idx = {};
 var cWarlockObject,cIconObject;
 const G_WARLOCK_HEIGHT = 474;
 
@@ -109,6 +112,25 @@ function parseParalyzedHands(arr) {
     }
 }
 
+// Turn news for a beginner (below the Master Warlock Spellbook, level 5) is limited to the three
+// things they can act on: somebody cast a spell, somebody took damage, a poison/disease counter
+// changed. Gestures, deaths, shields, counters, mirrors, charms etc. stay in the battle history.
+function isBeginnerTurnNews(row) {
+    switch (row.row_type) {
+    case "spell":
+        return true;
+    case "attack":
+        return row.obj.damage > 0;
+    case "other":
+        if ((row.obj.spell === "Poison") || (row.obj.spell === "Disease")) {
+            return true;
+        }
+        return (row.obj.damage > 0) && !row.obj.shield && !row.obj.counter_spell && !row.obj.mirror;
+    default:
+        return false;
+    }
+}
+
 function prepareTurnActionInfo(last_turn_hist) {
     console.log("battle_utils.prepareTurnActionInfo", JSON.stringify(last_turn_hist), JSON.stringify(battle.hint));
     var new_hint = [], i, Ln;
@@ -150,10 +172,14 @@ function prepareTurnActionInfo(last_turn_hist) {
     }
 
     BGU.prepareAndSortRealAction(real_actions, battle);
+    var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         //new_action = BGU.getMessageActionByRow(real_actions[i], battle); // before change color
         if (real_actions[i].type >= 2) {
+            continue;
+        }
+        if (beginner && !isBeginnerTurnNews(real_actions[i])) {
             continue;
         }
         // https://github.com/Pz1c/WavingHands/issues/311
@@ -344,6 +370,8 @@ function finishPrepareWarlockList() {
     }
     var curr_y = 0;
     var total_height = 0;
+    map_warlock_name_to_idx = {};
+    map_monster_name_to_idx = {};
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         // https://github.com/Pz1c/WavingHands/issues/259
         if (!battle.warlocks[i] || (!battle.read_only && !battle.warlocks[i].active && (battle.monsters[battle.warlocks[i].name].length === 0))) {
@@ -352,6 +380,9 @@ function finishPrepareWarlockList() {
         var arr_m = battle.warlocks[i];
         arr_m.warlock_idx = i;
         map_warlock_name_to_idx[arr_m.name] = i;
+        for (var j = 0, LnJ = arr_m.monsters.length; j < LnJ; ++j) {
+            map_monster_name_to_idx[arr_m.monsters[j].name] = i;
+        }
         //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
         if (sprite === null) {
