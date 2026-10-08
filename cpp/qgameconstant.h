@@ -151,6 +151,8 @@
 #define BATTLE_INFO_LEVEL_VERY_FRIENDLY 2
 #define BATTLE_INFO_LEVEL_FRIENDLY 1
 #define BATTLE_INFO_LEVEL_LADDER 0
+// Keep me On (https://github.com/Pz1c/WavingHands/issues/149): no new game once the player has this many.
+#define KEEP_ME_ON_MAX_GAMES 3
 
 //#define SECONDS_AT_20210901 1630454400
 static QStringList POSSIBLE_GESTURES {"C", "W", "S", "D", "F", "P", ">"};

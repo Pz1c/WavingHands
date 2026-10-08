@@ -151,5 +151,7 @@
         <file>qml/windows/wnd_start_online.qml</file>
         <file>res/notification.png</file>
         <file>qml/windows/wnd_notification_popup.qml</file>
+        <file>qml/windows/wnd_settings.qml</file>
+        <file>qml/windows/wnd_keep_me_on_popup.qml</file>
     </qresource>
 </RCC>

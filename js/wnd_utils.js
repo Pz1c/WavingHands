@@ -23,6 +23,9 @@ var wnd_top = "wnd_hall_of_fame.qml";
 var wnd_start_online_match = "wnd_start_online.qml";
 var wnd_notification_popup = "wnd_notification_popup.qml";
 var wnd_target = "wnd_target.qml";
+// https://github.com/Pz1c/WavingHands/issues/149
+var wnd_settings = "wnd_settings.qml";
+var wnd_keep_me_on_popup = "wnd_keep_me_on_popup.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -304,6 +307,9 @@ function showErrorWnd(error, chat) {
     case 201:
         wnd_name = wnd_notification_popup;
         break;
+    case 202:
+        wnd_name = wnd_keep_me_on_popup;
+        break;
     default:
         if (error.type >= 7) {
             wnd_name = wnd_spell;
@@ -361,4 +367,8 @@ function showSpellbook(close_current, close_all) {
     }
 
     showWnd(wnd_spellbook, close_current, close_all, 1);
+}
+
+function showSettings() {
+    showWnd(wnd_settings, 0, 1, 1);
 }
