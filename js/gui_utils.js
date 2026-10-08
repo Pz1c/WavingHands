@@ -10,7 +10,7 @@ var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
 var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, {c:"top",t:"TopList"}, {c:"feedback",t:"Feedback"},
                      //{c:"battle_with_friend",t:"DuelWithFriend"}, /*{c:"switch_account",t:"SwitchAccount"},*/
-                     {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"},
+                     {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"}, {c:"settings",t:"Settings"},
                      {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/ ,{c:"enable_notif", t:"Notification"}
         ];
 
@@ -33,6 +33,7 @@ function mainMenuActionEx(code) {
     case "player_score": return showUserScoreWnd();
     case "battle_with_friend": return showShareWnd();
     case "logout": return confirmLogout();
+    case "settings": return showSettingsWnd();
     case "spellbook_levelup":
         def_type = 22;
         break;

@@ -173,6 +173,16 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("RateUs_short_desc", "", "", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us with a 5 star rating?");
     fillDictionary("miRulesTitle", "", "", "Advanced Rules");
     fillDictionary("miLogoutTitle", "", "", "Sign Out");
+    // https://github.com/Pz1c/WavingHands/issues/149
+    fillDictionary("Skip", "", "", "Skip");
+    fillDictionary("SwitchOn", "", "", "ON");
+    fillDictionary("SwitchOff", "", "", "OFF");
+    fillDictionary("KeepMeOn", "", "", "Keep me On");
+    fillDictionary("KeepMeOnBtn", "", "", "Keep me On!");
+    fillDictionary("KeepMeOnTitle", "", "", "Wait for someone to join...");
+    fillDictionary("KeepMeOnShortDesc", "", "", "No worries, we'll let you know when the game is ready! It usually takes a few hours for someone to join.");
+    fillDictionary("KeepMeOnDesc", "", "", "To avoid waiting next time, click \"Keep me On!\" and we will automatically create a new game for you whenever a game is filled.<br>(you can change this later in your settings)");
+    fillDictionary("KeepMeOnSettingDesc", "", "", "When on, a new game is created for you automatically whenever a game is filled, as long as you have fewer than 3 games and none of them is still waiting for an opponent.");
     fillDictionary("BattleHistoryTitle", "", "", "Battle History");
     fillDictionary("Say", "", "", "Add a message");
     fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");

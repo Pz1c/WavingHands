@@ -1258,6 +1258,12 @@ ApplicationWindow {
         return showErrorWnd({id:-1,type:14,action:"rate_us"});
     }
 
+    // https://github.com/Pz1c/WavingHands/issues/149
+    function showSettingsWnd() {
+        logEvent("Settings_View", {});
+        WNDU.showSettings();
+    }
+
     function showSBLWnd() {
         return showErrorWnd({id:-1,type:22,sbl:playerSpellbookLevel});
     }
