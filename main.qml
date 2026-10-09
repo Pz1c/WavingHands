@@ -1328,8 +1328,14 @@ ApplicationWindow {
         GUI.startGameWithPlayer();
     }
 
-    function startGameWithPlayerEx() {
-        GUI.startGameWithPlayerEx();
+    function startGameWithPlayerEx(once) {
+        GUI.startGameWithPlayerEx(false, once === true);
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/216: Smart Match while auto matching is off
+    function showAutoMatchWnd() {
+        logEvent("AutoMatch_View", {});
+        return showErrorWnd({id:-1,type:203});
     }
 
     function processAfterClose() {

@@ -219,8 +219,10 @@ function getJoinDialogText(b) {
     return txt;
 }
 
-function startGameWithPlayerEx(skip_search) {
-    console.log("startGameWithPlayer", JSON.stringify(G_CHALLENGE_LIST));
+// once: the player took "Join only once" in the auto matching offer
+// (https://github.com/Pz1c/WavingHands/issues/216), so no Keep me On offer on top of this game
+function startGameWithPlayerEx(skip_search, once) {
+    console.log("startGameWithPlayer", skip_search, once, JSON.stringify(G_CHALLENGE_LIST));
     var best_idx = -1, battle, bb;
     if (!skip_search) {
         for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
@@ -262,6 +264,9 @@ function startGameWithPlayerEx(skip_search) {
             desc += " Elo " + (G_PROFILE.elo - 200) + " or more please.";
         }
         logEvent("create_callenge", {source:"btn_new",Type:"Training",With:"Random warlock"});
+        if (once) {
+            core.skipKeepMeOnOffer();
+        }
         core.createNewChallenge(1, 0, 1, 1, 2, 2, desc);
     /*} else {
         V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;

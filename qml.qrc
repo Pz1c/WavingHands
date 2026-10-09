@@ -153,5 +153,6 @@
         <file>qml/windows/wnd_notification_popup.qml</file>
         <file>qml/windows/wnd_settings.qml</file>
         <file>qml/windows/wnd_keep_me_on_popup.qml</file>
+        <file>qml/windows/wnd_auto_match_popup.qml</file>
     </qresource>
 </RCC>

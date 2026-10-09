@@ -177,12 +177,19 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("Skip", "", "", "Skip");
     fillDictionary("SwitchOn", "", "", "ON");
     fillDictionary("SwitchOff", "", "", "OFF");
-    fillDictionary("KeepMeOn", "", "", "Keep me On");
     fillDictionary("KeepMeOnBtn", "", "", "Keep me On!");
     fillDictionary("KeepMeOnTitle", "", "", "Wait for someone to join...");
     fillDictionary("KeepMeOnShortDesc", "", "", "No worries, we'll let you know when the game is ready! It usually takes a few hours for someone to join.");
     fillDictionary("KeepMeOnDesc", "", "", "To avoid waiting next time, click \"Keep me On!\" and we will automatically create a new game for you whenever a game is filled.<br>(you can change this later in your settings)");
-    fillDictionary("KeepMeOnSettingDesc", "", "", "When on, a new game is created for you automatically whenever a game is filled, as long as you have fewer than 3 games and none of them is still waiting for an opponent.");
+    // https://github.com/Pz1c/WavingHands/issues/216
+    fillDictionary("AutoMatch", "", "", "Auto start matches");
+    fillDictionary("AutoMatchSettingDesc", "", "", "Matching automatically up to 3 simultaneous games: whenever you have fewer than 3 games and none of them is still waiting for an opponent, we join an open duel for you, or create a new one.");
+    fillDictionary("AutoMatchTitle", "", "", "Auto join more games?");
+    fillDictionary("AutoMatchDesc", "", "", "Warlock's Duel is a slow paced game, so it's best to automatically create games and have a few games running simultaneously.<br>You can always change this later.");
+    fillDictionary("AutoMatchBtn", "", "", "Auto join");
+    fillDictionary("AutoMatchOnce", "", "", "Join only once");
+    fillDictionary("AutoMatchBoxTitle", "", "", "Auto start matches ON");
+    fillDictionary("AutoMatchBoxDesc", "", "", "Matching automatically up to 3 simultaneous games");
     fillDictionary("BattleHistoryTitle", "", "", "Battle History");
     fillDictionary("Say", "", "", "Add a message");
     fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");
