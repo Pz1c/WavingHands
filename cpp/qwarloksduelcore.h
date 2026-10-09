@@ -426,6 +426,7 @@ private:
     QString _paralyzedHands;
     bool _isDelay;
     bool _isPermanent;
+    bool _isSuicide;
     bool _isParaFDF;
     bool _isParaFC;
     bool _isMaladroit;

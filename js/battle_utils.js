@@ -171,7 +171,15 @@ function prepareTurnActionInfo(last_turn_hist) {
         new_hint.push({color_bg:last_turn_hist[i].color,font_size:last_turn_hist[i].font_size,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
     }
 
+    // https://github.com/Pz1c/WavingHands/issues/227
+    // temporary tiles for the monsters that are gone, summon rows paired, then the temporary icons of every step
+    BGU.prepareNewsMonsters(real_actions, battle);
     BGU.prepareAndSortRealAction(real_actions, battle);
+    var initial_temp = BGU.prepareNewsTempIcons(real_actions, battle);
+    // the steps before the first row (hints, what the players said) show the board as the turn began
+    for (i = 0, Ln = new_hint.length; i < Ln; ++i) {
+        new_hint[i].actions = new_hint[i].actions.concat(BGU.getTempIconActions(initial_temp, battle));
+    }
     var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
@@ -195,7 +203,8 @@ function prepareTurnActionInfo(last_turn_hist) {
         }
 
         //BGU.replaceAll(real_actions[i].txt, '&quot;', '"')
-        new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:real_actions[i].txt,actions:real_actions[i].new_action});
+        new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:real_actions[i].txt,
+                       actions:real_actions[i].new_action.concat(BGU.getTempIconActions(real_actions[i].temp_icons, battle))});
     }
 
     battle.hint = new_hint;
@@ -382,6 +391,12 @@ function finishPrepareWarlockList() {
         map_warlock_name_to_idx[arr_m.name] = i;
         for (var j = 0, LnJ = arr_m.monsters.length; j < LnJ; ++j) {
             map_monster_name_to_idx[arr_m.monsters[j].name] = i;
+        }
+        // the temporary tiles of the turn news sit in their owner's row too
+        for (var key in battle.temp_monster_owner) {
+            if (battle.temp_monster_owner[key] === arr_m.name) {
+                map_monster_name_to_idx[key] = i;
+            }
         }
         //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});

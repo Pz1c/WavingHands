@@ -192,6 +192,36 @@ Item {
                 source: "qrc:/res/"+iCharm.model[index].icon+".png"
                 checkbox: iCharm.model[index].is_checkbox
                 radius: 20
+
+                // the turn news lights a status up when the spell that gives it lands or does its job
+                // https://github.com/Pz1c/WavingHands/issues/227
+                ParallelAnimation {
+                    id: paStatusHighlight
+
+                    ColorAnimation {
+                        id: caStatusHighlight
+                        target: iiDC
+                        property: "color"
+                        duration: 350
+                    }
+
+                    SequentialAnimation {
+                        NumberAnimation { target: iiDC; property: "scale"; to: 1.15; duration: 150; easing.type: Easing.OutQuad }
+                        NumberAnimation { target: iiDC; property: "scale"; to: 1; duration: 200; easing.type: Easing.InOutQuad }
+                    }
+                }
+
+                function highlightNews(news_color) {
+                    caStatusHighlight.to = news_color;
+                    paStatusHighlight.restart();
+                }
+
+                function restoreNews() {
+                    paStatusHighlight.stop();
+                    scale = 1;
+                    color = checked ? bg_color_checked : bg_color;
+                }
+
                 onClicked: {
                     rWarlock.iconClick(l_data);
                 }
@@ -429,6 +459,29 @@ Item {
     function hintOnOff(Restore) {
         iiLeft.visible = Restore && (isHandsVisible === 1);
         iiRight.visible = Restore && (isHandsVisible === 1);
+        if (Restore) {
+            setTempIcons([], []);
+        }
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/227
+    // Temporary icons of the turn news: a status the warlock had during the turn but not at its end
+    // (a one-turn shield, a countered enchantment) and monsters that are gone (died, summon absorbed).
+    // They sit in the real lists while the news plays: statuses first (at the right edge), monsters last.
+    // The lists are only rebuilt when the set changes, so a step keeps the tiles of the step before.
+    property string tempStatusKey: "[]"
+    property string tempMonsterKey: "[]"
+
+    function setTempIcons(statuses, monsters) {
+        var sk = JSON.stringify(statuses), mk = JSON.stringify(monsters);
+        if (sk !== tempStatusKey) {
+            tempStatusKey = sk;
+            iCharm.model = statuses.length > 0 ? statuses.concat(l_warlock.statusIcons) : l_warlock.statusIcons;
+        }
+        if (mk !== tempMonsterKey) {
+            tempMonsterKey = mk;
+            iMonsters.model = monsters.length > 0 ? l_warlock.monsters.concat(monsters) : l_warlock.monsters;
+        }
     }
 
     function targetingOnOff(Enable, IsSpell, Permanency, Delay) {
@@ -510,6 +563,11 @@ Item {
             if (mi) {
                 mi.highlightNews(a.color ? a.color : "#FEE2D6");
             }
+        } else if (a.object_type === "status") {
+            var si = findStatusItem(a.object);
+            if (si) {
+                si.highlightNews(a.color ? a.color : "#10C9F5");
+            }
         }
     }
 
@@ -532,15 +590,40 @@ Item {
             if (mr) {
                 mr.restoreNews();
             }
+        } else if (a.object_type === "status") {
+            var sr = findStatusItem(a.object);
+            if (sr) {
+                sr.restoreNews();
+            }
         }
     }
 
-    // the IconInfo delegate of the monster with that name, null when it is not created (scrolled out of view)
+    // the IconInfo delegate of the monster with that name, null when there is none
     function findMonsterItem(name) {
-        for (var i = 0, Ln = iMonsters.count; i < Ln; ++i) {
-            var item = iMonsters.itemAtIndex(i);
-            if (item && item.l_data && (item.l_data.name === name)) {
+        return findListItem(iMonsters, function(d) { return d.name === name; });
+    }
+
+    // the IconInfo delegate of the status icon with that code (shield, maladroit...), null when there is none
+    // https://github.com/Pz1c/WavingHands/issues/227
+    function findStatusItem(code) {
+        return findListItem(iCharm, function(d) { return d.action === code; });
+    }
+
+    // a delegate of the list by its model data; a tile scrolled out of view is brought in first so it exists
+    function findListItem(list, match) {
+        var i, Ln, item;
+        for (i = 0, Ln = list.count; i < Ln; ++i) {
+            item = list.itemAtIndex(i);
+            if (item && item.l_data && match(item.l_data)) {
                 return item;
+            }
+        }
+        for (i = 0, Ln = list.count; i < Ln; ++i) {
+            if (list.model[i] && match(list.model[i])) {
+                list.positionViewAtIndex(i, ListView.Contain);
+                list.forceLayout();
+                item = list.itemAtIndex(i);
+                return item ? item : null;
             }
         }
         return null;
