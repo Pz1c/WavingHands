@@ -1838,6 +1838,7 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _fire = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=CHECKBOX CLASS=check NAME=FIRE VALUE=1", ">", "<", Pos, true);
     _isDelay = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=DELAY") != -1;
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
+    _isSuicide = Data.indexOf("<INPUT TYPE=CHECKBOX CLASS=check NAME=\"SUICIDE") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
     _extraOrderInfo.clear();
     _extraOrderBattleID = _loadedBattleID;

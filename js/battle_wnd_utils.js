@@ -2,6 +2,9 @@ function processHighlightHintAction(a, restore) {
     // a monster is shown inside the Warlock.qml item of its owner, a.object is the monster name
     // https://github.com/Pz1c/WavingHands/issues/227
     var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
+    if ((warlock_idx === undefined) && a.warlock_name) {
+        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
+    }
     console.log("processHighlightHintAction", a.object_type, a.warlock_name, a.object, warlock_idx);
     if (!a.warlock_name) {
         return;
@@ -80,12 +83,26 @@ function processPopHintAction(a) {
     }
 }
 
+// https://github.com/Pz1c/WavingHands/issues/227
+// The temporary status icons and monster tiles a turn news step shows. Nothing to restore when the
+// step is left: the next step brings its own set and closeTutorial clears them (Warlock.hintOnOff).
+function processTempIconsAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var ww = iWarlocks.children[BU.map_warlock_name_to_idx[a.warlock_name]];
+    if (ww) {
+        ww.setTempIcons(a.statuses, a.monsters);
+    }
+}
+
 function processHintAction(a, restore) {
     console.log("BWU.processHintAction", JSON.stringify(a), restore);
     switch(a.action) {
     case "highlight": return processHighlightHintAction(a, restore);
     case "icon": return processHighlightIconAction(a, restore);
     case "pop": return processPopHintAction(a);
+    case "temp_icons": return processTempIconsAction(a, restore);
     }
 }
 
@@ -160,8 +177,9 @@ function playHintActions(actions) {
             continue;
         }
         // https://github.com/Pz1c/WavingHands/issues/227
-        // a monster that acts lights up before the icon pops, one that is hit after it, with the hearts
-        if ((a.action === "highlight") && (a.object_type === "monster")) {
+        // a monster that acts lights up before the icon pops, one that is hit after it, with the hearts;
+        // a status icon (the shield that took the blow, the enchantment that landed) after it too
+        if ((a.action === "highlight") && ((a.object_type === "monster") || (a.object_type === "status"))) {
             if (a.role === "actor") {
                 actors.push(a);
             } else {
@@ -219,8 +237,14 @@ function playHintActions(actions) {
 }
 
 function processAllHintAction(actions, restore) {
-    var i, Ln = actions.length;
-    rTutOverlay.opacity = (((Ln === 0) && !restore) || ((Ln !== 0) && restore)) ? 0.5 : 0.3;
+    var i, Ln = actions.length, shown = 0;
+    for (i = 0; i < Ln; ++i) {
+        // the temporary icons come with every step, they do not make it a step that shows something
+        if (actions[i].action !== "temp_icons") {
+            ++shown;
+        }
+    }
+    rTutOverlay.opacity = (((shown === 0) && !restore) || ((shown !== 0) && restore)) ? 0.5 : 0.3;
     if (!restore) {
         playHintActions(actions);
         return;
