@@ -275,7 +275,10 @@ function prepareMonster(m) {
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
-        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit};
+        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit,
+        // https://github.com/Pz1c/WavingHands/issues/315: true while the site offers its SUICIDE checkbox.
+        // battleInfo() sends 1/0; a battle prepared once already holds the bool. Note "0" is truthy in JS.
+        suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true)};
     // L left  obj
     // R Right obj
     // C Chat  text
@@ -285,7 +288,8 @@ function prepareBattle(raw_battle) {
     // M monsters arr of obj
     // CP - paralyze arr of obj by id
     // CC - paralyze arr of obj by id
-    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:raw_battle.msg,D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
+    // S Suicide int 0 - no, 1 - tick the site's SUICIDE checkbox (only offered while battle.suicide)
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:raw_battle.msg,D:-1,P:-1,F:-1,S:0,M:[],CP:{},CC:{}};
     setParaActions(raw_battle.paralyze, raw_battle.charm);
     parseTargets(raw_battle.targets);
     parseParalyzedHands(raw_battle.paralyzed_hand);
@@ -513,6 +517,10 @@ function prepareOrder() {
     if (actions.F === 1) {
         post_request += "FIRE$1#"
     }
+    // https://github.com/Pz1c/WavingHands/issues/315
+    if ((actions.S === 1) && battle.suicide) {
+        post_request += "SUICIDE$1#";
+    }
     console.log("prepareOrder", "after", post_request);
 
     mainWindow.gameCore.sendOrders(post_request);
@@ -556,6 +564,10 @@ function getOrdersForReview(dictionary) {
     if ((actions.L.g === "P") && (actions.R.g === "P")) {
         res.push({row_type:"0",type:"PP",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"RIP2",icon_text:"",icon_visible:true,icon_width:60});
         //res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_pp"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    }
+    // https://github.com/Pz1c/WavingHands/issues/315: the site offers Suicide to a permanently enchanted warlock
+    if (battle.suicide) {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_suicide"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
     }
 
     if (actions.C !== "") {
