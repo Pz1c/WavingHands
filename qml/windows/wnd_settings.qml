@@ -1,6 +1,6 @@
-// https://github.com/Pz1c/WavingHands/issues/149
-// Settings, from the main menu. One entry so far: the "Keep me On" switch, which is
-// the core's keepMeOn property (QWarloksDuelCore::setKeepMeOn).
+// https://github.com/Pz1c/WavingHands/issues/149, /issues/216
+// Settings, from the main menu. One entry so far: the "Auto start matches" switch (Keep me On
+// in #149), which is the core's keepMeOn property (QWarloksDuelCore::setKeepMeOn).
 
 import QtQuick 2.15
 
@@ -53,7 +53,7 @@ InfoWindow {
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignLeft
                     elide: Text.ElideRight
-                    text: dict.getStringByCode("KeepMeOn")
+                    text: dict.getStringByCode("AutoMatch")
                 }
 
                 // ON / OFF switch; follows the core, the click asks the core to change it
@@ -110,7 +110,7 @@ InfoWindow {
                 color: "#A8F4F4"
                 horizontalAlignment: Text.AlignLeft
                 wrapMode: Text.WordWrap
-                text: dict.getStringByCode("KeepMeOnSettingDesc")
+                text: dict.getStringByCode("AutoMatchSettingDesc")
             }
         }
     }
