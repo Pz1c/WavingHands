@@ -104,6 +104,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _isParaFC = false;
     _isTimerActive = false;
     _isMaladroit = false;
+    _isDelay = false;
+    _isPermanent = false;
+    _isSuicide = false;
 
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
@@ -1838,6 +1841,8 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _fire = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=CHECKBOX CLASS=check NAME=FIRE VALUE=1", ">", "<", Pos, true);
     _isDelay = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=DELAY") != -1;
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
+    // https://github.com/Pz1c/WavingHands/issues/315: the site offers a SUICIDE checkbox (VALUE=1)
+    // to a permanently enchanted warlock; battle_utils.js posts SUICIDE=1 when the player picks it.
     _isSuicide = Data.indexOf("<INPUT TYPE=CHECKBOX CLASS=check NAME=\"SUICIDE") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
     _extraOrderInfo.clear();
@@ -1868,7 +1873,7 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
         }
     }
     _paralyzedHands.append("]").prepend("[");
-    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn << _extraOrderInfo << _paralyzedHands;
+    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn << _extraOrderInfo << _paralyzedHands << _isSuicide;
     return _loadedBattleTurn != 0;
 }
 
@@ -3513,11 +3518,12 @@ QString QWarloksDuelCore::battleInfo() {
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
                    "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25,"
-                   "\"maladroit\":%26}")
+                   "\"maladroit\":%26,\"suicide\":%27}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
-            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT, boolToStr(_isMaladroit)); // 21-26
+            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT, boolToStr(_isMaladroit), // 21-26
+                 boolToIntS(_isSuicide)); // 27: 1 while the site offers the SUICIDE checkbox (#315)
 }
 
 void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Value) {

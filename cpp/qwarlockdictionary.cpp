@@ -119,6 +119,10 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleActionHint_monster2", "", "", "Do you really want to target your own monster?");
     fillDictionary("TitleActionHint_summon", "", "", "Really? Your summon will serve your opponent");
     fillDictionary("TitleActionHint_clap", "", "", "Really? No spell has 'c' only one one hand");
+    // https://github.com/Pz1c/WavingHands/issues/315
+    fillDictionary("TitleActionHint_suicide", "", "", "You are permanently enchanted. You may end this battle for yourself with Suicide.");
+    fillDictionary("SuicideOrders", "", "", "Suicide");
+    fillDictionary("ConfirmSuicideForTurn", "", "", "Death");
 
     fillDictionary("Refresh", "", "", "Refresh");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
