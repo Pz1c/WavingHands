@@ -65,6 +65,16 @@ SOURCES += main.cpp \
 
 RESOURCES += qml.qrc
 
+# Adding or removing a file in qml.qrc changes the set of units qmlcachegen has to
+# compile, and that set is baked into the Makefile when qmake runs. Qt Creator re-runs
+# qmake only when the .pro changes, so after a new .qml enters the resource the stale
+# Makefile still regenerates qmlcache_loader.cpp (that rule does depend on the .qrc) but
+# has no rule to compile the new unit, and the link fails with
+#   undefined symbol: QmlCacheGeneratedCode::_qml_..._qml::qmlData
+# Listing the .qrc here puts it among the Makefile's own prerequisites, so make re-runs
+# qmake itself whenever the resource changes.
+QMAKE_INTERNAL_INCLUDED_FILES += $$PWD/qml.qrc
+
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/platforms/android
 
 # 16 KB page size support (required by Google Play for apps targeting Android 15+).
