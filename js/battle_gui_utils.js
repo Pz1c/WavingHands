@@ -466,7 +466,7 @@ function higlightWarlockGestureBySpell(warlock, spell_obj) {
     for (var i = 0, Ln = arr_g.length; i < Ln; ++i) {
         var lrsl = checkIsSpellPossibeForWarlock(arr_g[i], warlock.L, warlock.R);
         if ((lrsl[0] !== 0) || (lrsl[1] !== 0)) {
-            return {action:"highlight",warlock_name:warlock.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(warlock.L, warlock.R, lrsl[0], lrsl[1], 5)}
+            return {action:"highlight",warlock_name:warlock.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(warlock.pL, warlock.pR, lrsl[0], lrsl[1], 5)}
         }
     }
 
@@ -577,14 +577,14 @@ function getMessageActionBySpell(obj, battle) {
             if (hga.action !== "none") {
                 res.push(hga);
             } else {
-                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
+                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].pL, battle.warlocks[i].pR, 0, 0, 5)});
             }
 
             //https://github.com/Pz1c/WavingHands/issues/312
             //res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:spell_obj.target === battle.warlocks[i].name ? "#10C9F5" : "#FEE2D6"});
         } else {
             // switch off hightlighting to all other warlocks gestures
-            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
+            res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].pL, battle.warlocks[i].pR, 0, 0, 5)});
         }
         if (battle.warlocks[i].name === spell_obj.target) {
             if (spell_obj.spell === "Cause Heavy Wounds") {
@@ -844,7 +844,7 @@ function getMessageActionByAttack(attack_obj, battle) {
         for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
             //console.log("getMessageActionByAttack", i, Ln, battle.warlocks[i].name);
             if (battle.warlocks[i].name !== attack_obj.aggressor) {
-                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
+                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].pL, battle.warlocks[i].pR, 0, 0, 5)});
             }
 
             if (!aggressor_found) {
@@ -925,7 +925,7 @@ function getMessageActionByOther(obj, battle) {
     var target_found = false;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         var w = battle.warlocks[i];
-        res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].L, battle.warlocks[i].R, 0, 0, 5)});
+        res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].pL, battle.warlocks[i].pR, 0, 0, 5)});
         if (w.name === obj.target) {
             icon_action.large_icon = "heart";
             icon_action.text = w.hp;
@@ -1045,7 +1045,7 @@ function getMessageActionByDeath(obj, battle) {
     }
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         var w = battle.warlocks[i];
-        res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(w.L, w.R, 0, 0, 5)});
+        res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(w.pL, w.pR, 0, 0, 5)});
         // https://github.com/Pz1c/WavingHands/issues/227 the one who died: the heart, or the monster's (temporary) tile
         if (w.name === obj.target) {
             res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});

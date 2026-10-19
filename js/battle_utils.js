@@ -41,11 +41,24 @@ function assignWizardColor(w) {
     return WIZARD_COLORS[idx]; // more warlocks than colors (monsters battles): reuse
 }
 
+// Display copy of a gesture string padded with empty ("no gesture") turns up to the common
+// turn grid length. The original string keeps feeding the game logic untouched.
+function padDisplayString(s, len) {
+    s = s || "";
+    while (s.length < len) {
+        s += " ";
+    }
+    return s;
+}
+
 function prepareWarlock(w) {
     w.color = assignWizardColor(w);
     w.monsters = battle.monsters[w.name];
     w.read_only = battle.read_only;
-    w.print_g = BGU.preparePrintGestures(w.L, w.R, w.smcL, w.smcR);
+    // pL/pR are aligned by turn for every warlock; the spell-letter highlight flags (la/ra)
+    // are counted from the end of his own history, so shift them by the same padding.
+    var pad = w.pL.length - (w.L || "").length;
+    w.print_g = BGU.preparePrintGestures(w.pL, w.pR, (w.smcL || 0) + pad, (w.smcR || 0) + pad);
     if (!w.id) {
         w.id = battle.targetsMap[w.name];
     }
@@ -338,11 +351,26 @@ function prepareBattle(raw_battle) {
         }
     }
 
+    // The shared turn grid is exactly the longest real gesture history. It must not be derived
+    // from turn_num: that is the last turn the client has a log entry for, can be one ahead of
+    // the strips (the pending turn) and never goes back down, so it used to add empty columns
+    // at the end of every strip. Padding is only needed to fill the turns a warlock does not
+    // have (e.g. he died early): it keeps every strip the same width, so the shared scroll
+    // offset means the same turn window for all of them.
+    var disp_len = 0;
+    for (i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {
+        disp_len = Math.max(disp_len, raw_battle.warlocks[i].L.length, raw_battle.warlocks[i].R.length);
+    }
     for (i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {
         var w = raw_battle.warlocks[i];
         if (!battle.monsters[w.name]) {
             battle.monsters[w.name] = [];
         }
+        // Every strip gets the same turn grid: a warlock whose gesture string is shorter
+        // (he is dead or joined empty) is padded with empty turns, so the shared scroll
+        // offset below means the same turn window for every warlock.
+        w.pL = padDisplayString(w.L, disp_len);
+        w.pR = padDisplayString(w.R, disp_len);
         prepareWarlock(w);
         battle.warlocks.unshift(w);
         ++battle.size;
@@ -386,6 +414,8 @@ function prepareElemental() {
 function prepareWarlocks() {
     console.log("iWarlocks");
     BGU.cleanChildren(iWarlocks);
+    // the strips are recreated below, so start them all from the same shared offset
+    mainWindow.gesturesScrollX = 0;
 
     if (!cIconObject) {
         cIconObject = Qt.createComponent("qrc:///qml/components/IconInfo.qml");

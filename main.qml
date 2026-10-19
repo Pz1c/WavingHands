@@ -23,6 +23,9 @@ ApplicationWindow {
     visibility: isMobile() ? Window.FullScreen : Window.Windowed
     property real ratioObject: 1
     property real ratioFont: 1
+    // Shared horizontal offset of the warlocks' gesture strips: every row mirrors it,
+    // so scrolling one row scrolls them all together. Reset per battle in prepareWarlocks().
+    property real gesturesScrollX: 0
     property string afterCloseAction: ""
     property alias gameCore: core
     property alias mainContainer: iWndContainer
