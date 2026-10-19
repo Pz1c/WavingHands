@@ -176,6 +176,12 @@ function isBeginnerTurnNews(row) {
 }
 
 function prepareTurnActionInfo(last_turn_hist) {
+    // A finished battle is a static record: opening it must not pop the turn news of its last
+    // turn again. Only a battle in progress has something new to announce.
+    if (battle.read_only) {
+        battle.hint = [];
+        return;
+    }
     console.log("battle_utils.prepareTurnActionInfo", JSON.stringify(last_turn_hist), JSON.stringify(battle.hint));
     var new_hint = [], i, Ln;
     for(i = 0, Ln = battle.hint.length; i < Ln; ++i) {
