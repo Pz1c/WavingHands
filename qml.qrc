@@ -94,6 +94,12 @@
         <file>res/reg_ttl_06.png</file>
         <file>res/reg_ttl_07.png</file>
         <file>res/heart_small.png</file>
+        <file>res/wizard_black.png</file>
+        <file>res/wizard_red.png</file>
+        <file>res/wizard_blue.png</file>
+        <file>res/wizard_green.png</file>
+        <file>res/wizard_grey.png</file>
+        <file>res/wizard_brown.png</file>
         <file>res/glow.png</file>
         <file>qml/components/InfoWindow.qml</file>
         <file>qml/windows/wnd_spell.qml</file>

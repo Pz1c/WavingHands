@@ -30,16 +30,37 @@ Item {
        radius: 10
     }
 
+    // The player's wizard icon in his game color; the life-points number keeps
+    // its original bottom-right corner spot.
     IconInfo {
         id: iiHP
-        source: "qrc:/res/heart_small.png";
+        source: "qrc:/res/wizard_" + (l_warlock.color ? l_warlock.color : "grey") + ".png";
         text: l_warlock.hp
+        textVisible: false
         height: 78 * l_ratio
         width: height
         anchors.top: parent.top
         anchors.topMargin: 12 * l_ratio
         anchors.left: parent.left
         anchors.leftMargin: 6 * l_ratio
+
+        // number: original corner geometry (like the built-in btnText)
+        Text {
+            text: l_warlock.hp
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.rightMargin: 1 * l_ratio
+            anchors.bottomMargin: 1 * l_ratio
+            height: 0.3 * parent.height
+            width: 0.3 * parent.width
+            fontSizeMode: Text.Fit
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            font.pixelSize: 30 * mainWindow.ratioFont
+            font.weight: Font.Bold
+            color: "white"
+        }
+
         onClicked: {
             iconClick({action:"hp",value:text});
         }
@@ -49,7 +70,7 @@ Item {
         }
     }
 
-    // the turn news lights the heart up when a spell or an attack gets to this warlock
+    // the turn news lights the HP card up when a spell or an attack gets to this warlock
     // https://github.com/Pz1c/WavingHands/issues/306
     ParallelAnimation {
         id: paHPHighlight
