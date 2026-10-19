@@ -590,20 +590,26 @@ void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int cur
                 if (sssline.isEmpty()) {
                     continue;
                 }
-                if ((current_color.compare("#CCCCCC") != 0) || first_turn) {
-                    if (sssline.indexOf(" says ") != -1) {
-                        if (!result_c.isEmpty()) {
-                            result_c.append("<br>");
-                        }
-                        result_c.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
-                    } else {
-                        if (!result_h.isEmpty()) {
-                            result_h.append("<br>");
-                        }
-                        result_h.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
-                    }
-                } else {
+                // Inactive (#CCCCCC) lines are gestures whose results are already
+                // reported; keep only the opening bows (turn 0). Skipping them still
+                // leaves an entry below, so getHistory() emits this turn's label even
+                // when the turn itself had no news.
+                if ((current_color.compare("#CCCCCC") == 0) && !first_turn) {
                     continue;
+                }
+                if (sssline.indexOf(" says ") != -1) {
+                    if (!result_c.isEmpty()) {
+                        result_c.append("<br>");
+                    }
+                    result_c.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
+                } else if (current_color.compare("#AAAAAA") == 0) {
+                    // "Your orders are in for this turn" — not a turn-news line.
+                    continue;
+                } else {
+                    if (!result_h.isEmpty()) {
+                        result_h.append("<br>");
+                    }
+                    result_h.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
                 }
                 if (last_turn) {
                     last_line = sssline;

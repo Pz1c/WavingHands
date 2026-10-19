@@ -140,7 +140,7 @@ function preparePrintGestures(GL, GR, mscL, mscR, maxLength) {
     for(var i = start_idx; i < Ln; ++i) {
         ll = getIconByGesture(GL.substr(i, 1));
         lr = getIconByGesture(GR.substr(i, 1));
-        item = {l:'g_'+ll, r: 'g_' + lr, lv: ll !== ' ', rv: lr !== ' ', la: i >= Ln - mscL, ra: i >= Ln - mscR};
+        item = {t: i, l:'g_'+ll, r: 'g_' + lr, lv: ll !== ' ', rv: lr !== ' ', la: i >= Ln - mscL, ra: i >= Ln - mscR};
         if (!item.lv) {
             item.l = "g__";
         }

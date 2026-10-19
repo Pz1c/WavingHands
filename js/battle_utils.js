@@ -471,6 +471,7 @@ function finishPrepareWarlockList() {
         }
         sprite.clicked.connect(iconClick);
         sprite.doubleClicked.connect(iconDoubleClick);
+        sprite.gestureClicked.connect(iconGestureClick);
         console.log("looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("svWarlocks.w: " + iWarlocks.width);
         console.log("svWarlocks.h: " + iWarlocks.height);
