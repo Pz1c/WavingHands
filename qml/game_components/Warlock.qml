@@ -18,6 +18,7 @@ Item {
 
     signal clicked(var data)
     signal doubleClicked(var data)
+    signal gestureClicked(var data)
 
     // Mirror the shared gesture-strip offset owned by the battle window.
     Connections {
@@ -313,7 +314,8 @@ Item {
                     anchors.bottom: iiHR.top
                     anchors.bottomMargin: 18 * l_ratio
                     anchors.left: parent.left
-                    active: false
+                    l_data: lwGestures.model[index]
+                    active: true
                     radius: 20
                     gradient: Gradient {
                             GradientStop { position: 0.0;  color: lwGestures.model[index].la ? "#E7FFFF" : "#756F79" }
@@ -326,6 +328,13 @@ Item {
                         running: lwGestures.model[index].lp === true
                         NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
                         NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
+                    }
+
+                    // Open the battle history at this turn; empty cells are not clickable.
+                    onClicked: {
+                        if (l_data.lv) {
+                            rWarlock.gestureClicked(l_data);
+                        }
                     }
                 }
 
@@ -343,7 +352,8 @@ Item {
                     anchors.bottom: parent.bottom
                     //anchors.bottomMargin: 0.05 * rWarlock.height
                     anchors.left: parent.left
-                    active: false
+                    l_data: lwGestures.model[index]
+                    active: true
                     radius: 20
                     gradient: Gradient {
                         GradientStop { position: 0.0;  color: lwGestures.model[index].ra ? "#E7FFFF" : "#756F79" }
@@ -355,6 +365,13 @@ Item {
                         running: lwGestures.model[index].rp === true
                         NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
                         NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
+                    }
+
+                    // Open the battle history at this turn; empty cells are not clickable.
+                    onClicked: {
+                        if (l_data.rv) {
+                            rWarlock.gestureClicked(l_data);
+                        }
                     }
                 }
             }

@@ -102,6 +102,47 @@ InfoWindow {
                 }
             }
 
+            // Battle history, one item per turn, so a clicked gesture can scroll to its turn.
+            ListView {
+                id: lvHistory
+                anchors.top: ltDesc.bottom
+                anchors.topMargin: 20 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                visible: false
+                clip: true
+                model: []
+                // Turn the history is being opened on, highlighted and scrolled to (-1 = none).
+                property int targetTurn: -1
+
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+                delegate: Item {
+                    width: lvHistory.width * 0.99
+                    height: tHistBlock.height
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: 8
+                        color: "#10C9F5"
+                        opacity: 0.18
+                        visible: modelData.turn === lvHistory.targetTurn
+                    }
+
+                    Text {
+                        id: tHistBlock
+                        width: parent.width
+                        textFormat: Text.RichText
+                        wrapMode: Text.Wrap
+                        font.pixelSize: 28 * mainWindow.ratioFont
+                        color: "#FEE2D6"
+                        horizontalAlignment: Text.AlignJustify
+                        text: "<p><font color=\"#10C9F5\" size=+1>Turn " + modelData.turn + "</font></p>" + (modelData.html || "")
+                    }
+                }
+            }
+
             Gradient {
                 id: gDef
                 GradientStop { position: 0.0 ; color: "#905B93" }
@@ -244,6 +285,55 @@ InfoWindow {
 
     function replaceAll(str, find, replace) {
       return str.replace(new RegExp(find, 'g'), replace);
+    }
+
+    // Render a battle history (the raw HTML block of the "Battle history" window) as one
+    // item per turn, so the item of a given turn can be scrolled to and highlighted.
+    function buildBattleHistory(hist, turn) {
+        svMain.visible = false;
+        lvHistory.visible = true;
+        lvHistory.anchors.top = ltTitle.bottom;
+        lvHistory.targetTurn = (turn === undefined ? -1 : turn);
+        lvHistory.model = parseBattleHistoryBlocks(replaceAll(hist, "&quot;", '"'));
+
+        var idx = -1;
+        for (var i = 0; i < lvHistory.model.length; ++i) {
+            if (lvHistory.model[i].turn === lvHistory.targetTurn) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx >= 0) {
+            // Delegates are laid out on the next frame, scroll to the turn afterwards.
+            Qt.callLater(function() {
+                lvHistory.positionViewAtIndex(idx, ListView.Beginning);
+            });
+        }
+    }
+
+    // Split the history into blocks starting at the "Turn N" header the core prints
+    // (newest turn first). A turn with no news is kept as an empty block so its
+    // "Turn N" label is still shown; gestures alone are not displayed (except the
+    // opening bows on turn 0).
+    function parseBattleHistoryBlocks(hist) {
+        var res = [];
+        if (typeof hist !== "string" || !hist) {
+            return res;
+        }
+
+        var re = /<p><font color="#10C9F5" size=\+1>Turn (\d+)<\/font><\/p>/g;
+        var m, block_start = -1, block_turn = -1;
+        while ((m = re.exec(hist)) !== null) {
+            if (block_turn >= 0) {
+                res.push({turn: block_turn, html: hist.substring(block_start, m.index)});
+            }
+            block_turn = parseInt(m[1], 10);
+            block_start = re.lastIndex;
+        }
+        if (block_turn >= 0) {
+            res.push({turn: block_turn, html: hist.substring(block_start)});
+        }
+        return res;
     }
 
     function errorLinkActivated(link) {

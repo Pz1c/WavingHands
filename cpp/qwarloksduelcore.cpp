@@ -1842,9 +1842,10 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
         }
     }
 
+    int event_turn = (_loadedBattleTurn > 0) ? (_loadedBattleTurn - 1) : 0;
     QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
-    battleInfo->addChat(_loadedBattleTurn, chat_msg);
-    battleInfo->addHistory(_loadedBattleTurn, short_hist);
+    battleInfo->addChat(event_turn, chat_msg);
+    battleInfo->addHistory(event_turn, short_hist);
     // fix for issue #201
     if (battleInfo->with_bot()) {
         chat_cnt = 0;
@@ -4056,7 +4057,9 @@ QString QWarloksDuelCore::battleInfo() {
     }
     QString tmpBH = battle_info->getHistory();
     QString tmpBC = battle_info->getChat();
-    QString tmpLT = battle_info->getTurnInfo(_loadedBattleTurn, _login);
+    // The newest events of the loaded page belong to the last resolved turn (see
+    // prepareBattleChatAndHistory), that is the turn news to show for this load.
+    QString tmpLT = battle_info->getTurnInfo(_loadedBattleTurn > 0 ? _loadedBattleTurn - 1 : 0, _login);
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"

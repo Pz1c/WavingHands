@@ -1071,8 +1071,8 @@ ApplicationWindow {
         showErrorWnd({type:23,spell:spell_code});
     }
 
-    function showBattleHistory(txt) {
-        showErrorWnd({type:16,history:txt});
+    function showBattleHistory(txt, turn) {
+        showErrorWnd({type:16,history:txt,turn:turn});
     }
 
     function showGesture(isLeft, possible_gestures, action_type, warlock_idx, last_gesture) {

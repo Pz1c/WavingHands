@@ -479,7 +479,9 @@ QString QBattleInfo::prepareToPrint(QString str) const {
 }
 
 QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
-    if ((Turn <= 1) || (Turn > _turn)) {
+    // Turn 0 is the opening (the bows), there is no turn news for it. The arrays are only grown up
+    // to the turns that were seen, so keep the index inside them as well.
+    if ((Turn < 1) || (Turn > _turn) || (Turn >= _history.size()) || (Turn >= _chat.size())) {
         return "[]";
     }
     QString res = "";
