@@ -459,6 +459,10 @@ function prepareChat() {
 }
 
 function prepareHint() {
+    // A finished battle opened for viewing has nothing to click through: no turn news.
+    if (battle.read_only) {
+        return;
+    }
     if (battle.hint && battle.hint.length > 0) {
         ltTutorial.tutorialData = battle.hint;
         ltTutorial.tutorialDataIdx = -1;

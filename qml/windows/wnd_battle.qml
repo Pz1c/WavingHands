@@ -366,29 +366,21 @@ BaseWindow {
                 property var tutorialData: ([])
                 property int tutorialDataIdx: 0
                 property alias text: ltTTT.text
+                property bool tutorialMode: mainWindow.gBattle ? mainWindow.gBattle.turn_num === 1 : false
+                // never let the auto-play fire into a closed banner
+                onVisibleChanged: {
+                    if (!visible) {
+                        tHintAuto.stop();
+                    }
+                }
 
                 MouseArea {
                     id: maTutAll
                     anchors.fill: parent
                     onClicked: {
-                        ltTTT.clicked();
-                    }
-                }
-
-                LargeText {
-                    id: ltTTTPrev
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.leftMargin: 24 * mainWindow.ratioObject
-                    width: 30 * mainWindow.ratioObject
-                    height: 0.80 * parent.height
-                    fontSizeMode: Text.VerticalFit
-                    text: "<"
-                    color: "#210430"
-                    visible: ltTutorial.tutorialDataIdx > 0
-                    font.pixelSize: 48 * mainWindow.ratioFont
-                    onClicked: {
-                        showTutorialData(-1);
+                        if (ltTutorial.tutorialMode) {
+                            ltTTT.clicked();
+                        }
                     }
                 }
 
@@ -396,9 +388,9 @@ BaseWindow {
                     id: ltTTT
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
-                    anchors.left: ltTTTPrev.right
-                    anchors.leftMargin: 6 * mainWindow.ratioObject
-                    anchors.right: ltTTTNext.left
+                    anchors.left: parent.left
+                    anchors.leftMargin: 24 * mainWindow.ratioObject
+                    anchors.right: ltTTTDone.left
                     anchors.rightMargin: 6 * mainWindow.ratioObject
                     font.pixelSize: 21 * mainWindow.ratioFont
                     text: "test hint 01"
@@ -406,22 +398,27 @@ BaseWindow {
                     wrapMode: Text.Wrap
 
                     onClicked: {
-                        showTutorialData(1);
+                        if (ltTutorial.tutorialMode) {
+                            showTutorialData(1);
+                        }
                     }
                 }
 
                 LargeText {
-                    id: ltTTTNext
+                    id: ltTTTDone
+                    property bool lastHint: ltTutorial.tutorialDataIdx >= ltTutorial.tutorialData.length - 1
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: iTTIcons.left
                     anchors.rightMargin: 42 * mainWindow.ratioObject
                     width: 30 * mainWindow.ratioObject
-                    height: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 0.80 * parent.height : 0.50 * parent.height
+                    height: 0.50 * parent.height
                     fontSizeMode: Text.VerticalFit
-                    font.underline: !(ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1)
-                    text: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? ">" : "got it!"
+                    // The auto-played turn news closes itself; only the turn-1 tutorial needs a label.
+                    visible: lastHint && ltTutorial.tutorialMode
+                    font.underline: true
+                    text: "got it!"
                     color: "#210430"
-                    font.pixelSize: (ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 48 : 21) * mainWindow.ratioFont
+                    font.pixelSize: 21 * mainWindow.ratioFont
                     onClicked: {
                         ltTTT.clicked();
                     }
@@ -522,6 +519,8 @@ BaseWindow {
         onTriggered: {
             console.log("battle.prepareHintWithCheck", "run prepareHint");
             BU.prepareHint();
+            // arm the auto-play right after the banner was shown (if it was shown at all)
+            armHintAuto();
         }
     }
 
@@ -532,6 +531,18 @@ BaseWindow {
         running: false
         onTriggered: {
             BWU.playNextHintFrame();
+        }
+    }
+
+    // Auto-play the turn news: one event every two seconds, no clicking needed.
+    // The turn-1 tutorial stays manual (see showTutorialData).
+    Timer {
+        id: tHintAuto
+        interval: 2000
+        repeat: false
+        running: false
+        onTriggered: {
+            showTutorialData(1);
         }
     }
 
@@ -547,9 +558,25 @@ BaseWindow {
 
     function showTutorialData(diff, skip_restore) {
         BWU.showTutorialData(diff, skip_restore);
+        armHintAuto();
+    }
+
+    // arm/stop the turn-news auto-play after every step: keep playing while the banner is
+    // open; the turn-1 tutorial (play instructions) stays click-driven, never auto-plays
+    function armHintAuto() {
+        if (mainWindow.gBattle.turn_num === 1) {
+            tHintAuto.stop();
+            return;
+        }
+        if (ltTutorial.visible) {
+            tHintAuto.restart();
+        } else {
+            tHintAuto.stop();
+        }
     }
 
     onCancel: {
+        tHintAuto.stop();
         mainWindow.processEscape();
     }
 
