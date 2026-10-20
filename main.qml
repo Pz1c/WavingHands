@@ -91,6 +91,7 @@ ApplicationWindow {
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onOpponentTurnReady: function(by) { refreshAfterOpponentTurn(by); }
+        onBattleHistoryReady: function(battle_id, history) { applyBattleHistory(battle_id, history); }
         onRegisterNewUserChanged: GUI.newUserRegistered()
         //onTimerStateChanged: changeTimerState()
         onChallengeListChanged: GUI.loadChallengeList()
@@ -1073,6 +1074,24 @@ ApplicationWindow {
 
     function showBattleHistory(txt, turn) {
         showErrorWnd({type:16,history:txt,turn:turn});
+        // The battle page only carries the newest turn; the rest arrives in the
+        // background and refreshes this window (applyBattleHistory).
+        if (gBattle && gBattle.id) {
+            core.requestBattleHistory(gBattle.id);
+        }
+    }
+
+    // battleHistoryReady: replace the log with the complete one, keeping the turn the
+    // window was opened on. A reply for another battle is ignored.
+    function applyBattleHistory(battle_id, history) {
+        if (!gBattle || (gBattle.id !== battle_id)) {
+            return;
+        }
+        gBattle.battle_hist = history;
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_spell];
+        if (wnd && wnd.visible && wnd.isShowingHistory()) {
+            wnd.rebuildBattleHistory(history);
+        }
     }
 
     function showGesture(isLeft, possible_gestures, action_type, warlock_idx, last_gesture) {

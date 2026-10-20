@@ -1756,6 +1756,29 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     return res;
 }
 
+void QWarloksDuelCore::requestBattleHistory(int battle_id) {
+    qDebug() << "requestBattleHistory" << battle_id << _isLogined;
+    if (_isAI || _isAsService || !_isLogined || (battle_id <= 0)) {
+        return;
+    }
+    // Background: the history window is already open with whatever the battle page
+    // had; this only fills in the rest, so it must not raise or hold the overlay.
+    sendGetRequest(QString(GAME_SERVER_URL_GET_BATTLE_HISTORY).arg(intToStr(battle_id)), true);
+}
+
+void QWarloksDuelCore::finishBattleHistory(QString &Data, int StatusCode, const QString &url) {
+    int battle_id = battleIdFromUrl(url);
+    qDebug() << "finishBattleHistory" << battle_id << StatusCode;
+    if ((StatusCode != 200) || (battle_id <= 0)) {
+        return;
+    }
+    QBattleInfo *battleInfo = getBattleInfo(battle_id);
+    if (!battleInfo->parseFullHistory(Data)) {
+        return;
+    }
+    emit battleHistoryReady(battle_id, battleInfo->getHistory());
+}
+
 QString QWarloksDuelCore::prepareBattleOrders() {
     QString res = "say$";
     QString msg = "";
@@ -3257,6 +3280,13 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return true;
     }
 
+    // History backfill runs in the background while a battle window is open, so it
+    // must not touch the shared battle slot the page loaders use.
+    if ((url.indexOf("/warlocks") != -1) && (url.indexOf("full=1") != -1)) {
+        finishBattleHistory(data, statusCode, url);
+        return true;
+    }
+
     // battle parsing there
     if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1) || (url.indexOf("robot_gateway/wh/") != -1)) {
         int reply_id = battleIdFromUrl(url);
@@ -4032,7 +4062,7 @@ QString QWarloksDuelCore::getBattleHint(QBattleInfo *battle_info) {
 
 QString QWarloksDuelCore::battleReadOnly(int BattleID) {
     qDebug() << "QWarloksDuelCore::battleReadOnly" << BattleID << _loadedBattleID;
-    QBattleInfo *battle_info = getBattleInfo(_loadedBattleID);
+    QBattleInfo *battle_info = getBattleInfo(BattleID);
     QString res = battle_info->fullJSON();
     return res;
 }
