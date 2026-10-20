@@ -707,6 +707,31 @@ void QBattleInfo::parseAllTurns(QString &Data, QString &Login, bool Last) {
     generateJSON(Login);
 }
 
+bool QBattleInfo::parseFullHistory(const QString &Data) {
+    // Same slice of the page parseAllTurns uses, but without parseUnits/generateJSON:
+    // the battle may only exist in the archive here, and rebuilding fullJSON from
+    // empty unit lists would blank the window it is shown in. addHistory/addChat
+    // replace each turn in place, so any newer turn already in memory survives.
+    int first_idx = Data.indexOf("<U>Turn");
+    if (first_idx == -1) {
+        return false;
+    }
+    int last_idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=", first_idx);
+    if (last_idx == -1) {
+        last_idx = Data.length();
+    }
+    QString hist = Data.mid(first_idx, last_idx - first_idx).replace("<a href=\"/player", "<b atr=\"")
+        .replace("<A CLASS=amonoturn HREF=\"/warlocks", "<b atr=\"").replace("</A>", "</b>").replace("</a>", "</b>")
+        .replace("BLOCKQUOTE", "p").replace("WIDTH=\"100%\"", "").replace("WIDTH=\"50%\"", "").replace("<H2>", "").replace("</H2>", "")
+        .replace("<p>", "").replace("</p>", "").replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
+    // The first <U>Turn is the page title; without a second one there is no log.
+    if (hist.count("<U>Turn") <= 1) {
+        return false;
+    }
+    QWarlockUtils::parseBattleHistory(hist, this);
+    return true;
+}
+
 void QBattleInfo::generateJSON(QString &Login) {
     QString _WarlockHtml, _MonstersHtml;
     foreach(QMonster *m, _Monsters) {

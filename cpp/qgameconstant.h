@@ -36,6 +36,8 @@
 #define GAME_SERVER_URL_DELLMESS GAME_SERVER_URL "delmess?from=%1"
 #define GAME_SERVER_URL_SUBMIT GAME_SERVER_URL "warlocksubmit"
 #define GAME_SERVER_URL_GET_BATTLE GAME_SERVER_URL "warlocks?num=%1"
+// The complete turn log, not just the newest block the plain battle page carries.
+#define GAME_SERVER_URL_GET_BATTLE_HISTORY GAME_SERVER_URL "warlocks?num=%1&full=1"
 #define GAME_SERVER_URL_GET_PROFILE GAME_SERVER_URL "player/%1.html"
 #define GAME_SERVER_URL_NEW_CHALLENGE GAME_SERVER_URL "newchallenge"
 #define GAME_SERVER_URL_NEW_PLAYER GAME_SERVER_URL "newplayer?action=new"

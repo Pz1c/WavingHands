@@ -294,7 +294,7 @@ InfoWindow {
         lvHistory.visible = true;
         lvHistory.anchors.top = ltTitle.bottom;
         lvHistory.targetTurn = (turn === undefined ? -1 : turn);
-        lvHistory.model = parseBattleHistoryBlocks(replaceAll(hist, "&quot;", '"'));
+        lvHistory.model = parseBattleHistoryBlocks(replaceAll(hist || "", "&quot;", '"'));
 
         var idx = -1;
         for (var i = 0; i < lvHistory.model.length; ++i) {
@@ -309,6 +309,20 @@ InfoWindow {
                 lvHistory.positionViewAtIndex(idx, ListView.Beginning);
             });
         }
+    }
+
+    // The history window is open (not just some other info page).
+    function isShowingHistory() {
+        return lvHistory.visible;
+    }
+
+    // battleHistoryReady arrived while this window is open: swap in the complete log,
+    // keeping the turn that was scrolled to.
+    function rebuildBattleHistory(hist) {
+        if (!lvHistory.visible) {
+            return;
+        }
+        buildBattleHistory(hist, lvHistory.targetTurn);
     }
 
     // Split the history into blocks starting at the "Turn N" header the core prints
