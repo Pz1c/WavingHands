@@ -1,5 +1,6 @@
 #include "qwarloksduelcore.h"
 
+#include <QRegularExpression>
 #include <QUrlQuery>
 #ifdef Q_OS_ANDROID
 #include <QJniEnvironment>
@@ -1914,6 +1915,13 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
 bool QWarloksDuelCore::butifyTurnMessage(QString &str, bool CleanGestures) {
     str = str.replace("<H2>", "").replace("</H2>", "").replace("<p>", "").replace("</p>", "")
             .replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
+    // The server occasionally drops the opening quote on a colour tag, e.g.
+    // <FONT COLOR=#88FFFF">. Quote it so RichText does not keep the attribute as
+    // part of the message (live turns are stored without going through parseBattleTurn).
+    static const QRegularExpression malformed_color(
+        "<FONT COLOR=(#[0-9A-Fa-f]{6})\"?>",
+        QRegularExpression::CaseInsensitiveOption);
+    str.replace(malformed_color, "<FONT COLOR=\"\\1\">");
     int idx = str.indexOf("<FONT CLASS=monoturn>");
     if (CleanGestures && (idx != -1)) {
         QString part2 = str.mid(idx).replace("<FONT CLASS=monoturn>Turn:</FONT>", "<!--");
