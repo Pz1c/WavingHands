@@ -1,6 +1,23 @@
 #include "qbattleinfo.h"
 #include "qwarlockutils.h"
 
+#include <QRegularExpression>
+
+// The game server sometimes drops the opening quote on a colour tag, e.g.
+// <FONT COLOR=#88FFFF">. Older builds parsed that as a default-colour line and
+// stored the tag itself as text:
+//   <font color=&quot;#FEE2D6&quot;>COLOR=#54EBEB&quot;>Azi is covered ...</font>
+// Repair such entries on the way out so archives written before the parser fix
+// display correctly too. The wrapper's quote style (&quot; or ") is preserved.
+static QString repairMalformedColors(const QString &Text) {
+    static const QRegularExpression re(
+        "<font color=(\"|&quot;)([^\"&<>]+)\\1>COLOR=(#[0-9A-Fa-f]{6})(\"|&quot;)>",
+        QRegularExpression::CaseInsensitiveOption);
+    QString res = Text;
+    res.replace(re, "<font color=\\1\\3\\1>");
+    return res;
+}
+
 QBattleInfo::QBattleInfo()
 {
     //qDebug() << "QBattleInfo::QBattleInfo";
@@ -444,7 +461,7 @@ QString QBattleInfo::getChat() const {
         if (s.isEmpty()) {
             continue;
         }
-        tmpBC.prepend(prepareToPrint(s));
+        tmpBC.prepend(prepareToPrint(repairMalformedColors(s)));
         tmpBC.prepend(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(turn_idx)));
     }
     return tmpBC;
@@ -468,7 +485,7 @@ QString QBattleInfo::getHistory() const {
         if (++turn_idx == 0) {
             //continue;
         }
-        tmpBH.prepend(prepareToPrint(s));
+        tmpBH.prepend(prepareToPrint(repairMalformedColors(s)));
         tmpBH.prepend(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(turn_idx)));
     }
     return tmpBH;
@@ -763,7 +780,7 @@ void QBattleInfo::generateJSON(QString &Login) {
 
 QString QBattleInfo::fullJSON() const
 {
-    return _fullJSON;
+    return repairMalformedColors(_fullJSON);
 }
 
 void QBattleInfo::setSubTitle(const QString &newSub_title)
