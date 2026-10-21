@@ -12,9 +12,121 @@ Item {
     property var l_charmActionData: ({})
     property string l_control_icon: ""
     property real l_ratio: 1
+    property int l_damageSeq: 0
 
     signal clicked(var data)
     signal doubleClicked(var data)
+
+    ListModel {
+        id: lmDamageNumbers
+    }
+
+    // Red damage numbers are created here and float away from the target.
+    Repeater {
+        model: lmDamageNumbers
+        delegate: Text {
+            id: tDamageNumber
+            property int numberId: model.number_id
+            property real startY: model.start_y
+            x: model.start_x - width / 2
+            y: startY
+            text: model.text
+            color: "#FF3B30"
+            font.pixelSize: 32 * mainWindow.ratioFont
+            font.bold: true
+            style: Text.Outline
+            styleColor: "#210430"
+            opacity: 1
+            scale: 0.8
+            z: 2000
+
+            ParallelAnimation {
+                running: true
+                NumberAnimation {
+                    target: tDamageNumber
+                    property: "y"
+                    to: tDamageNumber.startY - 40 * mainWindow.ratioObject
+                    duration: 900
+                    easing.type: Easing.OutCubic
+                }
+                NumberAnimation {
+                    target: tDamageNumber
+                    property: "opacity"
+                    to: 0
+                    duration: 900
+                    easing.type: Easing.InQuad
+                }
+                NumberAnimation {
+                    target: tDamageNumber
+                    property: "scale"
+                    from: 0.8
+                    to: 1.15
+                    duration: 220
+                    easing.type: Easing.OutBack
+                }
+            }
+
+            Timer {
+                interval: 950
+                running: true
+                onTriggered: rWarlock.removeDamageNumber(tDamageNumber.numberId)
+            }
+        }
+    }
+
+    function showDamage(amount, object_type, object_name) {
+        var damage = parseInt(amount, 10);
+        if (!(damage > 0)) {
+            return;
+        }
+        var pos = getDamagePosition(object_type, object_name);
+        if (!pos) {
+            return;
+        }
+        var seq = l_damageSeq++;
+        // Separate simultaneous hits on the same target by a few pixels.
+        var jitter = ((seq % 5) - 2) * 14 * mainWindow.ratioFont;
+        lmDamageNumbers.append({number_id: seq, text: "-" + damage,
+                                start_x: pos.x + jitter, start_y: pos.y - 18 * mainWindow.ratioFont});
+    }
+
+    function getDamagePosition(object_type, object_name) {
+        if (object_type === "monster") {
+            var mi = findMonsterItem(object_name);
+            if (!mi) {
+                return null;
+            }
+            var mp = mapFromItem(mi, mi.width / 2, mi.height / 2);
+            return {x: mp.x, y: mp.y};
+        }
+        var hp = mapFromItem(iiHP, iiHP.width / 2, iiHP.height * 0.65);
+        return {x: hp.x, y: hp.y};
+    }
+
+    function removeDamageNumber(number_id) {
+        for (var i = 0; i < lmDamageNumbers.count; ++i) {
+            if (lmDamageNumbers.get(i).number_id === number_id) {
+                lmDamageNumbers.remove(i);
+                return;
+            }
+        }
+    }
+
+    function clearDamageNumbers() {
+        lmDamageNumbers.clear();
+        l_damageSeq = 0;
+    }
+
+    // The auto-play can be closed between two highlight frames; make sure the
+    // little attack marker does not outlive the turn news.
+    function restoreAllNews() {
+        for (var i = 0, Ln = iMonsters.count; i < Ln; ++i) {
+            var item = iMonsters.itemAtIndex(i);
+            if (item && item.restoreNews) {
+                item.restoreNews();
+            }
+        }
+    }
 
     LargeText {
        id: ltName
@@ -165,15 +277,33 @@ Item {
                     }
                 }
 
-                function highlightNews(news_color) {
+                function highlightNews(news_color, news_icon) {
                     caMonsterHighlight.to = news_color;
                     paMonsterHighlight.restart();
+                    if (news_icon) {
+                        iMonsterNewsIcon.source = "qrc:/res/" + news_icon + ".png";
+                        iMonsterNewsIcon.visible = true;
+                    }
                 }
 
                 function restoreNews() {
                     paMonsterHighlight.stop();
                     scale = 1;
                     color = bg_color;
+                    iMonsterNewsIcon.visible = false;
+                }
+
+                // A small attack marker tells which monster made the attack.
+                Image {
+                    id: iMonsterNewsIcon
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.rightMargin: 3 * l_ratio
+                    anchors.bottomMargin: 3 * l_ratio
+                    width: 28 * l_ratio
+                    height: width
+                    visible: false
+                    z: 10
                 }
 
                 onClicked: {
@@ -582,7 +712,7 @@ Item {
         } else if (a.object_type === "monster") {
             var mi = findMonsterItem(a.object);
             if (mi) {
-                mi.highlightNews(a.color ? a.color : "#FEE2D6");
+                mi.highlightNews(a.color ? a.color : "#FEE2D6", a.news_icon);
             }
         } else if (a.object_type === "status") {
             var si = findStatusItem(a.object);

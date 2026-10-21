@@ -710,6 +710,7 @@ function parseStrangeAttack(txt, battle) {
         idx1 = txt.indexOf("from") + 5;
         var idx2 = txt.indexOf("'s", idx1);
         txt = txt.substr(idx1, idx2 - idx1) + " is hit by a " + res.spell;
+        res.mirror_spell = res.spell;
         res.spell = "";
         res.mirror = true;
     }
@@ -822,6 +823,8 @@ function parseAttackByText(txt) {
         res = parseSimpleAttack(txt);
     } else if (txt.indexOf(" swings wildly ") !== -1) {
         res = parseSimpleAttack(txt, "swings wildly for");
+    } else if (txt.indexOf(" stabs ") !== -1) {
+        res = parseSimpleAttack(txt.replace(" stabs ", " attacks "));
     } else if (txt.indexOf("tries to attack") !== -1) {
         res = parseSimpleAttack(txt, "tries to attack");
     } else {
@@ -1071,7 +1074,8 @@ function getMessageTypeByRow(row) {
         return "spell";
     } else if (row.color === "#FF6666") {
         return "death";
-    } else if (((row.txt.indexOf(" attack") !== -1) || (row.txt.indexOf(" swing ") !== -1)) &&
+    } else if (((row.txt.indexOf(" attack") !== -1) || (row.txt.indexOf(" swing ") !== -1) ||
+                (row.txt.indexOf(" stabs ") !== -1)) &&
                (row.txt.indexOf("too scared") === -1) &&
                (row.txt.indexOf("can't move to attack") === -1)&&
                (row.txt.indexOf("trips on its feet") === -1)) {
@@ -1167,6 +1171,9 @@ function processHintText(obj) {
     console.log("processHintText.1", obj.txt, obj.font_size);
     if (obj.txt.indexOf(" attacks ") !== -1) {
         obj.txt = obj.txt.substring(0, obj.txt.indexOf(" attacks ") + 8);
+        obj.font_size = 28;
+    } else if (obj.txt.indexOf(" stabs ") !== -1) {
+        obj.txt = obj.txt.substring(0, obj.txt.indexOf(" stabs ") + 7);
         obj.font_size = 28;
     } else if (obj.txt.indexOf(" is hit by a") !== -1) {
         obj.txt = obj.txt.substring(0, obj.txt.indexOf(" is hit by a") + 7);
