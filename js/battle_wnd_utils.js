@@ -111,6 +111,36 @@ function processDamageHintAction(a, restore) {
     }
 }
 
+function processHealHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
+    if (warlock_idx === undefined) {
+        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
+    }
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processHealHintAction", a.object_type, a.warlock_name, a.object, a.amount, warlock_idx);
+    if (ww && ww.showHeal) {
+        ww.showHeal(a.amount, a.object_type, a.object);
+    }
+}
+
+function processHealthHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
+    if (warlock_idx === undefined) {
+        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
+    }
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processHealthHintAction", a.object_type, a.warlock_name, a.object, a.amount, warlock_idx);
+    if (ww && ww.changeHealth) {
+        ww.changeHealth(a.amount, a.object_type, a.object);
+    }
+}
+
 function processHintAction(a, restore) {
     console.log("BWU.processHintAction", JSON.stringify(a), restore);
     switch(a.action) {
@@ -119,6 +149,8 @@ function processHintAction(a, restore) {
     case "pop": return processPopHintAction(a);
     case "temp_icons": return processTempIconsAction(a, restore);
     case "damage": return processDamageHintAction(a, restore);
+    case "heal": return processHealHintAction(a, restore);
+    case "hp": return processHealthHintAction(a, restore);
     }
 }
 
@@ -188,9 +220,9 @@ function playHintActions(actions) {
     stopHintAnimation();
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
         a = actions[i];
-        if (a.action === "damage") {
-            // Show the number as soon as the cause row appears; the target
-            // highlight still follows the normal icon/gesture frames.
+        if ((a.action === "damage") || (a.action === "heal") || (a.action === "hp")) {
+            // Show the number / change the life points as soon as the cause row
+            // appears; the target highlight still follows the normal frames.
             processHintAction(a, false);
             continue;
         }

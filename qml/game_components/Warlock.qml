@@ -13,6 +13,9 @@ Item {
     property string l_control_icon: ""
     property real l_ratio: 1
     property int l_damageSeq: 0
+    // The turn news starts at the life points from the previous turn and applies
+    // every hit and cure as its cause row appears.
+    property int l_hpDisplay: l_warlock.turn_news_hp_start !== undefined ? l_warlock.turn_news_hp_start : l_warlock.hp
 
     signal clicked(var data)
     signal doubleClicked(var data)
@@ -21,17 +24,18 @@ Item {
         id: lmDamageNumbers
     }
 
-    // Red damage numbers are created here and float away from the target.
+    // Red damage and green healing numbers are created here and float away from
+    // the right side of the target icon.
     Repeater {
         model: lmDamageNumbers
         delegate: Text {
             id: tDamageNumber
             property int numberId: model.number_id
             property real startY: model.start_y
-            x: model.start_x - width / 2
+            x: model.start_x
             y: startY
             text: model.text
-            color: "#FF3B30"
+            color: model.color
             font.pixelSize: 32 * mainWindow.ratioFont
             font.bold: true
             style: Text.Outline
@@ -74,32 +78,79 @@ Item {
         }
     }
 
+    function changeHealth(amount, object_type, object_name) {
+        var delta = parseInt(amount, 10);
+        if (!delta) {
+            return;
+        }
+        if (object_type === "monster") {
+            var monsters = l_warlock.monsters || [];
+            for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+                if (monsters[i].name === object_name) {
+                    var shown = (monsters[i].turn_news_hp_display !== undefined)
+                            ? monsters[i].turn_news_hp_display : parseInt(monsters[i].text, 10);
+                    if (isNaN(shown)) {
+                        shown = parseInt(monsters[i].hp, 10);
+                    }
+                    if (isNaN(shown)) {
+                        shown = 0;
+                    }
+                    monsters[i].turn_news_hp_display = Math.max(0, shown + delta);
+                    break;
+                }
+            }
+            var mi = findMonsterItem(object_name);
+            if (mi && mi.l_data && (mi.l_data.turn_news_hp_display !== undefined)) {
+                mi.l_hpDisplay = mi.l_data.turn_news_hp_display;
+            }
+            return;
+        }
+        l_hpDisplay = Math.max(0, l_hpDisplay + delta);
+    }
+
     function showDamage(amount, object_type, object_name) {
         var damage = parseInt(amount, 10);
         if (!(damage > 0)) {
             return;
         }
+        changeHealth(-damage, object_type, object_name);
+        showFloatingNumber("-" + damage, "#FF3B30", object_type, object_name);
+    }
+
+    function showHeal(amount, object_type, object_name) {
+        var heal = parseInt(amount, 10);
+        if (!(heal > 0)) {
+            return;
+        }
+        changeHealth(heal, object_type, object_name);
+        showFloatingNumber("+" + heal, "#4CD964", object_type, object_name);
+    }
+
+    function showFloatingNumber(text, color, object_type, object_name) {
         var pos = getDamagePosition(object_type, object_name);
         if (!pos) {
             return;
         }
         var seq = l_damageSeq++;
-        // Separate simultaneous hits on the same target by a few pixels.
-        var jitter = ((seq % 5) - 2) * 14 * mainWindow.ratioFont;
-        lmDamageNumbers.append({number_id: seq, text: "-" + damage,
+        // Separate simultaneous hits on the same target by a few pixels, always
+        // further to the right so the number never covers the icon.
+        var jitter = (seq % 5) * 12 * mainWindow.ratioFont;
+        lmDamageNumbers.append({number_id: seq, text: text, color: color,
                                 start_x: pos.x + jitter, start_y: pos.y - 18 * mainWindow.ratioFont});
     }
 
+    // Start the number at the right edge of the target icon, so it reads as
+    // coming off the card instead of covering the icon itself.
     function getDamagePosition(object_type, object_name) {
         if (object_type === "monster") {
             var mi = findMonsterItem(object_name);
             if (!mi) {
                 return null;
             }
-            var mp = mapFromItem(mi, mi.width / 2, mi.height / 2);
+            var mp = mapFromItem(mi, mi.width + 6 * l_ratio, mi.height * 0.55);
             return {x: mp.x, y: mp.y};
         }
-        var hp = mapFromItem(iiHP, iiHP.width / 2, iiHP.height * 0.65);
+        var hp = mapFromItem(iiHP, iiHP.width + 14 * l_ratio, iiHP.height * 0.65);
         return {x: hp.x, y: hp.y};
     }
 
@@ -115,6 +166,20 @@ Item {
     function clearDamageNumbers() {
         lmDamageNumbers.clear();
         l_damageSeq = 0;
+    }
+
+    function resetHealthDisplay() {
+        l_hpDisplay = l_warlock.hp;
+        var monsters = l_warlock.monsters || [];
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+            monsters[i].turn_news_hp_display = monsters[i].hp;
+        }
+        for (var j = 0, LnJ = iMonsters.count; j < LnJ; ++j) {
+            var item = iMonsters.itemAtIndex(j);
+            if (item && item.l_data && (item.l_data.hp !== undefined)) {
+                item.l_hpDisplay = item.l_data.hp;
+            }
+        }
     }
 
     // The auto-play can be closed between two highlight frames; make sure the
@@ -147,7 +212,7 @@ Item {
     IconInfo {
         id: iiHP
         source: "qrc:/res/wizard_" + (l_warlock.color ? l_warlock.color : "grey") + ".png";
-        text: l_warlock.hp
+        text: l_hpDisplay
         textVisible: false
         height: 78 * l_ratio
         width: height
@@ -158,7 +223,7 @@ Item {
 
         // number: original corner geometry (like the built-in btnText)
         Text {
-            text: l_warlock.hp
+            text: l_hpDisplay
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.rightMargin: 1 * l_ratio
@@ -249,10 +314,13 @@ Item {
             model: []
             delegate: IconInfo {
                 id: iiDM
+                property int l_hpDisplay: iMonsters.model[index].turn_news_hp_display !== undefined
+                                           ? iMonsters.model[index].turn_news_hp_display
+                                           : iMonsters.model[index].text
                 l_data: iMonsters.model[index]
                 height: 78 * l_ratio
                 width: 78 * l_ratio
-                text: iMonsters.model[index].text
+                text: l_hpDisplay
                 source: "qrc:/res/"+iMonsters.model[index].icon+".png"
                 iconInfoSource: iMonsters.model[index].enchantment_icon
                 iconInfoVisible: iMonsters.model[index].enchantment_icon !== ""
@@ -608,6 +676,9 @@ Item {
     }
 
     function hintOnOff(Restore) {
+        if (Restore) {
+            resetHealthDisplay();
+        }
         iiLeft.visible = Restore && (isHandsVisible === 1);
         iiRight.visible = Restore && (isHandsVisible === 1);
         if (Restore) {
@@ -883,7 +954,14 @@ Item {
             }
             var arr_m = arr[i];
             arr_m.is_checkbox = false;
-            arr_m.text = arr_m[code_value];
+            if ((type === "m") && (arr_m.turn_news_hp_start !== undefined)) {
+                arr_m.text = arr_m.turn_news_hp_start;
+            } else {
+                arr_m.text = arr_m[code_value];
+            }
+            if (type === "m") {
+                arr_m.turn_news_hp_display = arr_m.text;
+            }
             if (type === "s") {
                 arr_m.is_checkbox = (arr_m.action === "permanency") || (arr_m.action === "delay");
                 if (arr_m.is_checkbox) {
