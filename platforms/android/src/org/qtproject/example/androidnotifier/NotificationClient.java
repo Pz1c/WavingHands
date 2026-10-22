@@ -15,13 +15,18 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 import android.content.res.Resources;
+import android.util.Log;
 
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import com.kdab.training.CheckScheduler;
 import com.kdab.training.MainActivity;
+import com.kdab.training.PushService;
 
 public class NotificationClient
 {
+    private static final String TAG = "WarlocksDuel.NotificationClient";
+
     public static void notify(Context context, String message) {
         try {
             NotificationManager m_notificationManager = (NotificationManager)
@@ -174,6 +179,50 @@ public class NotificationClient
         } catch (Exception e) {
             e.printStackTrace();
             //return "";
+        }
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/336
+    // The FCM token of this install, "" while unknown. An empty answer starts the fetch; the
+    // token then lands in the prefs (PushService.storeToken) and the core asks again on its
+    // next sync.
+    public static String getPushToken(Context context, String message) {
+        try {
+            SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+            String token = sharedPreferences.getString("fcm_token", "");
+            if (!token.isEmpty()) {
+                return token;
+            }
+            final Context app = context.getApplicationContext();
+            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                if (!task.isSuccessful() || task.getResult() == null || task.getResult().isEmpty()) {
+                    Log.w(TAG, "getToken failed", task.getException());
+                    return;
+                }
+                Log.d(TAG, "getToken " + PushService.redact(task.getResult()));
+                PushService.storeToken(app, task.getResult());
+            });
+            return "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    // "1" once the caster server acknowledged the PUSH of this install's token, "0" when the
+    // binding is gone (UNPUSH, logout, a server without push). CheckStatus.performCheck
+    // leaves ready and challenge to the server while this is fresh (7 days).
+    public static void setServerPushActive(Context context, String flag) {
+        try {
+            SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            boolean active = "1".equals(flag);
+            editor.putInt("server_push_active", active ? 1 : 0);
+            editor.putLong("server_push_active_ts", System.currentTimeMillis() / 1000L);
+            editor.commit();
+            Log.d(TAG, "setServerPushActive " + (active ? 1 : 0));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

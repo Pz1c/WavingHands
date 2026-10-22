@@ -23,6 +23,9 @@ public class MainActivity extends QtActivity {
     private static final int NOTIFICATION_PERMISSION_CODE = 123;
     private static final String TAG = "WarlocksDuelActivity";
     public static MainActivity appMainActivity;
+    // Read by PushService: a push that arrives while the app is up is not shown, the live
+    // link and the battle list cover it (https://github.com/Pz1c/WavingHands/issues/336).
+    public static volatile boolean isForeground = false;
 
     // variable for install referer client.
     InstallReferrerClient referrerClient;
@@ -141,6 +144,7 @@ public class MainActivity extends QtActivity {
     @Override
     public void onResume () {
         super.onResume();
+        isForeground = true;
         try {
             // The user may have changed the notification setting while we were away, and
             // the poll cadence depends on when they were last active - re-queue on resume.
@@ -183,6 +187,12 @@ public class MainActivity extends QtActivity {
         e.printStackTrace();
         //return "";
     }
+    }
+
+    @Override
+    public void onPause() {
+        isForeground = false;
+        super.onPause();
     }
 
     @Override
