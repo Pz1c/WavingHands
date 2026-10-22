@@ -1,10 +1,25 @@
+function getHintWarlockIdx(a) {
+    var warlock_idx;
+    if (a.object_type === "monster") {
+        warlock_idx = BU.map_monster_name_to_idx[a.object];
+        if ((warlock_idx === undefined) && BU.getMonsterOwnerName) {
+            // The monster may already have died and be absent from the final
+            // roster, but its card is still on screen while the news plays.
+            warlock_idx = BU.map_warlock_name_to_idx[BU.getMonsterOwnerName(a.object)];
+        }
+    } else {
+        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name || a.object];
+    }
+    if (warlock_idx === undefined) {
+        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
+    }
+    return warlock_idx;
+}
+
 function processHighlightHintAction(a, restore) {
     // a monster is shown inside the Warlock.qml item of its owner, a.object is the monster name
     // https://github.com/Pz1c/WavingHands/issues/227
-    var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
-    if ((warlock_idx === undefined) && a.warlock_name) {
-        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
-    }
+    var warlock_idx = getHintWarlockIdx(a);
     console.log("processHighlightHintAction", a.object_type, a.warlock_name, a.object, warlock_idx);
     if (!a.warlock_name) {
         return;
@@ -100,10 +115,7 @@ function processDamageHintAction(a, restore) {
     if (restore) {
         return;
     }
-    var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
-    if (warlock_idx === undefined) {
-        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
-    }
+    var warlock_idx = getHintWarlockIdx(a);
     var ww = iWarlocks.children[warlock_idx];
     console.log("processDamageHintAction", a.object_type, a.warlock_name, a.object, a.amount, warlock_idx);
     if (ww && ww.showDamage) {
@@ -115,10 +127,7 @@ function processHealHintAction(a, restore) {
     if (restore) {
         return;
     }
-    var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
-    if (warlock_idx === undefined) {
-        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
-    }
+    var warlock_idx = getHintWarlockIdx(a);
     var ww = iWarlocks.children[warlock_idx];
     console.log("processHealHintAction", a.object_type, a.warlock_name, a.object, a.amount, warlock_idx);
     if (ww && ww.showHeal) {
@@ -130,14 +139,47 @@ function processHealthHintAction(a, restore) {
     if (restore) {
         return;
     }
-    var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
-    if (warlock_idx === undefined) {
-        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
-    }
+    var warlock_idx = getHintWarlockIdx(a);
     var ww = iWarlocks.children[warlock_idx];
     console.log("processHealthHintAction", a.object_type, a.warlock_name, a.object, a.amount, warlock_idx);
     if (ww && ww.changeHealth) {
         ww.changeHealth(a.amount, a.object_type, a.object);
+    }
+}
+
+function processSummonHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = getHintWarlockIdx(a);
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processSummonHintAction", a.object, a.warlock_name, warlock_idx);
+    if (ww && ww.showSummonedMonster) {
+        ww.showSummonedMonster(a.object, a.icon, a.hp);
+    }
+}
+
+function processDeathHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = getHintWarlockIdx(a);
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processDeathHintAction", a.object_type, a.object, a.warlock_name, warlock_idx);
+    if (ww && ww.showDeath) {
+        ww.showDeath(a.object_type, a.object);
+    }
+}
+
+function processElementalHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    console.log("processElementalHintAction", a.visible, a.type, a.hp);
+    if (a.visible) {
+        BU.showTurnNewsElemental(a.type, a.hp);
+    } else {
+        BU.hideTurnNewsElemental();
     }
 }
 
@@ -151,6 +193,9 @@ function processHintAction(a, restore) {
     case "damage": return processDamageHintAction(a, restore);
     case "heal": return processHealHintAction(a, restore);
     case "hp": return processHealthHintAction(a, restore);
+    case "summon": return processSummonHintAction(a, restore);
+    case "death": return processDeathHintAction(a, restore);
+    case "elemental": return processElementalHintAction(a, restore);
     }
 }
 
@@ -220,9 +265,12 @@ function playHintActions(actions) {
     stopHintAnimation();
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
         a = actions[i];
-        if ((a.action === "damage") || (a.action === "heal") || (a.action === "hp")) {
-            // Show the number / change the life points as soon as the cause row
-            // appears; the target highlight still follows the normal frames.
+        if ((a.action === "damage") || (a.action === "heal") || (a.action === "hp") ||
+                (a.action === "summon") || (a.action === "death") ||
+                (a.action === "elemental")) {
+            // Show the number / change the life points / change the board as
+            // soon as the event row appears; the target highlight still follows
+            // the normal frames.
             processHintAction(a, false);
             continue;
         }
@@ -319,6 +367,9 @@ function prepareWarockToHint(restore) {
             ww.restoreAllNews();
         }
         ww.hintOnOff(restore);
+    }
+    if (restore) {
+        BU.resetTurnNewsElemental();
     }
 }
 

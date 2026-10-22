@@ -210,9 +210,13 @@ function findTurnNewsTargetObject(target) {
     return null;
 }
 
+function isPreviousTurnBattle(previous_battle) {
+    return !!previous_battle && (previous_battle.id === battle.id) &&
+            ((parseInt(previous_battle.turn_num, 10) + 1) === parseInt(battle.turn_num, 10));
+}
+
 function getPreviousTurnTargetHp(previous_battle, target) {
-    if (!previous_battle || (previous_battle.id !== battle.id) ||
-            ((parseInt(previous_battle.turn_num, 10) + 1) !== parseInt(battle.turn_num, 10))) {
+    if (!isPreviousTurnBattle(previous_battle)) {
         return null;
     }
     for (var i = 0, Ln = previous_battle.warlocks.length; i < Ln; ++i) {
@@ -233,6 +237,316 @@ function getPreviousTurnTargetHp(previous_battle, target) {
         }
     }
     return null;
+}
+
+function findPreviousTurnWarlock(previous_battle, name) {
+    if (!previous_battle) {
+        return null;
+    }
+    for (var i = 0, Ln = previous_battle.warlocks.length; i < Ln; ++i) {
+        if (previous_battle.warlocks[i] && (previous_battle.warlocks[i].name === name)) {
+            return previous_battle.warlocks[i];
+        }
+    }
+    return null;
+}
+
+function cloneTurnNewsMonster(m, hp) {
+    var res = {}, key, shown = parseInt(hp, 10);
+    if (isNaN(shown) || (shown < 0)) {
+        shown = 0;
+    }
+    for (key in m) {
+        if (Object.prototype.hasOwnProperty.call(m, key)) {
+            res[key] = m[key];
+        }
+    }
+    res.turn_news_hp_start = shown;
+    res.turn_news_hp_display = shown;
+    res.turn_news_dead = false;
+    res.text = shown;
+    return res;
+}
+
+function cloneTurnNewsElemental(el) {
+    var hp = el ? parseInt(el.hp, 10) : 0;
+    if (isNaN(hp) || (hp < 0)) {
+        hp = 0;
+    }
+    return {name:(el && el.name) ? el.name : "", hp:hp,
+            type:(el && (el.type === "ice")) ? "ice" : "fire", action:"m"};
+}
+
+function isTurnNewsDeadWarlock(w) {
+    var hp = w ? parseInt(w.hp, 10) : 0;
+    if (isNaN(hp) || (hp > 0)) {
+        return false;
+    }
+    return ((w.status || "").toLowerCase().indexOf("surrender") === -1);
+}
+
+// The final battle no longer contains monsters that died this turn, but their
+// rows still name them. Keep their owner available while the turn news runs so
+// damage, healing and the death marker can find the right card.
+function prepareTurnNewsMonsterOwners(previous_battle, real_actions) {
+    var map = {};
+    if (isPreviousTurnBattle(previous_battle)) {
+        for (var i = 0, Ln = previous_battle.warlocks.length; i < Ln; ++i) {
+            var pw = previous_battle.warlocks[i];
+            if (!pw) {
+                continue;
+            }
+            var pmonsters = pw.monsters || [];
+            for (var j = 0, LnJ = pmonsters.length; j < LnJ; ++j) {
+                map[pmonsters[j].name] = pw.name;
+            }
+        }
+    }
+    for (var k = 0, LnK = battle.warlocks.length; k < LnK; ++k) {
+        var w = battle.warlocks[k];
+        if (!w) {
+            continue;
+        }
+        var monsters = w.monsters || [];
+        for (var q = 0, LnQ = monsters.length; q < LnQ; ++q) {
+            map[monsters[q].name] = w.name;
+        }
+    }
+    // A monster summoned and killed in the same turn is absent from the final
+    // roster, but its summon row still tells us who owned it.
+    var rows = real_actions || [];
+    for (var r = 0, LnR = rows.length; r < LnR; ++r) {
+        var info = getTurnNewsSummonInfo(rows[r]);
+        if (info) {
+            map[info.name] = info.owner;
+        }
+    }
+    battle.turn_news_monster_owners = map;
+}
+
+function getSummonedMonsterHp(name) {
+    if (name.indexOf("Goblin") !== -1) {
+        return 1;
+    } else if (name.indexOf("Ogre") !== -1) {
+        return 2;
+    } else if (name.indexOf("Troll") !== -1) {
+        return 3;
+    } else if (name.indexOf("Giant") !== -1) {
+        return 4;
+    }
+    return 1;
+}
+
+function findTurnNewsMonsterData(name) {
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        var w = battle.warlocks[i];
+        if (!w) {
+            continue;
+        }
+        var monsters = w.monsters || [];
+        for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
+            if (monsters[j].name === name) {
+                return monsters[j];
+            }
+        }
+    }
+    return null;
+}
+
+function getTurnNewsSummonInfo(row) {
+    var txt = (row.txt || "").replace(/^\s+|\s+$/g, "");
+    var match = /^(.+?)\s+is summoned to serve\s+(.+?)\.?$/i.exec(txt);
+    if (!match) {
+        return null;
+    }
+    return {name:match[1], owner:normalizeTurnNewsName(match[2])};
+}
+
+// "A Fire Elemental appears in a furious roar of flame!"
+// "An Ice Elemental appears in a sudden rush of arctic wind!"
+function getTurnNewsElementalAppearance(row) {
+    var match = /\bA(?:n)?\s+(Fire|Ice)\s+Elemental\s+appears/i.exec(row.txt || "");
+    return match ? match[1].toLowerCase() : "";
+}
+
+// Elementals leave the board in several ways: opposite storms, a storm of the
+// same type, the opposite elemental, Resist Heat, blindness, and so on.
+function isTurnNewsElementalDestroyed(row) {
+    var txt = row.txt || "";
+    if (!/Elemental/i.test(txt)) {
+        return false;
+    }
+    if (/appears|casts\s+Summon|runs\s+amok|at\s+bay/i.test(txt)) {
+        return false;
+    }
+    return /\b(destroy(?:ed|s)?|melt(?:s|ed)?|shattered|extinguish(?:ed)?|snuffed|quench(?:ed)?|doused|dissipat(?:ed|es)?|evaporat(?:ed|es)?|flies\s+away|vanishes|fades|dispelled|engulfed|consumed|nullif(?:y|ied|ies)|annihilat(?:e|ed|es)|cancel(?:led|s)?|dies)\b/i.test(txt);
+}
+
+function getTurnNewsTransitionRow(real_actions, idx) {
+    var i, Ln = real_actions.length, row;
+    for (i = idx; i < Ln; ++i) {
+        row = real_actions[i];
+        if ((row.type < 2) && !row.turn_news_hidden) {
+            return row;
+        }
+    }
+    for (i = idx - 1; i >= 0; --i) {
+        row = real_actions[i];
+        if ((row.type < 2) && !row.turn_news_hidden) {
+            return row;
+        }
+    }
+    return null;
+}
+
+function addTurnNewsTransitionAction(real_actions, idx, action) {
+    var row = getTurnNewsTransitionRow(real_actions, idx);
+    if (!row) {
+        return;
+    }
+    if (!row.new_action) {
+        row.new_action = [];
+    }
+    row.new_action.push(action);
+    row.turn_news_force_show = true;
+}
+
+function prepareTurnNewsTransitions(real_actions, previous_battle) {
+    var previous_valid = isPreviousTurnBattle(previous_battle);
+    var summoned = {}, elemental_summoned = false, i, Ln, row, j, LnJ;
+
+    for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        row = real_actions[i];
+        var summoned_info = getTurnNewsSummonInfo(row);
+        if (summoned_info) {
+            summoned[summoned_info.name] = true;
+        }
+        if (getTurnNewsElementalAppearance(row)) {
+            elemental_summoned = true;
+        }
+    }
+
+    for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        var w = battle.warlocks[i];
+        if (!w) {
+            continue;
+        }
+        if (battle.read_only) {
+            w.turn_news_monsters = undefined;
+            w.turn_news_dead = isTurnNewsDeadWarlock(w);
+            continue;
+        }
+
+        var roster = [];
+        var prev_w = previous_valid ? findPreviousTurnWarlock(previous_battle, w.name) : null;
+        if (prev_w) {
+            // The turn starts with exactly the monsters and life points that
+            // were on the table when the previous turn ended.
+            var prev_monsters = prev_w.monsters || [];
+            for (j = 0, LnJ = prev_monsters.length; j < LnJ; ++j) {
+                if (!prev_monsters[j]) {
+                    continue;
+                }
+                roster.push(cloneTurnNewsMonster(prev_monsters[j], prev_monsters[j].hp));
+            }
+        } else {
+            // Opening a battle without the previous turn: use the current
+            // roster, but leave out anything summoned during this turn.
+            var monsters = w.monsters || [];
+            for (j = 0, LnJ = monsters.length; j < LnJ; ++j) {
+                if (!monsters[j] || summoned[monsters[j].name]) {
+                    continue;
+                }
+                var start = (monsters[j].turn_news_hp_start !== undefined)
+                        ? monsters[j].turn_news_hp_start : monsters[j].hp;
+                roster.push(cloneTurnNewsMonster(monsters[j], start));
+            }
+        }
+        w.turn_news_monsters = roster;
+        w.turn_news_dead = (w.turn_news_hp_start !== undefined)
+                ? (parseInt(w.turn_news_hp_start, 10) <= 0) : false;
+    }
+
+    if (battle.read_only) {
+        battle.turn_news_elemental = undefined;
+        return;
+    }
+    if (previous_valid) {
+        var pe = previous_battle.elemental;
+        battle.turn_news_elemental = (pe && (parseInt(pe.hp, 10) > 0))
+                ? cloneTurnNewsElemental(pe) : null;
+    } else if (elemental_summoned) {
+        battle.turn_news_elemental = null;
+    } else {
+        battle.turn_news_elemental = (battle.elemental && (parseInt(battle.elemental.hp, 10) > 0))
+                ? cloneTurnNewsElemental(battle.elemental) : null;
+    }
+
+    for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        row = real_actions[i];
+        var summon = getTurnNewsSummonInfo(row);
+        if (summon) {
+            var summon_data = findTurnNewsMonsterData(summon.name);
+            var summon_icon = summon_data ? summon_data.icon : BGU.getMonsterIconByName(summon.name);
+            if (!summon_data && (summon_icon !== "summon")) {
+                if (summon_icon.indexOf("elemental") !== -1) {
+                    summon_icon = "new_summon";
+                } else if (summon_icon.indexOf("new_") !== 0) {
+                    summon_icon = "new_" + summon_icon;
+                }
+            }
+            var summon_hp = summon_data
+                    ? ((summon_data.turn_news_hp_start !== undefined)
+                            ? summon_data.turn_news_hp_start : summon_data.hp)
+                    : getSummonedMonsterHp(summon.name);
+            addTurnNewsTransitionAction(real_actions, i,
+                    {action:"summon", object_type:"monster",
+                     object:summon.name,
+                     warlock_name:getMonsterOwnerName(summon.name) || summon.owner,
+                     icon:summon_icon, hp:summon_hp});
+        }
+
+        var appearance = getTurnNewsElementalAppearance(row);
+        if (appearance) {
+            addTurnNewsTransitionAction(real_actions, i,
+                    {action:"elemental", visible:true, type:appearance, hp:3});
+        }
+        if (isTurnNewsElementalDestroyed(row)) {
+            addTurnNewsTransitionAction(real_actions, i,
+                    {action:"elemental", visible:false, type:""});
+        }
+
+        if (row.row_type === "death") {
+            var target = normalizeTurnNewsName(row.obj ? row.obj.target : "");
+            // "Azi surrenders." is colored like a death row but nobody dies.
+            if (/\bsurrenders?\b/i.test(target)) {
+                target = "";
+            }
+            if (target) {
+                var owner = getMonsterOwnerName(target);
+                if (!owner) {
+                    for (var wi = 0, LnW = battle.warlocks.length; wi < LnW; ++wi) {
+                        var death_w = battle.warlocks[wi];
+                        if (death_w && (death_w.name === target)) {
+                            death_w.turn_news_dead_event = true;
+                            // Without the previous battle the reconstructed HP
+                            // can be 0 before the death row. Keep the card alive
+                            // until the event itself marks it.
+                            if ((death_w.turn_news_hp_start === undefined) ||
+                                    (parseInt(death_w.turn_news_hp_start, 10) <= 0)) {
+                                death_w.turn_news_dead = false;
+                            }
+                            break;
+                        }
+                    }
+                }
+                addTurnNewsTransitionAction(real_actions, i,
+                        {action:"death",
+                         object_type:owner ? "monster" : "warlock",
+                         object:target, warlock_name:owner || target});
+            }
+        }
+    }
 }
 
 function addTurnNewsDamageTotal(totals, target, damage) {
@@ -442,6 +756,10 @@ function getMonsterOwnerName(name) {
                 return w.name;
             }
         }
+    }
+    var owners = battle.turn_news_monster_owners || {};
+    if (Object.prototype.hasOwnProperty.call(owners, name)) {
+        return owners[name];
     }
     return "";
 }
@@ -986,6 +1304,7 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
     // https://github.com/Pz1c/WavingHands/issues/227
     // temporary tiles for the monsters that are gone, summon rows paired, then the temporary icons of every step
     BGU.prepareNewsMonsters(real_actions, battle);
+    prepareTurnNewsMonsterOwners(previous_battle, real_actions);
     BGU.prepareAndSortRealAction(real_actions, battle);
     var initial_temp = BGU.prepareNewsTempIcons(real_actions, battle);
     // the steps before the first row (hints, what the players said) show the board as the turn began
@@ -993,6 +1312,7 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
         new_hint[i].actions = new_hint[i].actions.concat(BGU.getTempIconActions(initial_temp, battle));
     }
     prepareTurnNewsDamage(real_actions, previous_battle);
+    prepareTurnNewsTransitions(real_actions, previous_battle);
     var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
@@ -1003,7 +1323,8 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
         if (real_actions[i].type >= 2) {
             continue;
         }
-        if (beginner && !isBeginnerTurnNews(real_actions[i]) && !real_actions[i].turn_news_has_damage) {
+        if (beginner && !isBeginnerTurnNews(real_actions[i]) &&
+                !real_actions[i].turn_news_has_damage && !real_actions[i].turn_news_force_show) {
             continue;
         }
         // https://github.com/Pz1c/WavingHands/issues/311
@@ -1161,14 +1482,35 @@ function prepareBattle(raw_battle) {
 }
 
 function prepareElemental() {
-    if (battle.elemental.hp > 0) {
-        iiElemental.text = battle.elemental.hp;
-        iiElemental.source = "qrc:/res/elemental_"+battle.elemental.type+".png";
-        iiElemental.l_data = battle.elemental;
+    var el = (battle.turn_news_elemental !== undefined) ? battle.turn_news_elemental : battle.elemental;
+    if (el && (parseInt(el.hp, 10) > 0)) {
+        iiElemental.text = el.hp;
+        iiElemental.source = "qrc:/res/elemental_"+el.type+".png";
+        iiElemental.l_data = el;
         iiElemental.visible = true;
     } else {
         iiElemental.visible = false;
     }
+}
+
+function showTurnNewsElemental(type, hp) {
+    var shown = parseInt(hp, 10);
+    if (isNaN(shown) || (shown <= 0)) {
+        shown = 3;
+    }
+    battle.turn_news_elemental = {name:(type === "ice") ? "Ice Elemental" : "Fire Elemental",
+                                  hp:shown, type:(type === "ice") ? "ice" : "fire", action:"m"};
+    prepareElemental();
+}
+
+function hideTurnNewsElemental() {
+    battle.turn_news_elemental = null;
+    prepareElemental();
+}
+
+function resetTurnNewsElemental() {
+    battle.turn_news_elemental = undefined;
+    prepareElemental();
 }
 
 function prepareWarlocks() {
@@ -1206,7 +1548,16 @@ function finishPrepareWarlockList() {
     map_monster_name_to_idx = {};
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         // https://github.com/Pz1c/WavingHands/issues/259
-        if (!battle.warlocks[i] || (!battle.read_only && !battle.warlocks[i].active && (battle.monsters[battle.warlocks[i].name].length === 0))) {
+        // Keep a Warlock who was alive at the start of this turn on screen even
+        // if the turn killed him, so his card can turn into the RIP icon. A
+        // surrender is not a death and keeps the old behavior (card removed).
+        var turn_news_was_alive = battle.warlocks[i] &&
+                (battle.warlocks[i].turn_news_dead_event ||
+                 (((battle.warlocks[i].turn_news_hp_start !== undefined) &&
+                   (parseInt(battle.warlocks[i].turn_news_hp_start, 10) > 0)) &&
+                  isTurnNewsDeadWarlock(battle.warlocks[i])));
+        if (!battle.warlocks[i] || (!battle.read_only && !battle.warlocks[i].active &&
+                (battle.monsters[battle.warlocks[i].name].length === 0) && !turn_news_was_alive)) {
             continue;
         }
         var arr_m = battle.warlocks[i];
