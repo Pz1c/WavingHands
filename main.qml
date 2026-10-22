@@ -68,6 +68,7 @@ ApplicationWindow {
             case 1: return confirmOrdersEx();
             case 2: return GUI.joinBattleDialogResult(true);
             case 3: return core.logout();
+            case 4: return confirmSuicideEx();
             }
         }
 
@@ -1248,6 +1249,20 @@ ApplicationWindow {
         mdNoGesture.visible = true;
     }
 
+    // https://github.com/Pz1c/WavingHands/issues/315: Suicide on the review screen
+    function confirmSuicide() {
+        mdNoGesture.text = warlockDictionary.getStringByCode("ConfirmSuicideForTurn");
+        mdNoGesture.dialogType = 4;
+        mdNoGesture.visible = true;
+    }
+
+    function confirmSuicideEx() {
+        // the reviewed orders go out as they are, with the site's SUICIDE checkbox ticked
+        gBattle.actions.S = 1;
+        logEvent("Play_Review_Suicide_Confirmed");
+        confirmOrdersEx();
+    }
+
     function showFeedbackWnd() {
         logEvent("Feedback_View", {});
         return showErrorWnd({id:-1,type:13,action:"feedback"});
@@ -1256,6 +1271,12 @@ ApplicationWindow {
     function showRateUsWnd() {
         logEvent("Rating_View", {});
         return showErrorWnd({id:-1,type:14,action:"rate_us"});
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/149
+    function showSettingsWnd() {
+        logEvent("Settings_View", {});
+        WNDU.showSettings();
     }
 
     function showSBLWnd() {
@@ -1322,8 +1343,14 @@ ApplicationWindow {
         GUI.startGameWithPlayer();
     }
 
-    function startGameWithPlayerEx() {
-        GUI.startGameWithPlayerEx();
+    function startGameWithPlayerEx(once) {
+        GUI.startGameWithPlayerEx(false, once === true);
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/216: Smart Match while auto matching is off
+    function showAutoMatchWnd() {
+        logEvent("AutoMatch_View", {});
+        return showErrorWnd({id:-1,type:203});
     }
 
     function processAfterClose() {

@@ -10,7 +10,7 @@ var V_BEST_BATTLE_ID = 0;
 var G_ACCOUNT_LIST = [];
 var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, {c:"top",t:"TopList"}, {c:"feedback",t:"Feedback"},
                      //{c:"battle_with_friend",t:"DuelWithFriend"}, /*{c:"switch_account",t:"SwitchAccount"},*/
-                     {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"},
+                     {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"}, {c:"settings",t:"Settings"},
                      {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/ ,{c:"enable_notif", t:"Notification"}
         ];
 
@@ -33,6 +33,7 @@ function mainMenuActionEx(code) {
     case "player_score": return showUserScoreWnd();
     case "battle_with_friend": return showShareWnd();
     case "logout": return confirmLogout();
+    case "settings": return showSettingsWnd();
     case "spellbook_levelup":
         def_type = 22;
         break;
@@ -218,8 +219,10 @@ function getJoinDialogText(b) {
     return txt;
 }
 
-function startGameWithPlayerEx(skip_search) {
-    console.log("startGameWithPlayer", JSON.stringify(G_CHALLENGE_LIST));
+// once: the player took "Join only once" in the auto matching offer
+// (https://github.com/Pz1c/WavingHands/issues/216), so no Keep me On offer on top of this game
+function startGameWithPlayerEx(skip_search, once) {
+    console.log("startGameWithPlayer", skip_search, once, JSON.stringify(G_CHALLENGE_LIST));
     var best_idx = -1, battle, bb;
     if (!skip_search) {
         for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
@@ -261,6 +264,9 @@ function startGameWithPlayerEx(skip_search) {
             desc += " Elo " + (G_PROFILE.elo - 200) + " or more please.";
         }
         logEvent("create_callenge", {source:"btn_new",Type:"Training",With:"Random warlock"});
+        if (once) {
+            core.skipKeepMeOnOffer();
+        }
         core.createNewChallenge(1, 0, 1, 1, 2, 2, desc);
     /*} else {
         V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;

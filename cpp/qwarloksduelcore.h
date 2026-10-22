@@ -65,6 +65,9 @@ class QWarloksDuelCore : public QGameCore
     Q_PROPERTY(QString warlockInfo READ warlockInfo NOTIFY warlockInfoChanged)
     Q_PROPERTY(QString accountMenu READ accountMenu NOTIFY accountMenuChanged)
     Q_PROPERTY(QString battleList READ battleList NOTIFY battleListChanged)
+    // Keep me On (https://github.com/Pz1c/WavingHands/issues/149), which the auto matching of
+    // https://github.com/Pz1c/WavingHands/issues/216 extends: one setting for both.
+    Q_PROPERTY(bool keepMeOn READ keepMeOn WRITE setKeepMeOn NOTIFY keepMeOnChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr, bool AsService = false);
@@ -96,6 +99,7 @@ public:
     QString warlockInfo();
     QString accountMenu();
     QString battleList();
+    bool keepMeOn();
 
 signals:
     void needLogin();
@@ -123,6 +127,7 @@ signals:
     void warlockInfoChanged();
     void accountMenuChanged();
     void battleListChanged();
+    void keepMeOnChanged();
     void needAIAnswer(QString Login, int MagicBookLevel);
     void readyAIAnswer(int battle_id);
     // An opponent made a move (TURNREADY over the caster link), rate limited.
@@ -135,15 +140,19 @@ public slots:
     void scanState(bool Silent = false);
     void getChallengeList(bool Silent = false);
     void scanTopList(bool Silent = false, bool ForceFull = false);
-    void acceptChallenge(int battle_id, bool from_card = false);
+    // Background: a join the app makes on its own (auto matching), so no loading overlay, it
+    // leaves the battle slot alone, and a failure only logs.
+    void acceptChallenge(int battle_id, bool from_card = false, bool Background = false);
     bool aiAcceptChallenge(int battle_id, bool changeAI = true);
     void rejectChallenge(int battle_id);
     void deleteMsg(QString msg_from);
     void forceSurrender(int battle_id, int turn, bool Silent = false);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
+    // Background: a game the app makes on its own (Keep me On), so no loading overlay, and
+    // no error window should it fail.
     void createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count, int FriendlyLevel,
-                            QString Description, QString Warlock = "", int IsOnline = 0);
+                            QString Description, QString Warlock = "", int IsOnline = 0, bool Background = false);
     void aiCreateNewChallenge();
     void regNewUser(const QString &Login, const QString &Email, const QString &Pass = "");
     void getBattle(int battle_id, int battle_type, bool silent = false);
@@ -187,6 +196,12 @@ public slots:
     // QML reports whether any window is up: a battle result the core announces on its own
     // waits until none is, so it never covers one or replaces a result still being read.
     void setUiBusy(bool busy);
+    // Keep me On (https://github.com/Pz1c/WavingHands/issues/149): the app keeps one PvP game
+    // of the player's open for an opponent, see keepMeOnCheck().
+    void setKeepMeOn(bool On);
+    // The player has just declined auto matching ("Join only once"): the game they make next
+    // by hand gets no Keep me On offer on top (https://github.com/Pz1c/WavingHands/issues/216).
+    void skipKeepMeOnOffer();
 protected slots:
     void loginToSite(bool Silent = false);
     void timerFired(bool Silent = true);
@@ -289,6 +304,14 @@ protected:
     void releaseResultFetch(const QString &url);
 
     bool checkIsNotificationGranted();
+
+    // Keep me On / auto matching: after a scan, join an open PvP challenge, or create a game
+    // when there is none to join, while the player has fewer than KEEP_ME_ON_MAX_GAMES games
+    // and none of them is still waiting for an opponent.
+    void keepMeOnCheck();
+    bool hasUnstartedBattle();
+    int findChallengeToJoin();
+    void releaseKeepMeOn(const QString &url);
 private:
     // user login
     bool _isLogined;
@@ -319,6 +342,11 @@ private:
     bool _event_start_pvp;
     bool _event_submit_turn;
     bool _event_submit_turn5;
+    // The Keep me On setting, and whether the join or creation it makes is in flight.
+    bool _keepMeOn;
+    bool _keepMeOnBusy;
+    // One shot, see skipKeepMeOnOffer().
+    bool _keepMeOnOfferSkip;
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
@@ -398,6 +426,7 @@ private:
     QString _paralyzedHands;
     bool _isDelay;
     bool _isPermanent;
+    bool _isSuicide;
     bool _isParaFDF;
     bool _isParaFC;
     bool _isMaladroit;

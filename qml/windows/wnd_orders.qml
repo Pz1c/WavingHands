@@ -16,6 +16,10 @@ BaseWindow {
     body_width_prc: 100
     overOpacity: 0
 
+    // https://github.com/Pz1c/WavingHands/issues/315: the site offers a SUICIDE checkbox to a
+    // permanently enchanted warlock; then a Suicide button sits above Submit.
+    property bool suicideOffered: false
+
     bg_source: "qrc:/res/stars_bg.png"
     overRect.anchors.left: undefined
     overRect.width: 528 * mainWindow.ratioObject
@@ -57,7 +61,7 @@ BaseWindow {
             //anchors.leftMargin: 12 * mainWindow.ratioObject
             anchors.right: parent.right
             //anchors.rightMargin: 12 * mainWindow.ratioObject
-            anchors.bottom: iiSend.top
+            anchors.bottom: iiSuicide.visible ? iiSuicide.top : iiSend.top
 
             //ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             //ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -289,6 +293,38 @@ BaseWindow {
             }
         }
 
+                // https://github.com/Pz1c/WavingHands/issues/315
+                IconInfo {
+                    id: iiSuicide
+                    source: "qrc:/res/RIP2.png"
+                    textVisible: true
+                    visible: dMainItem.suicideOffered
+
+                    height: 64 * mainWindow.ratioObject
+                    iconHeight: 64 * mainWindow.ratioObject
+                    iconWidth: 64 * mainWindow.ratioObject
+                    textHeight: 64 * mainWindow.ratioObject
+                    textWidth: 80 * mainWindow.ratioObject
+                    width: (64 + 30 + 80) * mainWindow.ratioObject
+                    textAnchors.left: iiSuicide.left
+                    textAnchors.right: undefined
+                    iconAnchors.right: iiSuicide.right
+                    iconAnchors.centerIn: undefined
+                    anchors.right: parent.right
+                    anchors.rightMargin: 48 * mainWindow.ratioObject
+                    anchors.bottom: iiSend.top
+                    anchors.bottomMargin: 24 * mainWindow.ratioObject
+                    active: true
+                    color: "transparent"
+                    text_color: "#E7FFFF"
+                    text: dict.getStringByCode("SuicideOrders")
+
+                    onClicked: {
+                        mainWindow.logEvent("Play_Review_Suicide_Clicked");
+                        mainWindow.confirmSuicide();
+                    }
+                }
+
                 IconInfo {
                     id: iiSend
                     source: "qrc:/res/send_1.png"
@@ -342,8 +378,14 @@ BaseWindow {
         console.log("wnd_gesture.initGFields", JSON.stringify(mainWindow.gERROR));
         title_text = mainWindow.gERROR.title;
         lvOrderList.model = mainWindow.gERROR.data;
-        var is_surrender = mainWindow.gERROR.data && (mainWindow.gERROR.data.length > 0) && mainWindow.gERROR.data[0] && mainWindow.gERROR.data[0].type &&
-                (mainWindow.gERROR.data[0].type === "PP");
+        var rows = mainWindow.gERROR.data ? mainWindow.gERROR.data : [];
+        var is_surrender = false;
+        for (var i = 0; i < rows.length; ++i) {
+            if (rows[i] && (rows[i].type === "PP")) {
+                is_surrender = true;
+            }
+        }
+        suicideOffered = !!(mainWindow.gBattle && mainWindow.gBattle.suicide && !mainWindow.gBattle.read_only);
         iiSend.width = (!is_surrender ? (64 + 30 + 80) : (64 + 30 + 120)) * mainWindow.ratioObject;
         iiSend.textWidth = (!is_surrender ? 80 : 120)* mainWindow.ratioObject;
         iiSend.text = is_surrender ? "SURRENDER!" : "Submit";

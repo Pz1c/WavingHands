@@ -1,5 +1,9 @@
 // source https://qt-project.org/forums/viewthread/26455
 
+// With auto matching on (https://github.com/Pz1c/WavingHands/issues/216) the Smart Match
+// button gives way to a box that says so and opens the setting; off, Smart Match first
+// offers to turn it on (wnd_auto_match_popup.qml).
+
 import QtQuick 2.15
 
 import "qrc:/qml/components"
@@ -133,11 +137,16 @@ InfoWindow {
             anchors.rightMargin: 30 * mainWindow.ratioObject
 
             font.pixelSize: 42 * mainWindow.ratioFont
+            visible: !mainWindow.gameCore.keepMeOn
 
             onClicked: {
                 console.log("start game btn 1");
                 mainWindow.processEscape();
-                mainWindow.startGameWithPlayerEx();
+                if (mainWindow.gameCore.keepMeOn) {
+                    mainWindow.startGameWithPlayerEx();
+                } else {
+                    mainWindow.showAutoMatchWnd();
+                }
             }
         }
 
@@ -157,7 +166,8 @@ InfoWindow {
 
             width: 258 * mainWindow.ratioObject
             height: 78 * mainWindow.ratioObject
-            anchors.top: bbAm.bottom
+            // takes Smart Match's place while that is hidden
+            anchors.top: bbAm.visible ? bbAm.bottom : iStab.bottom
             anchors.topMargin: 42 * mainWindow.ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 30 * mainWindow.ratioObject
@@ -192,6 +202,69 @@ InfoWindow {
             onClicked: {
                 mainWindow.processEscape();
                 mainWindow.callInviteFriends();
+            }
+        }
+
+        // "Auto start matches ON": opens the setting
+        Rectangle {
+            id: rAutoMatch
+            color: "#0654C0"
+            visible: mainWindow.gameCore.keepMeOn
+
+            anchors.left: parent.left
+            anchors.leftMargin: 30 * mainWindow.ratioObject
+            anchors.right: parent.right
+            anchors.rightMargin: 30 * mainWindow.ratioObject
+            anchors.bottom: parent.bottom
+            // low enough to clear the Invite a friend link on a 16:9 screen
+            anchors.bottomMargin: 30 * mainWindow.ratioObject
+            height: 102 * mainWindow.ratioObject
+
+            Text {
+                id: tAutoMatchTitle
+                anchors.left: parent.left
+                anchors.leftMargin: 18 * mainWindow.ratioObject
+                anchors.right: tAutoMatchArrow.left
+                anchors.rightMargin: 12 * mainWindow.ratioObject
+                anchors.top: parent.top
+                anchors.topMargin: 14 * mainWindow.ratioObject
+                font.pixelSize: 34 * mainWindow.ratioFont
+                color: "#FEE2D6"
+                elide: Text.ElideRight
+                text: warlockDictionary.getStringByCode("AutoMatchBoxTitle")
+            }
+
+            Text {
+                id: tAutoMatchDesc
+                anchors.left: tAutoMatchTitle.left
+                anchors.right: tAutoMatchTitle.right
+                anchors.top: tAutoMatchTitle.bottom
+                anchors.topMargin: 4 * mainWindow.ratioObject
+                font.pixelSize: 24 * mainWindow.ratioFont
+                color: "#FEE2D6"
+                elide: Text.ElideRight
+                text: warlockDictionary.getStringByCode("AutoMatchBoxDesc")
+            }
+
+            Text {
+                id: tAutoMatchArrow
+                anchors.right: parent.right
+                anchors.rightMargin: 18 * mainWindow.ratioObject
+                anchors.verticalCenter: parent.verticalCenter
+                font.pixelSize: 40 * mainWindow.ratioFont
+                color: "#FEE2D6"
+                text: ">"
+            }
+
+            MouseArea {
+                id: maAutoMatch
+                anchors.fill: parent
+                onClicked: {
+                    console.log("wnd_new_game.autoMatchSettings");
+                    mainWindow.logEvent("AutoMatch_Settings_Click", {});
+                    mainWindow.processEscape();
+                    mainWindow.showSettingsWnd();
+                }
             }
         }
     }

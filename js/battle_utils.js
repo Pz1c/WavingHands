@@ -202,7 +202,15 @@ function prepareTurnActionInfo(last_turn_hist) {
         new_hint.push({color_bg:last_turn_hist[i].color,font_size:last_turn_hist[i].font_size,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
     }
 
+    // https://github.com/Pz1c/WavingHands/issues/227
+    // temporary tiles for the monsters that are gone, summon rows paired, then the temporary icons of every step
+    BGU.prepareNewsMonsters(real_actions, battle);
     BGU.prepareAndSortRealAction(real_actions, battle);
+    var initial_temp = BGU.prepareNewsTempIcons(real_actions, battle);
+    // the steps before the first row (hints, what the players said) show the board as the turn began
+    for (i = 0, Ln = new_hint.length; i < Ln; ++i) {
+        new_hint[i].actions = new_hint[i].actions.concat(BGU.getTempIconActions(initial_temp, battle));
+    }
     var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
@@ -226,7 +234,8 @@ function prepareTurnActionInfo(last_turn_hist) {
         }
 
         //BGU.replaceAll(real_actions[i].txt, '&quot;', '"')
-        new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:real_actions[i].txt,actions:real_actions[i].new_action});
+        new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:real_actions[i].txt,
+                       actions:real_actions[i].new_action.concat(BGU.getTempIconActions(real_actions[i].temp_icons, battle))});
     }
 
     battle.hint = new_hint;
@@ -297,7 +306,10 @@ function prepareMonster(m) {
 function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
-        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit};
+        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit,
+        // https://github.com/Pz1c/WavingHands/issues/315: true while the site offers its SUICIDE checkbox.
+        // battleInfo() sends 1/0; a battle prepared once already holds the bool. Note "0" is truthy in JS.
+        suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true)};
     // L left  obj
     // R Right obj
     // C Chat  text
@@ -307,7 +319,8 @@ function prepareBattle(raw_battle) {
     // M monsters arr of obj
     // CP - paralyze arr of obj by id
     // CC - paralyze arr of obj by id
-    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:raw_battle.msg,D:-1,P:-1,F:-1,M:[],CP:{},CC:{}};
+    // S Suicide int 0 - no, 1 - tick the site's SUICIDE checkbox (only offered while battle.suicide)
+    battle.actions = {L:{target:"Default"},R:{target:"Default"},C:raw_battle.msg,D:-1,P:-1,F:-1,S:0,M:[],CP:{},CC:{}};
     setParaActions(raw_battle.paralyze, raw_battle.charm);
     parseTargets(raw_battle.targets);
     parseParalyzedHands(raw_battle.paralyzed_hand);
@@ -413,6 +426,12 @@ function finishPrepareWarlockList() {
         map_warlock_name_to_idx[arr_m.name] = i;
         for (var j = 0, LnJ = arr_m.monsters.length; j < LnJ; ++j) {
             map_monster_name_to_idx[arr_m.monsters[j].name] = i;
+        }
+        // the temporary tiles of the turn news sit in their owner's row too
+        for (var key in battle.temp_monster_owner) {
+            if (battle.temp_monster_owner[key] === arr_m.name) {
+                map_monster_name_to_idx[key] = i;
+            }
         }
         //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
@@ -529,6 +548,10 @@ function prepareOrder() {
     if (actions.F === 1) {
         post_request += "FIRE$1#"
     }
+    // https://github.com/Pz1c/WavingHands/issues/315
+    if ((actions.S === 1) && battle.suicide) {
+        post_request += "SUICIDE$1#";
+    }
     console.log("prepareOrder", "after", post_request);
 
     mainWindow.gameCore.sendOrders(post_request);
@@ -572,6 +595,10 @@ function getOrdersForReview(dictionary) {
     if ((actions.L.g === "P") && (actions.R.g === "P")) {
         res.push({row_type:"0",type:"PP",v:dictionary.getStringByCode("TitleAction_p"),c:"red",icon:"RIP2",icon_text:"",icon_visible:true,icon_width:60});
         //res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_pp"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
+    }
+    // https://github.com/Pz1c/WavingHands/issues/315: the site offers Suicide to a permanently enchanted warlock
+    if (battle.suicide) {
+        res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_suicide"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
     }
 
     if (actions.C !== "") {

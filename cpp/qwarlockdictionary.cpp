@@ -119,6 +119,10 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TitleActionHint_monster2", "", "", "Do you really want to target your own monster?");
     fillDictionary("TitleActionHint_summon", "", "", "Really? Your summon will serve your opponent");
     fillDictionary("TitleActionHint_clap", "", "", "Really? No spell has 'c' only one one hand");
+    // https://github.com/Pz1c/WavingHands/issues/315
+    fillDictionary("TitleActionHint_suicide", "", "", "You are permanently enchanted. You may end this battle for yourself with Suicide.");
+    fillDictionary("SuicideOrders", "", "", "Suicide");
+    fillDictionary("ConfirmSuicideForTurn", "", "", "Death");
 
     fillDictionary("Refresh", "", "", "Refresh");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
@@ -173,6 +177,23 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("RateUs_short_desc", "", "", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us with a 5 star rating?");
     fillDictionary("miRulesTitle", "", "", "Advanced Rules");
     fillDictionary("miLogoutTitle", "", "", "Sign Out");
+    // https://github.com/Pz1c/WavingHands/issues/149
+    fillDictionary("Skip", "", "", "Skip");
+    fillDictionary("SwitchOn", "", "", "ON");
+    fillDictionary("SwitchOff", "", "", "OFF");
+    fillDictionary("KeepMeOnBtn", "", "", "Keep me On!");
+    fillDictionary("KeepMeOnTitle", "", "", "Wait for someone to join...");
+    fillDictionary("KeepMeOnShortDesc", "", "", "No worries, we'll let you know when the game is ready! It usually takes a few hours for someone to join.");
+    fillDictionary("KeepMeOnDesc", "", "", "To avoid waiting next time, click \"Keep me On!\" and we will automatically create a new game for you whenever a game is filled.<br>(you can change this later in your settings)");
+    // https://github.com/Pz1c/WavingHands/issues/216
+    fillDictionary("AutoMatch", "", "", "Auto start matches");
+    fillDictionary("AutoMatchSettingDesc", "", "", "Matching automatically up to 3 simultaneous games: whenever you have fewer than 3 games and none of them is still waiting for an opponent, we join an open duel for you, or create a new one.");
+    fillDictionary("AutoMatchTitle", "", "", "Auto join more games?");
+    fillDictionary("AutoMatchDesc", "", "", "Warlock's Duel is a slow paced game, so it's best to automatically create games and have a few games running simultaneously.<br>You can always change this later.");
+    fillDictionary("AutoMatchBtn", "", "", "Auto join");
+    fillDictionary("AutoMatchOnce", "", "", "Join only once");
+    fillDictionary("AutoMatchBoxTitle", "", "", "Auto start matches ON");
+    fillDictionary("AutoMatchBoxDesc", "", "", "Matching automatically up to 3 simultaneous games");
     fillDictionary("BattleHistoryTitle", "", "", "Battle History");
     fillDictionary("Say", "", "", "Add a message");
     fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");

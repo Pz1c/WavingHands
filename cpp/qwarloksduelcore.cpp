@@ -60,6 +60,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     // launch and swallowed each result that came in while the app was closed.
     _shownBattlesKnown = false;
     _uiBusy = false;
+    _keepMeOn = false;
+    _keepMeOnBusy = false;
+    _keepMeOnOfferSkip = false;
     init();
     if (_isAsService) {
         _login = "";
@@ -101,6 +104,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _isParaFC = false;
     _isTimerActive = false;
     _isMaladroit = false;
+    _isDelay = false;
+    _isPermanent = false;
+    _isSuicide = false;
 
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
@@ -196,11 +202,13 @@ void QWarloksDuelCore::aiCreateNewChallenge() {
 }
 
 void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, bool Maladroid, int Count,
-                                          int FriendlyLevel, QString Description, QString Warlock, int IsOnline) {
+                                          int FriendlyLevel, QString Description, QString Warlock, int IsOnline, bool Background) {
     qDebug() << "QWarloksDuelCore::createNewChallenge" << Fast << Private << ParaFC << Maladroid << Count <<
-        FriendlyLevel << Description << Warlock << IsOnline;
+        FriendlyLevel << Description << Warlock << IsOnline << Background;
     //Q_UNUSED(Fast);
-    setIsLoading(true);
+    if (!Background) {
+        setIsLoading(true);
+    }
 
     // QNetworkRequest request;
     // request.setUrl(QUrl(QString(GAME_SERVER_URL_NEW_CHALLENGE)));
@@ -239,7 +247,7 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     p_data.append(QUrl::toPercentEncoding(desc));
 
     qDebug() << p_data;
-    sendPostRequest(GAME_SERVER_URL_NEW_CHALLENGE, p_data.toUtf8());
+    sendPostRequest(GAME_SERVER_URL_NEW_CHALLENGE, p_data.toUtf8(), Background);
     setTimeState(true);
 }
 
@@ -498,6 +506,10 @@ void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl N
         } else {
             _isAiBusy = _ready_in_battles.count() > 0;
         }
+    }
+    if (!_isAI) {
+        // The open games are fresh now: see whether Keep me On has to join or make one.
+        keepMeOnCheck();
     }
 }
 
@@ -767,10 +779,21 @@ void QWarloksDuelCore::notifyOpponentsOfTurn(int battle_id) {
 
 bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl NewUrl) {
     qDebug() << "finishCreateChallenge " << StatusCode << NewUrl << Data << _inviteToBattle;
+    // Made by Keep me On rather than by the player (https://github.com/Pz1c/WavingHands/issues/149).
+    bool keep_me_on_game = _keepMeOnBusy;
+    _keepMeOnBusy = false;
+    // The player declined auto matching just before making this game by hand.
+    bool offer_skipped = _keepMeOnOfferSkip;
+    _keepMeOnOfferSkip = false;
     if (NewUrl.isEmpty()) {
         if (_isAsService) {
             //aiLogin();
             //do nothing
+        } else if (keep_me_on_game) {
+            // Nobody asked for this game, so no error window: the next scan tries again.
+            logEvent("KeepMeOn_Game_Created_Error", QString("login;%1;").arg(_login));
+            scanState(true);
+            return false;
         } else {
             logEvent("Game_Created_Error", QString("login;%1;").arg(_login));
             _errorMsg = "{\"type\":10}";
@@ -803,6 +826,9 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
                                                                                   (!_inviteToBattle.isEmpty() ? "Private warlock" : (battle_info->for_bot() ? "Bot" : "Random warlock")),
                                                                                   _login, boolToIntS(_isAI));
         logEvent("Game_Created", params);
+        if (keep_me_on_game) {
+            logEvent("KeepMeOn_Game_Created", params);
+        }
         if ((battle_info->level() == 0) && !_event_start_training) {
             _event_start_training = true;
             logEvent("MainFunnel_Training_Game_Created", params);
@@ -811,7 +837,12 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
             _event_start_pvp = true;
             logEvent("MainFunnel_PvP_Game_Created", params);
         }
-        //if ()
+        // The player made a PvP game by hand and now waits for an opponent: offer Keep me On,
+        // unless the auto matching offer was just declined (https://github.com/Pz1c/WavingHands/issues/216).
+        if (!keep_me_on_game && !offer_skipped && !_isAI && !_isAsService && !_keepMeOn && _inviteToBattle.isEmpty() && !battle_info->for_bot()) {
+            _errorMsg = "{\"type\":202,\"id\":-1}";
+            emit errorOccurred();
+        }
     }
 
     scanState(true);
@@ -820,6 +851,17 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
 
 bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) {
     qDebug() << "finishAccept " << StatusCode << NewUrl;
+    // Joined by the auto matching rather than by the player (https://github.com/Pz1c/WavingHands/issues/216).
+    bool keep_me_on_join = _keepMeOnBusy;
+    _keepMeOnBusy = false;
+    if (keep_me_on_join) {
+        // The game is on either way as far as the player is concerned: no error window, no
+        // battle page load that would pop the battle up. The rescan lists it as ready, or
+        // finds the next challenge should the server have turned this one down.
+        logEvent(NewUrl.isEmpty() ? "KeepMeOn_Game_Join_Error" : "KeepMeOn_Game_Joined", QString("login;%1;").arg(_login));
+        scanState(true);
+        return !NewUrl.isEmpty();
+    }
     if (NewUrl.isEmpty()) {
         //bool battle_is_full = Data.indexOf("That battle is full") != 1;
         bool is_type_10 = Data.indexOf("Unregistered players may not be in more than 5 games at once") != -1;//&& !battle_is_full;
@@ -1076,14 +1118,18 @@ void QWarloksDuelCore::leaveBattle(int battle_id, int warlock_id, bool Silent) {
 
 }
 
-void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card) {
-    qDebug() << "QWarloksDuelCore::acceptChallenge" << battle_id << from_card;
-    setIsLoading(true);
+void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card, bool Background) {
+    qDebug() << "QWarloksDuelCore::acceptChallenge" << battle_id << from_card << Background;
+    if (!Background) {
+        setIsLoading(true);
 
-    _loadedBattleID = battle_id;
-    _loadedBattleType = 0;
+        // The battle slot: a background join must not take it over from a page the player
+        // is loading, since that reply would then be dropped as stale (see processData).
+        _loadedBattleID = battle_id;
+        _loadedBattleType = 0;
+    }
 
-    sendGetRequest(QString(GAME_SERVER_URL_ACCEPT_CHALLENGE).arg((from_card ? "player" : "challenges"), QString::number(_loadedBattleID)));
+    sendGetRequest(QString(GAME_SERVER_URL_ACCEPT_CHALLENGE).arg((from_card ? "player" : "challenges"), QString::number(battle_id)), Background);
 }
 
 void QWarloksDuelCore::rejectChallenge(int battle_id) {
@@ -1795,6 +1841,9 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     _fire = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=CHECKBOX CLASS=check NAME=FIRE VALUE=1", ">", "<", Pos, true);
     _isDelay = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=DELAY") != -1;
     _isPermanent = Data.indexOf("<INPUT TYPE=RADIO CLASS=check NAME=PERM") != -1;
+    // https://github.com/Pz1c/WavingHands/issues/315: the site offers a SUICIDE checkbox (VALUE=1)
+    // to a permanently enchanted warlock; battle_utils.js posts SUICIDE=1 when the player picks it.
+    _isSuicide = Data.indexOf("<INPUT TYPE=CHECKBOX CLASS=check NAME=\"SUICIDE") != -1;
     //_isParaFDF = QWarlockUtils::getStringFromData(Data, "<U", ">", "<").indexOf("(ParaFDF)") != -1;
     _extraOrderInfo.clear();
     _extraOrderBattleID = _loadedBattleID;
@@ -1824,7 +1873,7 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
         }
     }
     _paralyzedHands.append("]").prepend("[");
-    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn << _extraOrderInfo << _paralyzedHands;
+    qDebug() << "QWarloksDuelCore::parseSpecReadyBattleValues" << _isParaFDF << _loadedBattleTurn << _extraOrderInfo << _paralyzedHands << _isSuicide;
     return _loadedBattleTurn != 0;
 }
 
@@ -2319,6 +2368,16 @@ void QWarloksDuelCore::releaseResultFetch(const QString &url) {
     }
 }
 
+void QWarloksDuelCore::releaseKeepMeOn(const QString &url) {
+    // A Keep me On join or creation that got no answer: the next scan may try again.
+    if ((url.indexOf("/newchallenge") != -1) || (url.indexOf("/accept") != -1)) {
+        _keepMeOnBusy = false;
+    }
+    if (url.indexOf("/newchallenge") != -1) {
+        _keepMeOnOfferSkip = false;
+    }
+}
+
 void QWarloksDuelCore::setUiBusy(bool busy) {
     bool freed = _uiBusy && !busy;
     _uiBusy = busy;
@@ -2327,6 +2386,111 @@ void QWarloksDuelCore::setUiBusy(bool busy) {
         // moment, so a tap straight after closing it does not race the request.
         QTimer::singleShot(kResultAnnounceDelayMs, this, &QWarloksDuelCore::announceNextResult);
     }
+}
+
+// https://github.com/Pz1c/WavingHands/issues/149
+bool QWarloksDuelCore::keepMeOn() {
+    return _keepMeOn;
+}
+
+void QWarloksDuelCore::setKeepMeOn(bool On) {
+    if (_keepMeOn == On) {
+        return;
+    }
+    _keepMeOn = On;
+    // Explicit flags: a bare saveParameters() writes nothing, and the destructor that would
+    // otherwise persist this is not guaranteed to run when Android kills the app.
+    saveParameters(false, false, true);
+    logEvent("KeepMeOn_Changed", QString("On;%1;").arg(On ? "1" : "0"));
+    emit keepMeOnChanged();
+    if (On && _isLogined) {
+        // Switching it on counts as a refresh of the main screen: the scan ends in keepMeOnCheck().
+        scanState(true);
+    }
+}
+
+bool QWarloksDuelCore::hasUnstartedBattle() {
+    foreach(int bid, _waiting_in_battles) {
+        if (getBattleInfo(bid)->status() == BATTLE_INFO_STATUS_NO_START) {
+            return true;
+        }
+    }
+    // The site's list of open challenges shows the player's own too: a game made outside
+    // the app, or one whose status this install never learnt.
+    foreach(const QString &s, _challengeList.split(";")) {
+        QBattleInfo *battle_info = _battleInfo.value(s.toInt(), nullptr);
+        if (battle_info && !battle_info->active(_login)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void QWarloksDuelCore::skipKeepMeOnOffer() {
+    _keepMeOnOfferSkip = true;
+}
+
+// https://github.com/Pz1c/WavingHands/issues/216
+// The open challenge the auto matching joins, or 0 when there is none: what Smart Match
+// picks (gui_utils.js, startGameWithPlayerEx) - an open two-player duel of the friendly
+// level that needs one more warlock, by someone not far below the player's Elo - and never
+// one by a warlock the player already has a game against.
+int QWarloksDuelCore::findChallengeToJoin() {
+    QStringList opponents;
+    foreach(int bid, _ready_in_battles + _waiting_in_battles) {
+        foreach(const QString &enemy, getBattleInfo(bid)->getEnemies(_login)) {
+            opponents.append(enemy.toLower());
+        }
+    }
+    foreach(const QString &s, _challengeList.split(";")) {
+        QBattleInfo *battle_info = _battleInfo.value(s.toInt(), nullptr);
+        if (!battle_info || !battle_info->active(_login) || (battle_info->size() != 2) ||
+                (battle_info->status() != BATTLE_INFO_STATUS_NO_START) ||
+                (battle_info->level() != BATTLE_INFO_LEVEL_FRIENDLY) ||
+                battle_info->for_bot() || battle_info->with_bot()) {
+            continue;
+        }
+        QStringList creators = battle_info->getEnemies(_login);
+        if (creators.size() != 1) {
+            continue;
+        }
+        QString creator = creators.first().toLower();
+        if (opponents.contains(creator)) {
+            continue;
+        }
+        QWarlockStat *ws = _playerStats.value(creator, nullptr);
+        if (ws && (_elo > ws->elo() + 200)) {
+            continue;
+        }
+        return battle_info->battleID();
+    }
+    return 0;
+}
+
+void QWarloksDuelCore::keepMeOnCheck() {
+    if (!_keepMeOn || _isAI || _isAsService || !_isLogined || _keepMeOnBusy) {
+        return;
+    }
+    int games = _ready_in_battles.count() + _waiting_in_battles.count();
+    if ((games >= KEEP_ME_ON_MAX_GAMES) || hasUnstartedBattle()) {
+        return;
+    }
+    int join_id = findChallengeToJoin();
+    if (join_id > 0) {
+        _keepMeOnBusy = true;
+        logEvent("KeepMeOn_Game_Join", QString("Id;%1;Games;%2;").arg(intToStr(join_id), intToStr(games)));
+        acceptChallenge(join_id, false, true);
+        return;
+    }
+    // The same game the New Game button makes (gui_utils.js, startGameWithPlayerEx);
+    // generateBattleList() strips this description from the list.
+    QString desc = "Created with android app Warlock's Duel.";
+    if (_elo >= 1700) {
+        desc.append(QString(" Elo %1 or more please.").arg(intToStr(_elo - 200)));
+    }
+    _keepMeOnBusy = true;
+    logEvent("KeepMeOn_Game_Create", QString("Games;%1;").arg(intToStr(games)));
+    createNewChallenge(true, false, true, true, 2, BATTLE_INFO_LEVEL_VERY_FRIENDLY, desc, "", 0, true);
 }
 
 bool QWarloksDuelCore::checkIsNotificationGranted() {
@@ -2665,6 +2829,7 @@ void QWarloksDuelCore::slotReadyRead() {
         releaseLoading();
         releaseAiBusy(url);
         releaseResultFetch(url);
+        releaseKeepMeOn(url);
         if (!isBackground(reply)) {
             _errorMsg = QString("Server problem (HTTP %1), please try again later").arg(_httpResponceCode);
             emit errorOccurred();
@@ -2689,6 +2854,7 @@ void QWarloksDuelCore::slotReadyRead() {
         // exempt: finishTopList handles a failed reply safely.
         releaseAiBusy(url);
         releaseResultFetch(url);
+        releaseKeepMeOn(url);
         if ((url.indexOf("/warlocksubmit") != -1) || (url.indexOf("/newchallenge") != -1) || (url.indexOf("/leave") != -1)) {
             // The server may well have taken it: show what it actually recorded.
             // Silently: the failure is reported already, and a foreground scan
@@ -2911,6 +3077,7 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("event_start_pvp", _event_start_pvp);
     settings->setValue("event_submit_turn", _event_submit_turn);
     settings->setValue("event_submit_turn5", _event_submit_turn5);
+    settings->setValue("keep_me_on", _keepMeOn);
 
     settings->beginWriteArray("battle_info");
     QMap<int, QBattleInfo *>::iterator bii;
@@ -2951,6 +3118,9 @@ void QWarloksDuelCore::loadGameParameters() {
     _login = settings->value("login", "").toString();
     _password = settings->value("password", "").toString();
     _reg_in_app = settings->value("reg_in_app", "false").toBool();
+    // Read before the version check below clears the ini, like the login: the player's
+    // choice must survive an app update (https://github.com/Pz1c/WavingHands/issues/149).
+    _keepMeOn = settings->value("keep_me_on", "false").toBool();
     _exp_lv = settings->value("exp_lv", "1").toInt();
     if (_exp_lv < 1) {
         _exp_lv = 1;
@@ -3348,11 +3518,12 @@ QString QWarloksDuelCore::battleInfo() {
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
                    "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25,"
-                   "\"maladroit\":%26}")
+                   "\"maladroit\":%26,\"suicide\":%27}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
-            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT, boolToStr(_isMaladroit)); // 21-26
+            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT, boolToStr(_isMaladroit), // 21-26
+                 boolToIntS(_isSuicide)); // 27: 1 while the site offers the SUICIDE checkbox (#315)
 }
 
 void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Value) {
@@ -3557,6 +3728,11 @@ void QWarloksDuelCore::logout() {
     _show_hint = true;
     _feedback = false;
     _rateus = false;
+    // https://github.com/Pz1c/WavingHands/issues/149: the next account starts with it off.
+    _keepMeOn = false;
+    _keepMeOnBusy = false;
+    _keepMeOnOfferSkip = false;
+    emit keepMeOnChanged();
 
     settings->beginGroup("Game");
     settings->remove("");
