@@ -72,6 +72,9 @@ class QWarloksDuelCore : public QGameCore
     // caster server over Firebase Cloud Messaging for a ready battle or an invite. The
     // registration of this install's token is syncPushRegistration().
     Q_PROPERTY(bool pushNotifications READ pushNotifications WRITE setPushNotifications NOTIFY pushNotificationsChanged)
+    // What the Settings window's "Send notification token" (sendPushTokenNow) came to, for
+    // the user: "Token sent", "Server has no push support", "Not connected", ...
+    Q_PROPERTY(QString pushTokenStatus READ pushTokenStatus NOTIFY pushTokenStatusChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr, bool AsService = false);
@@ -105,6 +108,7 @@ public:
     QString battleList();
     bool keepMeOn();
     bool pushNotifications();
+    QString pushTokenStatus();
 
 signals:
     void needLogin();
@@ -134,6 +138,7 @@ signals:
     void battleListChanged();
     void keepMeOnChanged();
     void pushNotificationsChanged();
+    void pushTokenStatusChanged();
     void needAIAnswer(QString Login, int MagicBookLevel);
     void readyAIAnswer(int battle_id);
     // An opponent made a move (TURNREADY over the caster link), rate limited.
@@ -213,6 +218,14 @@ public slots:
     // permission dialog (askPermissions) first when that is still needed.
     void setPushNotifications(bool On);
     bool isNotificationGranted();
+    // "Send notification token" in Settings: registers this install's FCM token with the
+    // caster server now, confirmed or not, connecting and logging the link in first when it
+    // is down, and reports through pushTokenStatus.
+    void sendPushTokenNow();
+    // Java's answer to a token request, and every new token (onNewToken): registered at
+    // once when a session is authenticated, else by the next one. Queued from the JNI
+    // thread, see registerPushNatives(). error says why there is no token.
+    void onPushTokenAvailable(const QString &token, const QString &error);
 protected slots:
     void loginToSite(bool Silent = false);
     void timerFired(bool Silent = true);
@@ -231,6 +244,8 @@ protected slots:
     void onPushRegistered(const QString &token);
     void onPushUnregistered(const QString &token);
     void onPushUnsupported();
+    void onPushFailed(const QString &token, const QString &reason);
+    void onPushForceTimeout();
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -321,13 +336,20 @@ protected:
     bool checkIsNotificationGranted();
 
     // Push notifications (issue #336). syncPushRegistration() brings the caster server's
-    // binding of this install's FCM token in line with the setting, the login and the
-    // permission: on every new link connection, on app resume and when the setting changes.
-    // The token comes from Java (pushToken), the server's acknowledgement goes back to Java
-    // (setServerPushActive) so the WorkManager poll leaves ready and invite to the server.
-    void syncPushRegistration();
+    // binding of this install's FCM token in line with the setting and the login: on every
+    // link authentication (AUTH or LOGIN), when the token arrives or changes, on app resume
+    // and when the setting changes. A token the server confirmed in this run of the app is
+    // not sent again; nothing about it is persisted, so a reinstall, or a server that lost
+    // its registrations, is healed by the next start. force sends it anyway. Returns whether
+    // a PUSH was handed to the link. The token comes from Java (pushToken, requestPushToken),
+    // the server's acknowledgement goes back to Java (setServerPushActive) so the WorkManager
+    // poll leaves ready and invite to the server.
+    bool syncPushRegistration(bool force = false);
     QString pushToken();
+    void requestPushToken();
+    void registerPushNatives();
     void setServerPushActive(bool active);
+    void setPushTokenStatus(const QString &code, const QString &detail = QString());
 
     // Keep me On / auto matching: after a scan, join an open PvP challenge, or create a game
     // when there is none to join, while the player has fewer than KEEP_ME_ON_MAX_GAMES games
@@ -376,6 +398,12 @@ private:
     bool _pushNotifications;
     QString _pushRegisteredToken;
     QString _pushRequestedToken;
+    // The token Java delivered in this run (empty until it did); the forced send of the
+    // Settings window waiting for a token, its deadline, and what it reports.
+    QString _pushToken;
+    bool _pushForceSend;
+    QTimer _pushForceTimer;
+    QString _pushTokenStatus;
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;

@@ -7,6 +7,8 @@
 
 #include "../qgameconstant.h"
 
+Q_LOGGING_CATEGORY(lcPush, "Push")
+
 namespace {
 
 // Client-owned deadlines (D.4). The watchdogs on the server protect the SERVER
@@ -377,6 +379,7 @@ void QRosterLink::flushPush() {
         _deadline.start(kPushDeadlineMs);
         QByteArray line = "UNPUSH\t";
         line += _unpushWanted.toUtf8();
+        qCInfo(lcPush) << "UNPUSH sent" << redact(_unpushWanted);
         sendLine(line);
         return;
     }
@@ -386,6 +389,7 @@ void QRosterLink::flushPush() {
         _deadline.start(kPushDeadlineMs);
         QByteArray line = "PUSH\t";
         line += _pushWanted.toUtf8();
+        qCInfo(lcPush) << "PUSH sent" << redact(_pushWanted);
         sendLine(line);
     }
 }
@@ -594,6 +598,10 @@ void QRosterLink::onDeadline() {
     // racing an HTTP reply, and no malformed strike from ordinary latency.
     // A TURN deadline takes the same path: its late OK/ERR would otherwise be
     // taken for the reply to whatever request went out next.
+    if (_pending == PPush || _pending == PUnpush) {
+        qCInfo(lcPush) << "no reply to" << (_pending == PPush ? "PUSH" : "UNPUSH") << "within"
+                       << kPushDeadlineMs << "ms, reconnecting (the slot is sent again)";
+    }
     resetSocket(Down, QStringLiteral("timeout"));
     bumpBackoff();
     scheduleReconnect();
@@ -770,8 +778,8 @@ void QRosterLink::handleOk(const QList<QByteArray> &f) {
     if (_pending == PPush || _pending == PUnpush) {         // OK<TAB>push | OK<TAB>unpush
         const bool push = (_pending == PPush);
         const QString token = _pushInFlight;
-        qDebug() << "QRosterLink::handleOk" << (push ? "push" : "unpush")
-                 << (f.size() > 1 ? f.at(1) : QByteArray()) << redact(token);
+        qCInfo(lcPush) << "reply OK" << (f.size() > 1 ? f.at(1) : QByteArray())
+                       << "to" << (push ? "PUSH" : "UNPUSH") << redact(token);
         _pending = PNone;
         _pushInFlight.clear();
         _deadline.stop();
@@ -881,6 +889,14 @@ void QRosterLink::handleErr(const QList<QByteArray> &f) {
     if (_pending == PPush || _pending == PUnpush) {
         const bool push = (_pending == PPush);
         const QString token = _pushInFlight;
+        QString text;                                       // "unknown command", "invalid token", ...
+        for (int i = 2; i < f.size(); ++i) {
+            if (!text.isEmpty()) {
+                text += QLatin1Char(' ');
+            }
+            text += QString::fromUtf8(f.at(i));
+        }
+        qCInfo(lcPush) << "reply ERR" << code << text << "to" << (push ? "PUSH" : "UNPUSH") << redact(token);
         _pending = PNone;
         _pushInFlight.clear();
         _deadline.stop();
@@ -913,6 +929,7 @@ void QRosterLink::handleErr(const QList<QByteArray> &f) {
         if (!push && _unpushWanted == token) {
             _unpushWanted.clear();
         }
+        emit pushFailed(token, text.isEmpty() ? code : code + QLatin1String(": ") + text);
         return;
     }
     if (_pending == PLogout) {
@@ -1007,5 +1024,6 @@ QString QRosterLink::redact(const QString &secret) {
     if (secret.isEmpty()) {
         return QStringLiteral("<empty>");
     }
-    return QStringLiteral("<%1B:%2…>").arg(secret.size()).arg(secret.left(4));
+    // The first 8 characters and the length, ASCII only: "<163B:dXkaQ2Pq...>".
+    return QStringLiteral("<%1B:%2...>").arg(secret.size()).arg(secret.left(8));
 }

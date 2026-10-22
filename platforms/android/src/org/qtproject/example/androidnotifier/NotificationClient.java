@@ -184,8 +184,8 @@ public class NotificationClient
 
     // https://github.com/Pz1c/WavingHands/issues/336
     // The FCM token of this install, "" while unknown. An empty answer starts the fetch; the
-    // token then lands in the prefs (PushService.storeToken) and the core asks again on its
-    // next sync.
+    // token then lands in the prefs (PushService.storeToken) and reaches the core through
+    // pushTokenChanged.
     public static String getPushToken(Context context, String message) {
         try {
             SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
@@ -193,19 +193,53 @@ public class NotificationClient
             if (!token.isEmpty()) {
                 return token;
             }
-            final Context app = context.getApplicationContext();
-            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
-                if (!task.isSuccessful() || task.getResult() == null || task.getResult().isEmpty()) {
-                    Log.w(TAG, "getToken failed", task.getException());
-                    return;
-                }
-                Log.d(TAG, "getToken " + PushService.redact(task.getResult()));
-                PushService.storeToken(app, task.getResult());
-            });
+            fetchPushToken(context, message);
             return "";
         } catch (Exception e) {
             e.printStackTrace();
             return "";
+        }
+    }
+
+    // FirebaseMessaging.getToken(), whatever the prefs hold: the first fetch of an install,
+    // and the forced send of the Settings window. The token, or the failure, goes to the
+    // core through pushTokenChanged (the token also to the prefs, PushService.storeToken).
+    public static void fetchPushToken(Context context, String message) {
+        try {
+            final Context app = context.getApplicationContext();
+            Log.d(PushService.PUSH_TAG, "fetching the token from Firebase");
+            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                if (!task.isSuccessful() || task.getResult() == null || task.getResult().isEmpty()) {
+                    Exception e = task.getException();
+                    String why = (e == null) ? "no token" : e.toString();
+                    Log.w(PushService.PUSH_TAG, "getToken failed: " + why);
+                    deliverPushToken("", why);
+                    return;
+                }
+                Log.d(PushService.PUSH_TAG, "getToken " + PushService.redact(task.getResult()));
+                PushService.storeToken(app, task.getResult());
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            deliverPushToken("", e.toString());
+        }
+    }
+
+    // The core binds this (QJniEnvironment::registerNativeMethods, registerPushNatives) as
+    // soon as it is up. In the process FCM starts without the Qt library it stays unbound,
+    // and the token just waits in the prefs for the next start of the app.
+    public static native void pushTokenChanged(String token, String error);
+
+    public static void deliverPushToken(String token, String error) {
+        String t = (token == null) ? "" : token;
+        String e = (error == null) ? "" : error;
+        try {
+            pushTokenChanged(t, e);
+            Log.d(PushService.PUSH_TAG, "token handed to the core " + PushService.redact(t));
+        } catch (UnsatisfiedLinkError err) {
+            Log.d(PushService.PUSH_TAG, "core not running, token kept in the prefs " + PushService.redact(t));
+        } catch (Throwable err) {
+            err.printStackTrace();
         }
     }
 

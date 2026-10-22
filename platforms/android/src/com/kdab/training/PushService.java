@@ -9,15 +9,18 @@ import androidx.annotation.NonNull;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import org.qtproject.example.androidnotifier.NotificationClient;
+
 import java.util.Map;
 
 /**
  * Firebase Cloud Messaging entry point (https://github.com/Pz1c/WavingHands/issues/336).
  *
  * Pure Java on purpose: FCM starts this service in a process where the Qt native library is
- * not loaded, so nothing on this path may call into C++. The token lands in the "activity"
- * prefs, where the core picks it up on its next sync (NotificationClient.getPushToken) and
- * registers it with the caster server over the roster link (PUSH). A data message is
+ * not loaded, so nothing on this path may depend on C++. The token lands in the "activity"
+ * prefs, where the core picks it up at its next start (NotificationClient.getPushToken), and
+ * is handed to the core at once when it is running (NotificationClient.deliverPushToken), to
+ * be registered with the caster server over the roster link (PUSH). A data message is
  * rendered through the same CheckStatus.notifyType the WorkManager poll uses, so both roads
  * give the same notification and the same tap behaviour (MainActivity.onResume extras ->
  * NotificationClient.get_refferer -> show_battle).
@@ -34,13 +37,15 @@ import java.util.Map;
  */
 public class PushService extends FirebaseMessagingService {
     private static final String TAG = "WarlocksDuel.PushService";
+    // The logcat tag of the token registration, shared with NotificationClient and the core.
+    public static final String PUSH_TAG = "Push";
     private static final long MAX_AGE_SEC = 12L * 60 * 60;
 
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
-        Log.d(TAG, "onNewToken " + redact(token));
-        // Nothing else: the C++ side picks it up on its next sync.
+        Log.d(PUSH_TAG, "onNewToken " + redact(token));
+        // Stored, and handed to the core when it is running (it then sends PUSH at once).
         storeToken(getApplicationContext(), token);
     }
 
@@ -103,8 +108,9 @@ public class PushService extends FirebaseMessagingService {
         }
     }
 
-    // The token FCM gave this install, for the core to register. Also the completion of the
-    // fetch NotificationClient.getPushToken starts when none is stored yet.
+    // The token FCM gave this install, for the core to register: kept in the prefs for the
+    // next start of the app, and handed to the core right away when it is running. Also the
+    // completion of every fetch (NotificationClient.fetchPushToken).
     public static void storeToken(Context context, String token) {
         if (token == null || token.isEmpty()) {
             return;
@@ -118,13 +124,14 @@ public class PushService extends FirebaseMessagingService {
             if (!previous.isEmpty() && !previous.equals(token)) {
                 // Rotated: whatever the server has bound is dead until the core registers the
                 // new one, so the poll covers ready and challenge in the meantime.
-                Log.d(TAG, "storeToken: token rotated, the poll takes over until re-registered");
+                Log.d(PUSH_TAG, "storeToken: token rotated, the poll takes over until re-registered");
                 editor.putInt("server_push_active", 0);
             }
             editor.commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        NotificationClient.deliverPushToken(token, "");
     }
 
     // Never a whole token in a log: the first 8 characters and the length.

@@ -10,8 +10,14 @@
 #include <QNetworkProxy>
 #include <QtNetwork/QSslSocket>
 #include <QtNetwork/QSslError>
+#include <QLoggingCategory>
 
 #include "qrosterwire.h"
+
+// "Push": the logcat tag of everything about the FCM token registration of issue #336, in
+// the link (PUSH / UNPUSH written, the reply) and in the core (when and why). Tokens only
+// ever go through redact().
+Q_DECLARE_LOGGING_CATEGORY(lcPush)
 
 // The ONLY place a socket lives. Deliberately does NOT derive from QGameCore:
 // QSslSocket::sslErrors(QList<QSslError>) has the SAME signature as the
@@ -79,8 +85,9 @@ public:
     // on that connection again.
     void sendPush(const QString &token);
     void sendUnpush(const QString &token);
+    bool isPushUnsupported() const      { return _pushUnsupported; }   // this connection refused PUSH / UNPUSH
     static bool validPushToken(const QString &token);   // 20..4096 bytes of [A-Za-z0-9_:.-]
-    static QString redact(const QString &secret);       // "<32B:9f3c...>", the only way a token is logged
+    static QString redact(const QString &secret);       // "<163B:dXkaQ2Pq...>", the only way a token is logged
 
 signals:
     // NOTE: carries only (name, token). The epoch/revision on the OK line are
@@ -96,6 +103,8 @@ signals:
     void pushRegistered(const QString &token);
     void pushUnregistered(const QString &token);
     void pushUnsupported();
+    // Any other ERR to a PUSH / UNPUSH: the request is dropped, reason = "<code>: <text>".
+    void pushFailed(const QString &token, const QString &reason);
 
 private slots:
     void onEncrypted();

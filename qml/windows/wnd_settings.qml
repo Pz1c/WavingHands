@@ -4,6 +4,8 @@
 // (QWarloksDuelCore::setKeepMeOn); "Game notifications" (#336) is pushNotifications
 // (QWarloksDuelCore::setPushNotifications), which registers this phone's push token with the
 // caster server - after the system's notification permission dialog when that is still open.
+// Under it, "Send notification token" registers the token again on demand
+// (QWarloksDuelCore::sendPushTokenNow) and shows the server's answer (pushTokenStatus).
 
 import QtQuick 2.15
 
@@ -86,6 +88,41 @@ InfoWindow {
                 wrapMode: Text.WordWrap
                 text: dict.getStringByCode("PushNotificationsSettingDesc")
             }
+
+            // Registers this phone's token with the caster server again, whatever the app
+            // believes about it, and shows the server's answer below.
+            BtnBig {
+                id: bbSendPushToken
+                anchors.top: ltPushNotificationsDesc.bottom
+                anchors.topMargin: 24 * mainWindow.ratioObject
+                anchors.left: parent.left
+                width: 420 * mainWindow.ratioObject
+                height: 72 * mainWindow.ratioObject
+                radius: 18 * mainWindow.ratioObject
+                border.width: 0
+                text_color: "#ABF4F4"
+                font.pixelSize: 28 * mainWindow.ratioFont
+                text: dict.getStringByCode("SendPushToken")
+                gradient: Gradient {
+                    GradientStop { position: 0.0 ; color: "#905B93" }
+                    GradientStop { position: 0.75; color: "#551470" }
+                    GradientStop { position: 1.0 ; color: "#551470" }
+                }
+                onClicked: dMainItem.sendPushToken()
+            }
+
+            Text {
+                id: ltPushTokenStatus
+                anchors.top: bbSendPushToken.bottom
+                anchors.topMargin: 12 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.right: parent.right
+                font.pixelSize: 24 * mainWindow.ratioFont
+                color: "#A8F4F4"
+                horizontalAlignment: Text.AlignLeft
+                wrapMode: Text.WordWrap
+                text: mainWindow.gameCore.pushTokenStatus
+            }
         }
     }
 
@@ -108,6 +145,12 @@ InfoWindow {
             mainWindow.gameCore.askPermissions();
         }
         mainWindow.gameCore.setPushNotifications(on);
+    }
+
+    function sendPushToken() {
+        console.log("wnd_settings.sendPushToken");
+        mainWindow.logEvent("Settings_SendPushToken", {});
+        mainWindow.gameCore.sendPushTokenNow();
     }
 
     function showWnd() {
