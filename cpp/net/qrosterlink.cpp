@@ -20,6 +20,7 @@ const int kWhoUserDeadlineMs    = 1200;
 const int kPingDeadlineMs       = 2500;
 const int kLogoutDeadlineMs     = 2000;
 const int kTurnDeadlineMs       = 2500;
+const int kPushDeadlineMs       = 2500;    // PUSH / UNPUSH: a map update server side
 
 const int kKeepaliveMs          = 240000;
 const int kKeepaliveSeconds     = 240;
@@ -35,6 +36,8 @@ const int kMaxMalformed         = 3;
 const int kMaxWrongPlayer       = 2;
 const int kMaxQueuedTurns       = 16;
 const int kTurnMaxAgeSeconds    = 600;     // past this a "just moved" hint is noise
+const int kMinPushTokenBytes    = 20;      // the server's rule for PUSH / UNPUSH
+const int kMaxPushTokenBytes    = 4096;
 
 const int    kMaxRxBytes        = 65536;              // one line may not exceed 64 KiB
 const qint64 kMaxBlockBytes     = 8LL * 1024 * 1024;  // one block may not exceed 8 MiB
@@ -109,6 +112,8 @@ void QRosterLink::start(const QString &login, const QString &cookieHeader, const
     if (key != _loginKey) {                                 // row 2
         resetSocket(Down, QStringLiteral("transport"));
         _turnQueue.clear();                                 // moves of the previous account
+        _pushWanted.clear();                                // and its push registration
+        _unpushWanted.clear();
         _deltaCapable = false;
         _wrongPlayer = 0;
         _canonical.clear();
@@ -155,6 +160,9 @@ void QRosterLink::clearIdentity() {
     }
     _deltaCapable = false;
     _turnQueue.clear();
+    _pushWanted.clear();        // no UNPUSH needed: LOGOUT drops the binding server side
+    _unpushWanted.clear();
+    _pushInFlight.clear();
     _cookie.clear();
     _token.clear();
     _login.clear();
@@ -170,6 +178,8 @@ void QRosterLink::disableForSession(const QString &reason) {
     _reconnect.stop();
     resetSocket(Disabled, QStringLiteral("transport"));
     _turnQueue.clear();                     // after resetSocket, which re-queues a TURN in flight
+    _pushWanted.clear();
+    _unpushWanted.clear();
     emit protocolMismatch(reason);
 }
 
@@ -294,6 +304,92 @@ int QRosterLink::queuedTurnIndex(const QString &name) const {
     return -1;
 }
 
+bool QRosterLink::validPushToken(const QString &token) {
+    // Mirrors the server's rule, 20..4096 bytes of [A-Za-z0-9_:.-]: a token it refuses
+    // goes through fail_auth, one of kMaxStrikes=5 AND a per-IP failure, so it is
+    // never sent. Bytes, not QChars: anything outside ASCII fails the loop anyway.
+    const QByteArray raw = token.toUtf8();
+    if (raw.size() < kMinPushTokenBytes || raw.size() > kMaxPushTokenBytes) {
+        return false;
+    }
+    for (const char c : raw) {
+        const bool ok = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+                     || c == '_' || c == ':' || c == '.' || c == '-';
+        if (!ok) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void QRosterLink::sendPush(const QString &token) {
+    if (_stickyDisabled || _loginKey.isEmpty()) {
+        return;
+    }
+    if (!validPushToken(token)) {
+        qDebug() << "QRosterLink::sendPush skipped, unusable token" << redact(token);
+        return;
+    }
+    if (_pushUnsupported) {
+        qDebug() << "QRosterLink::sendPush skipped, no push support on this connection";
+        return;
+    }
+    // A PUSH of a token whose UNPUSH is still only wanted cancels that UNPUSH: the
+    // token is wanted after all. One in flight is left alone, the PUSH follows it.
+    if (_unpushWanted == token && _pending != PUnpush) {
+        _unpushWanted.clear();
+    }
+    _pushWanted = token;                    // the latest token wins
+    flushPush();
+}
+
+void QRosterLink::sendUnpush(const QString &token) {
+    if (_stickyDisabled || _loginKey.isEmpty()) {
+        return;
+    }
+    if (!validPushToken(token)) {
+        qDebug() << "QRosterLink::sendUnpush skipped, unusable token" << redact(token);
+        return;
+    }
+    if (_pushUnsupported) {
+        qDebug() << "QRosterLink::sendUnpush skipped, no push support on this connection";
+        return;
+    }
+    // The opposite: an UNPUSH of a token whose PUSH was still only wanted. The UNPUSH
+    // itself still goes out, it is harmless for a token the server never saw.
+    if (_pushWanted == token && _pending != PPush) {
+        _pushWanted.clear();
+    }
+    _unpushWanted = token;
+    flushPush();
+}
+
+void QRosterLink::flushPush() {
+    // The TURN discipline: Ready, delta capable (an older server answers "unknown
+    // command" with a strike), idle, one request per round trip. UNPUSH before PUSH,
+    // so a token rotation unbinds the old token before it binds the new one.
+    if (_state != Ready || !_deltaCapable || _pending != PNone || !_sock || _pushUnsupported) {
+        return;
+    }
+    if (!_unpushWanted.isEmpty()) {
+        _pending = PUnpush;
+        _pushInFlight = _unpushWanted;      // the slot itself stays until the reply
+        _deadline.start(kPushDeadlineMs);
+        QByteArray line = "UNPUSH\t";
+        line += _unpushWanted.toUtf8();
+        sendLine(line);
+        return;
+    }
+    if (!_pushWanted.isEmpty()) {
+        _pending = PPush;
+        _pushInFlight = _pushWanted;
+        _deadline.start(kPushDeadlineMs);
+        QByteArray line = "PUSH\t";
+        line += _pushWanted.toUtf8();
+        sendLine(line);
+    }
+}
+
 void QRosterLink::openSocket() {
     _state = Connecting;
     _sock = new QSslSocket(this);
@@ -325,6 +421,8 @@ void QRosterLink::resetSocket(State next, const QString &failCode) {
         _turnQueue.prepend(_turnInFlight);
     }
     _turnInFlight = QPair<QString, qint64>();
+    _pushInFlight.clear();                  // the wanted slot stays: sent again after the reconnect
+    _pushUnsupported = false;               // per connection: the next one may be a newer server
     _pending = PNone;                       // cleared BEFORE anything can re-enter
     _inBlock = false; _block = QRosterBlock(); _blockBytes = 0;
     _rx.clear();
@@ -418,8 +516,10 @@ void QRosterLink::onReadyRead() {
         return;
     }
     // Every reply that frees the link (OK of a handshake, END, PONG, a TURN's own
-    // OK/ERR) arrives here, so this is where a queued TURN goes out.
+    // OK/ERR) arrives here, so this is where a queued TURN goes out, and after it a
+    // wanted UNPUSH / PUSH.
     flushTurns();
+    flushPush();
 }
 
 // Rows 7, 28 and E.2 #2/#3/#5/#6/#21/#22.
@@ -667,6 +767,27 @@ void QRosterLink::handleOk(const QList<QByteArray> &f) {
         _deadline.stop();
         return;
     }
+    if (_pending == PPush || _pending == PUnpush) {         // OK<TAB>push | OK<TAB>unpush
+        const bool push = (_pending == PPush);
+        const QString token = _pushInFlight;
+        qDebug() << "QRosterLink::handleOk" << (push ? "push" : "unpush")
+                 << (f.size() > 1 ? f.at(1) : QByteArray()) << redact(token);
+        _pending = PNone;
+        _pushInFlight.clear();
+        _deadline.stop();
+        if (push) {
+            if (_pushWanted == token) {
+                _pushWanted.clear();        // a newer token stays wanted and goes out next
+            }
+            emit pushRegistered(token);
+        } else {
+            if (_unpushWanted == token) {
+                _unpushWanted.clear();
+            }
+            emit pushUnregistered(token);
+        }
+        return;
+    }
     if (_pending == PLogout) {                              // OK<TAB>bye
         qDebug() << "QRosterLink::handleOk logout acknowledged";
         resetSocket(Down, QString());
@@ -755,6 +876,43 @@ void QRosterLink::handleErr(const QList<QByteArray> &f) {
         }
         // Anything else drops only this hint. bad-request can only mean sendTurn's
         // name check drifted from validName(), and every retry would be a strike.
+        return;
+    }
+    if (_pending == PPush || _pending == PUnpush) {
+        const bool push = (_pending == PPush);
+        const QString token = _pushInFlight;
+        _pending = PNone;
+        _pushInFlight.clear();
+        _deadline.stop();
+        if (code == QLatin1String("need-auth")) {           // as for TURN, row 25
+            // The slot stays: it goes out again once the handshake is through.
+            if (!_reauthedThisConn) {
+                _reauthedThisConn = true;
+                sendHandshake();
+            } else {
+                resetSocket(Down, QString());
+                bumpBackoff();
+                scheduleReconnect();
+            }
+            return;
+        }
+        if (code == QLatin1String("bad-request") || code == QLatin1String("line-too-long")) {
+            // An old server: "unknown command", and a strike. Nothing push-related goes
+            // out on this connection again; WHO and TURN are not affected.
+            qDebug() << "QRosterLink::handleErr no push support on this connection";
+            _pushUnsupported = true;
+            _pushWanted.clear();
+            _unpushWanted.clear();
+            emit pushUnsupported();
+            return;
+        }
+        // Anything else drops this one request: a resend would only repeat it.
+        if (push && _pushWanted == token) {
+            _pushWanted.clear();
+        }
+        if (!push && _unpushWanted == token) {
+            _unpushWanted.clear();
+        }
         return;
     }
     if (_pending == PLogout) {

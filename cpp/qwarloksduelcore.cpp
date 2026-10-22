@@ -63,6 +63,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _keepMeOn = false;
     _keepMeOnBusy = false;
     _keepMeOnOfferSkip = false;
+    _pushNotifications = true;
     init();
     if (_isAsService) {
         _login = "";
@@ -119,6 +120,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
         connect(_rosterLink, &QRosterLink::tokenRejected, this, [this]() {
             _casterTokens.remove(_login.toLower());
         });
+        connect(_rosterLink, &QRosterLink::pushRegistered, this, &QWarloksDuelCore::onPushRegistered);
+        connect(_rosterLink, &QRosterLink::pushUnregistered, this, &QWarloksDuelCore::onPushUnregistered);
+        connect(_rosterLink, &QRosterLink::pushUnsupported, this, &QWarloksDuelCore::onPushUnsupported);
         // Last resort: nothing may leave the loading overlay up, whatever the
         // link or the HTTP fallback does.
         _rosterGuard.setSingleShot(true);
@@ -140,6 +144,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
         connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
             if ((state == Qt::ApplicationActive) && _rosterLink) {
                 _rosterLink->probeNow();
+                // Also how a notification permission just granted in the system dialog, or
+                // revoked in the settings, reaches the caster server (issue #336).
+                syncPushRegistration();
             }
         });
     }
@@ -664,6 +671,9 @@ void QWarloksDuelCore::onLinkAuthenticated(const QString &canonical, const QStri
     // canonical is the site own spelling of the name, for display only:
     // _playerStats stays keyed by the lowercased login.
     Q_UNUSED(canonical)
+    // Every new connection registers the push token again (issue #336): cheap, and it
+    // refreshes the server-push-active timestamp the poll's de-duplication looks at.
+    syncPushRegistration();
     if (token.isEmpty() || _login.isEmpty()) {
         return;
     }
@@ -2409,6 +2419,120 @@ void QWarloksDuelCore::setKeepMeOn(bool On) {
     }
 }
 
+// https://github.com/Pz1c/WavingHands/issues/336
+bool QWarloksDuelCore::pushNotifications() {
+    return _pushNotifications;
+}
+
+void QWarloksDuelCore::setPushNotifications(bool On) {
+    if (_pushNotifications == On) {
+        return;
+    }
+    _pushNotifications = On;
+    // Saved at once, like keep_me_on: the destructor is not guaranteed to run on Android.
+    saveParameters(false, false, true);
+    logEvent("PushNotifications_Changed", QString("On;%1;").arg(On ? "1" : "0"));
+    emit pushNotificationsChanged();
+    syncPushRegistration();
+}
+
+bool QWarloksDuelCore::isNotificationGranted() {
+#ifdef Q_OS_ANDROID
+    return checkIsNotificationGranted();
+#else
+    return true;    // nothing to ask for: push notifications are inert off Android
+#endif
+}
+
+void QWarloksDuelCore::syncPushRegistration() {
+    if (_isAsService || _isAI || !_rosterLink) {
+        return;
+    }
+    const bool desired = _pushNotifications && _isLogined && checkIsNotificationGranted();
+    if (desired) {
+        // Empty while Java is still fetching it: the next sync asks again.
+        const QString token = pushToken();
+        qDebug() << "QWarloksDuelCore::syncPushRegistration wanted, token" << QRosterLink::redact(token)
+                 << "registered" << QRosterLink::redact(_pushRegisteredToken);
+        if (token.isEmpty()) {
+            return;
+        }
+        if (!_pushRegisteredToken.isEmpty() && _pushRegisteredToken != token) {
+            _rosterLink->sendUnpush(_pushRegisteredToken);     // rotated: unbind the old one first
+        }
+        _pushRequestedToken = token;
+        _rosterLink->sendPush(token);
+        return;
+    }
+    // Not wanted (switched off, permission gone, logged out): unbind what the server holds,
+    // or what it was just asked to bind and may still acknowledge.
+    const QString bound = _pushRegisteredToken.isEmpty() ? _pushRequestedToken : _pushRegisteredToken;
+    qDebug() << "QWarloksDuelCore::syncPushRegistration not wanted, bound" << QRosterLink::redact(bound);
+    if (!bound.isEmpty()) {
+        _rosterLink->sendUnpush(bound);
+    }
+}
+
+QString QWarloksDuelCore::pushToken() {
+    QString token;
+#ifdef Q_OS_ANDROID
+    QJniObject ctx = QNativeInterface::QAndroidApplication::context();
+    QJniObject val = QJniObject::fromString("");
+    QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "getPushToken",
+                                                           "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
+                                                           ctx.object<jobject>(), val.object<jstring>());
+    token = string.toString();
+#endif
+    return token;
+}
+
+void QWarloksDuelCore::setServerPushActive(bool active) {
+    if (_isAsService || _isAI) {
+        return;
+    }
+    qDebug() << "QWarloksDuelCore::setServerPushActive" << active;
+#ifdef Q_OS_ANDROID
+    QJniObject flag = QJniObject::fromString(active ? "1" : "0");
+    QJniObject::callStaticMethod<void>(
+        "org/qtproject/example/androidnotifier/NotificationClient",
+        "setServerPushActive",
+        "(Landroid/content/Context;Ljava/lang/String;)V",
+        QNativeInterface::QAndroidApplication::context(),
+        flag.object<jstring>());
+#endif
+}
+
+void QWarloksDuelCore::onPushRegistered(const QString &token) {
+    qDebug() << "QWarloksDuelCore::onPushRegistered" << QRosterLink::redact(token);
+    const QString previous = _pushRegisteredToken;
+    _pushRegisteredToken = token;
+    if (!previous.isEmpty() && previous != token && _rosterLink) {
+        // Two tokens acknowledged in a row (a rotation while the first was in flight): the
+        // first is stale, unbind it.
+        _rosterLink->sendUnpush(previous);
+    }
+    setServerPushActive(true);
+}
+
+void QWarloksDuelCore::onPushUnregistered(const QString &token) {
+    qDebug() << "QWarloksDuelCore::onPushUnregistered" << QRosterLink::redact(token);
+    if (_pushRegisteredToken == token) {
+        _pushRegisteredToken.clear();
+    }
+    if (_pushRequestedToken == token) {
+        _pushRequestedToken.clear();
+    }
+    // Still bound with another token (a stale one was just unbound): the server keeps covering.
+    setServerPushActive(!_pushRegisteredToken.isEmpty());
+}
+
+void QWarloksDuelCore::onPushUnsupported() {
+    // An old caster server: the poll keeps covering ready and invite.
+    qDebug() << "QWarloksDuelCore::onPushUnsupported";
+    _pushRequestedToken.clear();
+    setServerPushActive(false);
+}
+
 bool QWarloksDuelCore::hasUnstartedBattle() {
     foreach(int bid, _waiting_in_battles) {
         if (getBattleInfo(bid)->status() == BATTLE_INFO_STATUS_NO_START) {
@@ -2931,6 +3055,11 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     // Nothing of the previous account's turns may act for the new one.
     _turnReadyTimer.stop();
     _ordersBattleID = 0;
+    // The LOGOUT of clearIdentity() drops the push binding server side; the new account
+    // registers the token afresh once its link is up (issue #336).
+    _pushRegisteredToken.clear();
+    _pushRequestedToken.clear();
+    setServerPushActive(false);
 
     _login = Login;
     _password = Password;
@@ -3078,6 +3207,7 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("event_submit_turn", _event_submit_turn);
     settings->setValue("event_submit_turn5", _event_submit_turn5);
     settings->setValue("keep_me_on", _keepMeOn);
+    settings->setValue("push_notifications", _pushNotifications);
 
     settings->beginWriteArray("battle_info");
     QMap<int, QBattleInfo *>::iterator bii;
@@ -3121,6 +3251,7 @@ void QWarloksDuelCore::loadGameParameters() {
     // Read before the version check below clears the ini, like the login: the player's
     // choice must survive an app update (https://github.com/Pz1c/WavingHands/issues/149).
     _keepMeOn = settings->value("keep_me_on", "false").toBool();
+    _pushNotifications = settings->value("push_notifications", "true").toBool();
     _exp_lv = settings->value("exp_lv", "1").toInt();
     if (_exp_lv < 1) {
         _exp_lv = 1;
@@ -3733,6 +3864,13 @@ void QWarloksDuelCore::logout() {
     _keepMeOnBusy = false;
     _keepMeOnOfferSkip = false;
     emit keepMeOnChanged();
+    // Likewise the Game notifications default (issue #336). No UNPUSH: the LOGOUT of
+    // clearIdentity() above removes the binding server side.
+    _pushNotifications = true;
+    emit pushNotificationsChanged();
+    _pushRegisteredToken.clear();
+    _pushRequestedToken.clear();
+    setServerPushActive(false);
 
     settings->beginGroup("Game");
     settings->remove("");

@@ -30,7 +30,7 @@ class QRosterLink : public QObject {
     Q_OBJECT
 public:
     enum State { Disabled, Down, Connecting, Handshaking, Ready };
-    enum Pending { PNone, PAuth, PLogin, PWho, PPing, PLogout, PTurn };
+    enum Pending { PNone, PAuth, PLogin, PWho, PPing, PLogout, PTurn, PPush, PUnpush };
 
     explicit QRosterLink(QObject *parent = nullptr);
     ~QRosterLink() override;
@@ -68,6 +68,20 @@ public:
     // change. A name the server's validName() would refuse is never sent.
     void sendTurn(const QString &opponent);
 
+    // Push notifications (https://github.com/Pz1c/WavingHands/issues/336): bind or
+    // unbind this install's FCM token to the session's player. One wanted slot each,
+    // the latest token wins; both survive reconnects, are cleared by clearIdentity(),
+    // and UNPUSH goes out before PUSH (a rotation unbinds the old token first). The
+    // flush shares the TURN discipline: Ready, delta capable, idle, one request per
+    // round trip, a deadline tears the socket down and the slot is sent again after
+    // the reconnect. A token the server's rule would refuse is never sent, and after
+    // one bad-request (an old server, a strike each) nothing push-related goes out
+    // on that connection again.
+    void sendPush(const QString &token);
+    void sendUnpush(const QString &token);
+    static bool validPushToken(const QString &token);   // 20..4096 bytes of [A-Za-z0-9_:.-]
+    static QString redact(const QString &secret);       // "<32B:9f3c...>", the only way a token is logged
+
 signals:
     // NOTE: carries only (name, token). The epoch/revision on the OK line are
     // deliberately NOT propagated -- see FIX-2.
@@ -78,6 +92,10 @@ signals:
     void needCookieRefresh();                 // not-logged-in / wrong-player
     void protocolMismatch(const QString &reason);   // sticky-disable happened
     void turnReady(const QString &byName);
+    // PUSH / UNPUSH acknowledged by the server, or refused as an unknown command.
+    void pushRegistered(const QString &token);
+    void pushUnregistered(const QString &token);
+    void pushUnsupported();
 
 private slots:
     void onEncrypted();
@@ -100,13 +118,13 @@ private:
     void sendHandshake();
     void flushTurns();              // sends the oldest queued TURN if Ready and idle
     int  queuedTurnIndex(const QString &name) const;   // case-insensitive, -1 if absent
+    void flushPush();               // sends the wanted UNPUSH, else the wanted PUSH, if Ready and idle
     void handleLine(const QByteArray &line);
     void handleOk(const QList<QByteArray> &f);
     void handleErr(const QList<QByteArray> &f);
     void scheduleReconnect(int minMs = 0);
     void bumpBackoff();
     void resetBackoff();
-    static QString redact(const QString &secret);   // "<32B:9f3c...>"
 
     QSslSocket *_sock = nullptr;
     QString  _host; quint16 _port = 0;
@@ -125,6 +143,13 @@ private:
     QList<QPair<QString, qint64>> _turnQueue;
     // The TURN written and still waiting for its OK/ERR (valid while PTurn).
     QPair<QString, qint64> _turnInFlight;
+    // sendPush() / sendUnpush() slots. A slot stays set while its request is in
+    // flight (_pushInFlight, valid while PPush / PUnpush) and is cleared by the
+    // reply, so a deadline or a dropped socket sends it again after the reconnect.
+    QString _pushWanted;
+    QString _unpushWanted;
+    QString _pushInFlight;
+    bool    _pushUnsupported = false;   // bad-request to PUSH/UNPUSH on this connection
 
     QByteArray  _rx;
     bool        _inBlock = false;

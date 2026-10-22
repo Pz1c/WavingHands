@@ -68,6 +68,10 @@ class QWarloksDuelCore : public QGameCore
     // Keep me On (https://github.com/Pz1c/WavingHands/issues/149), which the auto matching of
     // https://github.com/Pz1c/WavingHands/issues/216 extends: one setting for both.
     Q_PROPERTY(bool keepMeOn READ keepMeOn WRITE setKeepMeOn NOTIFY keepMeOnChanged)
+    // Game notifications (https://github.com/Pz1c/WavingHands/issues/336): pushes from the
+    // caster server over Firebase Cloud Messaging for a ready battle or an invite. The
+    // registration of this install's token is syncPushRegistration().
+    Q_PROPERTY(bool pushNotifications READ pushNotifications WRITE setPushNotifications NOTIFY pushNotificationsChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr, bool AsService = false);
@@ -100,6 +104,7 @@ public:
     QString accountMenu();
     QString battleList();
     bool keepMeOn();
+    bool pushNotifications();
 
 signals:
     void needLogin();
@@ -128,6 +133,7 @@ signals:
     void accountMenuChanged();
     void battleListChanged();
     void keepMeOnChanged();
+    void pushNotificationsChanged();
     void needAIAnswer(QString Login, int MagicBookLevel);
     void readyAIAnswer(int battle_id);
     // An opponent made a move (TURNREADY over the caster link), rate limited.
@@ -202,6 +208,11 @@ public slots:
     // The player has just declined auto matching ("Join only once"): the game they make next
     // by hand gets no Keep me On offer on top (https://github.com/Pz1c/WavingHands/issues/216).
     void skipKeepMeOnOffer();
+    // Game notifications (https://github.com/Pz1c/WavingHands/issues/336): the setting, and
+    // what the Settings switch asks before turning it on, so it can raise the system's
+    // permission dialog (askPermissions) first when that is still needed.
+    void setPushNotifications(bool On);
+    bool isNotificationGranted();
 protected slots:
     void loginToSite(bool Silent = false);
     void timerFired(bool Silent = true);
@@ -216,6 +227,10 @@ protected slots:
     void onRosterBlock(const QRosterBlock &block);
     void onRosterFailed(const QString &code);
     void onLinkTurnReady(const QString &by);
+    // PUSH / UNPUSH answered over the caster link (issue #336).
+    void onPushRegistered(const QString &token);
+    void onPushUnregistered(const QString &token);
+    void onPushUnsupported();
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -305,6 +320,15 @@ protected:
 
     bool checkIsNotificationGranted();
 
+    // Push notifications (issue #336). syncPushRegistration() brings the caster server's
+    // binding of this install's FCM token in line with the setting, the login and the
+    // permission: on every new link connection, on app resume and when the setting changes.
+    // The token comes from Java (pushToken), the server's acknowledgement goes back to Java
+    // (setServerPushActive) so the WorkManager poll leaves ready and invite to the server.
+    void syncPushRegistration();
+    QString pushToken();
+    void setServerPushActive(bool active);
+
     // Keep me On / auto matching: after a scan, join an open PvP challenge, or create a game
     // when there is none to join, while the player has fewer than KEEP_ME_ON_MAX_GAMES games
     // and none of them is still waiting for an opponent.
@@ -347,6 +371,11 @@ private:
     bool _keepMeOnBusy;
     // One shot, see skipKeepMeOnOffer().
     bool _keepMeOnOfferSkip;
+    // The Game notifications setting; the FCM token the caster server acknowledged, and the
+    // one last asked for (acknowledged or not), so an UNPUSH can follow a PUSH still in flight.
+    bool _pushNotifications;
+    QString _pushRegisteredToken;
+    QString _pushRequestedToken;
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
