@@ -194,6 +194,9 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("AutoMatchOnce", "", "", "Join only once");
     fillDictionary("AutoMatchBoxTitle", "", "", "Auto start matches ON");
     fillDictionary("AutoMatchBoxDesc", "", "", "Matching automatically up to 3 simultaneous games");
+    // https://github.com/Pz1c/WavingHands/issues/336
+    fillDictionary("PushNotifications", "", "", "Game notifications");
+    fillDictionary("PushNotificationsSettingDesc", "", "", "Get a notification when it is your turn or someone invites you to a duel, even when the app is closed.");
     fillDictionary("BattleHistoryTitle", "", "", "Battle History");
     fillDictionary("Say", "", "", "Add a message");
     fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");
