@@ -10,8 +10,39 @@ var map_monster_name_to_idx = {};
 var cWarlockObject,cIconObject;
 const G_WARLOCK_HEIGHT = 474;
 
+// Classic player colors: one wizard icon per color (res/wizard_<color>.png). The color is
+// pseudo-random per game (hashed from the battle id and the warlock name), so every game
+// comes up with a different assignment, yet the same game shows the same colors everywhere.
+var WIZARD_COLORS = ["black", "red", "blue", "green", "grey", "brown"];
+
+function wizardColorIdx(seed) {
+    var hash = 2166136261;
+    for (var i = 0; i < seed.length; ++i) {
+        hash ^= seed.charCodeAt(i);
+        hash = (hash * 16777619) >>> 0; // FNV-1a
+    }
+    return hash % WIZARD_COLORS.length;
+}
+
+// Assign the warlock his game color; if the hash already picked it for another warlock of
+// this battle, take the next free one, so two players in a battle never look the same.
+function assignWizardColor(w) {
+    if (!battle.wiz_colors) {
+        battle.wiz_colors = {};
+    }
+    var idx = wizardColorIdx(w.name + "#" + battle.id);
+    for (var k = 0; k < WIZARD_COLORS.length; ++k) {
+        var col = WIZARD_COLORS[(idx + k) % WIZARD_COLORS.length];
+        if (!battle.wiz_colors[col]) {
+            battle.wiz_colors[col] = true;
+            return col;
+        }
+    }
+    return WIZARD_COLORS[idx]; // more warlocks than colors (monsters battles): reuse
+}
 
 function prepareWarlock(w) {
+    w.color = assignWizardColor(w);
     w.monsters = battle.monsters[w.name];
     w.read_only = battle.read_only;
     w.print_g = BGU.preparePrintGestures(w.L, w.R, w.smcL, w.smcR);

@@ -61,7 +61,7 @@ BaseWindow {
                     id: rWarlocks
                     model: targetItem.warlocks
 
-                    // one warlock: the name pill on top, the heart and monster tiles in centered
+                    // one warlock: the name pill on top, the warlock and monster tiles in centered
                     // rows below it, a line at the bottom. The warlocks share the screen equally
                     // as long as their rows fit, otherwise the list scrolls.
                     delegate: Item {
@@ -414,7 +414,8 @@ BaseWindow {
             if (!w || (!battle.read_only && !w.active && (monsters.length === 0))) {
                 continue;
             }
-            var tiles = [{key:w.name,text:"" + w.hp,icon:"qrc:/res/heart_small.png",info:"",
+            var icon = "qrc:/res/wizard_" + (w.color ? w.color : "grey") + ".png";
+            var tiles = [{key:w.name,text:"" + w.hp,icon:icon,info:"",
                           data:{action:"hp",warlock_name:w.name,warlock_idx:i,value:w.hp}}];
             for (var j = 0, Lm = monsters.length; j < Lm; ++j) {
                 var m = monsters[j];
