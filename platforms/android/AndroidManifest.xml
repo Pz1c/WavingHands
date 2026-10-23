@@ -20,5 +20,12 @@
             <meta-data android:name="android.app.arguments" android:value="-- %%INSERT_APP_ARGUMENTS%% --"/>
             <meta-data android:name="android.app.extract_android_style" android:value="minimal"/>
         </activity>
+        <!-- Firebase Cloud Messaging (https://github.com/Pz1c/WavingHands/issues/336): the
+             data-only pushes of the caster server, rendered by PushService in pure Java. -->
+        <service android:name="com.kdab.training.PushService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
     </application>
 </manifest>

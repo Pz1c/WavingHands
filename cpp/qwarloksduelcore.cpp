@@ -1,6 +1,10 @@
 #include "qwarloksduelcore.h"
 
 #include <QUrlQuery>
+#ifdef Q_OS_ANDROID
+#include <QJniEnvironment>
+#include <QAtomicPointer>
+#endif
 
 // Least time between two battle-list refreshes set off by TURNREADY pushes.
 static const qint64 kTurnReadyRefreshGapMs = 10000;
@@ -8,6 +12,29 @@ static const qint64 kTurnReadyRefreshGapMs = 10000;
 static const int kMaxResultAttempts = 3;
 // Pause between the last window closing and a held-back result being announced.
 static const int kResultAnnounceDelayMs = 1500;
+// How long the Settings window's "Send notification token" waits for the server's answer
+// (connect 5 s + AUTH 20 s or LOGIN 10 s + PUSH 2.5 s at worst) before "Not connected".
+static const int kPushForceTimeoutMs = 20000;
+
+// The FCM token's way from Java to the core (issue #336): NotificationClient.pushTokenChanged,
+// a native the core binds in registerPushNatives(). Java calls it from its own threads (the
+// FCM service thread, the getToken() completion), so the hop to the Qt thread is a queued
+// call on the core.
+#ifdef Q_OS_ANDROID
+static QAtomicPointer<QWarloksDuelCore> s_pushCore;
+
+static void jniPushTokenChanged(JNIEnv * /*env*/, jclass /*clazz*/, jstring jtoken, jstring jerror) {
+    const QString token = jtoken ? QJniObject(jtoken).toString() : QString();
+    const QString error = jerror ? QJniObject(jerror).toString() : QString();
+    QWarloksDuelCore *core = s_pushCore.loadAcquire();
+    if (!core) {
+        return;
+    }
+    QMetaObject::invokeMethod(core, [core, token, error]() {
+        core->onPushTokenAvailable(token, error);
+    }, Qt::QueuedConnection);
+}
+#endif
 
 // The archived result of a battle, the request behind every Win/Lose/Draw window.
 static bool isResultUrl(const QString &url) {
@@ -63,6 +90,8 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _keepMeOn = false;
     _keepMeOnBusy = false;
     _keepMeOnOfferSkip = false;
+    _pushNotifications = true;
+    _pushForceSend = false;
     init();
     if (_isAsService) {
         _login = "";
@@ -119,6 +148,13 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
         connect(_rosterLink, &QRosterLink::tokenRejected, this, [this]() {
             _casterTokens.remove(_login.toLower());
         });
+        connect(_rosterLink, &QRosterLink::pushRegistered, this, &QWarloksDuelCore::onPushRegistered);
+        connect(_rosterLink, &QRosterLink::pushUnregistered, this, &QWarloksDuelCore::onPushUnregistered);
+        connect(_rosterLink, &QRosterLink::pushUnsupported, this, &QWarloksDuelCore::onPushUnsupported);
+        connect(_rosterLink, &QRosterLink::pushFailed, this, &QWarloksDuelCore::onPushFailed);
+        _pushForceTimer.setSingleShot(true);
+        connect(&_pushForceTimer, &QTimer::timeout, this, &QWarloksDuelCore::onPushForceTimeout);
+        registerPushNatives();
         // Last resort: nothing may leave the loading overlay up, whatever the
         // link or the HTTP fallback does.
         _rosterGuard.setSingleShot(true);
@@ -140,6 +176,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
         connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
             if ((state == Qt::ApplicationActive) && _rosterLink) {
                 _rosterLink->probeNow();
+                // A token that landed in the Java prefs while the core was not listening
+                // (issue #336) is registered now, see pushToken().
+                syncPushRegistration();
             }
         });
     }
@@ -165,6 +204,9 @@ QWarloksDuelCore::~QWarloksDuelCore() {
     if (_rosterLink) {
         _rosterLink->stop();
     }
+#ifdef Q_OS_ANDROID
+    s_pushCore.testAndSetRelease(this, nullptr);
+#endif
 
     saveParameters(true, true, true, true, true);
 
@@ -569,6 +611,7 @@ void QWarloksDuelCore::generateTopList() {
     std::sort(wsl.begin(), wsl.end(), customOrderWS);
     _topActive.clear();
     _topAll.clear();
+    _topOnline.clear();
     qint64 curr_time = QDateTime::currentSecsSinceEpoch();
     foreach(QWarlockStat *ws, wsl) {
             if (ws->ai()) {
@@ -586,8 +629,28 @@ void QWarloksDuelCore::generateTopList() {
             _topActive.append(ws->toJSON());
         }
     }
+    // https://github.com/Pz1c/WavingHands/issues/291
+    // Bots are always online: they fill the Online tab while nobody but the
+    // player is there to be challenged.
+    bool others_online = false;
+    foreach(QWarlockStat *ws, wsl) {
+        if (!ws->ai() && ws->online() && (ws->name().compare(_login, Qt::CaseInsensitive) != 0)) {
+            others_online = true;
+            break;
+        }
+    }
+    foreach(QWarlockStat *ws, wsl) {
+        if (!ws->online() || (ws->ai() && others_online)) {
+            continue;
+        }
+        if (!_topOnline.isEmpty()) {
+            _topOnline.append(",");
+        }
+        _topOnline.append(ws->toJSON());
+    }
     _topActive.append("]").prepend("[");
     _topAll.append("]").prepend("[");
+    _topOnline.append("]").prepend("[");
 }
 
 void QWarloksDuelCore::publishTopList() {
@@ -664,6 +727,9 @@ void QWarloksDuelCore::onLinkAuthenticated(const QString &canonical, const QStri
     // canonical is the site own spelling of the name, for display only:
     // _playerStats stays keyed by the lowercased login.
     Q_UNUSED(canonical)
+    // AUTH OK or LOGIN OK alike: the push token goes out now, unless this run of the app
+    // already had it confirmed (issue #336).
+    syncPushRegistration();
     if (token.isEmpty() || _login.isEmpty()) {
         return;
     }
@@ -2409,6 +2475,279 @@ void QWarloksDuelCore::setKeepMeOn(bool On) {
     }
 }
 
+// https://github.com/Pz1c/WavingHands/issues/336
+bool QWarloksDuelCore::pushNotifications() {
+    return _pushNotifications;
+}
+
+void QWarloksDuelCore::setPushNotifications(bool On) {
+    if (_pushNotifications == On) {
+        return;
+    }
+    _pushNotifications = On;
+    // Saved at once, like keep_me_on: the destructor is not guaranteed to run on Android.
+    saveParameters(false, false, true);
+    logEvent("PushNotifications_Changed", QString("On;%1;").arg(On ? "1" : "0"));
+    emit pushNotificationsChanged();
+    syncPushRegistration();
+}
+
+bool QWarloksDuelCore::isNotificationGranted() {
+#ifdef Q_OS_ANDROID
+    return checkIsNotificationGranted();
+#else
+    return true;    // nothing to ask for: push notifications are inert off Android
+#endif
+}
+
+bool QWarloksDuelCore::syncPushRegistration(bool force) {
+    if (_isAsService || _isAI || !_rosterLink) {
+        return false;
+    }
+    // The notification permission is deliberately no condition: a device that cannot show
+    // a push yet is registered all the same, so a permission granted later takes effect at
+    // once (PushService drops what it may not show meanwhile).
+    const bool desired = _pushNotifications && _isLogined;
+    if (desired) {
+        // Empty until Java delivers it (onPushTokenAvailable): the sync runs again then.
+        const QString token = pushToken();
+        if (token.isEmpty()) {
+            qCInfo(lcPush) << "registration wanted, no token yet";
+            return false;
+        }
+        if (!force && _pushRegisteredToken == token) {
+            qCDebug(lcPush) << "already confirmed in this run" << QRosterLink::redact(token);
+            return false;
+        }
+        qCInfo(lcPush) << (force ? "forced registration of" : "registering") << QRosterLink::redact(token)
+                       << "confirmed" << QRosterLink::redact(_pushRegisteredToken)
+                       << "link state" << _rosterLink->state();
+        if (!_pushRegisteredToken.isEmpty() && _pushRegisteredToken != token) {
+            _rosterLink->sendUnpush(_pushRegisteredToken);     // rotated: unbind the old one first
+        }
+        _pushRequestedToken = token;
+        _rosterLink->sendPush(token);       // a slot, not a queue: once per connection
+        return QRosterLink::validPushToken(token) && !_rosterLink->isPushUnsupported();
+    }
+    // Not wanted (switched off, logged out): unbind what the server holds, or what it was
+    // just asked to bind and may still acknowledge.
+    const QString bound = _pushRegisteredToken.isEmpty() ? _pushRequestedToken : _pushRegisteredToken;
+    qCDebug(lcPush) << "registration not wanted, bound" << QRosterLink::redact(bound);
+    if (!bound.isEmpty()) {
+        _rosterLink->sendUnpush(bound);
+    }
+    return false;
+}
+
+QString QWarloksDuelCore::pushToken() {
+    // What Java delivered in this run, else what its prefs hold from an earlier one. An empty
+    // answer from Java means it is fetching: the token then comes through onPushTokenAvailable.
+    if (_pushToken.isEmpty()) {
+#ifdef Q_OS_ANDROID
+        QJniObject ctx = QNativeInterface::QAndroidApplication::context();
+        QJniObject val = QJniObject::fromString("");
+        QJniObject string = QJniObject::callStaticObjectMethod("org/qtproject/example/androidnotifier/NotificationClient", "getPushToken",
+                                                               "(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/String;",
+                                                               ctx.object<jobject>(), val.object<jstring>());
+        _pushToken = string.toString();
+        if (!_pushToken.isEmpty()) {
+            qCInfo(lcPush) << "token from the Java prefs" << QRosterLink::redact(_pushToken);
+        }
+#endif
+    }
+    return _pushToken;
+}
+
+void QWarloksDuelCore::requestPushToken() {
+#ifdef Q_OS_ANDROID
+    // FirebaseMessaging.getToken(), whatever the prefs hold; the answer, or the failure,
+    // comes back through onPushTokenAvailable.
+    QJniObject val = QJniObject::fromString("");
+    QJniObject::callStaticMethod<void>(
+        "org/qtproject/example/androidnotifier/NotificationClient",
+        "fetchPushToken",
+        "(Landroid/content/Context;Ljava/lang/String;)V",
+        QNativeInterface::QAndroidApplication::context(),
+        val.object<jstring>());
+#else
+    // No FCM off Android: the answer is what this run knows (nothing, outside a test harness).
+    QMetaObject::invokeMethod(this, [this]() {
+        onPushTokenAvailable(_pushToken, _pushToken.isEmpty() ? QStringLiteral("no FCM on this platform") : QString());
+    }, Qt::QueuedConnection);
+#endif
+}
+
+void QWarloksDuelCore::registerPushNatives() {
+#ifdef Q_OS_ANDROID
+    s_pushCore.storeRelease(this);
+    static const JNINativeMethod methods[] = {
+        { "pushTokenChanged", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(jniPushTokenChanged) }
+    };
+    QJniEnvironment env;
+    const bool bound = env.registerNativeMethods("org/qtproject/example/androidnotifier/NotificationClient",
+                                                 methods, sizeof(methods) / sizeof(methods[0]));
+    qCInfo(lcPush) << "native NotificationClient.pushTokenChanged" << (bound ? "bound" : "NOT bound");
+#endif
+}
+
+void QWarloksDuelCore::onPushTokenAvailable(const QString &token, const QString &error) {
+    const bool forced = _pushForceSend;
+    _pushForceSend = false;
+    if (token.isEmpty()) {
+        qCInfo(lcPush) << "no token from Java:" << error;
+        if (forced) {
+            _pushForceTimer.stop();
+            setPushTokenStatus("PushTokenUnavailable", error);
+        }
+        return;
+    }
+    if (token != _pushToken) {
+        qCInfo(lcPush) << "token" << (_pushToken.isEmpty() ? "arrived" : "changed") << QRosterLink::redact(token)
+                       << "authenticated" << (_rosterLink && _rosterLink->state() == QRosterLink::Ready);
+        _pushToken = token;
+    }
+    const bool sent = syncPushRegistration(forced);
+    if (forced && !sent) {
+        // Nothing went out, so nothing will answer: say why now instead of at the deadline.
+        _pushForceTimer.stop();
+        if (!_isLogined) {
+            setPushTokenStatus("PushNotLoggedIn");
+        } else if (_rosterLink && _rosterLink->isPushUnsupported()) {
+            setPushTokenStatus("PushNoSupport");
+        } else if (!QRosterLink::validPushToken(token)) {
+            setPushTokenStatus("PushTokenUnavailable", QStringLiteral("unusable token"));
+        } else {
+            setPushTokenStatus("PushNotConnected");
+        }
+    }
+}
+
+void QWarloksDuelCore::sendPushTokenNow() {
+    if (_isAsService || _isAI || !_rosterLink) {
+        return;
+    }
+    qCInfo(lcPush) << "send asked for in Settings: logged in" << _isLogined << "setting" << _pushNotifications
+                   << "link state" << _rosterLink->state();
+    if (!_isLogined || _login.isEmpty()) {
+        setPushTokenStatus("PushNotLoggedIn");
+        return;
+    }
+    if (!_pushNotifications) {
+        setPushTokenStatus("PushSettingOff");
+        return;
+    }
+    if (!checkIsNotificationGranted()) {
+        askPermissions();           // Android 13+: the system dialog; the token is sent regardless
+    }
+    startRosterLink();              // nothing while connected, else the usual connect + LOGIN / AUTH
+    const QRosterLink::State state = _rosterLink->state();
+    if (state == QRosterLink::Down || state == QRosterLink::Disabled) {
+        setPushTokenStatus("PushNotConnected");
+        return;
+    }
+    if (state == QRosterLink::Ready && _rosterLink->isPushUnsupported()) {
+        setPushTokenStatus("PushNoSupport");
+        return;
+    }
+    _pushForceSend = true;
+    _pushForceTimer.start(kPushForceTimeoutMs);
+    setPushTokenStatus("PushTokenSending");
+    requestPushToken();
+}
+
+QString QWarloksDuelCore::pushTokenStatus() {
+    return _pushTokenStatus;
+}
+
+void QWarloksDuelCore::setPushTokenStatus(const QString &code, const QString &detail) {
+    QString status = code.isEmpty() ? QString() : GameDictionary->getStringByCode(code);
+    if (!detail.isEmpty()) {
+        if (!status.isEmpty()) {
+            status += QLatin1String(": ");
+        }
+        status += detail;
+    }
+    qCInfo(lcPush) << "status" << status;
+    if (_pushTokenStatus == status) {
+        return;
+    }
+    _pushTokenStatus = status;
+    emit pushTokenStatusChanged();
+}
+
+void QWarloksDuelCore::setServerPushActive(bool active) {
+    if (_isAsService || _isAI) {
+        return;
+    }
+    qDebug() << "QWarloksDuelCore::setServerPushActive" << active;
+#ifdef Q_OS_ANDROID
+    QJniObject flag = QJniObject::fromString(active ? "1" : "0");
+    QJniObject::callStaticMethod<void>(
+        "org/qtproject/example/androidnotifier/NotificationClient",
+        "setServerPushActive",
+        "(Landroid/content/Context;Ljava/lang/String;)V",
+        QNativeInterface::QAndroidApplication::context(),
+        flag.object<jstring>());
+#endif
+}
+
+void QWarloksDuelCore::onPushRegistered(const QString &token) {
+    qCInfo(lcPush) << "registered" << QRosterLink::redact(token) << "(confirmed for this run)";
+    const QString previous = _pushRegisteredToken;
+    _pushRegisteredToken = token;
+    if (!previous.isEmpty() && previous != token && _rosterLink) {
+        // Two tokens acknowledged in a row (a rotation while the first was in flight): the
+        // first is stale, unbind it.
+        _rosterLink->sendUnpush(previous);
+    }
+    setServerPushActive(true);
+    if (_pushForceTimer.isActive()) {
+        _pushForceTimer.stop();
+        setPushTokenStatus("PushTokenSent");
+    }
+}
+
+void QWarloksDuelCore::onPushUnregistered(const QString &token) {
+    qCInfo(lcPush) << "unregistered" << QRosterLink::redact(token);
+    if (_pushRegisteredToken == token) {
+        _pushRegisteredToken.clear();
+    }
+    if (_pushRequestedToken == token) {
+        _pushRequestedToken.clear();
+    }
+    // Still bound with another token (a stale one was just unbound): the server keeps covering.
+    setServerPushActive(!_pushRegisteredToken.isEmpty());
+}
+
+void QWarloksDuelCore::onPushUnsupported() {
+    // An old caster server: the poll keeps covering ready and invite. Nothing push-related
+    // goes out on this connection again (the link sees to it); the next one is tried once.
+    qCInfo(lcPush) << "server has no push support on this connection";
+    _pushRequestedToken.clear();
+    setServerPushActive(false);
+    if (_pushForceTimer.isActive()) {
+        _pushForceTimer.stop();
+        setPushTokenStatus("PushNoSupport");
+    }
+}
+
+void QWarloksDuelCore::onPushFailed(const QString &token, const QString &reason) {
+    qCInfo(lcPush) << "refused" << reason << QRosterLink::redact(token);
+    if (_pushRequestedToken == token) {
+        _pushRequestedToken.clear();
+    }
+    if (_pushForceTimer.isActive()) {
+        _pushForceTimer.stop();
+        setPushTokenStatus(QString(), reason);
+    }
+}
+
+void QWarloksDuelCore::onPushForceTimeout() {
+    qCInfo(lcPush) << "no answer to the forced send within" << kPushForceTimeoutMs << "ms";
+    _pushForceSend = false;
+    setPushTokenStatus("PushNotConnected");
+}
+
 bool QWarloksDuelCore::hasUnstartedBattle() {
     foreach(int bid, _waiting_in_battles) {
         if (getBattleInfo(bid)->status() == BATTLE_INFO_STATUS_NO_START) {
@@ -2931,6 +3270,13 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     // Nothing of the previous account's turns may act for the new one.
     _turnReadyTimer.stop();
     _ordersBattleID = 0;
+    // The LOGOUT of clearIdentity() drops the push binding server side; the new account
+    // registers the token afresh once its link is up (issue #336).
+    _pushRegisteredToken.clear();
+    _pushRequestedToken.clear();
+    _pushForceSend = false;
+    _pushForceTimer.stop();
+    setServerPushActive(false);
 
     _login = Login;
     _password = Password;
@@ -3078,6 +3424,7 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("event_submit_turn", _event_submit_turn);
     settings->setValue("event_submit_turn5", _event_submit_turn5);
     settings->setValue("keep_me_on", _keepMeOn);
+    settings->setValue("push_notifications", _pushNotifications);
 
     settings->beginWriteArray("battle_info");
     QMap<int, QBattleInfo *>::iterator bii;
@@ -3121,6 +3468,7 @@ void QWarloksDuelCore::loadGameParameters() {
     // Read before the version check below clears the ini, like the login: the player's
     // choice must survive an app update (https://github.com/Pz1c/WavingHands/issues/149).
     _keepMeOn = settings->value("keep_me_on", "false").toBool();
+    _pushNotifications = settings->value("push_notifications", "true").toBool();
     _exp_lv = settings->value("exp_lv", "1").toInt();
     if (_exp_lv < 1) {
         _exp_lv = 1;
@@ -3432,8 +3780,12 @@ QString QWarloksDuelCore::battleList() {
     return _battleList;
 }
 
-QString QWarloksDuelCore::getTopList(bool ShowAll) {
-    return ShowAll ? _topAll : _topActive;
+QString QWarloksDuelCore::getTopList(int List) {
+    switch (List) {
+    case 1: return _topAll;
+    case 2: return _topOnline;
+    default: return _topActive;
+    }
 }
 
 QString QWarloksDuelCore::getHintArray(int hint_id) {
@@ -3733,6 +4085,15 @@ void QWarloksDuelCore::logout() {
     _keepMeOnBusy = false;
     _keepMeOnOfferSkip = false;
     emit keepMeOnChanged();
+    // Likewise the Game notifications default (issue #336). No UNPUSH: the LOGOUT of
+    // clearIdentity() above removes the binding server side.
+    _pushNotifications = true;
+    emit pushNotificationsChanged();
+    _pushRegisteredToken.clear();
+    _pushRequestedToken.clear();
+    _pushForceSend = false;
+    _pushForceTimer.stop();
+    setServerPushActive(false);
 
     settings->beginGroup("Game");
     settings->remove("");

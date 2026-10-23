@@ -5,6 +5,10 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
+        // Firebase Cloud Messaging (https://github.com/Pz1c/WavingHands/issues/336). The plugin
+        // reads google-services.json from the module root, where androiddeployqt copies it
+        // from platforms/android (git-ignored); a missing file fails the build, on purpose.
+        classpath 'com.google.gms:google-services:4.4.4'
     }
 }
 repositories {
@@ -12,6 +16,7 @@ repositories {
     mavenCentral()
 }
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation "com.android.installreferrer:installreferrer:2.2"
@@ -19,6 +24,10 @@ dependencies {
     // Background profile check: replaces AlarmManager exact alarms, which need the
     // Play-restricted SCHEDULE_EXACT_ALARM permission.
     implementation "androidx.work:work-runtime:2.11.2"
+    // Push notifications (issue #336): the BoM pins every Firebase artifact, messaging is the
+    // only one used (PushService, NotificationClient.getPushToken).
+    implementation platform('com.google.firebase:firebase-bom:35.1.0')
+    implementation 'com.google.firebase:firebase-messaging'
 }
 android {
     namespace "net.is.games.WarlocksDuel"
@@ -63,8 +72,8 @@ android {
         minSdkVersion qtMinSdkVersion
         targetSdkVersion 36
         ndk.abiFilters = qtTargetAbiList.split(",")
-        versionCode = 2500
-        versionName = "2.5.0"
+        versionCode = 2510
+        versionName = "2.5.1"
     }
 
     signingConfigs {

@@ -138,6 +138,7 @@ DISTFILES += \
     platforms/android/src/com/kdab/training/CheckStatus.java \
     platforms/android/src/com/kdab/training/CheckStatusWorker.java \
     platforms/android/src/com/kdab/training/MainActivity.java \
+    platforms/android/src/com/kdab/training/PushService.java \
     platforms/android/src/org/qtproject/example/androidnotifier/NotificationClient.java
 #android: include(C:/Users/steel/AppData/Local/Android/Sdk/android_openssl/openssl.pri)
 

@@ -391,83 +391,103 @@ Module {
             index: 25
             lineNumber: 70
         }
-        Signal { name: "needLogin"; lineNumber: 105 }
-        Signal { name: "loginChanged"; lineNumber: 106 }
-        Signal { name: "passwordChanged"; lineNumber: 107 }
-        Signal { name: "errorOccurred"; lineNumber: 108 }
-        Signal { name: "playerInfoChanged"; lineNumber: 109 }
-        Signal { name: "readyInBattlesChanged"; lineNumber: 110 }
-        Signal { name: "waitingInBattlesChanged"; lineNumber: 111 }
-        Signal { name: "finishedBattlesChanged"; lineNumber: 112 }
-        Signal { name: "finishedBattleChanged"; lineNumber: 113 }
-        Signal { name: "readyBattleChanged"; lineNumber: 114 }
-        Signal { name: "loadedBattleIDChanged"; lineNumber: 115 }
-        Signal { name: "registerNewUserChanged"; lineNumber: 116 }
-        Signal { name: "orderSubmitedChanged"; lineNumber: 117 }
-        Signal { name: "timerStateChanged"; lineNumber: 118 }
-        Signal { name: "challengeSubmitedChanged"; lineNumber: 119 }
-        Signal { name: "challengeListChanged"; lineNumber: 120 }
-        Signal { name: "spellListHtmlChanged"; lineNumber: 121 }
-        Signal { name: "defaultSpellListHtmlChanged"; lineNumber: 122 }
-        Signal { name: "isAIChanged"; lineNumber: 123 }
-        Signal { name: "allowedAddChanged"; lineNumber: 124 }
-        Signal { name: "allowedAcceptChanged"; lineNumber: 125 }
-        Signal { name: "topListChanged"; lineNumber: 126 }
-        Signal { name: "warlockInfoChanged"; lineNumber: 127 }
-        Signal { name: "accountMenuChanged"; lineNumber: 128 }
-        Signal { name: "battleListChanged"; lineNumber: 129 }
-        Signal { name: "keepMeOnChanged"; lineNumber: 130 }
+        Property {
+            name: "pushNotifications"
+            type: "bool"
+            read: "pushNotifications"
+            write: "setPushNotifications"
+            notify: "pushNotificationsChanged"
+            index: 26
+            lineNumber: 74
+        }
+        Property {
+            name: "pushTokenStatus"
+            type: "QString"
+            read: "pushTokenStatus"
+            notify: "pushTokenStatusChanged"
+            index: 27
+            lineNumber: 77
+            isReadonly: true
+        }
+        Signal { name: "needLogin"; lineNumber: 114 }
+        Signal { name: "loginChanged"; lineNumber: 115 }
+        Signal { name: "passwordChanged"; lineNumber: 116 }
+        Signal { name: "errorOccurred"; lineNumber: 117 }
+        Signal { name: "playerInfoChanged"; lineNumber: 118 }
+        Signal { name: "readyInBattlesChanged"; lineNumber: 119 }
+        Signal { name: "waitingInBattlesChanged"; lineNumber: 120 }
+        Signal { name: "finishedBattlesChanged"; lineNumber: 121 }
+        Signal { name: "finishedBattleChanged"; lineNumber: 122 }
+        Signal { name: "readyBattleChanged"; lineNumber: 123 }
+        Signal { name: "loadedBattleIDChanged"; lineNumber: 124 }
+        Signal { name: "registerNewUserChanged"; lineNumber: 125 }
+        Signal { name: "orderSubmitedChanged"; lineNumber: 126 }
+        Signal { name: "timerStateChanged"; lineNumber: 127 }
+        Signal { name: "challengeSubmitedChanged"; lineNumber: 128 }
+        Signal { name: "challengeListChanged"; lineNumber: 129 }
+        Signal { name: "spellListHtmlChanged"; lineNumber: 130 }
+        Signal { name: "defaultSpellListHtmlChanged"; lineNumber: 131 }
+        Signal { name: "isAIChanged"; lineNumber: 132 }
+        Signal { name: "allowedAddChanged"; lineNumber: 133 }
+        Signal { name: "allowedAcceptChanged"; lineNumber: 134 }
+        Signal { name: "topListChanged"; lineNumber: 135 }
+        Signal { name: "warlockInfoChanged"; lineNumber: 136 }
+        Signal { name: "accountMenuChanged"; lineNumber: 137 }
+        Signal { name: "battleListChanged"; lineNumber: 138 }
+        Signal { name: "keepMeOnChanged"; lineNumber: 139 }
+        Signal { name: "pushNotificationsChanged"; lineNumber: 140 }
+        Signal { name: "pushTokenStatusChanged"; lineNumber: 141 }
         Signal {
             name: "needAIAnswer"
-            lineNumber: 131
+            lineNumber: 142
             Parameter { name: "Login"; type: "QString" }
             Parameter { name: "MagicBookLevel"; type: "int" }
         }
         Signal {
             name: "readyAIAnswer"
-            lineNumber: 132
+            lineNumber: 143
             Parameter { name: "battle_id"; type: "int" }
         }
         Signal {
             name: "opponentTurnReady"
-            lineNumber: 135
+            lineNumber: 146
             Parameter { name: "by"; type: "QString" }
         }
         Method {
             name: "getOnlineUrl"
             type: "QString"
-            lineNumber: 139
+            lineNumber: 150
             Parameter { name: "battle_id"; type: "int" }
         }
-        Method { name: "getOnlineUrl"; type: "QString"; isCloned: true; lineNumber: 139 }
+        Method { name: "getOnlineUrl"; type: "QString"; isCloned: true; lineNumber: 150 }
         Method {
             name: "scanState"
-            lineNumber: 140
+            lineNumber: 151
             Parameter { name: "Silent"; type: "bool" }
         }
-        Method { name: "scanState"; isCloned: true; lineNumber: 140 }
+        Method { name: "scanState"; isCloned: true; lineNumber: 151 }
         Method {
             name: "getChallengeList"
-            lineNumber: 141
+            lineNumber: 152
             Parameter { name: "Silent"; type: "bool" }
         }
-        Method { name: "getChallengeList"; isCloned: true; lineNumber: 141 }
+        Method { name: "getChallengeList"; isCloned: true; lineNumber: 152 }
         Method {
             name: "scanTopList"
-            lineNumber: 142
+            lineNumber: 153
             Parameter { name: "Silent"; type: "bool" }
             Parameter { name: "ForceFull"; type: "bool" }
         }
         Method {
             name: "scanTopList"
             isCloned: true
-            lineNumber: 142
+            lineNumber: 153
             Parameter { name: "Silent"; type: "bool" }
         }
-        Method { name: "scanTopList"; isCloned: true; lineNumber: 142 }
+        Method { name: "scanTopList"; isCloned: true; lineNumber: 153 }
         Method {
             name: "acceptChallenge"
-            lineNumber: 145
+            lineNumber: 156
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "from_card"; type: "bool" }
             Parameter { name: "Background"; type: "bool" }
@@ -475,20 +495,20 @@ Module {
         Method {
             name: "acceptChallenge"
             isCloned: true
-            lineNumber: 145
+            lineNumber: 156
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "from_card"; type: "bool" }
         }
         Method {
             name: "acceptChallenge"
             isCloned: true
-            lineNumber: 145
+            lineNumber: 156
             Parameter { name: "battle_id"; type: "int" }
         }
         Method {
             name: "aiAcceptChallenge"
             type: "bool"
-            lineNumber: 146
+            lineNumber: 157
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "changeAI"; type: "bool" }
         }
@@ -496,22 +516,22 @@ Module {
             name: "aiAcceptChallenge"
             type: "bool"
             isCloned: true
-            lineNumber: 146
+            lineNumber: 157
             Parameter { name: "battle_id"; type: "int" }
         }
         Method {
             name: "rejectChallenge"
-            lineNumber: 147
+            lineNumber: 158
             Parameter { name: "battle_id"; type: "int" }
         }
         Method {
             name: "deleteMsg"
-            lineNumber: 148
+            lineNumber: 159
             Parameter { name: "msg_from"; type: "QString" }
         }
         Method {
             name: "forceSurrender"
-            lineNumber: 149
+            lineNumber: 160
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "turn"; type: "int" }
             Parameter { name: "Silent"; type: "bool" }
@@ -519,24 +539,24 @@ Module {
         Method {
             name: "forceSurrender"
             isCloned: true
-            lineNumber: 149
+            lineNumber: 160
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "turn"; type: "int" }
         }
         Method {
             name: "sendOrders"
-            lineNumber: 150
+            lineNumber: 161
             Parameter { name: "orders"; type: "QString" }
         }
         Method {
             name: "setLogin"
-            lineNumber: 151
+            lineNumber: 162
             Parameter { name: "Login"; type: "QString" }
             Parameter { name: "Password"; type: "QString" }
         }
         Method {
             name: "createNewChallenge"
-            lineNumber: 154
+            lineNumber: 165
             Parameter { name: "Fast"; type: "bool" }
             Parameter { name: "Private"; type: "bool" }
             Parameter { name: "ParaFC"; type: "bool" }
@@ -551,7 +571,7 @@ Module {
         Method {
             name: "createNewChallenge"
             isCloned: true
-            lineNumber: 154
+            lineNumber: 165
             Parameter { name: "Fast"; type: "bool" }
             Parameter { name: "Private"; type: "bool" }
             Parameter { name: "ParaFC"; type: "bool" }
@@ -565,7 +585,7 @@ Module {
         Method {
             name: "createNewChallenge"
             isCloned: true
-            lineNumber: 154
+            lineNumber: 165
             Parameter { name: "Fast"; type: "bool" }
             Parameter { name: "Private"; type: "bool" }
             Parameter { name: "ParaFC"; type: "bool" }
@@ -578,7 +598,7 @@ Module {
         Method {
             name: "createNewChallenge"
             isCloned: true
-            lineNumber: 154
+            lineNumber: 165
             Parameter { name: "Fast"; type: "bool" }
             Parameter { name: "Private"; type: "bool" }
             Parameter { name: "ParaFC"; type: "bool" }
@@ -587,10 +607,10 @@ Module {
             Parameter { name: "FriendlyLevel"; type: "int" }
             Parameter { name: "Description"; type: "QString" }
         }
-        Method { name: "aiCreateNewChallenge"; lineNumber: 156 }
+        Method { name: "aiCreateNewChallenge"; lineNumber: 167 }
         Method {
             name: "regNewUser"
-            lineNumber: 157
+            lineNumber: 168
             Parameter { name: "Login"; type: "QString" }
             Parameter { name: "Email"; type: "QString" }
             Parameter { name: "Pass"; type: "QString" }
@@ -598,13 +618,13 @@ Module {
         Method {
             name: "regNewUser"
             isCloned: true
-            lineNumber: 157
+            lineNumber: 168
             Parameter { name: "Login"; type: "QString" }
             Parameter { name: "Email"; type: "QString" }
         }
         Method {
             name: "getBattle"
-            lineNumber: 158
+            lineNumber: 169
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "battle_type"; type: "int" }
             Parameter { name: "silent"; type: "bool" }
@@ -612,30 +632,30 @@ Module {
         Method {
             name: "getBattle"
             isCloned: true
-            lineNumber: 158
+            lineNumber: 169
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "battle_type"; type: "int" }
         }
         Method {
             name: "getWarlockInfo"
-            lineNumber: 159
+            lineNumber: 170
             Parameter { name: "Login"; type: "QString" }
         }
         Method {
             name: "sendMessage"
-            lineNumber: 160
+            lineNumber: 171
             Parameter { name: "Msg"; type: "QString" }
         }
         Method {
             name: "autoLogin"
-            lineNumber: 161
+            lineNumber: 172
             Parameter { name: "Idx"; type: "int" }
         }
-        Method { name: "aiLogin"; lineNumber: 162 }
-        Method { name: "logout"; lineNumber: 163 }
+        Method { name: "aiLogin"; lineNumber: 173 }
+        Method { name: "logout"; lineNumber: 174 }
         Method {
             name: "leaveBattle"
-            lineNumber: 164
+            lineNumber: 175
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "warlock_id"; type: "int" }
             Parameter { name: "Silent"; type: "bool" }
@@ -643,26 +663,26 @@ Module {
         Method {
             name: "leaveBattle"
             isCloned: true
-            lineNumber: 164
+            lineNumber: 175
             Parameter { name: "battle_id"; type: "int" }
             Parameter { name: "warlock_id"; type: "int" }
         }
         Method {
             name: "leaveBattle"
             isCloned: true
-            lineNumber: 164
+            lineNumber: 175
             Parameter { name: "battle_id"; type: "int" }
         }
         Method {
             name: "setParamValue"
-            lineNumber: 165
+            lineNumber: 176
             Parameter { name: "Parameter"; type: "QString" }
             Parameter { name: "Value"; type: "QString" }
         }
         Method {
             name: "getWarlockStats"
             type: "QString"
-            lineNumber: 166
+            lineNumber: 177
             Parameter { name: "WarlockName"; type: "QString" }
             Parameter { name: "DirtyLogin"; type: "bool" }
         }
@@ -670,169 +690,200 @@ Module {
             name: "getWarlockStats"
             type: "QString"
             isCloned: true
-            lineNumber: 166
+            lineNumber: 177
             Parameter { name: "WarlockName"; type: "QString" }
         }
         Method {
             name: "findWarlockByName"
             type: "QString"
-            lineNumber: 167
+            lineNumber: 178
             Parameter { name: "warlockName"; type: "QString" }
         }
         Method {
             name: "getSharableLink"
-            lineNumber: 168
+            lineNumber: 179
             Parameter { name: "game_level"; type: "QString" }
         }
-        Method { name: "getSharableLink"; isCloned: true; lineNumber: 168 }
+        Method { name: "getSharableLink"; isCloned: true; lineNumber: 179 }
         Method {
             name: "setTimerInterval"
-            lineNumber: 169
+            lineNumber: 180
             Parameter { name: "count"; type: "int" }
             Parameter { name: "msec"; type: "int" }
         }
-        Method { name: "getBotBattle"; type: "int"; lineNumber: 170 }
+        Method { name: "getBotBattle"; type: "int"; lineNumber: 181 }
         Method {
             name: "setUserProperties"
-            lineNumber: 171
+            lineNumber: 182
             Parameter { name: "OS"; type: "QString" }
             Parameter { name: "Screen"; type: "QString" }
             Parameter { name: "Locale"; type: "QString" }
         }
         Method {
             name: "logEvent"
-            lineNumber: 172
+            lineNumber: 183
             Parameter { name: "EventName"; type: "QString" }
             Parameter { name: "EventParams"; type: "QString" }
         }
-        Method { name: "askPermissions"; lineNumber: 173 }
-        Method { name: "slotReadyRead"; lineNumber: 176 }
+        Method { name: "askPermissions"; lineNumber: 184 }
+        Method { name: "slotReadyRead"; lineNumber: 187 }
         Method {
             name: "slotError"
-            lineNumber: 177
+            lineNumber: 188
             Parameter { name: "error"; type: "QNetworkReply::NetworkError" }
         }
         Method {
             name: "slotSslErrors"
-            lineNumber: 178
+            lineNumber: 189
             Parameter { name: "error_list"; type: "QSslError"; isList: true }
         }
         Method {
             name: "onAuthenticationRequired"
-            lineNumber: 180
+            lineNumber: 191
             Parameter { name: "reply"; type: "QNetworkReply"; isPointer: true }
             Parameter { name: "authenticator"; type: "QAuthenticator"; isPointer: true }
         }
         Method {
             name: "onProxyAuthenticationRequired"
-            lineNumber: 181
+            lineNumber: 192
             Parameter { name: "proxy"; type: "QNetworkProxy" }
             Parameter { name: "authenticator"; type: "QAuthenticator"; isPointer: true }
         }
         Method {
             name: "getSpellList"
             type: "QString"
-            lineNumber: 182
+            lineNumber: 193
             Parameter { name: "left"; type: "QString" }
             Parameter { name: "right"; type: "QString" }
             Parameter { name: "Enemy"; type: "bool" }
         }
-        Method { name: "getSpellBook"; type: "QString"; lineNumber: 183 }
-        Method { name: "getLoadedBattleTurn"; type: "int"; lineNumber: 184 }
-        Method { name: "battleInfo"; type: "QString"; lineNumber: 185 }
+        Method { name: "getSpellBook"; type: "QString"; lineNumber: 194 }
+        Method { name: "getLoadedBattleTurn"; type: "int"; lineNumber: 195 }
+        Method { name: "battleInfo"; type: "QString"; lineNumber: 196 }
         Method {
             name: "battleReadOnly"
             type: "QString"
-            lineNumber: 186
+            lineNumber: 197
             Parameter { name: "BattleID"; type: "int" }
         }
-        Method { name: "playerJson"; type: "QString"; lineNumber: 187 }
+        Method { name: "playerJson"; type: "QString"; lineNumber: 198 }
         Method {
             name: "getTopList"
             type: "QString"
-            lineNumber: 188
-            Parameter { name: "ShowAll"; type: "bool" }
+            lineNumber: 201
+            Parameter { name: "List"; type: "int" }
         }
-        Method { name: "getTopList"; type: "QString"; isCloned: true; lineNumber: 188 }
+        Method { name: "getTopList"; type: "QString"; isCloned: true; lineNumber: 201 }
         Method {
             name: "prepareSpellHtmlList"
-            lineNumber: 190
+            lineNumber: 203
             Parameter { name: "emit_signal"; type: "bool" }
             Parameter { name: "force_emit"; type: "bool" }
         }
         Method {
             name: "prepareSpellHtmlList"
             isCloned: true
-            lineNumber: 190
+            lineNumber: 203
             Parameter { name: "emit_signal"; type: "bool" }
         }
-        Method { name: "prepareSpellHtmlList"; isCloned: true; lineNumber: 190 }
-        Method { name: "setupAIServer"; lineNumber: 191 }
+        Method { name: "prepareSpellHtmlList"; isCloned: true; lineNumber: 203 }
+        Method { name: "setupAIServer"; lineNumber: 204 }
         Method {
             name: "setSBL"
-            lineNumber: 193
+            lineNumber: 206
             Parameter { name: "NewLevel"; type: "int" }
         }
         Method {
             name: "showNotification"
-            lineNumber: 195
+            lineNumber: 208
             Parameter { name: "msg"; type: "QString" }
         }
         Method {
             name: "setUiBusy"
-            lineNumber: 198
+            lineNumber: 211
             Parameter { name: "busy"; type: "bool" }
         }
         Method {
             name: "setKeepMeOn"
-            lineNumber: 201
+            lineNumber: 214
             Parameter { name: "On"; type: "bool" }
         }
-        Method { name: "skipKeepMeOnOffer"; lineNumber: 204 }
+        Method { name: "skipKeepMeOnOffer"; lineNumber: 217 }
+        Method {
+            name: "setPushNotifications"
+            lineNumber: 221
+            Parameter { name: "On"; type: "bool" }
+        }
+        Method { name: "isNotificationGranted"; type: "bool"; lineNumber: 222 }
+        Method { name: "sendPushTokenNow"; lineNumber: 226 }
+        Method {
+            name: "onPushTokenAvailable"
+            lineNumber: 230
+            Parameter { name: "token"; type: "QString" }
+            Parameter { name: "error"; type: "QString" }
+        }
         Method {
             name: "loginToSite"
-            lineNumber: 206
+            lineNumber: 232
             Parameter { name: "Silent"; type: "bool" }
         }
-        Method { name: "loginToSite"; isCloned: true; lineNumber: 206 }
+        Method { name: "loginToSite"; isCloned: true; lineNumber: 232 }
         Method {
             name: "timerFired"
-            lineNumber: 207
+            lineNumber: 233
             Parameter { name: "Silent"; type: "bool" }
         }
-        Method { name: "timerFired"; isCloned: true; lineNumber: 207 }
-        Method { name: "processServiceTimer"; lineNumber: 208 }
+        Method { name: "timerFired"; isCloned: true; lineNumber: 233 }
+        Method { name: "processServiceTimer"; lineNumber: 234 }
         Method {
             name: "doAIAnswer"
-            lineNumber: 209
+            lineNumber: 235
             Parameter { name: "Login"; type: "QString" }
             Parameter { name: "MagicBookLevel"; type: "int" }
         }
         Method {
             name: "checkAIAnswer"
-            lineNumber: 210
+            lineNumber: 236
             Parameter { name: "battle_id"; type: "int" }
         }
         Method {
             name: "onLinkAuthenticated"
-            lineNumber: 215
+            lineNumber: 241
             Parameter { name: "canonical"; type: "QString" }
             Parameter { name: "token"; type: "QString" }
         }
         Method {
             name: "onRosterBlock"
-            lineNumber: 216
+            lineNumber: 242
             Parameter { name: "block"; type: "QRosterBlock" }
         }
         Method {
             name: "onRosterFailed"
-            lineNumber: 217
+            lineNumber: 243
             Parameter { name: "code"; type: "QString" }
         }
         Method {
             name: "onLinkTurnReady"
-            lineNumber: 218
+            lineNumber: 244
             Parameter { name: "by"; type: "QString" }
         }
+        Method {
+            name: "onPushRegistered"
+            lineNumber: 246
+            Parameter { name: "token"; type: "QString" }
+        }
+        Method {
+            name: "onPushUnregistered"
+            lineNumber: 247
+            Parameter { name: "token"; type: "QString" }
+        }
+        Method { name: "onPushUnsupported"; lineNumber: 248 }
+        Method {
+            name: "onPushFailed"
+            lineNumber: 249
+            Parameter { name: "token"; type: "QString" }
+            Parameter { name: "reason"; type: "QString" }
+        }
+        Method { name: "onPushForceTimeout"; lineNumber: 250 }
     }
 }

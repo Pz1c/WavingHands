@@ -97,48 +97,39 @@ public class CheckStatus {
                                 && (app_last_activity > 0) && (app_last_activity < last_sent_notif)
                                 && ((last_notification - last_sent_notif) > 3 * 24 * 60 * 60);
 
+                // https://github.com/Pz1c/WavingHands/issues/336: with a fresh push registration
+                // the caster server tells the player about these two itself. Finished and the
+                // reminder stay with the poll.
+                if ((ready || challenge) && serverPushActive(sharedPreferences)) {
+                    Log.d(TAG, "ready/challenge left to the server push");
+                    ready = false;
+                    challenge = false;
+                }
 
                 if (ready || challenge || finished || reminder) {
                     Log.d(TAG, "need notif");
-                    String msg, btn_title = "Play";//
-                    Bundle msg_data = new Bundle();
+                    int action_type, battle_id = 0;
                     if (challenge) {
-                        msg = "You got an invite, see invitation";
-                        msg_data.putInt("action_type", 1);
-                        editor.putInt("notification_action_type", 1);
+                        action_type = 1;
                         if ((arr_challenge.length == 1) && (!arr_challenge[0].isEmpty())) {
-                            msg_data.putInt("battle_id", Integer.parseInt(arr_challenge[0]));
-                            editor.putInt("notification_battle_id", Integer.parseInt(arr_challenge[0]));
+                            battle_id = Integer.parseInt(arr_challenge[0]);
                         }
                     } else if (ready) {
-                        msg = "Good news, you've got a new turn to play!";
-                        msg_data.putInt("action_type", 2);
-                        editor.putInt("notification_action_type", 2);
+                        action_type = 2;
                         if ((arr_ready.length == 1) && (!arr_ready[0].isEmpty())) {
-                            msg_data.putInt("battle_id", Integer.parseInt(arr_ready[0]));
-                            editor.putInt("notification_battle_id", Integer.parseInt(arr_ready[0]));
+                            battle_id = Integer.parseInt(arr_ready[0]);
                         }
                     } else if (finished) {
-                        msg = "Your battle is over!";
-                        msg_data.putInt("action_type", 3);
-                        editor.putInt("notification_action_type", 3);
-                        btn_title = "Show me";
+                        action_type = 3;
                         if ((finished_id != 0) && (finished_id != -2)) {
-                            msg_data.putInt("battle_id", finished_id);
-                            editor.putInt("notification_battle_id", finished_id);
+                            battle_id = finished_id;
                         }
                     } else {
-                        msg = "Great news! You got a new match";
-                        msg_data.putInt("action_type", 4);
-                        editor.putInt("notification_action_type", 4);
-                        btn_title = "Show me";
-                        if ((finished_id != 0) && (finished_id != -2)) {
-                            msg_data.putInt("battle_id", 0);
-                            editor.putInt("notification_battle_id", 0);
-                        }
+                        action_type = 4;
                     }
-                    Log.d(TAG, msg);
-                    CheckStatus.notify(context, msg, btn_title, msg_data);
+                    notifyType(context, action_type, battle_id);
+                    editor.putInt("notification_action_type", action_type);
+                    editor.putInt("notification_battle_id", battle_id);
                     editor.putInt("last_notification", last_notification);
                 }
                 editor.commit();
@@ -220,7 +211,59 @@ public class CheckStatus {
         return result;
     }
 
-    public static void notify(Context context, String message, String btn_title, Bundle data) {
+    // The caster server confirmed a push registration less than 7 days ago (issue #336): it
+    // covers ready and challenge, the poll leaves them to it. Without a fresh confirmation
+    // (server down, app not opened, permission lost) the poll takes over again by itself.
+    public static boolean serverPushActive(SharedPreferences sharedPreferences) {
+        try {
+            if (sharedPreferences.getInt("server_push_active", 0) != 1) {
+                return false;
+            }
+            long ts = sharedPreferences.getLong("server_push_active_ts", 0L);
+            long now = System.currentTimeMillis() / 1000L;
+            return (ts > 0) && (now - ts < 7L * 24 * 60 * 60);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Notification ids, one per action type (1 invite, 2 ready, 3 finished, 4 reminder) so an
+    // invite and a ready notification can stand side by side. 0 is what older builds posted;
+    // hideNotification still cancels it.
+    public static final int[] NOTIFICATION_IDS = {0, 1, 2, 3, 4};
+
+    // The notification of one action type: message, button and intent extras in one place,
+    // shared by the poll above and by the push (PushService). battle_id 0 = none or several.
+    public static void notifyType(Context context, int action_type, int battle_id) {
+        String msg, btn_title = "Play";
+        Bundle msg_data = new Bundle();
+        switch (action_type) {
+            case 1:
+                msg = "You got an invite, see invitation";
+                break;
+            case 2:
+                msg = "Good news, you've got a new turn to play!";
+                break;
+            case 3:
+                msg = "Your battle is over!";
+                btn_title = "Show me";
+                break;
+            default:
+                action_type = 4;
+                msg = "Great news! You got a new match";
+                btn_title = "Show me";
+                break;
+        }
+        msg_data.putInt("action_type", action_type);
+        if (battle_id > 0) {
+            msg_data.putInt("battle_id", battle_id);
+        }
+        Log.d(TAG, msg);
+        notify(context, msg, btn_title, msg_data, action_type);
+    }
+
+    public static void notify(Context context, String message, String btn_title, Bundle data, int notification_id) {
         try {
             NotificationManager m_notificationManager = (NotificationManager)
                     context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -240,11 +283,14 @@ public class CheckStatus {
             //if (data != null) {
                 resultIntent.putExtras(data);
             //}
-            PendingIntent resultPendingIntent;// = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            // The request code is the notification id: two notifications up at once must not
+            // share one PendingIntent, or FLAG_UPDATE_CURRENT gives both the extras of the
+            // one posted last.
+            PendingIntent resultPendingIntent;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                resultPendingIntent = PendingIntent.getActivity(context, notification_id, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             }else {
-                resultPendingIntent = PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                resultPendingIntent = PendingIntent.getActivity(context, notification_id, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             }
             Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.icon);
             m_builder//.setSmallIcon(icon)
@@ -266,7 +312,7 @@ public class CheckStatus {
                 m_builder.addAction(action);
             }
 
-            m_notificationManager.notify(0, m_builder.build());
+            m_notificationManager.notify(notification_id, m_builder.build());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -277,7 +323,9 @@ public class CheckStatus {
             NotificationManager m_notificationManager = (NotificationManager)
                     context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            m_notificationManager.cancel(0);
+            for (int id : NOTIFICATION_IDS) {
+                m_notificationManager.cancel(id);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

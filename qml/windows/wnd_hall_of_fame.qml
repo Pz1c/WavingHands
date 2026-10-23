@@ -12,8 +12,8 @@ InfoWindow {
     //icon.source: "qrc:/res/spellbook.png"
     //title.visible: true
     //title.text: dict.getStringByCode("Spellbook")
-    property var modelAll: [];
-    property var modelActive: [];
+    // One roster cache per tab, indexed like tabs.
+    property var tabModels: [[], [], []];
 
     gradient: Gradient {
         GradientStop { position: 0.0; color: "#210430" }
@@ -57,69 +57,43 @@ InfoWindow {
             //anchors.left: parent.left
             //anchors.right: parent.right
             height: 110 * mainWindow.ratioObject
-            width: 0.6 * parent.width
+            width: 0.84 * parent.width
             z: 15
 
-            Rectangle {
-                id: topSwitchActive
+            // Neighbouring tabs overlap, so the selected one, raised above the
+            // others, covers their rounded ends.
+            readonly property real tabOverlap: 30 * mainWindow.ratioObject
+            readonly property real tabWidth: (width + (dMainItem.tabs.length - 1) * tabOverlap) / dMainItem.tabs.length
 
-                color: "#A8F4F4"
-                border.color: "#A8F4F4"
-                border.width: 3 * mainWindow.ratioObject
-                radius: 15 * mainWindow.ratioObject
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 45 * mainWindow.ratioObject
-                anchors.left: parent.left
-                anchors.right: parent.horizontalCenter
-                anchors.rightMargin: -15 * mainWindow.ratioObject
-                z: 20
+            Repeater {
+                model: dMainItem.tabs
 
-                Text {
-                    id: topSwitchActiveText
-                    anchors.centerIn: parent
-                    font.pixelSize: 28 * mainWindow.ratioFont
-                    color: "#210430"
-                    text: "Active"
-                }
+                Rectangle {
+                    readonly property bool selected: dMainItem.switchStateValue === index
 
-                MouseArea {
-                    id: topMaAll
-                    anchors.fill: parent
-                    onClicked: {
-                        switchState();
+                    x: modelData.pos * (topSwitch.tabWidth - topSwitch.tabOverlap)
+                    width: topSwitch.tabWidth
+                    height: topSwitch.height - 45 * mainWindow.ratioObject
+                    color: selected ? "#A8F4F4" : "#210430"
+                    border.color: "#A8F4F4"
+                    border.width: 3 * mainWindow.ratioObject
+                    radius: 15 * mainWindow.ratioObject
+                    z: selected ? 20 : 17
+
+                    Text {
+                        anchors.centerIn: parent
+                        font.pixelSize: 28 * mainWindow.ratioFont
+                        color: parent.selected ? "#210430" : "#A8F4F4"
+                        text: modelData.title
                     }
-                }
-            }
 
-            Rectangle {
-                id: topSwitchAll
-
-                color: "#210430"
-                border.color: "#A8F4F4"
-                border.width: 3 * mainWindow.ratioObject
-                radius: 15 * mainWindow.ratioObject
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 45 * mainWindow.ratioObject
-                anchors.right: parent.right
-                anchors.left: parent.horizontalCenter
-                anchors.leftMargin: -15 * mainWindow.ratioObject
-                z: 17
-
-                Text {
-                    id: topSwitchAllText
-                    anchors.centerIn: parent
-                    font.pixelSize: 28 * mainWindow.ratioFont
-                    color: "#A8F4F4"
-                    text: "All time"
-                }
-
-                MouseArea {
-                    id: topMaActive
-                    anchors.fill: parent
-                    onClicked: {
-                        switchState();
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            if (!parent.selected) {
+                                dMainItem.switchState(index);
+                            }
+                        }
                     }
                 }
             }
@@ -132,8 +106,26 @@ InfoWindow {
                 font.pixelSize: 21 * mainWindow.ratioFont
                 color: "#E7FFFF"
                 horizontalAlignment: Text.AlignLeft
-                text: "Players active in the last 3 days:"
+                visible: text !== ""
+                text: dMainItem.botsOnly ? "No players online. Bots are always ready:" : dMainItem.tabs[dMainItem.switchStateValue].hint
             }
+        }
+
+        Text {
+            id: emptyOnlineHint
+            anchors.top: topSwitch.bottom
+            anchors.topMargin: 40 * mainWindow.ratioObject
+            anchors.left: parent.left
+            anchors.leftMargin: 40 * mainWindow.ratioObject
+            anchors.right: parent.right
+            anchors.rightMargin: 40 * mainWindow.ratioObject
+            font.pixelSize: 28 * mainWindow.ratioFont
+            color: "#E7FFFF"
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            visible: (dMainItem.switchStateValue === dMainItem.tabOnline) && (lvSpellList.count === 0)
+            text: "Nobody is online right now"
+            z: 14
         }
 
         ScrollView {
@@ -293,12 +285,12 @@ InfoWindow {
     Connections {
         target: mainWindow.gameCore
         function onTopListChanged() {
-            // The hidden tab is not on screen: drop its cache so switchState()
-            // reparses it on the next tap instead of showing an older roster.
-            if (dMainItem.switchStateValue === 0) {
-                dMainItem.modelAll = [];
-            } else {
-                dMainItem.modelActive = [];
+            // The hidden tabs are not on screen: drop their cache so switchState()
+            // reparses them on the next tap instead of showing an older roster.
+            for (var i = 0; i < dMainItem.tabModels.length; ++i) {
+                if (i !== dMainItem.switchStateValue) {
+                    dMainItem.tabModels[i] = [];
+                }
             }
             dMainItem.refreshShownTab();
         }
@@ -328,12 +320,13 @@ InfoWindow {
         console.log("wnd_hall_of_fame.initGFields", JSON.stringify(mainWindow.gERROR))
         // The window is cached across close/reopen and the models are only
         // refetched when empty, so without this a refreshed roster is invisible.
-        modelAll = [];
-        modelActive = [];
+        tabModels = [[], [], []];
         refreshPending = false;
         rowPressed = false;
+        // "Who's online" opens the Online tab, every other way in opens Active.
+        var tab = mainWindow.gERROR.top_list;
         mainWindow.gERROR = {};
-        switchState(0);
+        switchState(tab);
     }
 
     // A roster that cannot be parsed shows as an empty list instead of keeping
@@ -365,7 +358,7 @@ InfoWindow {
             return;
         }
         var tab = switchStateValue;
-        var shown = tab === 0 ? modelActive : modelAll;
+        var shown = tabModels[tab];
         var rows = loadTopList(tab);
         if (rowsSig(rows) === rowsSig(shown)) {
             return;
@@ -388,12 +381,8 @@ InfoWindow {
                 }
             }
         }
-        if (tab === 0) {
-            modelActive = rows;
-        } else {
-            modelAll = rows;
-        }
-        lvSpellList.model = rows;
+        tabModels[tab] = rows;
+        showRows(rows);
         lvSpellList.forceLayout();
         lvSpellList.contentY = Math.max(0, Math.min(y, lvSpellList.contentHeight - lvSpellList.height));
     }
@@ -410,49 +399,34 @@ InfoWindow {
         if (refreshPending) {
             // The deferred refresh belonged to the tab being left: drop its cache
             // so switching back reparses it instead of showing the older roster.
-            if (switchStateValue === 0) {
-                modelActive = [];
-            } else {
-                modelAll = [];
-            }
+            tabModels[switchStateValue] = [];
             refreshPending = false;
         }
-        if ((Val >= 0) && (Val < 2)) {
-            switchStateValue = Val;
-        } else {
-            switchStateValue = switchStateValue > 0 ? 0 : 1;
+        switchStateValue = ((Val >= 0) && (Val < tabs.length)) ? Val : 0;
+        if (tabModels[switchStateValue].length == 0) {
+            tabModels[switchStateValue] = loadTopList(switchStateValue);
         }
-
-        topSwitchBottomTitle.visible = switchStateValue === 0;
-        switch(switchStateValue) {
-        case 0:
-            topSwitchActive.color = "#A8F4F4";
-            topSwitchActiveText.color = "#210430";
-            topSwitchActive.z = 20;
-            topSwitchAll.color = "#210430";
-            topSwitchAllText.color = "#A8F4F4";
-            topSwitchAll.z = 17;
-            if (modelActive.length == 0) {
-                modelActive = loadTopList(0);
-            }
-            lvSpellList.model = modelActive;
-            break;
-        case 1:
-            topSwitchAll.color = "#A8F4F4";
-            topSwitchAllText.color = "#210430";
-            topSwitchAll.z = 20;
-            topSwitchActive.color = "#210430";
-            topSwitchActiveText.color = "#A8F4F4";
-            topSwitchActive.z = 17;
-            if (modelAll.length == 0) {
-                modelAll = loadTopList(1);
-            }
-            lvSpellList.model = modelAll;
-            break;
-        }
-        ;
+        showRows(tabModels[switchStateValue]);
     }
 
+    function showRows(rows) {
+        // The core lists bots only on the Online tab, and only while no other
+        // player is online.
+        botsOnly = rows.some(function (r) { return r.ai; });
+        lvSpellList.model = rows;
+    }
+
+    // Indexed by the core's list (QWarloksDuelCore::getTopList); pos is the
+    // place on the switch.
+    readonly property var tabs: [
+        {title: "Active", pos: 1, hint: "Players active in the last 3 days:"},
+        {title: "All time", pos: 2, hint: ""},
+        {title: "Online", pos: 0, hint: "Players active in the last 3 minutes:"}
+    ]
+    // https://github.com/Pz1c/WavingHands/issues/291
+    readonly property int tabOnline: 2
+    // The shown list is the bots standing in for absent players.
+    property bool botsOnly: false
     property int switchStateValue: 0
     // A roster change arrived while the list was moving or a row was pressed;
     // applied once that ends.

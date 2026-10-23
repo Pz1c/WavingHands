@@ -205,20 +205,21 @@ QString QWarlockStat::toString() const {
 }
 
 QString QWarlockStat::toJSON() const {
-    qint64 curr_time = QDateTime::currentSecsSinceEpoch();
-    QString active = boolToIntS(curr_time - _lastActivity <= 300);
+    // The "online" mark matches the Online tab of the Hall of Fame.
+    QString active = boolToIntS(online());
     return QString("{\"r\":%1,\"n\":\"%2\",\"l\":%3,\"m\":%4,\"p\":%5,\"w\":%6,\"d\":%7,\"e\":%8,\"c\":\"%9\","
-                   "\"la\":%10,\"mob\":%11,\"a\":%12,\"id\":%13}")
+                   "\"la\":%10,\"mob\":%11,\"a\":%12,\"id\":%13,\"ai\":%14}")
             // One arg() call, as in toString(): escaping does not protect a %N in
             // the name from a second pass.
             .arg(boolToIntS(_registered), QWarlockUtils::jsonEscape(_name), intToStr(_ladder), intToStr(_melee), // 1-4
                  intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_elo), // 5-8
-                 QWarlockUtils::jsonEscape(_color), intToStr(_lastActivity), boolToIntS(_mobile), active, intToStr(_warlockId)); // 9-13
+                 QWarlockUtils::jsonEscape(_color), intToStr(_lastActivity), boolToIntS(_mobile), active, intToStr(_warlockId), // 9-13
+                 boolToIntS(_ai)); // 14
 }
 
 
 bool QWarlockStat::online() const {
-    return _ai || (QDateTime::currentSecsSinceEpoch() - _lastActivity <= 5 * 60);
+    return _ai || (QDateTime::currentSecsSinceEpoch() - _lastActivity <= 3 * 60);
 }
 
 int QWarlockStat::elo() const

@@ -15,13 +15,18 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 import android.content.res.Resources;
+import android.util.Log;
 
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import com.kdab.training.CheckScheduler;
 import com.kdab.training.MainActivity;
+import com.kdab.training.PushService;
 
 public class NotificationClient
 {
+    private static final String TAG = "WarlocksDuel.NotificationClient";
+
     public static void notify(Context context, String message) {
         try {
             NotificationManager m_notificationManager = (NotificationManager)
@@ -174,6 +179,84 @@ public class NotificationClient
         } catch (Exception e) {
             e.printStackTrace();
             //return "";
+        }
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/336
+    // The FCM token of this install, "" while unknown. An empty answer starts the fetch; the
+    // token then lands in the prefs (PushService.storeToken) and reaches the core through
+    // pushTokenChanged.
+    public static String getPushToken(Context context, String message) {
+        try {
+            SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+            String token = sharedPreferences.getString("fcm_token", "");
+            if (!token.isEmpty()) {
+                return token;
+            }
+            fetchPushToken(context, message);
+            return "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    // FirebaseMessaging.getToken(), whatever the prefs hold: the first fetch of an install,
+    // and the forced send of the Settings window. The token, or the failure, goes to the
+    // core through pushTokenChanged (the token also to the prefs, PushService.storeToken).
+    public static void fetchPushToken(Context context, String message) {
+        try {
+            final Context app = context.getApplicationContext();
+            Log.d(PushService.PUSH_TAG, "fetching the token from Firebase");
+            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                if (!task.isSuccessful() || task.getResult() == null || task.getResult().isEmpty()) {
+                    Exception e = task.getException();
+                    String why = (e == null) ? "no token" : e.toString();
+                    Log.w(PushService.PUSH_TAG, "getToken failed: " + why);
+                    deliverPushToken("", why);
+                    return;
+                }
+                Log.d(PushService.PUSH_TAG, "getToken " + PushService.redact(task.getResult()));
+                PushService.storeToken(app, task.getResult());
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            deliverPushToken("", e.toString());
+        }
+    }
+
+    // The core binds this (QJniEnvironment::registerNativeMethods, registerPushNatives) as
+    // soon as it is up. In the process FCM starts without the Qt library it stays unbound,
+    // and the token just waits in the prefs for the next start of the app.
+    public static native void pushTokenChanged(String token, String error);
+
+    public static void deliverPushToken(String token, String error) {
+        String t = (token == null) ? "" : token;
+        String e = (error == null) ? "" : error;
+        try {
+            pushTokenChanged(t, e);
+            Log.d(PushService.PUSH_TAG, "token handed to the core " + PushService.redact(t));
+        } catch (UnsatisfiedLinkError err) {
+            Log.d(PushService.PUSH_TAG, "core not running, token kept in the prefs " + PushService.redact(t));
+        } catch (Throwable err) {
+            err.printStackTrace();
+        }
+    }
+
+    // "1" once the caster server acknowledged the PUSH of this install's token, "0" when the
+    // binding is gone (UNPUSH, logout, a server without push). CheckStatus.performCheck
+    // leaves ready and challenge to the server while this is fresh (7 days).
+    public static void setServerPushActive(Context context, String flag) {
+        try {
+            SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            boolean active = "1".equals(flag);
+            editor.putInt("server_push_active", active ? 1 : 0);
+            editor.putLong("server_push_active_ts", System.currentTimeMillis() / 1000L);
+            editor.commit();
+            Log.d(TAG, "setServerPushActive " + (active ? 1 : 0));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
