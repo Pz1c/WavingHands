@@ -125,6 +125,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("ConfirmSuicideForTurn", "", "", "Death");
 
     fillDictionary("Refresh", "", "", "Refresh");
+    // https://github.com/Pz1c/WavingHands/issues/291
+    fillDictionary("WhoIsOnline", "", "", "Who's online");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");

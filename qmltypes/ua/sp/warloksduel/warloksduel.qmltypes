@@ -770,120 +770,120 @@ Module {
         Method {
             name: "getTopList"
             type: "QString"
-            lineNumber: 199
-            Parameter { name: "ShowAll"; type: "bool" }
+            lineNumber: 201
+            Parameter { name: "List"; type: "int" }
         }
-        Method { name: "getTopList"; type: "QString"; isCloned: true; lineNumber: 199 }
+        Method { name: "getTopList"; type: "QString"; isCloned: true; lineNumber: 201 }
         Method {
             name: "prepareSpellHtmlList"
-            lineNumber: 201
+            lineNumber: 203
             Parameter { name: "emit_signal"; type: "bool" }
             Parameter { name: "force_emit"; type: "bool" }
         }
         Method {
             name: "prepareSpellHtmlList"
             isCloned: true
-            lineNumber: 201
+            lineNumber: 203
             Parameter { name: "emit_signal"; type: "bool" }
         }
-        Method { name: "prepareSpellHtmlList"; isCloned: true; lineNumber: 201 }
-        Method { name: "setupAIServer"; lineNumber: 202 }
+        Method { name: "prepareSpellHtmlList"; isCloned: true; lineNumber: 203 }
+        Method { name: "setupAIServer"; lineNumber: 204 }
         Method {
             name: "setSBL"
-            lineNumber: 204
+            lineNumber: 206
             Parameter { name: "NewLevel"; type: "int" }
         }
         Method {
             name: "showNotification"
-            lineNumber: 206
+            lineNumber: 208
             Parameter { name: "msg"; type: "QString" }
         }
         Method {
             name: "setUiBusy"
-            lineNumber: 209
+            lineNumber: 211
             Parameter { name: "busy"; type: "bool" }
         }
         Method {
             name: "setKeepMeOn"
-            lineNumber: 212
+            lineNumber: 214
             Parameter { name: "On"; type: "bool" }
         }
-        Method { name: "skipKeepMeOnOffer"; lineNumber: 215 }
+        Method { name: "skipKeepMeOnOffer"; lineNumber: 217 }
         Method {
             name: "setPushNotifications"
-            lineNumber: 219
+            lineNumber: 221
             Parameter { name: "On"; type: "bool" }
         }
-        Method { name: "isNotificationGranted"; type: "bool"; lineNumber: 220 }
-        Method { name: "sendPushTokenNow"; lineNumber: 224 }
+        Method { name: "isNotificationGranted"; type: "bool"; lineNumber: 222 }
+        Method { name: "sendPushTokenNow"; lineNumber: 226 }
         Method {
             name: "onPushTokenAvailable"
-            lineNumber: 228
+            lineNumber: 230
             Parameter { name: "token"; type: "QString" }
             Parameter { name: "error"; type: "QString" }
         }
         Method {
             name: "loginToSite"
-            lineNumber: 230
+            lineNumber: 232
             Parameter { name: "Silent"; type: "bool" }
         }
-        Method { name: "loginToSite"; isCloned: true; lineNumber: 230 }
+        Method { name: "loginToSite"; isCloned: true; lineNumber: 232 }
         Method {
             name: "timerFired"
-            lineNumber: 231
+            lineNumber: 233
             Parameter { name: "Silent"; type: "bool" }
         }
-        Method { name: "timerFired"; isCloned: true; lineNumber: 231 }
-        Method { name: "processServiceTimer"; lineNumber: 232 }
+        Method { name: "timerFired"; isCloned: true; lineNumber: 233 }
+        Method { name: "processServiceTimer"; lineNumber: 234 }
         Method {
             name: "doAIAnswer"
-            lineNumber: 233
+            lineNumber: 235
             Parameter { name: "Login"; type: "QString" }
             Parameter { name: "MagicBookLevel"; type: "int" }
         }
         Method {
             name: "checkAIAnswer"
-            lineNumber: 234
+            lineNumber: 236
             Parameter { name: "battle_id"; type: "int" }
         }
         Method {
             name: "onLinkAuthenticated"
-            lineNumber: 239
+            lineNumber: 241
             Parameter { name: "canonical"; type: "QString" }
             Parameter { name: "token"; type: "QString" }
         }
         Method {
             name: "onRosterBlock"
-            lineNumber: 240
+            lineNumber: 242
             Parameter { name: "block"; type: "QRosterBlock" }
         }
         Method {
             name: "onRosterFailed"
-            lineNumber: 241
+            lineNumber: 243
             Parameter { name: "code"; type: "QString" }
         }
         Method {
             name: "onLinkTurnReady"
-            lineNumber: 242
+            lineNumber: 244
             Parameter { name: "by"; type: "QString" }
         }
         Method {
             name: "onPushRegistered"
-            lineNumber: 244
+            lineNumber: 246
             Parameter { name: "token"; type: "QString" }
         }
         Method {
             name: "onPushUnregistered"
-            lineNumber: 245
+            lineNumber: 247
             Parameter { name: "token"; type: "QString" }
         }
-        Method { name: "onPushUnsupported"; lineNumber: 246 }
+        Method { name: "onPushUnsupported"; lineNumber: 248 }
         Method {
             name: "onPushFailed"
-            lineNumber: 247
+            lineNumber: 249
             Parameter { name: "token"; type: "QString" }
             Parameter { name: "reason"; type: "QString" }
         }
-        Method { name: "onPushForceTimeout"; lineNumber: 248 }
+        Method { name: "onPushForceTimeout"; lineNumber: 250 }
     }
 }

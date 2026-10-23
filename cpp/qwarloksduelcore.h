@@ -196,7 +196,9 @@ public slots:
     QString battleInfo();
     QString battleReadOnly(int BattleID);
     QString playerJson();
-    QString getTopList(bool ShowAll = false);
+    // 0 - active in the last 3 days, 1 - all time, 2 - online (QWarlockStat::online;
+    // bots only while no other player is)
+    QString getTopList(int List = 0);
 
     void prepareSpellHtmlList(bool emit_signal = true, bool force_emit = false);
     void setupAIServer();
@@ -500,6 +502,7 @@ private:
     QWarlock *_player;
     QString _topActive;
     QString _topAll;
+    QString _topOnline;
 
     // system
     bool _isTimerActive;

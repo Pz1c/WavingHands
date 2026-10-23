@@ -611,6 +611,7 @@ void QWarloksDuelCore::generateTopList() {
     std::sort(wsl.begin(), wsl.end(), customOrderWS);
     _topActive.clear();
     _topAll.clear();
+    _topOnline.clear();
     qint64 curr_time = QDateTime::currentSecsSinceEpoch();
     foreach(QWarlockStat *ws, wsl) {
             if (ws->ai()) {
@@ -628,8 +629,28 @@ void QWarloksDuelCore::generateTopList() {
             _topActive.append(ws->toJSON());
         }
     }
+    // https://github.com/Pz1c/WavingHands/issues/291
+    // Bots are always online: they fill the Online tab while nobody but the
+    // player is there to be challenged.
+    bool others_online = false;
+    foreach(QWarlockStat *ws, wsl) {
+        if (!ws->ai() && ws->online() && (ws->name().compare(_login, Qt::CaseInsensitive) != 0)) {
+            others_online = true;
+            break;
+        }
+    }
+    foreach(QWarlockStat *ws, wsl) {
+        if (!ws->online() || (ws->ai() && others_online)) {
+            continue;
+        }
+        if (!_topOnline.isEmpty()) {
+            _topOnline.append(",");
+        }
+        _topOnline.append(ws->toJSON());
+    }
     _topActive.append("]").prepend("[");
     _topAll.append("]").prepend("[");
+    _topOnline.append("]").prepend("[");
 }
 
 void QWarloksDuelCore::publishTopList() {
@@ -3759,8 +3780,12 @@ QString QWarloksDuelCore::battleList() {
     return _battleList;
 }
 
-QString QWarloksDuelCore::getTopList(bool ShowAll) {
-    return ShowAll ? _topAll : _topActive;
+QString QWarloksDuelCore::getTopList(int List) {
+    switch (List) {
+    case 1: return _topAll;
+    case 2: return _topOnline;
+    default: return _topActive;
+    }
 }
 
 QString QWarloksDuelCore::getHintArray(int hint_id) {

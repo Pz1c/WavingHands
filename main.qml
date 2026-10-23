@@ -106,7 +106,7 @@ ApplicationWindow {
         onTopListChanged: {
                 if (needTopList === 1) {
                     needTopList = 0;
-                    showHallOfFameWindow();
+                    showHallOfFameWindow(needTopListTab);
                 }
             }
         Component.onCompleted: {
@@ -500,6 +500,28 @@ ApplicationWindow {
                         logEvent("New_game_button", {});
                         WNDU.showNewGame();
                         //GUI.startGame(0);
+                    }
+                }
+
+                // https://github.com/Pz1c/WavingHands/issues/291
+                LargeText {
+                    id: ltWhoIsOnline
+                    anchors.top: bbNewGame.bottom
+                    anchors.topMargin: 24 * ratioObject
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    height: 48 * ratioObject
+                    width: 0.5 * parent.width
+                    font.pixelSize: 28 * ratioFont
+                    font.underline: true
+                    horizontalAlignment: Text.AlignHCenter
+                    fontSizeMode: Text.VerticalFit
+                    color: "#A8F4F4"
+                    text: warlockDictionary.getStringByCode("WhoIsOnline")
+
+                    onClicked: {
+                        logEvent("Who_is_online_button", {});
+                        // 2 - the Online list of QWarloksDuelCore::getTopList
+                        getHallOfFame(2);
                     }
                 }
 
@@ -1385,13 +1407,18 @@ ApplicationWindow {
     }
 
     property int needTopList: 0;
-    function getHallOfFame() {
+    // The Hall of Fame tab to open once the roster arrives.
+    property int needTopListTab: 0;
+    function getHallOfFame(tab) {
         needTopList = 1;
+        needTopListTab = tab ? tab : 0;
         core.scanTopList(false, true);
         //WNDU.showTopWindow();
     }
 
-    function showHallOfFameWindow() {
+    // tab is a list of QWarloksDuelCore::getTopList, Active when left out.
+    function showHallOfFameWindow(tab) {
+        gERROR = {top_list: tab ? tab : 0};
         WNDU.showTopWindow();
     }
 
