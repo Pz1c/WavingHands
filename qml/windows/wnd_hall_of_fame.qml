@@ -107,7 +107,7 @@ InfoWindow {
                 color: "#E7FFFF"
                 horizontalAlignment: Text.AlignLeft
                 visible: text !== ""
-                text: dMainItem.tabs[dMainItem.switchStateValue].hint
+                text: dMainItem.botsOnly ? "No players online. Bots are always ready:" : dMainItem.tabs[dMainItem.switchStateValue].hint
             }
         }
 
@@ -382,7 +382,7 @@ InfoWindow {
             }
         }
         tabModels[tab] = rows;
-        lvSpellList.model = rows;
+        showRows(rows);
         lvSpellList.forceLayout();
         lvSpellList.contentY = Math.max(0, Math.min(y, lvSpellList.contentHeight - lvSpellList.height));
     }
@@ -406,7 +406,14 @@ InfoWindow {
         if (tabModels[switchStateValue].length == 0) {
             tabModels[switchStateValue] = loadTopList(switchStateValue);
         }
-        lvSpellList.model = tabModels[switchStateValue];
+        showRows(tabModels[switchStateValue]);
+    }
+
+    function showRows(rows) {
+        // The core lists bots only on the Online tab, and only while no other
+        // player is online.
+        botsOnly = rows.some(function (r) { return r.ai; });
+        lvSpellList.model = rows;
     }
 
     // Indexed by the core's list (QWarloksDuelCore::getTopList); pos is the
@@ -418,6 +425,8 @@ InfoWindow {
     ]
     // https://github.com/Pz1c/WavingHands/issues/291
     readonly property int tabOnline: 2
+    // The shown list is the bots standing in for absent players.
+    property bool botsOnly: false
     property int switchStateValue: 0
     // A roster change arrived while the list was moving or a row was pressed;
     // applied once that ends.
