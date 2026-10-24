@@ -321,6 +321,15 @@ function prepareTurnNewsMonsterOwners(previous_battle, real_actions) {
             map[info.name] = info.owner;
         }
     }
+    // The old turn-news temp tiles already resolved monsters that are gone
+    // (died, absorbed summon). Use that result where the roster reconstruction
+    // has no owner, so both systems agree instead of using two maps.
+    var temp_owners = battle.temp_monster_owner || {};
+    for (var temp_name in temp_owners) {
+        if (!Object.prototype.hasOwnProperty.call(map, temp_name)) {
+            map[temp_name] = temp_owners[temp_name];
+        }
+    }
     battle.turn_news_monster_owners = map;
 }
 

@@ -170,7 +170,7 @@ Item {
         // when it is mutated in place, so the new icon would not appear.
         roster = roster.slice();
         l_warlock.turn_news_monsters = roster;
-        prepareDynamic("m", roster, iMonsters, "hp", 0, 1);
+        refreshTurnNewsMonsters();
     }
 
     function showMonsterDeath(name) {
@@ -279,6 +279,11 @@ Item {
             }
         }
         l_warlock.turn_news_monsters = undefined;
+        // The temporary turn-news tiles belong to the old step too.
+        tempNewsMonsters = [];
+        tempMonsterKey = "[]";
+        tempStatusKey = "[]";
+        iCharm.model = l_warlock.statusIcons || [];
         var monsters = l_warlock.monsters || [];
         for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
             monsters[i].turn_news_dead = false;
@@ -807,6 +812,9 @@ Item {
     // The lists are only rebuilt when the set changes, so a step keeps the tiles of the step before.
     property string tempStatusKey: "[]"
     property string tempMonsterKey: "[]"
+    // Monsters that are only on the board during the news (gone or absorbed). They are
+    // overlaid on the reconstructed turn-news roster, never on the final one.
+    property var tempNewsMonsters: []
 
     function setTempIcons(statuses, monsters) {
         var sk = JSON.stringify(statuses), mk = JSON.stringify(monsters);
@@ -816,7 +824,8 @@ Item {
         }
         if (mk !== tempMonsterKey) {
             tempMonsterKey = mk;
-            iMonsters.model = monsters.length > 0 ? l_warlock.monsters.concat(monsters) : l_warlock.monsters;
+            tempNewsMonsters = monsters;
+            refreshTurnNewsMonsters();
         }
     }
 
@@ -1096,10 +1105,36 @@ Item {
 
     }
 
-    function prepareMonsters() {
-        var monsters = (l_warlock.turn_news_monsters !== undefined)
+    // Single source for the monster tiles while the turn news plays: the dynamic
+    // turn-news roster (previous turn + summons/deaths) plus the temporary tiles
+    // that only exist in history. 17b6b71's temp icons and the newer dynamic roster
+    // must not overwrite each other's ListView model.
+    function refreshTurnNewsMonsters() {
+        var base = (l_warlock.turn_news_monsters !== undefined)
                 ? l_warlock.turn_news_monsters : l_warlock.monsters;
-        prepareDynamic("m", monsters, iMonsters, "hp", 0, 1);
+        var shown = (base || []).slice();
+        var temps = tempNewsMonsters || [];
+        for (var i = 0, Ln = temps.length; i < Ln; ++i) {
+            var temp = temps[i];
+            if (!temp) {
+                continue;
+            }
+            var found = false;
+            for (var j = 0, LnJ = shown.length; j < LnJ; ++j) {
+                if (shown[j] && (shown[j].name === temp.name)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                shown.push(temp);
+            }
+        }
+        prepareDynamic("m", shown, iMonsters, "hp", 0, 1);
+    }
+
+    function prepareMonsters() {
+        refreshTurnNewsMonsters();
     }
 
     function prepareState() {
