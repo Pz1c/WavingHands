@@ -1368,18 +1368,16 @@ function findSummonRecord(summons, caster, hand) {
     return first;
 }
 
-function prepareNewsMonsters(rows, battle) {
-    var i, Ln, j, LnJ, m, txt, rec, owner, name, strength;
-    var summons = [], summoned = [];
+// Scan and pair the summon rows once. prepareNewsMonsters() needs the records before
+// BGU.prepareAndSortRealAction() (the annotations below are used by the parser), while
+// prepareTurnNewsTransitions() needs the same records after parsing. Returning them keeps a
+// single parser instead of three independent scans of the summon rows.
+function collectNewsSummons(rows, battle) {
+    var i, Ln, j, LnJ, m, txt, rec, owner;
+    var casts = [], arrivals = [], byId = {};
     var re_cast = /^(\S+) casts Summon (Goblin|Ogre|Troll|Giant) at ([^,.]+)/;
     var re_summoned = /^(.+?) is summoned to serve ([^.]+)\.?$/;
-    var re_dies = /^(.+?) dies\.?$/;
     var re_summoning = /the monster (\S+) is summoning with (?:his|her|its|their) (left|right) hand/;
-    battle.temp_monsters = {};
-    battle.temp_monster_owner = {};
-    for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-        battle.warlocks[i].news_monsters = battle.warlocks[i].monsters.slice();
-    }
     for (i = 0, Ln = rows.length; i < Ln; ++i) {
         txt = rows[i].txt;
         if ((txt.indexOf(" banked ") === -1) && (m = re_cast.exec(txt))) {
@@ -1391,49 +1389,78 @@ function prepareNewsMonsters(rows, battle) {
                 var mo = findMonsterOwner(battle, owner, false), ms = re_summoning.exec(owner);
                 owner = mo ? mo : (ms ? ms[1] : m[1]);
             }
-            rec = {id:summons.length + 1,caster:m[1],owner:owner,type:m[2],hand:getSpellHand(findWarlockByName(battle, m[1]), "Summon " + m[2]),name:"",key:"",real:false};
-            summons.push(rec);
+            rec = {id:casts.length + 1,caster:m[1],owner:owner,type:m[2],hand:getSpellHand(findWarlockByName(battle, m[1]), "Summon " + m[2]),name:"",key:"",real:false};
+            casts.push(rec);
+            byId[rec.id] = rec;
             rows[i].summon = rec;
             rows[i].summon_id = rec.id;
         } else if ((m = re_summoned.exec(txt))) {
-            summoned.push({row:rows[i],name:m[1].trim(),owner:m[2].trim(),rec:null});
+            arrivals.push({row:rows[i],name:m[1].trim(),owner:m[2].trim(),rec:null});
         }
     }
     // the casts and the arrivals: same controller, same kind, in order
-    for (i = 0, Ln = summons.length; i < Ln; ++i) {
-        rec = summons[i];
-        for (j = 0, LnJ = summoned.length; j < LnJ; ++j) {
-            if (summoned[j].rec || (summoned[j].owner.toLowerCase() !== rec.owner.toLowerCase()) || (summoned[j].name.indexOf(rec.type) === -1)) {
+    for (i = 0, Ln = casts.length; i < Ln; ++i) {
+        rec = casts[i];
+        for (j = 0, LnJ = arrivals.length; j < LnJ; ++j) {
+            if (arrivals[j].rec || (arrivals[j].owner.toLowerCase() !== rec.owner.toLowerCase()) || (arrivals[j].name.indexOf(rec.type) === -1)) {
                 continue;
             }
-            summoned[j].rec = rec;
-            summoned[j].row.summoned_id = rec.id;
-            rec.name = summoned[j].name;
+            arrivals[j].rec = rec;
+            arrivals[j].row.summoned_id = rec.id;
+            rec.name = arrivals[j].name;
             break;
         }
         rec.real = (rec.name !== "") && (findMonsterOwner(battle, rec.name, true) !== "");
         if (rec.real) {
             rec.key = rec.name;
             rec.owner = findMonsterOwner(battle, rec.name, true);
+        } else {
+            rec.key = rec.name !== "" ? rec.name : ("New " + rec.type + " of " + rec.owner);
+        }
+    }
+    // targets like "the monster X is summoning with his left hand"
+    for (i = 0, Ln = rows.length; i < Ln; ++i) {
+        if ((m = re_summoning.exec(rows[i].txt))) {
+            rec = findSummonRecord(casts, m[1], m[2]);
+            if (rec) {
+                rows[i].summon_target = rec;
+            }
+        }
+    }
+    return {casts:casts,arrivals:arrivals,byId:byId};
+}
+
+function prepareNewsMonsters(rows, battle) {
+    var i, Ln, j, LnJ, m, name, strength;
+    battle.temp_monsters = {};
+    battle.temp_monster_owner = {};
+    for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        battle.warlocks[i].news_monsters = battle.warlocks[i].monsters.slice();
+    }
+    var news = collectNewsSummons(rows, battle);
+    // summons that are not on the end-of-turn board
+    for (i = 0, Ln = news.casts.length; i < Ln; ++i) {
+        var rec = news.casts[i];
+        if (rec.real) {
             continue;
         }
         strength = SUMMON_SPELL_TYPES.indexOf(rec.type) + 1;
-        rec.key = rec.name !== "" ? rec.name : ("New " + rec.type + " of " + rec.owner);
         if (!battle.temp_monsters[rec.key]) {
             addTempNewsMonster(battle, rec.owner, {name:rec.key,icon:rec.name !== "" ? getMonsterIconByName(rec.name) : "new_" + rec.type.toLowerCase(),
                                                    text:strength,hp:strength,strength:strength,damage:strength});
         }
     }
     // an arrival without a cast row (a banked summon fired) that is gone too
-    for (j = 0, LnJ = summoned.length; j < LnJ; ++j) {
-        name = summoned[j].name;
-        if (summoned[j].rec || battle.temp_monsters[name] || !isWarlockName(battle, summoned[j].owner) || (findMonsterOwner(battle, name, true) !== "")) {
+    for (j = 0, LnJ = news.arrivals.length; j < LnJ; ++j) {
+        name = news.arrivals[j].name;
+        if (news.arrivals[j].rec || battle.temp_monsters[name] || !isWarlockName(battle, news.arrivals[j].owner) || (findMonsterOwner(battle, name, true) !== "")) {
             continue;
         }
         strength = getMonsterDamageByName(name);
-        addTempNewsMonster(battle, summoned[j].owner, {name:name,icon:getMonsterIconByName(name),text:strength > 0 ? strength : "",hp:strength,strength:strength,damage:strength});
+        addTempNewsMonster(battle, news.arrivals[j].owner, {name:name,icon:getMonsterIconByName(name),text:strength > 0 ? strength : "",hp:strength,strength:strength,damage:strength});
     }
     // the ones on the board when the turn began that died
+    var re_dies = /^(.+?) dies\.?$/;
     for (i = 0, Ln = rows.length; i < Ln; ++i) {
         if (!(m = re_dies.exec(rows[i].txt))) {
             continue;
@@ -1442,23 +1469,16 @@ function prepareNewsMonsters(rows, battle) {
         if (isWarlockName(battle, name) || battle.temp_monsters[name] || (findMonsterOwner(battle, name, true) !== "")) {
             continue;
         }
-        owner = resolveGoneMonsterOwner(battle, name, rows);
+        var owner = resolveGoneMonsterOwner(battle, name, rows);
         if (!owner) {
             continue;
         }
         strength = getMonsterDamageByName(name);
         addTempNewsMonster(battle, owner, {name:name,icon:getMonsterIconByName(name),text:"",hp:0,strength:strength,damage:strength,pre_existing:true});
     }
-    // targets like "the monster X is summoning with his left hand"
-    for (i = 0, Ln = rows.length; i < Ln; ++i) {
-        if ((m = re_summoning.exec(rows[i].txt))) {
-            rec = findSummonRecord(summons, m[1], m[2]);
-            if (rec) {
-                rows[i].summon_target = rec;
-            }
-        }
-    }
-    console.log("prepareNewsMonsters", JSON.stringify(summons), JSON.stringify(battle.temp_monster_owner));
+    battle.news_summons = news;
+    console.log("prepareNewsMonsters", JSON.stringify(news.casts), JSON.stringify(battle.temp_monster_owner));
+    return news;
 }
 
 function getTempState(state, warlock_name) {

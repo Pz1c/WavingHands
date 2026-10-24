@@ -288,7 +288,7 @@ function isTurnNewsDeadWarlock(w) {
 // The final battle no longer contains monsters that died this turn, but their
 // rows still name them. Keep their owner available while the turn news runs so
 // damage, healing and the death marker can find the right card.
-function prepareTurnNewsMonsterOwners(previous_battle, real_actions) {
+function prepareTurnNewsMonsterOwners(previous_battle, real_actions, news_summons) {
     var map = {};
     if (isPreviousTurnBattle(previous_battle)) {
         for (var i = 0, Ln = previous_battle.warlocks.length; i < Ln; ++i) {
@@ -314,11 +314,18 @@ function prepareTurnNewsMonsterOwners(previous_battle, real_actions) {
     }
     // A monster summoned and killed in the same turn is absent from the final
     // roster, but its summon row still tells us who owned it.
-    var rows = real_actions || [];
-    for (var r = 0, LnR = rows.length; r < LnR; ++r) {
-        var info = getTurnNewsSummonInfo(rows[r]);
-        if (info) {
-            map[info.name] = info.owner;
+    var arrivals = news_summons && news_summons.arrivals;
+    if (arrivals) {
+        for (var a = 0, LnA = arrivals.length; a < LnA; ++a) {
+            map[arrivals[a].name] = arrivals[a].owner;
+        }
+    } else {
+        var rows = real_actions || [];
+        for (var r = 0, LnR = rows.length; r < LnR; ++r) {
+            var info = getTurnNewsSummonInfo(rows[r]);
+            if (info) {
+                map[info.name] = info.owner;
+            }
         }
     }
     // The old turn-news temp tiles already resolved monsters that are gone
@@ -420,18 +427,39 @@ function addTurnNewsTransitionAction(real_actions, idx, action) {
     row.turn_news_force_show = true;
 }
 
-function prepareTurnNewsTransitions(real_actions, previous_battle) {
+function findTurnNewsArrival(news_summons, row) {
+    if (!news_summons || !news_summons.arrivals) {
+        return null;
+    }
+    for (var i = 0, Ln = news_summons.arrivals.length; i < Ln; ++i) {
+        if (news_summons.arrivals[i].row === row) {
+            return news_summons.arrivals[i];
+        }
+    }
+    return null;
+}
+
+function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons) {
     var previous_valid = isPreviousTurnBattle(previous_battle);
     var summoned = {}, elemental_summoned = false, i, Ln, row, j, LnJ;
 
-    for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
-        row = real_actions[i];
-        var summoned_info = getTurnNewsSummonInfo(row);
-        if (summoned_info) {
-            summoned[summoned_info.name] = true;
+    if (news_summons && news_summons.arrivals) {
+        for (i = 0, Ln = news_summons.arrivals.length; i < Ln; ++i) {
+            summoned[news_summons.arrivals[i].name] = true;
         }
-        if (getTurnNewsElementalAppearance(row)) {
+    } else {
+        for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
+            row = real_actions[i];
+            var summoned_info = getTurnNewsSummonInfo(row);
+            if (summoned_info) {
+                summoned[summoned_info.name] = true;
+            }
+        }
+    }
+    for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        if (getTurnNewsElementalAppearance(real_actions[i])) {
             elemental_summoned = true;
+            break;
         }
     }
 
@@ -493,9 +521,20 @@ function prepareTurnNewsTransitions(real_actions, previous_battle) {
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         row = real_actions[i];
-        var summon = getTurnNewsSummonInfo(row);
+        var arrival = findTurnNewsArrival(news_summons, row);
+        var summon = arrival
+                ? {name:arrival.name, owner:arrival.owner, rec:arrival.rec}
+                : (news_summons ? null : getTurnNewsSummonInfo(row));
         if (summon) {
             var summon_data = findTurnNewsMonsterData(summon.name);
+            var temp_data = null;
+            if (summon.rec && battle.temp_monsters) {
+                temp_data = battle.temp_monsters[summon.rec.key];
+            }
+            if (!temp_data && battle.temp_monsters) {
+                temp_data = battle.temp_monsters[summon.name];
+            }
+            var summon_hp_data = summon_data || temp_data;
             var summon_icon = summon_data ? summon_data.icon : BGU.getMonsterIconByName(summon.name);
             if (!summon_data && (summon_icon !== "summon")) {
                 if (summon_icon.indexOf("elemental") !== -1) {
@@ -504,9 +543,10 @@ function prepareTurnNewsTransitions(real_actions, previous_battle) {
                     summon_icon = "new_" + summon_icon;
                 }
             }
-            var summon_hp = summon_data
-                    ? ((summon_data.turn_news_hp_start !== undefined)
-                            ? summon_data.turn_news_hp_start : summon_data.hp)
+            var summon_hp = summon_hp_data
+                    ? ((summon_hp_data.turn_news_hp_start !== undefined)
+                            ? summon_hp_data.turn_news_hp_start
+                            : ((summon_hp_data.hp !== undefined) ? summon_hp_data.hp : summon_hp_data.text))
                     : getSummonedMonsterHp(summon.name);
             addTurnNewsTransitionAction(real_actions, i,
                     {action:"summon", object_type:"monster",
@@ -1312,8 +1352,8 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
 
     // https://github.com/Pz1c/WavingHands/issues/227
     // temporary tiles for the monsters that are gone, summon rows paired, then the temporary icons of every step
-    BGU.prepareNewsMonsters(real_actions, battle);
-    prepareTurnNewsMonsterOwners(previous_battle, real_actions);
+    var news_summons = BGU.prepareNewsMonsters(real_actions, battle);
+    prepareTurnNewsMonsterOwners(previous_battle, real_actions, news_summons);
     BGU.prepareAndSortRealAction(real_actions, battle);
     var initial_temp = BGU.prepareNewsTempIcons(real_actions, battle);
     // the steps before the first row (hints, what the players said) show the board as the turn began
@@ -1321,7 +1361,7 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
         new_hint[i].actions = new_hint[i].actions.concat(BGU.getTempIconActions(initial_temp, battle));
     }
     prepareTurnNewsDamage(real_actions, previous_battle);
-    prepareTurnNewsTransitions(real_actions, previous_battle);
+    prepareTurnNewsTransitions(real_actions, previous_battle, news_summons);
     var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
