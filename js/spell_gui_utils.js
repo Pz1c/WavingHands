@@ -18,6 +18,10 @@ function cleanUpWindow(ratioObject) {
     svMain.anchors.top = ltDesc.bottom;
     svMain.anchors.topMargin = 20 * ratioObject;
     ltError.visible = true;
+    svMain.visible = true;
+    lvHistory.visible = false;
+    lvHistory.targetTurn = -1;
+    lvHistory.model = [];
 }
 
 function prepareUnstartedGame(l_data, dict) {
@@ -268,8 +272,7 @@ function prepareBattleHistory(l_data, dict) {
     ltTitle.visible = true;
     ltTitle.text = dict.getStringByCode("BattleHistoryTitle");
     ltShortDesc.visible = false;
-    svMain.anchors.top = ltTitle.bottom;
-    ltError.text = replaceAll(l_data.history, "&quot;", '"');
+    buildBattleHistory(l_data.history, l_data.turn);
 }
 
 function preparePersonalChallenge(l_data, dict) {

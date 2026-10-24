@@ -1,5 +1,6 @@
 #include "qwarloksduelcore.h"
 
+#include <QRegularExpression>
 #include <QUrlQuery>
 #ifdef Q_OS_ANDROID
 #include <QJniEnvironment>
@@ -1646,6 +1647,29 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     return res;
 }
 
+void QWarloksDuelCore::requestBattleHistory(int battle_id) {
+    qDebug() << "requestBattleHistory" << battle_id << _isLogined;
+    if (_isAI || _isAsService || !_isLogined || (battle_id <= 0)) {
+        return;
+    }
+    // Background: the history window is already open with whatever the battle page
+    // had; this only fills in the rest, so it must not raise or hold the overlay.
+    sendGetRequest(QString(GAME_SERVER_URL_GET_BATTLE_HISTORY).arg(intToStr(battle_id)), true);
+}
+
+void QWarloksDuelCore::finishBattleHistory(QString &Data, int StatusCode, const QString &url) {
+    int battle_id = battleIdFromUrl(url);
+    qDebug() << "finishBattleHistory" << battle_id << StatusCode;
+    if ((StatusCode != 200) || (battle_id <= 0)) {
+        return;
+    }
+    QBattleInfo *battleInfo = getBattleInfo(battle_id);
+    if (!battleInfo->parseFullHistory(Data)) {
+        return;
+    }
+    emit battleHistoryReady(battle_id, battleInfo->getHistory());
+}
+
 QString QWarloksDuelCore::prepareBattleOrders() {
     QString res = "say$";
     QString msg = "";
@@ -1732,9 +1756,10 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
         }
     }
 
+    int event_turn = (_loadedBattleTurn > 0) ? (_loadedBattleTurn - 1) : 0;
     QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
-    battleInfo->addChat(_loadedBattleTurn, chat_msg);
-    battleInfo->addHistory(_loadedBattleTurn, short_hist);
+    battleInfo->addChat(event_turn, chat_msg);
+    battleInfo->addHistory(event_turn, short_hist);
     // fix for issue #201
     if (battleInfo->with_bot()) {
         chat_cnt = 0;
@@ -1890,6 +1915,13 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
 bool QWarloksDuelCore::butifyTurnMessage(QString &str, bool CleanGestures) {
     str = str.replace("<H2>", "").replace("</H2>", "").replace("<p>", "").replace("</p>", "")
             .replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
+    // The server occasionally drops the opening quote on a colour tag, e.g.
+    // <FONT COLOR=#88FFFF">. Quote it so RichText does not keep the attribute as
+    // part of the message (live turns are stored without going through parseBattleTurn).
+    static const QRegularExpression malformed_color(
+        "<FONT COLOR=(#[0-9A-Fa-f]{6})\"?>",
+        QRegularExpression::CaseInsensitiveOption);
+    str.replace(malformed_color, "<FONT COLOR=\"\\1\">");
     int idx = str.indexOf("<FONT CLASS=monoturn>");
     if (CleanGestures && (idx != -1)) {
         QString part2 = str.mid(idx).replace("<FONT CLASS=monoturn>Turn:</FONT>", "<!--");
@@ -3074,6 +3106,13 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return true;
     }
 
+    // History backfill runs in the background while a battle window is open, so it
+    // must not touch the shared battle slot the page loaders use.
+    if ((url.indexOf("/warlocks") != -1) && (url.indexOf("full=1") != -1)) {
+        finishBattleHistory(data, statusCode, url);
+        return true;
+    }
+
     // battle parsing there
     if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1) || (url.indexOf("robot_gateway/wh/") != -1)) {
         int reply_id = battleIdFromUrl(url);
@@ -3839,7 +3878,7 @@ QString QWarloksDuelCore::getBattleHint(QBattleInfo *battle_info) {
 
 QString QWarloksDuelCore::battleReadOnly(int BattleID) {
     qDebug() << "QWarloksDuelCore::battleReadOnly" << BattleID << _loadedBattleID;
-    QBattleInfo *battle_info = getBattleInfo(_loadedBattleID);
+    QBattleInfo *battle_info = getBattleInfo(BattleID);
     QString res = battle_info->fullJSON();
     return res;
 }
@@ -3864,7 +3903,9 @@ QString QWarloksDuelCore::battleInfo() {
     }
     QString tmpBH = battle_info->getHistory();
     QString tmpBC = battle_info->getChat();
-    QString tmpLT = battle_info->getTurnInfo(_loadedBattleTurn, _login);
+    // The newest events of the loaded page belong to the last resolved turn (see
+    // prepareBattleChatAndHistory), that is the turn news to show for this load.
+    QString tmpLT = battle_info->getTurnInfo(_loadedBattleTurn > 0 ? _loadedBattleTurn - 1 : 0, _login);
 
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"

@@ -144,6 +144,9 @@ signals:
     // An opponent made a move (TURNREADY over the caster link), rate limited.
     // QML decides whether the battle list may be refreshed right now.
     void opponentTurnReady(QString by);
+    // A background "&full=1" fetch finished: history is the complete, printable turn
+    // log for that battle (only emitted when the log was actually upgraded).
+    void battleHistoryReady(int battle_id, QString history);
 
 public slots:
 
@@ -167,6 +170,10 @@ public slots:
     void aiCreateNewChallenge();
     void regNewUser(const QString &Login, const QString &Email, const QString &Pass = "");
     void getBattle(int battle_id, int battle_type, bool silent = false);
+    // Ask for the complete turn log in the background; the reply arrives as
+    // battleHistoryReady(). Used when the Battle history window opens, because the
+    // plain battle page only carries the newest turn.
+    void requestBattleHistory(int battle_id);
     void getWarlockInfo(const QString &Login);
     void sendMessage(const QString &Msg);
     void autoLogin(int Idx);
@@ -261,6 +268,7 @@ protected:
     // Announce: the reply answers announceNextResult(), a request the player did not make,
     // so it opens nothing but the result itself.
     bool finishGetFinishedBattle(QString &Data, bool Announce = false);
+    void finishBattleHistory(QString &Data, int StatusCode, const QString &url);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
     bool butifyTurnMessage(QString &str, bool CleanGestures = false);
