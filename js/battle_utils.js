@@ -1871,7 +1871,10 @@ function getOrdersForReview(dictionary) {
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
         m_obj = actions.M[i];
         console.log("m_obj", JSON.stringify(m_obj));
-        if (!m_obj.under_control) {
+        if (!m_obj.under_control ||
+                m_obj.turn_news_dead ||
+                (m_obj.id === undefined) ||
+                (m_obj.id === "")) {
             continue;
         }
 
