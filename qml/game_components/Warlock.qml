@@ -897,17 +897,13 @@ Item {
     // the turn but not at its end (a one-turn shield, a countered enchantment).
     property string tempStatusKey: "[]"
 
-    function tickStatus(code) {
+    function tickAllStatuses() {
         var current = iCharm.model || [];
         var updated = [];
 
         for (var i = 0, Ln = current.length; i < Ln; ++i) {
             var status = current[i];
             if (!status) {
-                continue;
-            }
-            if (status.action !== code) {
-                updated.push(status);
                 continue;
             }
 
@@ -942,10 +938,6 @@ Item {
         for (var j = 0, LnJ = icons.length; j < LnJ; ++j) {
             var icon = icons[j];
             if (!icon) {
-                continue;
-            }
-            if (icon.action !== code) {
-                finalIcons.push(icon);
                 continue;
             }
             for (var k = 0, LnK = updated.length; k < LnK; ++k) {
