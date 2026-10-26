@@ -24,9 +24,8 @@ var map_spell_name_to_gesture = {"Dispel Magic":["cDPW"],"Counter Spell":["WPP",
 var arr_distruption_spell = ["Amnesia", "Paralysis", "Confusion", "Fear", "Maladroitness", "Charm Monster", "Charm Person", "Anti-spell"];
 
 // https://github.com/Pz1c/WavingHands/issues/227
-// An enchantment cast at a warlock lights his status icon up in the turn news, not his heart. When
-// the icon is not in his end-of-turn status (a one-turn shield, a spell a Counter Spell absorbed)
-// the news shows a temporary one, see prepareNewsTempIcons. mirror and dispel are news-only codes.
+// An enchantment cast at a warlock lights his status icon up in the turn news. The live
+// status list is updated at the row where the spell lands. mirror and dispel are news-only codes.
 var map_spell_name_to_status = {"Shield":"shield","Protection":"shield","Counter Spell":"mshield","Resist Heat":"fireproof","Resist Cold":"coldproof",
     "Paralysis":"paralized","Amnesia":"amnesia","Fear":"scared","Confusion":"confused","Maladroitness":"maladroit","Charm Person":"charmed",
     "Disease":"disease","Poison":"poison","Blindness":"blindness","Invisibility":"invisibility","Haste":"haste","Time Stop":"time_stop",
@@ -519,17 +518,30 @@ function noteDefense(target, spell_obj) {
     }
 }
 
-// the warlock or the monster with that name in the current battle, null when there is none
+// the warlock or live monster with that name, null when there is none
 function findBattleObject(battle, name) {
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         var w = battle.warlocks[i];
         if (w.name === name) {
             return w;
         }
-        var arr_m = getNewsMonsters(w);
-        for (var j = 0, LnJ = arr_m.length; j < LnJ; ++j) {
-            if (arr_m[j].name === name) {
-                return arr_m[j];
+        var monsters = w.monsters || [];
+        for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
+            if (monsters[j].name === name) {
+                return monsters[j];
+            }
+        }
+    }
+    return null;
+}
+
+function findMonsterByName(battle, name) {
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        var w = battle.warlocks[i];
+        var monsters = w.monsters || [];
+        for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
+            if (monsters[j] && (monsters[j].name === name)) {
+                return monsters[j];
             }
         }
     }
@@ -602,18 +614,19 @@ function getMessageActionBySpell(obj, battle) {
             }
 
             if (status_code) {
-                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"status",object:status_code,data:[],role:"target",color:"#10C9F5"});
+                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"status",object:status_code,
+                          icon:getNewsStatusIcon(status_code),value:getNewsStatusValue(status_code),
+                          data:[],role:"target",color:"#10C9F5"});
             } else if (!obj.summon) {
                 res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:"#10C9F5"});
             }
             target_found = true;
         }
         if (!target_found) {
-            var w = battle.warlocks[i];
-            var arr_m = getNewsMonsters(w);
-            for (var j = 0, LnJ = arr_m.length; j < LnJ; ++j) {
-                var m = arr_m[j];
-                if (m.name === spell_obj.target) {
+            var owner = findMonsterOwner(battle, spell_obj.target);
+            if (owner) {
+                var m = findMonsterByName(battle, spell_obj.target);
+                if (m) {
                     if (spell_obj.spell === "Cause Heavy Wounds") {
                         m.got_heavy_wounds = true;
                     }
@@ -624,10 +637,9 @@ function getMessageActionBySpell(obj, battle) {
                         }
                         m.arr_distruption.push(spell_obj.spell);
                     }
-                    res.push({action:"highlight",warlock_name:w.name,object_type:"monster",object:m.name,data:[],role:"target",color:"#FEE2D6"});
-                    target_found = true;
-                    break;
                 }
+                res.push({action:"highlight",warlock_name:owner,object_type:"monster",object:spell_obj.target,data:[],role:"target",color:"#FEE2D6"});
+                target_found = true;
             }
         }
         //if (target_found) {
@@ -637,7 +649,7 @@ function getMessageActionBySpell(obj, battle) {
 
 
     if (obj.summon) {
-        // the monster this cast brings (a temporary tile when it is gone at the end of the turn)
+        // the monster this cast brings
         res.push({action:"highlight",warlock_name:obj.summon.owner,object_type:"monster",object:obj.summon.key,data:[],role:"target",color:"#10C9F5"});
     }
 
@@ -845,7 +857,7 @@ function getMessageActionByAttack(attack_obj, battle) {
     var res = [];
     var icon_action = {action:"icon",large_icon:"",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     //var attack_obj = parseAttackByText(txt);
-    var aggressor_found = attack_obj.aggressor === "", target_found = attack_obj.target === "", w, m, j, LnJ, arr_m;
+    var aggressor_found = attack_obj.aggressor === "", target_found = attack_obj.target === "";
     if (attack_obj.aggressor || attack_obj.target) {
         for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
             //console.log("getMessageActionByAttack", i, Ln, battle.warlocks[i].name);
@@ -858,15 +870,10 @@ function getMessageActionByAttack(attack_obj, battle) {
                     res.push(higlightWarlockGestureBySpell(battle.warlocks[i], {warlock:attack_obj.aggressor,spell:"Stab",target:attack_obj.target}));
                     aggressor_found = true;
                 } else {
-                    w = battle.warlocks[i];
-                    arr_m = getNewsMonsters(w);
-                    for (j = 0, LnJ = arr_m.length; j < LnJ; ++j) {
-                        m = arr_m[j];
-                        if (m.name === attack_obj.aggressor) {
-                            res.push({action:"highlight",warlock_name:w.name,object_type:"monster",object:m.name,data:[],role:"actor",color:"#10C9F5"});
-                            aggressor_found = true;
-                            break;
-                        }
+                    var aggressor_owner = findMonsterOwner(battle, attack_obj.aggressor);
+                    if (aggressor_owner) {
+                        res.push({action:"highlight",warlock_name:aggressor_owner,object_type:"monster",object:attack_obj.aggressor,data:[],role:"actor",color:"#10C9F5"});
+                        aggressor_found = true;
                     }
                 }
             }
@@ -883,15 +890,10 @@ function getMessageActionByAttack(attack_obj, battle) {
                     res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"status",object:getDefenseStatusCode(battle.warlocks[i], false),data:[],role:"target",color:"#FEE2D6"});
                     target_found = true;
                 } else {
-                    w = battle.warlocks[i];
-                    arr_m = getNewsMonsters(w);
-                    for (j = 0, LnJ = arr_m.length; j < LnJ; ++j) {
-                        m = arr_m[j];
-                        if (m.name === attack_obj.target) {
-                            res.push({action:"highlight",warlock_name:w.name,object_type:"monster",object:m.name,data:[],role:"target",color:attack_obj.target === attack_obj.aggressor ? "#10C9F5" : "#FEE2D6"});
-                            target_found = true;
-                            break;
-                        }
+                    var target_owner = findMonsterOwner(battle, attack_obj.target);
+                    if (target_owner) {
+                        res.push({action:"highlight",warlock_name:target_owner,object_type:"monster",object:attack_obj.target,data:[],role:"target",color:attack_obj.target === attack_obj.aggressor ? "#10C9F5" : "#FEE2D6"});
+                        target_found = true;
                     }
                 }
             }
@@ -959,12 +961,17 @@ function getMessageActionByOther(obj, battle) {
                 }
             }
             // https://github.com/Pz1c/WavingHands/issues/227
-            // a status row lights the status icon up (a temporary one when the warlock has not got it
-            // at the end of the turn), a wound the heart
+            // an enchantment row lights its status card up, a defense row only
+            // lights a card that is already there
             var status_code = ((obj.damage > 0) || obj.cured) ? "" : getNewsStatusCode(obj, w);
             if (status_code) {
-                res.push({action:"highlight",warlock_name:w.name,object_type:"status",object:status_code,data:[],role:"target",
-                          color:isHarmfulNews(obj) ? "#FEE2D6" : "#10C9F5"});
+                var status_action = {action:"highlight",warlock_name:w.name,object_type:"status",object:status_code,
+                                     icon:getNewsStatusIcon(status_code),data:[],role:"target",
+                                     color:isHarmfulNews(obj) ? "#FEE2D6" : "#10C9F5"};
+                if (!obj.shield && !obj.counter_spell && !obj.mirror) {
+                    status_action.value = getNewsStatusValue(status_code);
+                }
+                res.push(status_action);
             } else {
                 res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
             }
@@ -975,22 +982,17 @@ function getMessageActionByOther(obj, battle) {
         // the row is about one of this warlock's monsters: "Smelly Goblin is hit by a Magic Missile",
         // "Green Troll is covered by a shimmering shield", "Big Goblin is summoned to serve Bob"
         // https://github.com/Pz1c/WavingHands/issues/227
-        var arr_m = getNewsMonsters(w);
-        for (var j = 0, LnJ = arr_m.length; j < LnJ; ++j) {
-            var m = arr_m[j];
-            if (m.name !== obj.target) {
-                continue;
-            }
-            if (obj.spell === "Distruption") {
+        if (findMonsterOwner(battle, obj.target) === w.name) {
+            var m = findMonsterByName(battle, obj.target);
+            if (m && (obj.spell === "Distruption")) {
                 if (m.arr_distruption) {
                     obj.spell = m.arr_distruption.shift();
                 }
                 target_found = true;
             }
             // hit by a spell or an attack: the hit color; nothing happened to it (it just appeared): the actor color
-            res.push({action:"highlight",warlock_name:w.name,object_type:"monster",object:m.name,data:[],role:"target",
+            res.push({action:"highlight",warlock_name:w.name,object_type:"monster",object:obj.target,data:[],role:"target",
                       color:((obj.spell !== "") || (obj.damage > 0)) ? "#FEE2D6" : "#10C9F5"});
-            break;
         }
     }
 
@@ -1052,17 +1054,13 @@ function getMessageActionByDeath(obj, battle) {
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         var w = battle.warlocks[i];
         res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(w.L, w.R, 0, 0, 5)});
-        // https://github.com/Pz1c/WavingHands/issues/227 the one who died: the heart, or the monster's (temporary) tile
+        // https://github.com/Pz1c/WavingHands/issues/227 the one who died: the heart or the monster's tile
         if (w.name === obj.target) {
             res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
             continue;
         }
-        var arr_m = getNewsMonsters(w);
-        for (var j = 0, LnJ = arr_m.length; j < LnJ; ++j) {
-            if (arr_m[j].name === obj.target) {
-                res.push({action:"highlight",warlock_name:w.name,object_type:"monster",object:arr_m[j].name,data:[],role:"target",color:"#FEE2D6"});
-                break;
-            }
+        if (findMonsterOwner(battle, obj.target) === w.name) {
+            res.push({action:"highlight",warlock_name:w.name,object_type:"monster",object:obj.target,data:[],role:"target",color:"#FEE2D6"});
         }
     }
     res.push({action:"icon",large_icon:"RIP2",small_icon:icon,title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"});
@@ -1194,26 +1192,22 @@ function processHintText(obj) {
 // https://github.com/Pz1c/WavingHands/issues/227
 // Turn news icons for what the end-of-turn board does not show any more.
 //
-// Before the rows are parsed, prepareNewsMonsters gives the monsters that are gone (died this turn, a
-// summon a Counter Spell absorbed) a temporary tile object in their owner's news_monsters list, pairs
-// every "X casts Summon Y at Z" row with its "N is summoned to serve Z" row and resolves a target like
-// "the monster X is summoning with his left hand" to that monster. After the rows are parsed and
-// sorted, prepareNewsTempIcons works out which temporary status icons and tiles every step shows.
-var SUMMON_SPELL_TYPES = ["Goblin", "Ogre", "Troll", "Giant"];
-
-function escapeRegExp(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function getNewsMonsters(w) {
-    return w.news_monsters ? w.news_monsters : w.monsters;
-}
+// The turn news now mutates the live monster and status lists. The summon rows are still paired
+// here so the event rows can name the owner of a monster that is not on the snapshot board yet.
+var news_status_value = {"shield":2,"blindness":3,"invisibility":3,"poison":6,"disease":6,
+                         "permanency":3,"fireproof":999,"coldproof":999,"haste":3,"time_stop":1,
+                         "delay":3,"mshield":1,"scared":1,"confused":1,"charmed":1,
+                         "paralized":1,"amnesia":1,"maladroit":1};
 
 function getNewsStatusIcon(code) {
     if (icon_status_code_to_icon[code]) {
         return icon_status_code_to_icon[code];
     }
     return map_news_status_to_icon[code] ? map_news_status_to_icon[code] : code;
+}
+
+function getNewsStatusValue(code) {
+    return news_status_value[code] !== undefined ? news_status_value[code] : "";
 }
 
 function findWarlockByName(battle, name) {
@@ -1229,32 +1223,19 @@ function isWarlockName(battle, name) {
     return findWarlockByName(battle, name) !== null;
 }
 
-// the owner's name of a monster on the end-of-turn board (real_only) or in the news, "" when there is none
-function findMonsterOwner(battle, name, real_only) {
+// owner of a live or part-of-this-turn monster; "" when there is none
+function findMonsterOwner(battle, name) {
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         var w = battle.warlocks[i];
-        var arr_m = real_only ? w.monsters : getNewsMonsters(w);
-        for (var j = 0, LnJ = arr_m.length; j < LnJ; ++j) {
-            if (arr_m[j].name === name) {
+        var monsters = w.monsters || [];
+        for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
+            if (monsters[j].name === name) {
                 return w.name;
             }
         }
     }
-    return "";
-}
-
-// does the warlock's end-of-turn status row have that icon
-function hasStatusIcon(battle, warlock_name, code) {
-    var w = findWarlockByName(battle, warlock_name);
-    if (!w || !w.statusIcons) {
-        return false;
-    }
-    for (var i = 0, Ln = w.statusIcons.length; i < Ln; ++i) {
-        if (w.statusIcons[i].action === code) {
-            return true;
-        }
-    }
-    return false;
+    var owners = battle.turn_news_monster_owners || {};
+    return Object.prototype.hasOwnProperty.call(owners, name) ? owners[name] : "";
 }
 
 // the status icon key of what protected the target this turn (noteDefense), by_counter is what the
@@ -1311,49 +1292,6 @@ function getSpellHand(w, spell_name) {
     return "";
 }
 
-function addTempNewsMonster(battle, owner, m) {
-    m.temp = true;
-    m.action = "m";
-    m.owner = owner;
-    m.status = "";
-    m.enchantment_icon = "";
-    m.is_checkbox = false;
-    m.is_elemental = false;
-    m.allow_choose_target = false;
-    battle.temp_monsters[m.name] = m;
-    battle.temp_monster_owner[m.name] = owner;
-    var w = findWarlockByName(battle, owner);
-    if (w) {
-        w.news_monsters.push(m);
-    }
-}
-
-// the owner of a monster that is gone: the battle history names who it was summoned to serve; in a
-// duel it is whoever it did not attack this turn
-function resolveGoneMonsterOwner(battle, name, rows) {
-    var m, hist = battle.battle_hist ? battle.battle_hist.replace(/<[^>]*>/g, "") : "";
-    var re = new RegExp(escapeRegExp(name) + " is summoned to serve ([^.<]+)\\.");
-    m = re.exec(hist);
-    if (m && isWarlockName(battle, m[1].trim())) {
-        return m[1].trim();
-    }
-    if (battle.warlocks.length === 2) {
-        re = new RegExp("^" + escapeRegExp(name) + " (?:attacks|swings wildly for|tries to attack) (.+?)(?:,| for | but |\\.|$)");
-        for (var i = 0, Ln = rows.length; i < Ln; ++i) {
-            m = re.exec(rows[i].txt);
-            if (!m) {
-                continue;
-            }
-            var victim = m[1].trim();
-            var victim_owner = isWarlockName(battle, victim) ? victim : findMonsterOwner(battle, victim, false);
-            if (victim_owner) {
-                return battle.warlocks[0].name === victim_owner ? battle.warlocks[1].name : battle.warlocks[0].name;
-            }
-        }
-    }
-    return "";
-}
-
 // the summon a "the monster X is summoning with his left hand" target means: X's summon of that hand
 function findSummonRecord(summons, caster, hand) {
     var first = null;
@@ -1389,7 +1327,7 @@ function collectNewsSummons(rows, battle) {
                 owner = m[1];
             } else if (!isWarlockName(battle, owner)) {
                 // cast at a monster: its controller gets the new one
-                var mo = findMonsterOwner(battle, owner, false), ms = re_summoning.exec(owner);
+                var mo = findMonsterOwner(battle, owner), ms = re_summoning.exec(owner);
                 owner = mo ? mo : (ms ? ms[1] : m[1]);
             }
             rec = {id:casts.length + 1,caster:m[1],owner:owner,type:m[2],hand:getSpellHand(findWarlockByName(battle, m[1]), "Summon " + m[2]),name:"",key:"",real:false};
@@ -1413,10 +1351,9 @@ function collectNewsSummons(rows, battle) {
             rec.name = arrivals[j].name;
             break;
         }
-        rec.real = (rec.name !== "") && (findMonsterOwner(battle, rec.name, true) !== "");
+        rec.real = (rec.name !== "") && !!(battle.targetsMap && battle.targetsMap[rec.name]);
         if (rec.real) {
             rec.key = rec.name;
-            rec.owner = findMonsterOwner(battle, rec.name, true);
         } else {
             rec.key = rec.name !== "" ? rec.name : ("New " + rec.type + " of " + rec.owner);
         }
@@ -1434,158 +1371,22 @@ function collectNewsSummons(rows, battle) {
 }
 
 function prepareNewsMonsters(rows, battle) {
-    var i, Ln, j, LnJ, m, name, strength;
-    battle.temp_monsters = {};
-    battle.temp_monster_owner = {};
-    for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-        battle.warlocks[i].news_monsters = battle.warlocks[i].monsters.slice();
-    }
     var news = collectNewsSummons(rows, battle);
-    // summons that are not on the end-of-turn board
-    for (i = 0, Ln = news.casts.length; i < Ln; ++i) {
-        var rec = news.casts[i];
-        if (rec.real) {
-            continue;
-        }
-        strength = SUMMON_SPELL_TYPES.indexOf(rec.type) + 1;
-        if (!battle.temp_monsters[rec.key]) {
-            addTempNewsMonster(battle, rec.owner, {name:rec.key,icon:rec.name !== "" ? getMonsterIconByName(rec.name) : "new_" + rec.type.toLowerCase(),
-                                                   text:strength,hp:strength,strength:strength,damage:strength});
-        }
-    }
-    // an arrival without a cast row (a banked summon fired) that is gone too
-    for (j = 0, LnJ = news.arrivals.length; j < LnJ; ++j) {
-        name = news.arrivals[j].name;
-        if (news.arrivals[j].rec || battle.temp_monsters[name] || !isWarlockName(battle, news.arrivals[j].owner) || (findMonsterOwner(battle, name, true) !== "")) {
-            continue;
-        }
-        strength = getMonsterDamageByName(name);
-        addTempNewsMonster(battle, news.arrivals[j].owner, {name:name,icon:getMonsterIconByName(name),text:strength > 0 ? strength : "",hp:strength,strength:strength,damage:strength});
-    }
-    // the ones on the board when the turn began that died
-    var re_dies = /^(.+?) dies\.?$/;
-    for (i = 0, Ln = rows.length; i < Ln; ++i) {
-        if (!(m = re_dies.exec(rows[i].txt))) {
-            continue;
-        }
-        name = m[1].trim();
-        if (isWarlockName(battle, name) || battle.temp_monsters[name] || (findMonsterOwner(battle, name, true) !== "")) {
-            continue;
-        }
-        var owner = resolveGoneMonsterOwner(battle, name, rows);
-        if (!owner) {
-            continue;
-        }
-        strength = getMonsterDamageByName(name);
-        addTempNewsMonster(battle, owner, {name:name,icon:getMonsterIconByName(name),text:"",hp:0,strength:strength,damage:strength,pre_existing:true});
-    }
     battle.news_summons = news;
-    console.log("prepareNewsMonsters", JSON.stringify(news.casts), JSON.stringify(battle.temp_monster_owner));
+    console.log("prepareNewsMonsters", JSON.stringify(news.casts));
     return news;
 }
 
-function getTempState(state, warlock_name) {
-    if (!state[warlock_name]) {
-        state[warlock_name] = {statuses:[],monsters:[]};
+// A Counter Spell removes the enchantment it stopped. The row itself already
+// lights the defense icon; this action removes the stopped status from the live
+// status list.
+function getStatusRemovalAction(row) {
+    if ((row.row_type !== "other") || !row.obj || !row.obj.counter_spell || !row.obj.target) {
+        return null;
     }
-    return state[warlock_name];
-}
-
-function ensureTempStatus(state, warlock_name, code) {
-    var s = getTempState(state, warlock_name);
-    for (var i = 0, Ln = s.statuses.length; i < Ln; ++i) {
-        if (s.statuses[i].action === code) {
-            return;
-        }
+    var code = map_spell_name_to_status[row.obj.spell];
+    if (!code) {
+        return null;
     }
-    s.statuses.push({action:code,icon:getNewsStatusIcon(code),value:"",text:"",active:false,active_action:false,is_checkbox:false,temp:true});
-}
-
-function ensureTempMonster(state, m) {
-    var s = getTempState(state, m.owner);
-    for (var i = 0, Ln = s.monsters.length; i < Ln; ++i) {
-        if (s.monsters[i].name === m.name) {
-            return;
-        }
-    }
-    s.monsters.push(JSON.parse(JSON.stringify(m)));
-}
-
-function removeTempIcon(state, r) {
-    var name, s, i;
-    for (name in state) {
-        s = state[name];
-        if (r.status && (name === r.warlock)) {
-            for (i = s.statuses.length - 1; i >= 0; --i) {
-                if (s.statuses[i].action === r.status) {
-                    s.statuses.splice(i, 1);
-                }
-            }
-        }
-        if (r.monster) {
-            for (i = s.monsters.length - 1; i >= 0; --i) {
-                if (s.monsters[i].name === r.monster) {
-                    s.monsters.splice(i, 1);
-                }
-            }
-        }
-    }
-}
-
-function snapshotTempIcons(state) {
-    return JSON.parse(JSON.stringify(state));
-}
-
-// A temporary status icon shows from the first step that lights it up to the end of the news (a
-// Counter Spell that absorbed the enchantment takes it away), a gone monster from the first step that
-// mentions it (from the start when it was on the board as the turn began) until its death row.
-// Every row gets the set its step shows; returns the set the steps before the first row show.
-function prepareNewsTempIcons(rows, battle) {
-    var i, Ln, j, LnJ, a, row, key, code, remove, state = {};
-    for (key in battle.temp_monsters) {
-        if (battle.temp_monsters[key].pre_existing) {
-            ensureTempMonster(state, battle.temp_monsters[key]);
-        }
-    }
-    var initial = snapshotTempIcons(state);
-    for (i = 0, Ln = rows.length; i < Ln; ++i) {
-        row = rows[i];
-        if (row.type >= 2) {
-            continue;
-        }
-        remove = [];
-        for (j = 0, LnJ = row.new_action.length; j < LnJ; ++j) {
-            a = row.new_action[j];
-            if (a.action !== "highlight") {
-                continue;
-            }
-            if ((a.object_type === "status") && !hasStatusIcon(battle, a.warlock_name, a.object)) {
-                ensureTempStatus(state, a.warlock_name, a.object);
-            } else if ((a.object_type === "monster") && battle.temp_monsters[a.object]) {
-                ensureTempMonster(state, battle.temp_monsters[a.object]);
-            }
-        }
-        if ((row.row_type === "other") && row.obj.counter_spell && (code = map_spell_name_to_status[row.obj.spell])) {
-            remove.push({warlock:row.obj.target,status:code});
-        }
-        if (row.row_type === "death") {
-            remove.push({monster:row.obj.target});
-        }
-        row.temp_icons = snapshotTempIcons(state);
-        for (j = 0, LnJ = remove.length; j < LnJ; ++j) {
-            removeTempIcon(state, remove[j]);
-        }
-    }
-    return initial;
-}
-
-// one "temp_icons" action per warlock, Warlock.qml puts the set in its lists
-function getTempIconActions(snap, battle) {
-    var res = [], w, s;
-    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-        w = battle.warlocks[i];
-        s = snap && snap[w.name] ? snap[w.name] : {statuses:[]};
-        res.push({action:"temp_icons",warlock_name:w.name,statuses:s.statuses});
-    }
-    return res;
+    return {action:"status_remove",warlock_name:row.obj.target,object_type:"status",object:code};
 }

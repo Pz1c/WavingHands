@@ -32,6 +32,10 @@ function processHighlightHintAction(a, restore) {
     if (restore) {
         ww.highlightActionRestore(a);
     }else {
+        if ((a.object_type === "status") && ww.ensureStatus &&
+                (a.value !== undefined) && (a.value !== "")) {
+            ww.ensureStatus(a.object, a.icon, a.value);
+        }
         ww.highlightAction(a);
     }
 }
@@ -99,15 +103,15 @@ function processPopHintAction(a) {
 }
 
 // https://github.com/Pz1c/WavingHands/issues/227
-// The temporary status icons and monster tiles a turn news step shows. Nothing to restore when the
-// step is left: the next step brings its own set and closeTutorial clears them (Warlock.hintOnOff).
-function processTempIconsAction(a, restore) {
+// The live status list is mutated at the event row: an enchantment is added
+// when it lands and removed when a Counter Spell stops it.
+function processStatusRemoveHintAction(a, restore) {
     if (restore) {
         return;
     }
-    var ww = iWarlocks.children[BU.map_warlock_name_to_idx[a.warlock_name]];
-    if (ww) {
-        ww.setTempIcons(a.statuses, a.monsters);
+    var ww = iWarlocks.children[getHintWarlockIdx(a)];
+    if (ww && ww.removeStatus) {
+        ww.removeStatus(a.object);
     }
 }
 
@@ -166,13 +170,12 @@ function processDeathHintAction(a, restore) {
     var warlock_idx = getHintWarlockIdx(a);
     var ww = iWarlocks.children[warlock_idx];
     console.log("processDeathHintAction", a.object_type, a.object, a.warlock_name, warlock_idx);
-    if (ww && ww.showDeath) {
-        ww.showDeath(a.object_type, a.object);
-    }
-    // The card is gone from the news roster; remove the same monster from the
-    // persistent target roster so it cannot be chosen after the news.
+    // Remove the dead monster before refreshing the board.
     if ((a.object_type === "monster") && BU.removeDeadMonsterTarget) {
         BU.removeDeadMonsterTarget(a.object, a.warlock_name);
+    }
+    if (ww && ww.showDeath) {
+        ww.showDeath(a.object_type, a.object);
     }
 }
 
@@ -194,7 +197,7 @@ function processHintAction(a, restore) {
     case "highlight": return processHighlightHintAction(a, restore);
     case "icon": return processHighlightIconAction(a, restore);
     case "pop": return processPopHintAction(a);
-    case "temp_icons": return processTempIconsAction(a, restore);
+    case "status_remove": return processStatusRemoveHintAction(a, restore);
     case "damage": return processDamageHintAction(a, restore);
     case "heal": return processHealHintAction(a, restore);
     case "hp": return processHealthHintAction(a, restore);
@@ -283,6 +286,10 @@ function playHintActions(actions) {
             targets.push(a);
             continue;
         }
+        if (a.action === "status_remove") {
+            targets.push(a);
+            continue;
+        }
         // https://github.com/Pz1c/WavingHands/issues/227
         // a monster that acts lights up before the icon pops, one that is hit after it, with the hearts;
         // a status icon (the shield that took the blow, the enchantment that landed) after it too
@@ -307,12 +314,10 @@ function playHintActions(actions) {
     }
 
     // A summon rebuilds the monster model before this step's HP actions run.
-    // Rebuild it once from the final data so original and summoned monsters
-    // show their new HP instead of the value from the replaced delegates.
     for (var wi = 0; wi < iWarlocks.children.length; ++wi) {
         var ww = iWarlocks.children[wi];
-        if (ww && ww.refreshTurnNewsMonsters) {
-            ww.refreshTurnNewsMonsters();
+        if (ww && ww.refreshMonsters) {
+            ww.refreshMonsters();
         }
     }
 
@@ -354,13 +359,7 @@ function playHintActions(actions) {
 }
 
 function processAllHintAction(actions, restore) {
-    var i, Ln = actions.length, shown = 0;
-    for (i = 0; i < Ln; ++i) {
-        // the temporary icons come with every step, they do not make it a step that shows something
-        if (actions[i].action !== "temp_icons") {
-            ++shown;
-        }
-    }
+    var i, Ln = actions.length, shown = Ln;
     rTutOverlay.opacity = (((shown === 0) && !restore) || ((shown !== 0) && restore)) ? 0.5 : 0.3;
     if (!restore) {
         playHintActions(actions);

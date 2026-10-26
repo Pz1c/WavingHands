@@ -13,13 +13,9 @@ Item {
     property string l_control_icon: ""
     property real l_ratio: 1
     property int l_damageSeq: 0
-    // The turn news starts at the life points from the previous turn and applies
-    // every hit and cure as its cause row appears.
-    property int l_hpDisplay: l_warlock.turn_news_hp_start !== undefined ? l_warlock.turn_news_hp_start : l_warlock.hp
-    property bool l_dead: (l_warlock.turn_news_dead !== undefined)
-                          ? l_warlock.turn_news_dead
-                          : ((parseInt(l_warlock.hp, 10) <= 0) &&
-                             ((l_warlock.status || "").toLowerCase().indexOf("surrender") === -1))
+    property int l_hpDisplay: l_warlock.hp
+    property bool l_dead: (parseInt(l_warlock.hp, 10) <= 0) &&
+                          ((l_warlock.status || "").toLowerCase().indexOf("surrender") === -1)
 
     signal clicked(var data)
     signal doubleClicked(var data)
@@ -82,19 +78,11 @@ Item {
         }
     }
 
-    function findTurnNewsMonster(name) {
-        var roster = l_warlock.turn_news_monsters;
-        if (roster) {
-            for (var i = 0, Ln = roster.length; i < Ln; ++i) {
-                if (roster[i] && (roster[i].name === name)) {
-                    return roster[i];
-                }
-            }
-        }
+    function findMonster(name) {
         var monsters = l_warlock.monsters || [];
-        for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
-            if (monsters[j].name === name) {
-                return monsters[j];
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+            if (monsters[i] && (monsters[i].name === name)) {
+                return monsters[i];
             }
         }
         return null;
@@ -106,27 +94,31 @@ Item {
             return;
         }
         if (object_type === "monster") {
-            var monster = findTurnNewsMonster(object_name);
+            var monster = findMonster(object_name);
             if (monster) {
-                var shown = (monster.turn_news_hp_display !== undefined)
-                        ? monster.turn_news_hp_display : parseInt(monster.text, 10);
-                if (isNaN(shown)) {
-                    shown = parseInt(monster.hp, 10);
-                }
+                var shown = parseInt(monster.hp, 10);
                 if (isNaN(shown)) {
                     shown = 0;
                 }
-                monster.turn_news_hp_display = Math.max(0, shown + delta);
-                monster.turn_news_dead = false;
+                monster.hp = Math.max(0, shown + delta);
+                monster.text = monster.hp;
             }
             var mi = findMonsterItem(object_name);
             if (mi && monster) {
-                mi.l_hpOverride = monster.turn_news_hp_display;
-                mi.l_deadOverride = false;
+                mi.l_hpOverride = monster.hp;
+            }
+            var b = mainWindow.gBattle;
+            if (monster && b && b.actions && b.actions.M) {
+                for (var k = 0, LnK = b.actions.M.length; k < LnK; ++k) {
+                    if (b.actions.M[k] && (b.actions.M[k].name === object_name)) {
+                        b.actions.M[k].hp = monster.hp;
+                    }
+                }
             }
             return;
         }
         l_hpDisplay = Math.max(0, l_hpDisplay + delta);
+        l_warlock.hp = l_hpDisplay;
     }
 
     function registerSummonedMonsterAction(monster) {
@@ -159,28 +151,8 @@ Item {
     }
 
     function showFinalPlaceholders() {
-        if (l_warlock.read_only || !l_warlock.turn_news_monsters) {
-            return;
-        }
-        var roster = l_warlock.turn_news_monsters.slice();
-        var monsters = l_warlock.monsters || [];
-        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
-            if (!isPlaceholderMonster(monsters[i])) {
-                continue;
-            }
-            var found = false;
-            for (var j = 0, LnJ = roster.length; j < LnJ; ++j) {
-                if (roster[j] && (roster[j].name === monsters[i].name)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                roster.push(monsters[i]);
-            }
-        }
-        l_warlock.turn_news_monsters = roster;
-        refreshTurnNewsMonsters();
+        l_warlock.news_placeholders_visible = true;
+        refreshMonsters();
     }
 
     function showHandsAfterNews() {
@@ -189,80 +161,32 @@ Item {
     }
 
     function showSummonedMonster(name, icon, hp) {
-        var roster = l_warlock.turn_news_monsters;
-        if (!roster) {
+        var monsters = l_warlock.monsters;
+        if (!monsters) {
             return;
         }
 
-        for (var i = 0, Ln = roster.length; i < Ln; ++i) {
-            if (roster[i] && (roster[i].name === name)) {
-                return;
-            }
+        var monster = findMonster(name);
+        if (monster) {
+            return;
         }
 
-        var monster = null;
-        var monsters = l_warlock.monsters || [];
-        for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
-            if (monsters[j].name === name) {
-                monster = monsters[j];
-                break;
-            }
+        var shown = parseInt(hp, 10);
+        if (isNaN(shown) || (shown < 0)) {
+            shown = 0;
         }
-
-        if (!monster) {
-            // It may have been summoned and destroyed before the turn ended,
-            // so it is not in the final roster.
-            var shown = parseInt(hp, 10);
-            if (isNaN(shown) || (shown < 0)) {
-                shown = 0;
-            }
-            monster = {name:name, owner:l_warlock.name, hp:shown,
-                       icon:(icon && (icon !== "")) ? icon : "summon",
-                       enchantment_icon:"", status:"", action:"m",
-                       allow_choose_target:false, is_elemental:false,
-                       turn_news_hp_start:shown, turn_news_hp_display:shown,
-                       turn_news_dead:false, text:shown};
-        }
-
-        if (monster.turn_news_hp_display === undefined) {
-            monster.turn_news_hp_display = (monster.turn_news_hp_start !== undefined)
-                    ? monster.turn_news_hp_start : monster.hp;
-        }
-        monster.turn_news_dead = false;
-        monster.text = monster.turn_news_hp_display;
-
-        roster.push(monster);
-        roster = roster.slice();
-        l_warlock.turn_news_monsters = roster;
+        monster = {name:name, owner:l_warlock.name, hp:shown,
+                   icon:(icon && (icon !== "")) ? icon : "summon",
+                   enchantment_icon:"", status:"", action:"m",
+                   allow_choose_target:false, is_elemental:false, text:shown};
+        monsters.push(monster);
 
         registerSummonedMonsterAction(monster);
-        refreshTurnNewsMonsters();
+        refreshMonsters();
     }
 
     function showMonsterDeath(name) {
-        var monster = findTurnNewsMonster(name);
-        if (monster) {
-            monster.turn_news_dead = true;
-            monster.turn_news_hp_display = 0;
-        }
-        var roster = l_warlock.turn_news_monsters || [];
-        var remaining = [];
-        for (var i = 0, Ln = roster.length; i < Ln; ++i) {
-            if (roster[i] && (roster[i].name !== name)) {
-                remaining.push(roster[i]);
-            }
-        }
-        l_warlock.turn_news_monsters = remaining;
-
-        var b = mainWindow.gBattle;
-        if (b && b.actions && b.actions.M) {
-            for (var k = 0, LnK = b.actions.M.length; k < LnK; ++k) {
-                if (b.actions.M[k] && (b.actions.M[k].name === name)) {
-                    b.actions.M[k].turn_news_dead = true;
-                }
-            }
-        }
-        refreshTurnNewsMonsters();
+        refreshMonsters();
     }
 
     function showDeath(object_type, object_name) {
@@ -275,6 +199,7 @@ Item {
         iiHP.color = iiHP.bg_color;
         l_dead = true;
         l_hpDisplay = 0;
+        l_warlock.hp = 0;
     }
 
     function showDamage(amount, object_type, object_name) {
@@ -345,23 +270,15 @@ Item {
     function resetHealthDisplay() {
         l_hpDisplay = l_warlock.hp;
         l_dead = finalWarlockDead();
-        // The temporary roster only exists while the turn news plays. Put the
-        // real current monsters back, including removing any RIP placeholders.
         for (var k = 0, LnK = iMonsters.count; k < LnK; ++k) {
             var item = iMonsters.itemAtIndex(k);
             if (item) {
-                item.l_deadOverride = false;
                 item.l_hpOverride = -1;
             }
         }
-        l_warlock.turn_news_monsters = undefined;
-        // The temporary status tiles belong to the old step too.
-        tempStatusKey = "[]";
-        iCharm.model = l_warlock.statusIcons || [];
+        refreshStatuses();
         var monsters = l_warlock.monsters || [];
         for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
-            monsters[i].turn_news_dead = false;
-            monsters[i].turn_news_hp_display = monsters[i].hp;
             monsters[i].text = monsters[i].hp;
         }
         prepareMonsters();
@@ -507,21 +424,16 @@ Item {
             delegate: IconInfo {
                 id: iiDM
                 property int l_hpOverride: -1
-                property bool l_deadOverride: false
                 property int l_hpDisplay: (l_hpOverride >= 0) ? l_hpOverride
-                                           : (iMonsters.model[index].turn_news_hp_display !== undefined
-                                              ? iMonsters.model[index].turn_news_hp_display
-                                              : iMonsters.model[index].text)
-                property bool l_dead: l_deadOverride || (iMonsters.model[index].turn_news_dead === true)
+                                           : iMonsters.model[index].hp
                 l_data: iMonsters.model[index]
                 height: 78 * l_ratio
                 width: 78 * l_ratio
                 text: l_hpDisplay
-                textVisible: !l_dead
-                source: l_dead ? "qrc:/res/RIP2.png"
-                               : "qrc:/res/"+iMonsters.model[index].icon+".png"
+                textVisible: true
+                source: "qrc:/res/"+iMonsters.model[index].icon+".png"
                 iconInfoSource: iMonsters.model[index].enchantment_icon
-                iconInfoVisible: !l_dead && (iMonsters.model[index].enchantment_icon !== "")
+                iconInfoVisible: iMonsters.model[index].enchantment_icon !== ""
                 checkbox: false
                 radius: 20
 
@@ -887,23 +799,68 @@ Item {
         }
         iiLeft.visible = Restore && !l_dead && (isHandsVisible === 1);
         iiRight.visible = Restore && !l_dead && (isHandsVisible === 1);
-        if (Restore) {
-            setTempIcons([], []);
+    }
+
+    function refreshStatuses() {
+        prepareDynamic("s", (l_warlock.statusIcons || []).slice(), iCharm, "value", svCharm.width - svCharm.height, -1);
+    }
+
+    function ensureStatus(code, icon, value) {
+        if (!code || (value === undefined) || (value === "")) {
+            return;
+        }
+        var shown = (value === 999) ? "∞" : value;
+        var statuses = l_warlock.statusIcons || [];
+        var status = null;
+        for (var i = 0, Ln = statuses.length; i < Ln; ++i) {
+            if (statuses[i] && (statuses[i].action === code)) {
+                status = statuses[i];
+                break;
+            }
+        }
+        if (!status) {
+            status = {action:code, icon:icon, value:shown, text:shown, active:true,
+                      active_action:false, is_checkbox:false};
+            statuses.push(status);
+        } else {
+            status.value = shown;
+            status.text = shown;
+            if (icon) {
+                status.icon = icon;
+            }
+        }
+        status.fresh = true;
+        l_warlock.statusIcons = statuses;
+        refreshStatuses();
+    }
+
+    function removeStatus(code) {
+        var statuses = l_warlock.statusIcons || [];
+        for (var i = 0, Ln = statuses.length; i < Ln; ++i) {
+            if (statuses[i] && (statuses[i].action === code)) {
+                statuses.splice(i, 1);
+                l_warlock.statusIcons = statuses;
+                refreshStatuses();
+                return;
+            }
         }
     }
 
-    // https://github.com/Pz1c/WavingHands/issues/227
-    // Temporary status icons of the turn news: a status the warlock had during
-    // the turn but not at its end (a one-turn shield, a countered enchantment).
-    property string tempStatusKey: "[]"
-
     function tickAllStatuses() {
-        var current = iCharm.model || [];
+        var current = l_warlock.statusIcons || [];
         var updated = [];
 
         for (var i = 0, Ln = current.length; i < Ln; ++i) {
             var status = current[i];
             if (!status) {
+                continue;
+            }
+
+            // A status that landed this turn is already showing its
+            // end-of-turn value.
+            if (status.fresh) {
+                delete status.fresh;
+                updated.push(status);
                 continue;
             }
 
@@ -915,7 +872,6 @@ Item {
 
             var turns = parseInt(status.value, 10);
             if (isNaN(turns)) {
-                // Temporary status cards have no counter.
                 updated.push(status);
                 continue;
             }
@@ -926,36 +882,10 @@ Item {
                 status.text = turns;
                 updated.push(status);
             }
-            // turns === 0: drop the card
         }
 
-        iCharm.model = updated;
-
-        // Keep the final status list in sync so prepareState()/setTempIcons()
-        // does not restore a card whose counter reached zero.
-        var finalIcons = [];
-        var icons = l_warlock.statusIcons || [];
-        for (var j = 0, LnJ = icons.length; j < LnJ; ++j) {
-            var icon = icons[j];
-            if (!icon) {
-                continue;
-            }
-            for (var k = 0, LnK = updated.length; k < LnK; ++k) {
-                if (updated[k] === icon) {
-                    finalIcons.push(icon);
-                    break;
-                }
-            }
-        }
-        l_warlock.statusIcons = finalIcons;
-    }
-
-    function setTempIcons(statuses, monsters) {
-        var sk = JSON.stringify(statuses);
-        if (sk !== tempStatusKey) {
-            tempStatusKey = sk;
-            iCharm.model = statuses.length > 0 ? statuses.concat(l_warlock.statusIcons) : l_warlock.statusIcons;
-        }
+        l_warlock.statusIcons = updated;
+        refreshStatuses();
     }
 
     function targetingOnOff(Enable, IsSpell, Permanency, Delay) {
@@ -1207,11 +1137,7 @@ Item {
             var arr_m = arr[i];
             arr_m.is_checkbox = false;
             if (type === "m") {
-                if (arr_m.turn_news_hp_display === undefined) {
-                    arr_m.turn_news_hp_display = (arr_m.turn_news_hp_start !== undefined)
-                            ? arr_m.turn_news_hp_start : arr_m[code_value];
-                }
-                arr_m.text = arr_m.turn_news_hp_display;
+                arr_m.text = arr_m.hp;
             } else {
                 arr_m.text = arr_m[code_value];
             }
@@ -1234,22 +1160,29 @@ Item {
 
     }
 
-    // Single source for the monster tiles while the turn news plays: the dynamic
-    // turn-news roster (previous turn + summons/deaths) plus the temporary tiles
-    // that only exist in history. 17b6b71's temp icons and the newer dynamic roster
-    // must not overwrite each other's ListView model.
-    function refreshTurnNewsMonsters() {
-        var base = (l_warlock.turn_news_monsters !== undefined)
-                ? l_warlock.turn_news_monsters : l_warlock.monsters;
-        prepareDynamic("m", (base || []).slice(), iMonsters, "hp", 0, 1);
+    // The monster tiles are the live battle.monsters roster. The static summon
+    // placeholders stay in that roster but are hidden until the news ends.
+    function refreshMonsters() {
+        var monsters = l_warlock.monsters || [];
+        var shown = [];
+        var showPlaceholders = l_warlock.news_placeholders_visible !== false;
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+            if (!monsters[i]) {
+                continue;
+            }
+            if (showPlaceholders || !isPlaceholderMonster(monsters[i])) {
+                shown.push(monsters[i]);
+            }
+        }
+        prepareDynamic("m", shown, iMonsters, "hp", 0, 1);
     }
 
     function prepareMonsters() {
-        refreshTurnNewsMonsters();
+        refreshMonsters();
     }
 
     function prepareState() {
-        prepareDynamic("s", l_warlock.statusIcons, iCharm, "value", svCharm.width - svCharm.height, -1);
+        refreshStatuses();
     }
 
     property int isHandsVisible: 0
@@ -1324,6 +1257,8 @@ Item {
 
     function finishWarlockCreation() {
         console.log("finishWarlockCreation", JSON.stringify(l_warlock));
+        l_hpDisplay = l_warlock.hp;
+        l_dead = finalWarlockDead();
         scrollGestures();
         prepareMonsters();
         prepareState();

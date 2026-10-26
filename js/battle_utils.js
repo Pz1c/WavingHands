@@ -239,35 +239,6 @@ function getPreviousTurnTargetHp(previous_battle, target) {
     return null;
 }
 
-function findPreviousTurnWarlock(previous_battle, name) {
-    if (!previous_battle) {
-        return null;
-    }
-    for (var i = 0, Ln = previous_battle.warlocks.length; i < Ln; ++i) {
-        if (previous_battle.warlocks[i] && (previous_battle.warlocks[i].name === name)) {
-            return previous_battle.warlocks[i];
-        }
-    }
-    return null;
-}
-
-function cloneTurnNewsMonster(m, hp) {
-    var res = {}, key, shown = parseInt(hp, 10);
-    if (isNaN(shown) || (shown < 0)) {
-        shown = 0;
-    }
-    for (key in m) {
-        if (Object.prototype.hasOwnProperty.call(m, key)) {
-            res[key] = m[key];
-        }
-    }
-    res.turn_news_hp_start = shown;
-    res.turn_news_hp_display = shown;
-    res.turn_news_dead = false;
-    res.text = shown;
-    return res;
-}
-
 function cloneTurnNewsElemental(el) {
     var hp = el ? parseInt(el.hp, 10) : 0;
     if (isNaN(hp) || (hp < 0)) {
@@ -275,14 +246,6 @@ function cloneTurnNewsElemental(el) {
     }
     return {name:(el && el.name) ? el.name : "", hp:hp,
             type:(el && (el.type === "ice")) ? "ice" : "fire", action:"m"};
-}
-
-function isTurnNewsDeadWarlock(w) {
-    var hp = w ? parseInt(w.hp, 10) : 0;
-    if (isNaN(hp) || (hp > 0)) {
-        return false;
-    }
-    return ((w.status || "").toLowerCase().indexOf("surrender") === -1);
 }
 
 // The final battle no longer contains monsters that died this turn, but their
@@ -326,15 +289,6 @@ function prepareTurnNewsMonsterOwners(previous_battle, real_actions, news_summon
             if (info) {
                 map[info.name] = info.owner;
             }
-        }
-    }
-    // The old turn-news temp tiles already resolved monsters that are gone
-    // (died, absorbed summon). Use that result where the roster reconstruction
-    // has no owner, so both systems agree instead of using two maps.
-    var temp_owners = battle.temp_monster_owner || {};
-    for (var temp_name in temp_owners) {
-        if (!Object.prototype.hasOwnProperty.call(map, temp_name)) {
-            map[temp_name] = temp_owners[temp_name];
         }
     }
     battle.turn_news_monster_owners = map;
@@ -439,27 +393,9 @@ function findTurnNewsArrival(news_summons, row) {
     return null;
 }
 
-function isPlaceholderMonster(m) {
-    return !!m && ((m.name.indexOf("LH:") === 0) || (m.name.indexOf("RH:") === 0));
-}
-
 function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons) {
     var previous_valid = isPreviousTurnBattle(previous_battle);
-    var summoned = {}, elemental_summoned = false, i, Ln, row, j, LnJ;
-
-    if (news_summons && news_summons.arrivals) {
-        for (i = 0, Ln = news_summons.arrivals.length; i < Ln; ++i) {
-            summoned[news_summons.arrivals[i].name] = true;
-        }
-    } else {
-        for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
-            row = real_actions[i];
-            var summoned_info = getTurnNewsSummonInfo(row);
-            if (summoned_info) {
-                summoned[summoned_info.name] = true;
-            }
-        }
-    }
+    var elemental_summoned = false, i, Ln, row;
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         if (getTurnNewsElementalAppearance(real_actions[i])) {
             elemental_summoned = true;
@@ -467,45 +403,14 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
         }
     }
 
-    for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-        var w = battle.warlocks[i];
-        if (!w) {
-            continue;
-        }
-        if (battle.read_only) {
-            w.turn_news_monsters = undefined;
-            w.turn_news_dead = isTurnNewsDeadWarlock(w);
-            continue;
-        }
-
-        var roster = [];
-        var prev_w = previous_valid ? findPreviousTurnWarlock(previous_battle, w.name) : null;
-        if (prev_w) {
-            // The turn starts with exactly the monsters and life points that
-            // were on the table when the previous turn ended.
-            var prev_monsters = prev_w.monsters || [];
-            for (j = 0, LnJ = prev_monsters.length; j < LnJ; ++j) {
-                if (!prev_monsters[j] || isPlaceholderMonster(prev_monsters[j])) {
-                    continue;
-                }
-                roster.push(cloneTurnNewsMonster(prev_monsters[j], prev_monsters[j].hp));
-            }
-        } else {
-            // Opening a battle without the previous turn: use the current
-            // roster, but leave out anything summoned during this turn.
-            var monsters = w.monsters || [];
-            for (j = 0, LnJ = monsters.length; j < LnJ; ++j) {
-                if (!monsters[j] || isPlaceholderMonster(monsters[j]) || summoned[monsters[j].name]) {
-                    continue;
-                }
-                var start = (monsters[j].turn_news_hp_start !== undefined)
-                        ? monsters[j].turn_news_hp_start : monsters[j].hp;
-                roster.push(cloneTurnNewsMonster(monsters[j], start));
+    if (!battle.read_only) {
+        for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+            var w = battle.warlocks[i];
+            if (w) {
+                // The order-form placeholders are not part of the turn-start board.
+                w.news_placeholders_visible = false;
             }
         }
-        w.turn_news_monsters = roster;
-        w.turn_news_dead = (w.turn_news_hp_start !== undefined)
-                ? (parseInt(w.turn_news_hp_start, 10) <= 0) : false;
     }
 
     if (battle.read_only) {
@@ -531,24 +436,14 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                 : (news_summons ? null : getTurnNewsSummonInfo(row));
         if (summon) {
             var summon_data = findTurnNewsMonsterData(summon.name);
-            var temp_data = null;
-            if (summon.rec && battle.temp_monsters) {
-                temp_data = battle.temp_monsters[summon.rec.key];
-            }
-            if (!temp_data && battle.temp_monsters) {
-                temp_data = battle.temp_monsters[summon.name];
-            }
-            var summon_hp_data = summon_data || temp_data;
             var summon_icon = summon_data
                     ? summon_data.icon
                     : BGU.getMonsterIconByName(summon.name);
             if (summon_icon.indexOf("new_") === 0) {
                 summon_icon = summon_icon.substring(4);
             }
-            var summon_hp = summon_hp_data
-                    ? ((summon_hp_data.turn_news_hp_start !== undefined)
-                            ? summon_hp_data.turn_news_hp_start
-                            : ((summon_hp_data.hp !== undefined) ? summon_hp_data.hp : summon_hp_data.text))
+            var summon_hp = summon_data
+                    ? summon_data.hp
                     : getSummonedMonsterHp(summon.name);
             var transition_idx = i;
             if (summon.rec) {
@@ -584,22 +479,6 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
             }
             if (target) {
                 var owner = getMonsterOwnerName(target);
-                if (!owner) {
-                    for (var wi = 0, LnW = battle.warlocks.length; wi < LnW; ++wi) {
-                        var death_w = battle.warlocks[wi];
-                        if (death_w && (death_w.name === target)) {
-                            death_w.turn_news_dead_event = true;
-                            // Without the previous battle the reconstructed HP
-                            // can be 0 before the death row. Keep the card alive
-                            // until the event itself marks it.
-                            if ((death_w.turn_news_hp_start === undefined) ||
-                                    (parseInt(death_w.turn_news_hp_start, 10) <= 0)) {
-                                death_w.turn_news_dead = false;
-                            }
-                            break;
-                        }
-                    }
-                }
                 addTurnNewsTransitionAction(real_actions, i,
                         {action:"death",
                          object_type:owner ? "monster" : "warlock",
@@ -687,17 +566,6 @@ function prepareTurnNewsHp(previous_battle, damage_totals, heal_pairings) {
     // The old reconstruction is only for a live board that already shows the
     // resolved turn.
     if (battle.read_only || !isPreviousTurnBattle(previous_battle)) {
-        for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-            var w = battle.warlocks[i];
-            if (!w) {
-                continue;
-            }
-            w.turn_news_hp_start = w.hp;
-            var monsters = w.monsters || [];
-            for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
-                monsters[j].turn_news_hp_start = monsters[j].hp;
-            }
-        }
         return;
     }
 
@@ -774,7 +642,7 @@ function prepareTurnNewsHp(previous_battle, damage_totals, heal_pairings) {
         if (isNaN(w_start) || (w_start < 0)) {
             w_start = 0;
         }
-        w.turn_news_hp_start = w_start;
+        w.hp = w_start;
 
         var monsters = w.monsters || [];
         for (var k = 0, LnK = monsters.length; k < LnK; ++k) {
@@ -796,7 +664,8 @@ function prepareTurnNewsHp(previous_battle, damage_totals, heal_pairings) {
             if (isNaN(m_start) || (m_start < 0)) {
                 m_start = 0;
             }
-            m.turn_news_hp_start = m_start;
+            m.hp = m_start;
+            m.text = m.hp;
         }
     }
 }
@@ -860,6 +729,31 @@ function removeDeadMonsterTarget(name, owner) {
         delete battle.targetsMap[name];
         if (id && (battle.targetsMap[id] === name)) {
             delete battle.targetsMap[id];
+        }
+    }
+
+    if (battle.actions && battle.actions.M) {
+        for (var k = battle.actions.M.length - 1; k >= 0; --k) {
+            if (battle.actions.M[k] && (battle.actions.M[k].name === name)) {
+                battle.actions.M.splice(k, 1);
+            }
+        }
+        for (var n = 0; n < battle.actions.M.length; ++n) {
+            var action = battle.actions.M[n];
+            if (!action) {
+                continue;
+            }
+            action.action_idx = n;
+            var live_monster = battle.monsters && action.owner ? battle.monsters[action.owner] : null;
+            if (!live_monster) {
+                continue;
+            }
+            for (var q = 0; q < live_monster.length; ++q) {
+                if (live_monster[q] && (live_monster[q].name === action.name)) {
+                    live_monster[q].action_idx = n;
+                    break;
+                }
+            }
         }
     }
 }
@@ -1401,16 +1295,10 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
         new_hint.push({color_bg:last_turn_hist[i].color,font_size:last_turn_hist[i].font_size,txt:BGU.replaceAll(last_turn_hist[i].txt, '&quot;', '"'),actions:new_action});
     }
 
-    // https://github.com/Pz1c/WavingHands/issues/227
-    // temporary tiles for the monsters that are gone, summon rows paired, then the temporary icons of every step
+    // Pair the summon rows once; the event playback mutates the live board.
     var news_summons = BGU.prepareNewsMonsters(real_actions, battle);
     prepareTurnNewsMonsterOwners(previous_battle, real_actions, news_summons);
     BGU.prepareAndSortRealAction(real_actions, battle);
-    var initial_temp = BGU.prepareNewsTempIcons(real_actions, battle);
-    // the steps before the first row (hints, what the players said) show the board as the turn began
-    for (i = 0, Ln = new_hint.length; i < Ln; ++i) {
-        new_hint[i].actions = new_hint[i].actions.concat(BGU.getTempIconActions(initial_temp, battle));
-    }
     prepareTurnNewsDamage(real_actions, previous_battle);
     prepareTurnNewsTransitions(real_actions, previous_battle, news_summons);
     var beginner = mainWindow.playerSpellbookLevel < 5;
@@ -1441,9 +1329,14 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
 
         //BGU.replaceAll(real_actions[i].txt, '&quot;', '"')
         var silent_death = (real_actions[i].row_type === "death");
+        var row_actions = real_actions[i].new_action;
+        var status_remove = BGU.getStatusRemovalAction(real_actions[i]);
+        if (status_remove) {
+            row_actions = row_actions.concat([status_remove]);
+        }
         new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:real_actions[i].txt,
                        turn_news_silent:silent_death,
-                       actions:real_actions[i].new_action.concat(BGU.getTempIconActions(real_actions[i].temp_icons, battle))});
+                       actions:row_actions});
     }
 
     battle.hint = new_hint;
@@ -1647,17 +1540,11 @@ function finishPrepareWarlockList() {
     map_warlock_name_to_idx = {};
     map_monster_name_to_idx = {};
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-        // https://github.com/Pz1c/WavingHands/issues/259
-        // Keep a Warlock who was alive at the start of this turn on screen even
-        // if the turn killed him, so his card can turn into the RIP icon. A
-        // surrender is not a death and keeps the old behavior (card removed).
-        var turn_news_was_alive = battle.warlocks[i] &&
-                (battle.warlocks[i].turn_news_dead_event ||
-                 (((battle.warlocks[i].turn_news_hp_start !== undefined) &&
-                   (parseInt(battle.warlocks[i].turn_news_hp_start, 10) > 0)) &&
-                  isTurnNewsDeadWarlock(battle.warlocks[i])));
+        // The snapshot unit section is the turn-start board, so a Warlock who
+        // dies during the news is still present here and can show his RIP card.
+        var start_hp = battle.warlocks[i] ? parseInt(battle.warlocks[i].hp, 10) : 0;
         if (!battle.warlocks[i] || (!battle.read_only && !battle.warlocks[i].active &&
-                (battle.monsters[battle.warlocks[i].name].length === 0) && !turn_news_was_alive)) {
+                (battle.monsters[battle.warlocks[i].name].length === 0) && !(start_hp > 0))) {
             continue;
         }
         var arr_m = battle.warlocks[i];
@@ -1665,12 +1552,6 @@ function finishPrepareWarlockList() {
         map_warlock_name_to_idx[arr_m.name] = i;
         for (var j = 0, LnJ = arr_m.monsters.length; j < LnJ; ++j) {
             map_monster_name_to_idx[arr_m.monsters[j].name] = i;
-        }
-        // the temporary tiles of the turn news sit in their owner's row too
-        for (var key in battle.temp_monster_owner) {
-            if (battle.temp_monster_owner[key] === arr_m.name) {
-                map_monster_name_to_idx[key] = i;
-            }
         }
         //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
@@ -1750,8 +1631,8 @@ function prepareOrder() {
         m_obj = actions.M[i];
         console.log("mt_label", JSON.stringify(m_obj));
         // The live board starts at the snapshot, so a monster that died during
-        // the news is still listed here; it has no order for this turn.
-        if (m_obj.turn_news_dead || (m_obj.id === undefined) || (m_obj.id === "")) {
+        // the news has already been removed here.
+        if ((m_obj.id === undefined) || (m_obj.id === "")) {
             continue;
         }
         /*if (m_obj.target === m_obj.old_target) {
@@ -1908,7 +1789,6 @@ function getOrdersForReview(dictionary) {
         m_obj = actions.M[i];
         console.log("m_obj", JSON.stringify(m_obj));
         if (!m_obj.under_control ||
-                m_obj.turn_news_dead ||
                 (m_obj.id === undefined) ||
                 (m_obj.id === "")) {
             continue;
