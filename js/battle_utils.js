@@ -1698,7 +1698,6 @@ function prepareOrder() {
     console.log("prepareOrder", "after", post_request);
 
     mainWindow.gameCore.sendOrders(post_request);
-    mainWindow.processEscape();
 }
 
 function checkSummonHint(action) {

@@ -182,6 +182,9 @@ BaseWindow {
 
                 onClicked: {
                     console.log("wnd_battle.bbSendOrders", mainWindow.gBattle.read_only, JSON.stringify(mainWindow.gBattle.actions));
+                    if (waitingForTurn) {
+                        return;
+                    }
                     if (mainWindow.gBattle.read_only) {
                         mainWindow.processEscape();
                         return;
@@ -548,6 +551,8 @@ BaseWindow {
 
     property int readyWarlocks: 0
     property int readyWindow: 0
+    // Blocks a second submit while the board waits for TURNREADY.
+    property bool waitingForTurn: false
     function prepareHintWithCheck() {
         console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
         if (++readyWarlocks >= mainWindow.gBattle.size) {
@@ -819,6 +824,9 @@ BaseWindow {
     }
 
     function sendOrders() {
+        if (!mainWindow.gameCore.isAI) {
+            waitingForTurn = true;
+        }
         BU.prepareOrder();
     }
 
@@ -828,6 +836,7 @@ BaseWindow {
     }
 
     function hideWnd() {
+        waitingForTurn = false;
         visible = false;
         mainWindow.battleWindowHidden();
     }
@@ -839,6 +848,7 @@ BaseWindow {
         if (!mainWindow.gBattle || !mainWindow.gBattle.id) {
             return;
         }
+        waitingForTurn = false;
         readyWarlocks = 0;
         // frames left over from the last battle must not touch the new warlocks
         BWU.stopHintAnimation();
