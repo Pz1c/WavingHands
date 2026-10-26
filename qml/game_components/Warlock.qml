@@ -117,12 +117,12 @@ Item {
                     shown = 0;
                 }
                 monster.turn_news_hp_display = Math.max(0, shown + delta);
-                monster.turn_news_dead = (monster.turn_news_hp_display <= 0);
+                monster.turn_news_dead = false;
             }
             var mi = findMonsterItem(object_name);
             if (mi && monster) {
                 mi.l_hpOverride = monster.turn_news_hp_display;
-                mi.l_deadOverride = (monster.turn_news_hp_display <= 0);
+                mi.l_deadOverride = false;
             }
             return;
         }
