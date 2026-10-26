@@ -1041,6 +1041,12 @@ ApplicationWindow {
             if (!err.type) {
                 err.type = 7;
             }
+            if (((err.type === 8) || (err.type === "8")) &&
+                    WNDU.isWndVisible(WNDU.wnd_battle)) {
+                // Orders accepted; keep the open board and wait for TURNREADY.
+                core.scanState(1);
+                return;
+            }
             showErrorWnd(err);
         } else {
             showErrorWnd({text:txt,type:2,title:warlockDictionary.getStringByCode("BattleTitle").replace("%1", bit)});
@@ -1059,7 +1065,8 @@ ApplicationWindow {
     }
 
     function showReadyBattle() {
-        if (WNDU.isSomeWndOpenned()) {
+        var battle_open = WNDU.isWndVisible(WNDU.wnd_battle);
+        if (WNDU.isSomeWndOpenned() && !battle_open) {
             return;
         }
 
@@ -1067,7 +1074,11 @@ ApplicationWindow {
         console.log("showReadyBattle", battle_str);
         gBattle = JSON.parse(battle_str);
         gBattle.read_only = false;
-        WNDU.showBattle();
+        if (battle_open) {
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].showWnd();
+        } else {
+            WNDU.showBattle();
+        }
     }
 
     // An opponent moved (TURNREADY from the caster link). The battle window is
@@ -1075,10 +1086,12 @@ ApplicationWindow {
     property bool turnRefreshPending: false
     function refreshAfterOpponentTurn(by) {
         if (WNDU.isWndVisible(WNDU.wnd_battle)) {
-            // Replayed by battleWindowHidden(): the scan timer is stopped while a
-            // battle is ready, so nothing else would refresh the list afterwards.
-            console.log("refreshAfterOpponentTurn deferred, battle window open", by);
-            turnRefreshPending = true;
+            // TURNREADY while the board is open: load the new ready page and
+            // let showReadyBattle() rebuild the open board.
+            turnRefreshPending = false;
+            if (gBattle && gBattle.id) {
+                core.getBattle(gBattle.id, 0, false);
+            }
             return;
         }
         turnRefreshPending = false;
@@ -1518,12 +1531,10 @@ ApplicationWindow {
     }
 
     function confirmOrdersEx() {
-        // The order submit rescans the player page itself: that is the refresh a
-        // deferred TURNREADY was waiting for.
         turnRefreshPending = false;
         WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
-        WNDU.closeChilds();
-        processAfterClose();
+        // Close only the review window. The battle stays open.
+        WNDU.closeChild();
     }
 
     function callInviteFriends() {
