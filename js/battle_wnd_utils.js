@@ -32,9 +32,6 @@ function processHighlightHintAction(a, restore) {
     if (restore) {
         ww.highlightActionRestore(a);
     }else {
-        if ((a.object_type === "status") && a.status_tick && ww.tickStatus) {
-            ww.tickStatus(a.object);
-        }
         ww.highlightAction(a);
     }
 }
@@ -407,6 +404,15 @@ function showWarockFinalPlaceholders() {
 function closeTutorial() {
     stopHintAnimation();
     ltTutorial.visible = false;
+
+    // All events are done: apply one countdown to every enchantment.
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        if (ww.tickAllStatuses) {
+            ww.tickAllStatuses();
+        }
+    }
+
     // Keep the event-end board. Only restore the controls needed to order.
     prepareWarockToHint(false);
     showWarockHands();
