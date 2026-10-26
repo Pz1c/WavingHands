@@ -964,6 +964,7 @@ function getMessageActionByOther(obj, battle) {
             var status_code = ((obj.damage > 0) || obj.cured) ? "" : getNewsStatusCode(obj, w);
             if (status_code) {
                 res.push({action:"highlight",warlock_name:w.name,object_type:"status",object:status_code,data:[],role:"target",
+                          status_tick:(arr_harmful_status_spell.indexOf(obj.spell) !== -1),
                           color:isHarmfulNews(obj) ? "#FEE2D6" : "#10C9F5"});
             } else {
                 res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});

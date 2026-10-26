@@ -32,6 +32,9 @@ function processHighlightHintAction(a, restore) {
     if (restore) {
         ww.highlightActionRestore(a);
     }else {
+        if ((a.object_type === "status") && a.status_tick && ww.tickStatus) {
+            ww.tickStatus(a.object);
+        }
         ww.highlightAction(a);
     }
 }
