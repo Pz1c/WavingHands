@@ -301,6 +301,16 @@ function playHintActions(actions) {
         processHintAction(a, false);
     }
 
+    // A summon rebuilds the monster model before this step's HP actions run.
+    // Rebuild it once from the final data so original and summoned monsters
+    // show their new HP instead of the value from the replaced delegates.
+    for (var wi = 0; wi < iWarlocks.children.length; ++wi) {
+        var ww = iWarlocks.children[wi];
+        if (ww && ww.refreshTurnNewsMonsters) {
+            ww.refreshTurnNewsMonsters();
+        }
+    }
+
     var delay = HINT_FIRST_FRAME_DELAY;
     for (i = 0; ; ++i) {
         frame_actions = [];
