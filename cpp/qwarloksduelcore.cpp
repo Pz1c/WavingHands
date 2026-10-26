@@ -1,6 +1,8 @@
 #include "qwarloksduelcore.h"
 
 #include <QRegularExpression>
+#include <QEventLoop>
+#include <QSignalBlocker>
 #include <QUrlQuery>
 #include <QRegularExpression>
 #ifdef Q_OS_ANDROID
@@ -1434,6 +1436,86 @@ void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
     sendGetRequest(QString(GAME_SERVER_URL_GET_PROFILE).arg(Login));
 }
 
+static QString resolvedBoardData(const QString &page) {
+    const QString unit_table = "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">";
+    const QString spell_ref = "<A TARGET=_blank HREF=\"/rules/1/quickref.html\">Spell Reference</A></DIV>";
+    int idx = -1;
+    const int ref = page.indexOf(spell_ref);
+    if (ref != -1) {
+        idx = page.indexOf(unit_table, ref + spell_ref.length());
+    }
+    if (idx == -1) {
+        const int lh = page.indexOf("LH:</FONT>");
+        if (lh != -1) {
+            idx = page.lastIndexOf(unit_table, lh);
+        }
+    }
+    return (idx != -1) ? page.mid(idx) : QString();
+}
+
+bool QWarloksDuelCore::requestTurnSnapshot(int battle_id, int turn, QString &data, int &status) {
+    data.clear();
+    status = 0;
+
+    QNetworkRequest request(QUrl(QString(GAME_SERVER_URL_GET_BATTLE_TURN)
+                                 .arg(QString::number(battle_id), QString::number(turn))));
+    request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
+    request.setTransferTimeout(8000);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::NoLessSafeRedirectPolicy);
+
+    QNetworkReply *reply = _nam.get(request);
+    reply->ignoreSslErrors();
+
+    QEventLoop loop;
+    QTimer timeout;
+    timeout.setSingleShot(true);
+    timeout.setInterval(8000);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    connect(&timeout, &QTimer::timeout, &loop, [&]() {
+        reply->abort();
+        loop.quit();
+    });
+
+    timeout.start();
+    if (!reply->isFinished()) {
+        loop.exec(QEventLoop::ExcludeUserInputEvents);
+    }
+    timeout.stop();
+
+    status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    data = QString::fromUtf8(reply->readAll());
+    const bool ok = (reply->error() == QNetworkReply::NoError) && (status == 200);
+    qDebug() << "QWarloksDuelCore::requestTurnSnapshot" << battle_id << turn
+             << status << reply->error() << data.length();
+    reply->deleteLater();
+    return ok;
+}
+
+bool QWarloksDuelCore::replaceUnitSection(QString &data, const QString &snapshotPage) {
+    QString board = resolvedBoardData(snapshotPage);
+    const int body = board.indexOf("</BODY>");
+    if (body != -1) {
+        board.truncate(body);
+    }
+
+    const QString unit_table = "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">";
+    const QString spell_ref = "<A TARGET=_blank HREF=\"/rules/1/quickref.html\">Spell Reference</A></DIV>";
+    const int ref = data.indexOf(spell_ref);
+    const int start = (ref != -1)
+            ? data.indexOf(unit_table, ref + spell_ref.length()) : -1;
+    const int form = (start != -1)
+            ? data.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\"", start) : -1;
+
+    if ((start == -1) || (form == -1) ||
+            board.isEmpty() || (board.indexOf("/player") == -1)) {
+        return false;
+    }
+
+    data = data.left(start) + board + data.mid(form);
+    return true;
+}
+
 QBattleInfo *QWarloksDuelCore::getBattleInfo(int battleId) {
     if (!_battleInfo.contains(battleId)) {
         _battleInfo.insert(battleId, new QBattleInfo());
@@ -1717,7 +1799,47 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
         }
         return false;
     }
-    bool res = parseReadyBattle(ReadyData);
+    bool snapshot_replaced = false;
+    if (!Announce && !_isAsService && !_isAI && !_loadedBattleSilent) {
+        int turn_pos = 0;
+        const int current_turn = QWarlockUtils::getIntFromPlayerData(
+                    Data, "<INPUT TYPE=HIDDEN NAME=turn", "VALUE=", ">", turn_pos, true);
+
+        if (current_turn >= 2) {
+            QString snapshot;
+            int status = 0;
+            if (!requestTurnSnapshot(_loadedBattleID, current_turn - 2, snapshot, status) ||
+                    !replaceUnitSection(Data, snapshot)) {
+                _errorMsg = "Error loading battle";
+                emit errorOccurred();
+                return false;
+            }
+
+            idx3 = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">", idx1);
+            if (idx3 == -1) {
+                _errorMsg = "Error loading battle";
+                emit errorOccurred();
+                return false;
+            }
+            ReadyData = Data.mid(idx3);
+            snapshot_replaced = true;
+        }
+    }
+
+    bool res;
+    if (snapshot_replaced) {
+        QSignalBlocker blocker(this);
+        res = parseReadyBattle(ReadyData);
+    } else {
+        res = parseReadyBattle(ReadyData);
+    }
+    if (!res) {
+        if (snapshot_replaced) {
+            _errorMsg = "Error loading battle";
+            emit errorOccurred();
+        }
+        return false;
+    }
     if (!_loadedBattleSilent && res) {
         qDebug() << "Check spellbook levelup" << _loadedBattleTurn << battleInfo->with_bot();
 

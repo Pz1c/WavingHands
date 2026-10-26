@@ -557,6 +557,10 @@ BaseWindow {
         console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
         if (++readyWarlocks >= mainWindow.gBattle.size) {
             readyWarlocks = 0;
+            if (mainWindow.gBattle.read_only || !mainWindow.gBattle.hint ||
+                    mainWindow.gBattle.hint.length === 0) {
+                BWU.showWarockFinalPlaceholders();
+            }
             tHintDelay.start();
         }
     }
