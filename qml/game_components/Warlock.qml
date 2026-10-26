@@ -117,10 +117,12 @@ Item {
                     shown = 0;
                 }
                 monster.turn_news_hp_display = Math.max(0, shown + delta);
+                monster.turn_news_dead = (monster.turn_news_hp_display <= 0);
             }
             var mi = findMonsterItem(object_name);
-            if (mi && mi.l_data && (mi.l_data.turn_news_hp_display !== undefined)) {
-                mi.l_hpOverride = mi.l_data.turn_news_hp_display;
+            if (mi && monster) {
+                mi.l_hpOverride = monster.turn_news_hp_display;
+                mi.l_deadOverride = (monster.turn_news_hp_display <= 0);
             }
             return;
         }
@@ -243,6 +245,9 @@ Item {
             monster.turn_news_dead = true;
             monster.turn_news_hp_display = 0;
         }
+        if (removedNewsMonsterNames.indexOf(name) === -1) {
+            removedNewsMonsterNames = removedNewsMonsterNames.concat([name]);
+        }
         var b = mainWindow.gBattle;
         if (b && b.actions && b.actions.M) {
             for (var i = 0, Ln = b.actions.M.length; i < Ln; ++i) {
@@ -251,14 +256,7 @@ Item {
                 }
             }
         }
-        var mi = findMonsterItem(name);
-        if (mi) {
-            if (mi.restoreNews) {
-                mi.restoreNews();
-            }
-            mi.l_deadOverride = true;
-            mi.l_hpOverride = 0;
-        }
+        refreshTurnNewsMonsters();
     }
 
     function showDeath(object_type, object_name) {
@@ -353,6 +351,7 @@ Item {
         l_warlock.turn_news_monsters = undefined;
         // The temporary turn-news tiles belong to the old step too.
         tempNewsMonsters = [];
+        removedNewsMonsterNames = [];
         tempMonsterKey = "[]";
         tempStatusKey = "[]";
         iCharm.model = l_warlock.statusIcons || [];
@@ -887,6 +886,9 @@ Item {
     // Monsters that are only on the board during the news (gone or absorbed). They are
     // overlaid on the reconstructed turn-news roster, never on the final one.
     property var tempNewsMonsters: []
+    // Monsters removed by their death event; a later temp_icons step must not
+    // bring the tile back.
+    property var removedNewsMonsterNames: []
 
     function setTempIcons(statuses, monsters) {
         var sk = JSON.stringify(statuses), mk = JSON.stringify(monsters);
@@ -1182,13 +1184,24 @@ Item {
     // that only exist in history. 17b6b71's temp icons and the newer dynamic roster
     // must not overwrite each other's ListView model.
     function refreshTurnNewsMonsters() {
+        var removed = {};
+        for (var r = 0, LnR = removedNewsMonsterNames.length; r < LnR; ++r) {
+            removed[removedNewsMonsterNames[r]] = true;
+        }
+
         var base = (l_warlock.turn_news_monsters !== undefined)
                 ? l_warlock.turn_news_monsters : l_warlock.monsters;
-        var shown = (base || []).slice();
+        var shown = [];
+        for (var b = 0, LnB = (base || []).length; b < LnB; ++b) {
+            if (base[b] && !removed[base[b].name]) {
+                shown.push(base[b]);
+            }
+        }
+
         var temps = tempNewsMonsters || [];
         for (var i = 0, Ln = temps.length; i < Ln; ++i) {
             var temp = temps[i];
-            if (!temp) {
+            if (!temp || removed[temp.name]) {
                 continue;
             }
             var found = false;
