@@ -828,6 +828,42 @@ function getMonsterOwnerName(name) {
     return "";
 }
 
+// A monster that dies during the turn news must also disappear from the
+// persistent roster used by the target picker. The target window builds its
+// tiles from battle.monsters, while orders map names through targetsMap.
+function removeDeadMonsterTarget(name, owner) {
+    if (!name || !battle) {
+        return;
+    }
+    if (!owner) {
+        owner = getMonsterOwnerName(name);
+    }
+
+    var monsters = (owner && battle.monsters) ? battle.monsters[owner] : null;
+    if (monsters) {
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+            if (monsters[i] && (monsters[i].name === name)) {
+                monsters.splice(i, 1);
+                break;
+            }
+        }
+    }
+
+    var id = battle.targetsMap ? battle.targetsMap[name] : "";
+    if (battle.targetsList) {
+        var idx = battle.targetsList.indexOf(name);
+        if (idx !== -1) {
+            battle.targetsList.splice(idx, 1);
+        }
+    }
+    if (battle.targetsMap) {
+        delete battle.targetsMap[name];
+        if (id && (battle.targetsMap[id] === name)) {
+            delete battle.targetsMap[id];
+        }
+    }
+}
+
 function getTurnNewsTarget(row) {
     var actions = row.new_action || [];
     for (var i = 0, Ln = actions.length; i < Ln; ++i) {
