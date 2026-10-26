@@ -897,6 +897,67 @@ Item {
     // the turn but not at its end (a one-turn shield, a countered enchantment).
     property string tempStatusKey: "[]"
 
+    function tickStatus(code) {
+        var current = iCharm.model || [];
+        var updated = [];
+
+        for (var i = 0, Ln = current.length; i < Ln; ++i) {
+            var status = current[i];
+            if (!status) {
+                continue;
+            }
+            if (status.action !== code) {
+                updated.push(status);
+                continue;
+            }
+
+            // Permanent status.
+            if ((status.value === "∞") || (parseInt(status.value, 10) === 999)) {
+                updated.push(status);
+                continue;
+            }
+
+            var turns = parseInt(status.value, 10);
+            if (isNaN(turns)) {
+                // Temporary status cards have no counter.
+                updated.push(status);
+                continue;
+            }
+
+            --turns;
+            if (turns > 0) {
+                status.value = turns;
+                status.text = turns;
+                updated.push(status);
+            }
+            // turns === 0: drop the card
+        }
+
+        iCharm.model = updated;
+
+        // Keep the final status list in sync so prepareState()/setTempIcons()
+        // does not restore a card whose counter reached zero.
+        var finalIcons = [];
+        var icons = l_warlock.statusIcons || [];
+        for (var j = 0, LnJ = icons.length; j < LnJ; ++j) {
+            var icon = icons[j];
+            if (!icon) {
+                continue;
+            }
+            if (icon.action !== code) {
+                finalIcons.push(icon);
+                continue;
+            }
+            for (var k = 0, LnK = updated.length; k < LnK; ++k) {
+                if (updated[k] === icon) {
+                    finalIcons.push(icon);
+                    break;
+                }
+            }
+        }
+        l_warlock.statusIcons = finalIcons;
+    }
+
     function setTempIcons(statuses, monsters) {
         var sk = JSON.stringify(statuses);
         if (sk !== tempStatusKey) {
