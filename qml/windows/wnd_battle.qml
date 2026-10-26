@@ -566,7 +566,31 @@ BaseWindow {
     }
 
     function showTutorialData(diff, skip_restore) {
+        // Hide the banner before the silent step is processed, so the death
+        // message never flashes.
+        var nextHint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx + diff];
+        if (nextHint && nextHint.turn_news_silent) {
+            ltTutorial.visible = false;
+        }
+
         BWU.showTutorialData(diff, skip_restore);
+
+        var hint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
+        if (!hint) {
+            return;
+        }
+
+        if (hint.turn_news_silent) {
+            // Death actions are already applied. Advance immediately instead
+            // of waiting for the two-second auto-play timer.
+            ltTutorial.visible = false;
+            Qt.callLater(function() {
+                showTutorialData(1, true);
+            });
+            return;
+        }
+
+        ltTutorial.visible = true;
         armHintAuto();
     }
 

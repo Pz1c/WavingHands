@@ -1404,7 +1404,9 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
         }
 
         //BGU.replaceAll(real_actions[i].txt, '&quot;', '"')
+        var silent_death = (real_actions[i].row_type === "death");
         new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:real_actions[i].txt,
+                       turn_news_silent:silent_death,
                        actions:real_actions[i].new_action.concat(BGU.getTempIconActions(real_actions[i].temp_icons, battle))});
     }
 
@@ -1668,7 +1670,10 @@ function prepareHint() {
         ltTutorial.tutorialData = battle.hint;
         ltTutorial.tutorialDataIdx = -1;
         showTutorialData(1, true);
-        ltTutorial.visible = true;
+        var first_hint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
+        if (!(first_hint && first_hint.turn_news_silent)) {
+            ltTutorial.visible = true;
+        }
     }
 }
 
