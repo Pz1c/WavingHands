@@ -411,7 +411,7 @@ function closeTutorial() {
     prepareIconToHint();
 }
 
-function showTutorialData(diff, skip_restore) {
+function moveToHintStep(diff, skip_restore) {
     var log_msg = mainWindow.gBattle.turn_num === 1;
     var code = log_msg ? "Play_Tutorial_Click_" : "Play_Turn_Message_Click_";
     if ((diff !== 0) && !skip_restore) {
@@ -433,7 +433,7 @@ function showTutorialData(diff, skip_restore) {
 
     if (ltTutorial.tutorialDataIdx >= ltTutorial.tutorialData.length) {
         closeTutorial();
-        return;
+        return null;
     }
     var hint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
     if (!hint) {
@@ -441,9 +441,9 @@ function showTutorialData(diff, skip_restore) {
             mainWindow.logEvent(code + "Gotit");
         }
         closeTutorial();
-        return;
+        return null;
     }
-    console.log("showTutorialData", diff, JSON.stringify(hint));
+    console.log("moveToHintStep", diff, JSON.stringify(hint));
     ltTutorial.color = hint.color_bg;
     ltTTT.text = hint.txt;
     if (hint.font_size && (hint.font_size >= 21) && (hint.font_size <= 48)) {
@@ -453,4 +453,5 @@ function showTutorialData(diff, skip_restore) {
     prepareIconToHint();
 
     processAllHintAction(ltTutorial.tutorialData[ltTutorial.tutorialDataIdx].actions, false);
+    return hint;
 }
