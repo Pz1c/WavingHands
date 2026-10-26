@@ -277,6 +277,10 @@ protected:
     // Announce: the reply answers announceNextResult(), a request the player did not make,
     // so it opens nothing but the result itself.
     bool finishGetFinishedBattle(QString &Data, bool Announce = false);
+    // Blocking previous-turn request. The snapshot's unit section is spliced
+    // into the current page, so the normal ready-page parser stays the only parser.
+    bool requestTurnSnapshot(int battle_id, int turn, QString &data, int &status);
+    bool replaceUnitSection(QString &data, const QString &snapshotPage);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
     bool butifyTurnMessage(QString &str, bool CleanGestures = false);

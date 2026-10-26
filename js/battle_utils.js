@@ -439,6 +439,10 @@ function findTurnNewsArrival(news_summons, row) {
     return null;
 }
 
+function isPlaceholderMonster(m) {
+    return !!m && ((m.name.indexOf("LH:") === 0) || (m.name.indexOf("RH:") === 0));
+}
+
 function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons) {
     var previous_valid = isPreviousTurnBattle(previous_battle);
     var summoned = {}, elemental_summoned = false, i, Ln, row, j, LnJ;
@@ -481,7 +485,7 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
             // were on the table when the previous turn ended.
             var prev_monsters = prev_w.monsters || [];
             for (j = 0, LnJ = prev_monsters.length; j < LnJ; ++j) {
-                if (!prev_monsters[j]) {
+                if (!prev_monsters[j] || isPlaceholderMonster(prev_monsters[j])) {
                     continue;
                 }
                 roster.push(cloneTurnNewsMonster(prev_monsters[j], prev_monsters[j].hp));
@@ -491,7 +495,7 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
             // roster, but leave out anything summoned during this turn.
             var monsters = w.monsters || [];
             for (j = 0, LnJ = monsters.length; j < LnJ; ++j) {
-                if (!monsters[j] || summoned[monsters[j].name]) {
+                if (!monsters[j] || isPlaceholderMonster(monsters[j]) || summoned[monsters[j].name]) {
                     continue;
                 }
                 var start = (monsters[j].turn_news_hp_start !== undefined)
@@ -1463,9 +1467,7 @@ function prepareMonster(m) {
 }
 
 function prepareBattle(raw_battle) {
-    // The battle object still holds the previous turn while the server answer is
-    // parsed. It is what the life-point cards were showing before this turn.
-    var previous_battle = battle;
+    // The live board is the snapshot. The current page supplies history/order state.
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
         battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit,
@@ -1529,7 +1531,7 @@ function prepareBattle(raw_battle) {
     }
     //delete battle.monsters;
 
-    prepareTurnActionInfo(raw_battle.last_turn_hist, previous_battle);
+    prepareTurnActionInfo(raw_battle.last_turn_hist, null);
 
     console.log("prepared battle", JSON.stringify(battle));
 }
@@ -1703,6 +1705,11 @@ function prepareOrder() {
     for(i = 0, Ln = actions.M.length; i < Ln; ++i) {
         m_obj = actions.M[i];
         console.log("mt_label", JSON.stringify(m_obj));
+        // The live board starts at the snapshot, so a monster that died during
+        // the news is still listed here; it has no order for this turn.
+        if (m_obj.turn_news_dead || (m_obj.id === undefined) || (m_obj.id === "")) {
+            continue;
+        }
         /*if (m_obj.target === m_obj.old_target) {
             continue;
         }*/

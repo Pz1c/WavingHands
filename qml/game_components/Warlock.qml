@@ -127,6 +127,65 @@ Item {
         l_hpDisplay = Math.max(0, l_hpDisplay + delta);
     }
 
+    function registerSummonedMonsterAction(monster) {
+        var b = mainWindow.gBattle;
+        if (!b || !b.actions || !b.actions.M) {
+            return;
+        }
+        for (var i = 0, Ln = b.actions.M.length; i < Ln; ++i) {
+            if (b.actions.M[i] && (b.actions.M[i].name === monster.name)) {
+                monster.action_idx = i;
+                return;
+            }
+        }
+        var id = (b.targetsMap && b.targetsMap[monster.name]) ? b.targetsMap[monster.name] : "";
+        if (!id) {
+            return;
+        }
+        var target = b.enemy_name || "Nobody";
+        monster.id = id;
+        monster.target = target;
+        monster.old_target = target;
+        monster.under_control = l_warlock.player ? true : false;
+        monster.action = "m";
+        monster.action_idx = b.actions.M.length;
+        b.actions.M.push(monster);
+    }
+
+    function isPlaceholderMonster(m) {
+        return m && ((m.name.indexOf("LH:") === 0) || (m.name.indexOf("RH:") === 0));
+    }
+
+    function showFinalPlaceholders() {
+        if (l_warlock.read_only || !l_warlock.turn_news_monsters) {
+            return;
+        }
+        var roster = l_warlock.turn_news_monsters.slice();
+        var monsters = l_warlock.monsters || [];
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+            if (!isPlaceholderMonster(monsters[i])) {
+                continue;
+            }
+            var found = false;
+            for (var j = 0, LnJ = roster.length; j < LnJ; ++j) {
+                if (roster[j] && (roster[j].name === monsters[i].name)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                roster.push(monsters[i]);
+            }
+        }
+        l_warlock.turn_news_monsters = roster;
+        refreshTurnNewsMonsters();
+    }
+
+    function showHandsAfterNews() {
+        iiLeft.visible = !l_dead && (isHandsVisible === 1);
+        iiRight.visible = !l_dead && (isHandsVisible === 1);
+    }
+
     function showSummonedMonster(name, icon, hp) {
         var roster = l_warlock.turn_news_monsters;
         if (!roster) {
@@ -170,6 +229,7 @@ Item {
         // when it is mutated in place, so the new icon would not appear.
         roster = roster.slice();
         l_warlock.turn_news_monsters = roster;
+        registerSummonedMonsterAction(monster);
         refreshTurnNewsMonsters();
     }
 
@@ -178,6 +238,14 @@ Item {
         if (monster) {
             monster.turn_news_dead = true;
             monster.turn_news_hp_display = 0;
+        }
+        var b = mainWindow.gBattle;
+        if (b && b.actions && b.actions.M) {
+            for (var i = 0, Ln = b.actions.M.length; i < Ln; ++i) {
+                if (b.actions.M[i] && (b.actions.M[i].name === name)) {
+                    b.actions.M[i].turn_news_dead = true;
+                }
+            }
         }
         var mi = findMonsterItem(name);
         if (mi) {
