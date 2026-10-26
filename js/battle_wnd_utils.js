@@ -373,10 +373,31 @@ function prepareWarockToHint(restore) {
     }
 }
 
+function showWarockHands() {
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        if (ww.showHandsAfterNews) {
+            ww.showHandsAfterNews();
+        }
+    }
+}
+
+function showWarockFinalPlaceholders() {
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        if (ww.showFinalPlaceholders) {
+            ww.showFinalPlaceholders();
+        }
+    }
+}
+
 function closeTutorial() {
     stopHintAnimation();
     ltTutorial.visible = false;
-    prepareWarockToHint(true);
+    // Keep the event-end board. Only restore the controls needed to order.
+    prepareWarockToHint(false);
+    showWarockHands();
+    showWarockFinalPlaceholders();
     prepareIconToHint();
 }
 

@@ -301,6 +301,8 @@ protected:
     // so it opens nothing but the result itself.
     bool finishGetFinishedBattle(QString &Data, bool Announce = false);
     void finishBattleHistory(QString &Data, int StatusCode, const QString &url);
+    bool requestTurnSnapshot(int battle_id, int turn, QString &data, int &status);
+    bool replaceUnitSection(QString &data, const QString &snapshotPage);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
     bool butifyTurnMessage(QString &str, bool CleanGestures = false);
