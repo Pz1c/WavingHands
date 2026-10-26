@@ -492,13 +492,18 @@ Item {
         height: 78 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
-        //contentWidth: iMonsters.width
-        //contentHeight: iMonsters.height
+
+        // Explicitly binding the contentWidth ensures the ScrollView handles layout overflow
+        // without hijacking the ListView's internal animation rendering tree.
+        contentWidth: iMonsters.contentWidth
 
         ListView {
             id: iMonsters
+            anchors.fill: parent
             orientation: ListView.Horizontal
+            spacing: 6 * l_ratio // Adding layout spacing directly to the view properties
             model: []
+
             delegate: IconInfo {
                 id: iiDM
                 property int l_hpOverride: -1
@@ -517,21 +522,17 @@ Item {
                                : "qrc:/res/"+iMonsters.model[index].icon+".png"
                 iconInfoSource: iMonsters.model[index].enchantment_icon
                 iconInfoVisible: !l_dead && (iMonsters.model[index].enchantment_icon !== "")
-                checkbox: false//iMonsters.model[index].is_checkbox
+                checkbox: false
                 radius: 20
 
-                // the turn news lights the monster up when it attacks or when a spell or an attack gets to it
-                // https://github.com/Pz1c/WavingHands/issues/227
                 ParallelAnimation {
                     id: paMonsterHighlight
-
                     ColorAnimation {
                         id: caMonsterHighlight
                         target: iiDM
                         property: "color"
                         duration: 350
                     }
-
                     SequentialAnimation {
                         NumberAnimation { target: iiDM; property: "scale"; to: 1.15; duration: 150; easing.type: Easing.OutQuad }
                         NumberAnimation { target: iiDM; property: "scale"; to: 1; duration: 200; easing.type: Easing.InOutQuad }
@@ -554,7 +555,6 @@ Item {
                     iMonsterNewsIcon.visible = false;
                 }
 
-                // A small attack marker tells which monster made the attack.
                 Image {
                     id: iMonsterNewsIcon
                     anchors.right: parent.right
@@ -573,6 +573,19 @@ Item {
                 onDoubleClicked: {
                     rWarlock.iconDoubleClick(l_data);
                 }
+            }
+
+            // 1. Smoothly scale/fade out items when they are dropped from your array model
+            remove: Transition {
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; to: 0; duration: 300 }
+                    NumberAnimation { property: "scale"; to: 0; duration: 300 }
+                }
+            }
+
+            // 2. Animate items sliding over to capture empty layout spaces cleanly
+            displaced: Transition {
+                NumberAnimation { properties: "x,y"; duration: 300; easing.type: Easing.OutQuad }
             }
         }
     }
