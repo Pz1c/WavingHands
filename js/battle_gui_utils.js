@@ -1581,8 +1581,8 @@ function getTempIconActions(snap, battle) {
     var res = [], w, s;
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         w = battle.warlocks[i];
-        s = snap && snap[w.name] ? snap[w.name] : {statuses:[],monsters:[]};
-        res.push({action:"temp_icons",warlock_name:w.name,statuses:s.statuses,monsters:s.monsters});
+        s = snap && snap[w.name] ? snap[w.name] : {statuses:[]};
+        res.push({action:"temp_icons",warlock_name:w.name,statuses:s.statuses});
     }
     return res;
 }
