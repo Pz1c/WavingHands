@@ -191,11 +191,13 @@ Item {
         if (!roster) {
             return;
         }
+
         for (var i = 0, Ln = roster.length; i < Ln; ++i) {
             if (roster[i] && (roster[i].name === name)) {
                 return;
             }
         }
+
         var monster = null;
         var monsters = l_warlock.monsters || [];
         for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
@@ -204,6 +206,7 @@ Item {
                 break;
             }
         }
+
         if (!monster) {
             // It may have been summoned and destroyed before the turn ended,
             // so it is not in the final roster.
@@ -218,17 +221,18 @@ Item {
                        turn_news_hp_start:shown, turn_news_hp_display:shown,
                        turn_news_dead:false, text:shown};
         }
+
         if (monster.turn_news_hp_display === undefined) {
             monster.turn_news_hp_display = (monster.turn_news_hp_start !== undefined)
                     ? monster.turn_news_hp_start : monster.hp;
         }
         monster.turn_news_dead = false;
         monster.text = monster.turn_news_hp_display;
+
         roster.push(monster);
-        // Assign a fresh array: a plain JS array does not notify the ListView
-        // when it is mutated in place, so the new icon would not appear.
         roster = roster.slice();
         l_warlock.turn_news_monsters = roster;
+
         registerSummonedMonsterAction(monster);
         refreshTurnNewsMonsters();
     }

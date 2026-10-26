@@ -539,13 +539,11 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                 temp_data = battle.temp_monsters[summon.name];
             }
             var summon_hp_data = summon_data || temp_data;
-            var summon_icon = summon_data ? summon_data.icon : BGU.getMonsterIconByName(summon.name);
-            if (!summon_data && (summon_icon !== "summon")) {
-                if (summon_icon.indexOf("elemental") !== -1) {
-                    summon_icon = "new_summon";
-                } else if (summon_icon.indexOf("new_") !== 0) {
-                    summon_icon = "new_" + summon_icon;
-                }
+            var summon_icon = summon_data
+                    ? summon_data.icon
+                    : BGU.getMonsterIconByName(summon.name);
+            if (summon_icon.indexOf("new_") === 0) {
+                summon_icon = summon_icon.substring(4);
             }
             var summon_hp = summon_hp_data
                     ? ((summon_hp_data.turn_news_hp_start !== undefined)
