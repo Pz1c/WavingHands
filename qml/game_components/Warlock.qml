@@ -245,14 +245,20 @@ Item {
             monster.turn_news_dead = true;
             monster.turn_news_hp_display = 0;
         }
-        if (removedNewsMonsterNames.indexOf(name) === -1) {
-            removedNewsMonsterNames = removedNewsMonsterNames.concat([name]);
+        var roster = l_warlock.turn_news_monsters || [];
+        var remaining = [];
+        for (var i = 0, Ln = roster.length; i < Ln; ++i) {
+            if (roster[i] && (roster[i].name !== name)) {
+                remaining.push(roster[i]);
+            }
         }
+        l_warlock.turn_news_monsters = remaining;
+
         var b = mainWindow.gBattle;
         if (b && b.actions && b.actions.M) {
-            for (var i = 0, Ln = b.actions.M.length; i < Ln; ++i) {
-                if (b.actions.M[i] && (b.actions.M[i].name === name)) {
-                    b.actions.M[i].turn_news_dead = true;
+            for (var k = 0, LnK = b.actions.M.length; k < LnK; ++k) {
+                if (b.actions.M[k] && (b.actions.M[k].name === name)) {
+                    b.actions.M[k].turn_news_dead = true;
                 }
             }
         }
@@ -349,10 +355,7 @@ Item {
             }
         }
         l_warlock.turn_news_monsters = undefined;
-        // The temporary turn-news tiles belong to the old step too.
-        tempNewsMonsters = [];
-        removedNewsMonsterNames = [];
-        tempMonsterKey = "[]";
+        // The temporary status tiles belong to the old step too.
         tempStatusKey = "[]";
         iCharm.model = l_warlock.statusIcons || [];
         var monsters = l_warlock.monsters || [];
@@ -877,29 +880,15 @@ Item {
     }
 
     // https://github.com/Pz1c/WavingHands/issues/227
-    // Temporary icons of the turn news: a status the warlock had during the turn but not at its end
-    // (a one-turn shield, a countered enchantment) and monsters that are gone (died, summon absorbed).
-    // They sit in the real lists while the news plays: statuses first (at the right edge), monsters last.
-    // The lists are only rebuilt when the set changes, so a step keeps the tiles of the step before.
+    // Temporary status icons of the turn news: a status the warlock had during
+    // the turn but not at its end (a one-turn shield, a countered enchantment).
     property string tempStatusKey: "[]"
-    property string tempMonsterKey: "[]"
-    // Monsters that are only on the board during the news (gone or absorbed). They are
-    // overlaid on the reconstructed turn-news roster, never on the final one.
-    property var tempNewsMonsters: []
-    // Monsters removed by their death event; a later temp_icons step must not
-    // bring the tile back.
-    property var removedNewsMonsterNames: []
 
     function setTempIcons(statuses, monsters) {
-        var sk = JSON.stringify(statuses), mk = JSON.stringify(monsters);
+        var sk = JSON.stringify(statuses);
         if (sk !== tempStatusKey) {
             tempStatusKey = sk;
             iCharm.model = statuses.length > 0 ? statuses.concat(l_warlock.statusIcons) : l_warlock.statusIcons;
-        }
-        if (mk !== tempMonsterKey) {
-            tempMonsterKey = mk;
-            tempNewsMonsters = monsters;
-            refreshTurnNewsMonsters();
         }
     }
 
@@ -1184,38 +1173,9 @@ Item {
     // that only exist in history. 17b6b71's temp icons and the newer dynamic roster
     // must not overwrite each other's ListView model.
     function refreshTurnNewsMonsters() {
-        var removed = {};
-        for (var r = 0, LnR = removedNewsMonsterNames.length; r < LnR; ++r) {
-            removed[removedNewsMonsterNames[r]] = true;
-        }
-
         var base = (l_warlock.turn_news_monsters !== undefined)
                 ? l_warlock.turn_news_monsters : l_warlock.monsters;
-        var shown = [];
-        for (var b = 0, LnB = (base || []).length; b < LnB; ++b) {
-            if (base[b] && !removed[base[b].name]) {
-                shown.push(base[b]);
-            }
-        }
-
-        var temps = tempNewsMonsters || [];
-        for (var i = 0, Ln = temps.length; i < Ln; ++i) {
-            var temp = temps[i];
-            if (!temp || removed[temp.name]) {
-                continue;
-            }
-            var found = false;
-            for (var j = 0, LnJ = shown.length; j < LnJ; ++j) {
-                if (shown[j] && (shown[j].name === temp.name)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                shown.push(temp);
-            }
-        }
-        prepareDynamic("m", shown, iMonsters, "hp", 0, 1);
+        prepareDynamic("m", (base || []).slice(), iMonsters, "hp", 0, 1);
     }
 
     function prepareMonsters() {
