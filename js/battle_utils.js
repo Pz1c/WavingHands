@@ -550,7 +550,16 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                             ? summon_hp_data.turn_news_hp_start
                             : ((summon_hp_data.hp !== undefined) ? summon_hp_data.hp : summon_hp_data.text))
                     : getSummonedMonsterHp(summon.name);
-            addTurnNewsTransitionAction(real_actions, i,
+            var transition_idx = i;
+            if (summon.rec) {
+                for (var ci = 0, LnC = real_actions.length; ci < LnC; ++ci) {
+                    if (real_actions[ci].summon === summon.rec) {
+                        transition_idx = ci;
+                        break;
+                    }
+                }
+            }
+            addTurnNewsTransitionAction(real_actions, transition_idx,
                     {action:"summon", object_type:"monster",
                      object:summon.name,
                      warlock_name:getMonsterOwnerName(summon.name) || summon.owner,
