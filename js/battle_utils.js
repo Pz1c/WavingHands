@@ -1669,11 +1669,7 @@ function prepareHint() {
     if (battle.hint && battle.hint.length > 0) {
         ltTutorial.tutorialData = battle.hint;
         ltTutorial.tutorialDataIdx = -1;
-        showTutorialData(1, true);
-        var first_hint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
-        if (!(first_hint && first_hint.turn_news_silent)) {
-            ltTutorial.visible = true;
-        }
+        playNextTurnNewsStep(1, true);
     }
 }
 

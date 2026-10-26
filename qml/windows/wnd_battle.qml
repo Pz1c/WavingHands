@@ -402,7 +402,7 @@ BaseWindow {
 
                     onClicked: {
                         if (ltTutorial.tutorialMode) {
-                            showTutorialData(1);
+                            playNextTurnNewsStep(1);
                         }
                     }
                 }
@@ -538,14 +538,14 @@ BaseWindow {
     }
 
     // Auto-play the turn news: one event every two seconds, no clicking needed.
-    // The turn-1 tutorial stays manual (see showTutorialData).
+    // The turn-1 tutorial stays manual (see playNextTurnNewsStep).
     Timer {
         id: tHintAuto
         interval: 2000
         repeat: false
         running: false
         onTriggered: {
-            showTutorialData(1);
+            playNextTurnNewsStep(1);
         }
     }
 
@@ -565,7 +565,7 @@ BaseWindow {
         }
     }
 
-    function showTutorialData(diff, skip_restore) {
+    function playNextTurnNewsStep(diff, skip_restore) {
         // Hide the banner before the silent step is processed, so the death
         // message never flashes.
         var nextHint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx + diff];
@@ -573,9 +573,7 @@ BaseWindow {
             ltTutorial.visible = false;
         }
 
-        BWU.showTutorialData(diff, skip_restore);
-
-        var hint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
+        var hint = BWU.moveToHintStep(diff, skip_restore);
         if (!hint) {
             return;
         }
@@ -585,7 +583,7 @@ BaseWindow {
             // of waiting for the two-second auto-play timer.
             ltTutorial.visible = false;
             Qt.callLater(function() {
-                showTutorialData(1, true);
+                playNextTurnNewsStep(1, true);
             });
             return;
         }
