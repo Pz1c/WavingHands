@@ -669,24 +669,28 @@ function findTurnNewsHealCause(target, causes) {
 // The distribution lets a cure at full health show no +number and still starts
 // the life-point card at the value the previous turn ended with.
 function prepareTurnNewsHp(previous_battle, damage_totals, heal_pairings) {
-    var by_target = {}, i, Ln, pairing, target, key;
+    var i, Ln;
 
-    // A battle opened for viewing has no turn news to play: its cards show the
-    // current life points, never the reconstructed previous-turn ones.
-    if (battle.read_only) {
+    // A read-only battle has no turn news. A snapshot replay already shows the
+    // board at the start of the turn, so its cards start from the live units.
+    // The old reconstruction is only for a live board that already shows the
+    // resolved turn.
+    if (battle.read_only || !isPreviousTurnBattle(previous_battle)) {
         for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-            var ro_w = battle.warlocks[i];
-            if (!ro_w) {
+            var w = battle.warlocks[i];
+            if (!w) {
                 continue;
             }
-            ro_w.turn_news_hp_start = ro_w.hp;
-            var ro_monsters = ro_w.monsters || [];
-            for (var ro_j = 0, ro_Ln = ro_monsters.length; ro_j < ro_Ln; ++ro_j) {
-                ro_monsters[ro_j].turn_news_hp_start = ro_monsters[ro_j].hp;
+            w.turn_news_hp_start = w.hp;
+            var monsters = w.monsters || [];
+            for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
+                monsters[j].turn_news_hp_start = monsters[j].hp;
             }
         }
         return;
     }
+
+    var by_target = {}, pairing, target, key;
 
     for (i = 0, Ln = heal_pairings.length; i < Ln; ++i) {
         pairing = heal_pairings[i];
