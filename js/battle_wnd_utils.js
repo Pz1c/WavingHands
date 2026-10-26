@@ -169,6 +169,11 @@ function processDeathHintAction(a, restore) {
     if (ww && ww.showDeath) {
         ww.showDeath(a.object_type, a.object);
     }
+    // The card is gone from the news roster; remove the same monster from the
+    // persistent target roster so it cannot be chosen after the news.
+    if ((a.object_type === "monster") && BU.removeDeadMonsterTarget) {
+        BU.removeDeadMonsterTarget(a.object, a.warlock_name);
+    }
 }
 
 function processElementalHintAction(a, restore) {
