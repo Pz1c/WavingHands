@@ -327,6 +327,9 @@ function getCharmActionText(type, action, target, dict) {
 
 function getMonsterActionText(action, target, targetMap, dict) {
     var name = targetMap[action.id];
+    if (!name) {
+        name = action.name || "Monster";
+    }
     if (!target) {
         target = "Default";
     }
