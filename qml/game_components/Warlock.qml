@@ -678,6 +678,11 @@ Item {
 
         onClicked: {
             if (l_warlock.player) {
+                // A hand that is still paralysed from an earlier turn has no
+                // gesture choice: the server keeps the forced gesture.
+                if (l_warlock.paralyzed_hand === "LH") {
+                    return;
+                }
                 mainWindow.showGesture(true, l_warlock.plg, "normal", l_warlock.warlock_idx);
                 mainWindow.logEvent("Play_Left_Click");
             } else if (l_warlock.control_paralyze) {
@@ -727,6 +732,9 @@ Item {
 
         onClicked: {
             if (l_warlock.player) {
+                if (l_warlock.paralyzed_hand === "RH") {
+                    return;
+                }
                 mainWindow.showGesture(false, l_warlock.prg, "normal", l_warlock.warlock_idx);
                 mainWindow.logEvent("Play_Right_Click");
             } else if (l_warlock.control_paralyze) {
