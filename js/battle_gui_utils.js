@@ -614,9 +614,17 @@ function getMessageActionBySpell(obj, battle) {
             }
 
             if (status_code) {
-                res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"status",object:status_code,
-                          icon:getNewsStatusIcon(status_code),value:getNewsStatusValue(status_code),
-                          data:[],role:"target",color:"#10C9F5"});
+                // This is the cast row. A successful cast creates the status
+                // with its end-of-turn counter and marks it fresh so it is not
+                // decremented at the end of this turn.
+                var cast_status = {action:"highlight",warlock_name:battle.warlocks[i].name,
+                                   object_type:"status",object:status_code,
+                                   icon:getNewsStatusIcon(status_code),
+                                   data:[],role:"target",color:"#10C9F5"};
+                if (!spell_obj.fail) {
+                    cast_status.value = getNewsStatusValue(status_code);
+                }
+                res.push(cast_status);
             } else if (!obj.summon) {
                 res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:"#10C9F5"});
             }
@@ -961,16 +969,14 @@ function getMessageActionByOther(obj, battle) {
                 }
             }
             // https://github.com/Pz1c/WavingHands/issues/227
-            // an enchantment row lights its status card up, a defense row only
-            // lights a card that is already there
+            // An effect row only lights the status card that is already there.
+            // It must not re-create or refresh the status: a carried status is
+            // still decremented at the end of this turn.
             var status_code = ((obj.damage > 0) || obj.cured) ? "" : getNewsStatusCode(obj, w);
             if (status_code) {
                 var status_action = {action:"highlight",warlock_name:w.name,object_type:"status",object:status_code,
                                      icon:getNewsStatusIcon(status_code),data:[],role:"target",
                                      color:isHarmfulNews(obj) ? "#FEE2D6" : "#10C9F5"};
-                if (!obj.shield && !obj.counter_spell && !obj.mirror) {
-                    status_action.value = getNewsStatusValue(status_code);
-                }
                 res.push(status_action);
             } else {
                 res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
