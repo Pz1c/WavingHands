@@ -641,8 +641,7 @@ BaseWindow {
                         if (actionType !== 0) {
                             return;
                         }
-
-                        mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
+                        sendGesture();
                         mainWindow.logEvent("Play_Gesture_Submit", {Letter:currGesture});
                     }
                 }
@@ -890,6 +889,26 @@ BaseWindow {
         }
 
         mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], need_targeting);
+    }
+
+    // Only a spell completed by the chosen gesture opens the target window.
+    // Incomplete spells, None and section headers do not.
+    function selectedSpellNeedsTarget() {
+        var spell = arrSpell[mainWindow.gBattle.spellIdx];
+        if (!spell) {
+            return false;
+        }
+        if (spell.n === "Stab") {
+            return true;
+        }
+        if ((spell.n === "None") || !spell.n) {
+            return false;
+        }
+        if (spell.cast_type === 1) {
+            return true;
+        }
+        // Defensive fallback for a completed spell whose cast_type was not set.
+        return (spell.t === 1) && (spell.ng === currGesture);
     }
 
     function initGFields() {

@@ -1292,6 +1292,8 @@ ApplicationWindow {
                 res.push(def_spell);
             }
         } else {
+            // No gesture selected: the header is the selected row, not a stale spell.
+            gBattle.spellIdx = 0;
             res.push({gp:"?",n:(warlock_idx === 0 ? warlockDictionary.getStringByCode("SpellbookName" + playerSpellbookLevel) : warlockDictionary.getStringByCode("SpellListOpponentMayCast")),choose:0,t:0,cast_type:100,row_type:3});
         }
         if (uncompleted_cnt > 0) {
