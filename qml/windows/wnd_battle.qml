@@ -811,6 +811,10 @@ BaseWindow {
     }
 
     function setCharm(hand, gesture) {
+        if (!BU.battle.currentCharm) {
+            console.log("setCharm: currentCharm is missing", hand, gesture);
+            return;
+        }
         if (BU.battle.currentCharm.warlock_idx > 0) {
             console.log(BU.battle.currentCharm.warlock_idx, "try to find", JSON.stringify(BU.battle.currentCharm));
             var ww = iWarlocks.children[BU.battle.currentCharm.warlock_idx];

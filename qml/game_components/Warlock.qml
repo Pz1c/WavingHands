@@ -838,6 +838,8 @@ Item {
                 status.icon = icon;
             }
         }
+        status.active_action = (l_warlock.control_paralyze && (code === "paralized")) ||
+                               (l_warlock.control_charmed && (code === "charmed"));
         status.fresh = true;
         l_warlock.statusIcons = statuses;
         refreshStatuses();
@@ -1052,6 +1054,9 @@ Item {
                 iiRight.color = "transparent";
             } else if (!Inside) {
                 if (l_warlock.control_paralyze) {
+                    l_paralyzeActionData.action = "paralized";
+                    l_paralyzeActionData.active_action = true;
+                    l_paralyzeActionData.warlock_name = l_warlock.name;
                     l_paralyzeActionData.hand = "RH";
                     l_paralyzeActionData.plg = l_warlock.prg;
                     l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
@@ -1061,6 +1066,9 @@ Item {
                     mainWindow.setCharm("RH", par_g, true);
                     setGesture("R", SG.getIconByGesture(par_g, true), par_g, true);
                 } else if (l_warlock.control_charmed) {
+                    l_charmActionData.action = "charmed";
+                    l_charmActionData.active_action = true;
+                    l_charmActionData.warlock_name = l_warlock.name;
                     l_charmActionData.hand = "LH";
                     l_charmActionData.plg = l_warlock.plg;
                     l_charmActionData.warlock_idx = l_warlock.warlock_idx;
@@ -1077,6 +1085,9 @@ Item {
                 iiLeft.color = "transparent";
             } else if (!Inside) {
                 if (l_warlock.control_paralyze) {
+                    l_paralyzeActionData.action = "paralized";
+                    l_paralyzeActionData.active_action = true;
+                    l_paralyzeActionData.warlock_name = l_warlock.name;
                     l_paralyzeActionData.hand = "LH";
                     l_paralyzeActionData.plg = l_warlock.plg;
                     l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
@@ -1086,6 +1097,9 @@ Item {
                     mainWindow.setCharm("LH", par_gr, true);
                     setGesture("L", SG.getIconByGesture(par_gr, true), par_gr, true);
                 } else if (l_warlock.control_charmed) {
+                    l_charmActionData.action = "charmed";
+                    l_charmActionData.active_action = true;
+                    l_charmActionData.warlock_name = l_warlock.name;
                     l_charmActionData.hand = "RH";
                     l_charmActionData.plg = l_warlock.prg;
                     l_charmActionData.warlock_idx = l_warlock.warlock_idx;
