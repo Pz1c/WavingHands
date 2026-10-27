@@ -161,5 +161,6 @@
         <file>qml/windows/wnd_keep_me_on_popup.qml</file>
         <file>qml/windows/wnd_auto_match_popup.qml</file>
         <file>qml/components/SettingsSwitch.qml</file>
+        <file>qml/windows/wnd_messages.qml</file>
     </qresource>
 </RCC>

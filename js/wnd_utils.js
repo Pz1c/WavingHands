@@ -28,6 +28,8 @@ var wnd_settings = "wnd_settings.qml";
 var wnd_keep_me_on_popup = "wnd_keep_me_on_popup.qml";
 // https://github.com/Pz1c/WavingHands/issues/216
 var wnd_auto_match_popup = "wnd_auto_match_popup.qml";
+// https://github.com/Pz1c/WavingHands/issues/320
+var wnd_messages = "wnd_messages.qml";
 
 var arr_forbiddent_to_cache = [wnd_error];
 
@@ -376,4 +378,8 @@ function showSpellbook(close_current, close_all) {
 
 function showSettings() {
     showWnd(wnd_settings, 0, 1, 1);
+}
+
+function showMessages() {
+    showWnd(wnd_messages, 0, 1, 1);
 }

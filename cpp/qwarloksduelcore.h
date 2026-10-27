@@ -75,6 +75,11 @@ class QWarloksDuelCore : public QGameCore
     // What the Settings window's "Send notification token" (sendPushTokenNow) came to, for
     // the user: "Token sent", "Server has no push support", "Not connected", ...
     Q_PROPERTY(QString pushTokenStatus READ pushTokenStatus NOTIFY pushTokenStatusChanged)
+    // Messages between players (https://github.com/Pz1c/WavingHands/issues/320): the inbox
+    // of the site's player page as a JSON list of {from, id, text} in the site's order, and
+    // its length, for the unread mark of the main menu and the banner of the game list.
+    Q_PROPERTY(QString messages READ messages NOTIFY messagesChanged)
+    Q_PROPERTY(int messageCount READ messageCount NOTIFY messagesChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr, bool AsService = false);
@@ -109,6 +114,8 @@ public:
     bool keepMeOn();
     bool pushNotifications();
     QString pushTokenStatus();
+    QString messages();
+    int messageCount();
 
 signals:
     void needLogin();
@@ -139,6 +146,9 @@ signals:
     void keepMeOnChanged();
     void pushNotificationsChanged();
     void pushTokenStatusChanged();
+    void messagesChanged();
+    // A message went out to the warlock named (issue #320).
+    void messageSent(QString to);
     void needAIAnswer(QString Login, int MagicBookLevel);
     void readyAIAnswer(int battle_id);
     // An opponent made a move (TURNREADY over the caster link), rate limited.
@@ -169,6 +179,10 @@ public slots:
     void getBattle(int battle_id, int battle_type, bool silent = false);
     void getWarlockInfo(const QString &Login);
     void sendMessage(const QString &Msg);
+    // Messages (issue #320): the New Message form. The site addresses a message by the
+    // recipient's player id; for a warlock the app has no id of, their profile page is
+    // fetched first (finishMessageRecipient). deleteMsg above takes the sender id of the inbox.
+    void sendMessageTo(const QString &Login, const QString &Msg);
     void autoLogin(int Idx);
     void aiLogin();
     void logout();
@@ -258,6 +272,8 @@ protected:
     bool finishAccept(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishScan(QString &Data, bool ForceBattleList = false);
     bool finishScanWarlock(QString &Data);
+    bool finishSendMessage(QString &Data, int StatusCode);
+    bool finishMessageRecipient(QString &Data);
     // Announce: the reply answers announceNextResult(), a request the player did not make,
     // so it opens nothing but the result itself.
     bool finishGetFinishedBattle(QString &Data, bool Announce = false);
@@ -280,6 +296,10 @@ protected:
     void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
     void parseChallendge(QString &Data);
     void parseMessages(QString &Data);
+    void postMessage(const QString &Login, const QString &RecipientId, const QString &Msg);
+    QString messageRecipientId(const QString &Login);
+    void releasePendingMessage(const QString &url);
+    void clearMessages();
 
     //void setOrganization() override;
     void saveGameParameters() override;
@@ -427,6 +447,20 @@ private:
     int _play_training_game;
     int _play_pvp_game;
     QStringList _msg;
+    // Messages (issue #320): the inbox of parseMessages (_msg above keeps its HTML for
+    // playerInfo), as JSON for QML and as a list for the sender -> id lookup; the message
+    // waiting for its recipient's profile page; who the send in flight is addressed to.
+    struct QPlayerMessage {
+        QString from;
+        QString id;
+        QString text;
+    };
+    QList<QPlayerMessage> _inbox;
+    QString _messages = "[]";
+    int _messageCount = 0;
+    QString _pendingMsgTo;
+    QString _pendingMsgText;
+    QString _msgSentTo;
     QList<QValueName> _accounts;
     qint64 _lastPlayersScan;
     // Caster link: the roster source when it is up, plus the delta watermark.
