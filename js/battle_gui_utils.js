@@ -1229,6 +1229,20 @@ function isWarlockName(battle, name) {
     return findWarlockByName(battle, name) !== null;
 }
 
+// owner from the summon records for a monster that is not on the live board yet
+function findSummonOwner(battle, name) {
+    var arrivals = battle.news_summons && battle.news_summons.arrivals;
+    if (!arrivals) {
+        return "";
+    }
+    for (var i = 0, Ln = arrivals.length; i < Ln; ++i) {
+        if (arrivals[i].name === name) {
+            return arrivals[i].owner;
+        }
+    }
+    return "";
+}
+
 // owner of a live or part-of-this-turn monster; "" when there is none
 function findMonsterOwner(battle, name) {
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
@@ -1240,8 +1254,7 @@ function findMonsterOwner(battle, name) {
             }
         }
     }
-    var owners = battle.turn_news_monster_owners || {};
-    return Object.prototype.hasOwnProperty.call(owners, name) ? owners[name] : "";
+    return findSummonOwner(battle, name);
 }
 
 // the status icon key of what protected the target this turn (noteDefense), by_counter is what the

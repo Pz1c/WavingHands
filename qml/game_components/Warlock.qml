@@ -186,6 +186,15 @@ Item {
     }
 
     function showMonsterDeath(name) {
+        // Remove from this owner's live array as well. The JS death handler
+        // already scans battle.monsters; this guarantees the visible roster is
+        // updated even if the arrays ever diverge.
+        var monsters = l_warlock.monsters || [];
+        for (var i = monsters.length - 1; i >= 0; --i) {
+            if (monsters[i] && (monsters[i].name === name)) {
+                monsters.splice(i, 1);
+            }
+        }
         refreshMonsters();
     }
 

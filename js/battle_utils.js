@@ -284,52 +284,6 @@ function cloneTurnNewsElemental(el) {
             type:(el && (el.type === "ice")) ? "ice" : "fire", action:"m"};
 }
 
-// The final battle no longer contains monsters that died this turn, but their
-// rows still name them. Keep their owner available while the turn news runs so
-// damage, healing and the death marker can find the right card.
-function prepareTurnNewsMonsterOwners(previous_battle, real_actions, news_summons) {
-    var map = {};
-    if (isPreviousTurnBattle(previous_battle)) {
-        for (var i = 0, Ln = previous_battle.warlocks.length; i < Ln; ++i) {
-            var pw = previous_battle.warlocks[i];
-            if (!pw) {
-                continue;
-            }
-            var pmonsters = pw.monsters || [];
-            for (var j = 0, LnJ = pmonsters.length; j < LnJ; ++j) {
-                map[pmonsters[j].name] = pw.name;
-            }
-        }
-    }
-    for (var k = 0, LnK = battle.warlocks.length; k < LnK; ++k) {
-        var w = battle.warlocks[k];
-        if (!w) {
-            continue;
-        }
-        var monsters = w.monsters || [];
-        for (var q = 0, LnQ = monsters.length; q < LnQ; ++q) {
-            map[monsters[q].name] = w.name;
-        }
-    }
-    // A monster summoned and killed in the same turn is absent from the final
-    // roster, but its summon row still tells us who owned it.
-    var arrivals = news_summons && news_summons.arrivals;
-    if (arrivals) {
-        for (var a = 0, LnA = arrivals.length; a < LnA; ++a) {
-            map[arrivals[a].name] = arrivals[a].owner;
-        }
-    } else {
-        var rows = real_actions || [];
-        for (var r = 0, LnR = rows.length; r < LnR; ++r) {
-            var info = getTurnNewsSummonInfo(rows[r]);
-            if (info) {
-                map[info.name] = info.owner;
-            }
-        }
-    }
-    battle.turn_news_monster_owners = map;
-}
-
 function getSummonedMonsterHp(name) {
     if (name.indexOf("Goblin") !== -1) {
         return 1;
@@ -515,9 +469,16 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
             }
             if (target) {
                 var owner = getMonsterOwnerName(target);
+                var is_warlock = false;
+                for (var wi = 0, LnW = battle.warlocks.length; wi < LnW; ++wi) {
+                    if (battle.warlocks[wi] && (battle.warlocks[wi].name === target)) {
+                        is_warlock = true;
+                        break;
+                    }
+                }
                 addTurnNewsTransitionAction(real_actions, i,
                         {action:"death",
-                         object_type:owner ? "monster" : "warlock",
+                         object_type:(owner || !is_warlock) ? "monster" : "warlock",
                          object:target, warlock_name:owner || target});
             }
         }
@@ -726,33 +687,34 @@ function getMonsterOwnerName(name) {
             }
         }
     }
-    var owners = battle.turn_news_monster_owners || {};
-    if (Object.prototype.hasOwnProperty.call(owners, name)) {
-        return owners[name];
+    var owners = battle.news_summons && battle.news_summons.arrivals;
+    if (owners) {
+        for (var k = 0, LnK = owners.length; k < LnK; ++k) {
+            if (owners[k].name === name) {
+                return owners[k].owner;
+            }
+        }
     }
     return "";
 }
 
-// A monster that dies during the turn news must also disappear from the
-// persistent roster used by the target picker. The target window builds its
-// tiles from battle.monsters, while orders map names through targetsMap.
-function removeDeadMonsterTarget(name, owner) {
+// A death removes the monster from every roster and index.
+function removeDeadMonsterTarget(name) {
     if (!name || !battle) {
         return;
     }
-    if (!owner) {
-        owner = getMonsterOwnerName(name);
-    }
 
-    var monsters = (owner && battle.monsters) ? battle.monsters[owner] : null;
-    if (monsters) {
-        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
-            if (monsters[i] && (monsters[i].name === name)) {
-                monsters.splice(i, 1);
-                break;
+    if (battle.monsters) {
+        for (var owner in battle.monsters) {
+            var monsters = battle.monsters[owner] || [];
+            for (var i = monsters.length - 1; i >= 0; --i) {
+                if (monsters[i] && (monsters[i].name === name)) {
+                    monsters.splice(i, 1);
+                }
             }
         }
     }
+    delete map_monster_name_to_idx[name];
 
     var id = battle.targetsMap ? battle.targetsMap[name] : "";
     if (battle.targetsList) {
@@ -1333,7 +1295,6 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
 
     // Pair the summon rows once; the event playback mutates the live board.
     var news_summons = BGU.prepareNewsMonsters(real_actions, battle);
-    prepareTurnNewsMonsterOwners(previous_battle, real_actions, news_summons);
     BGU.prepareAndSortRealAction(real_actions, battle);
     prepareTurnNewsDamage(real_actions, previous_battle);
     prepareTurnNewsTransitions(real_actions, previous_battle, news_summons);

@@ -172,10 +172,20 @@ function processDeathHintAction(a, restore) {
     console.log("processDeathHintAction", a.object_type, a.object, a.warlock_name, warlock_idx);
     // Remove the dead monster before refreshing the board.
     if ((a.object_type === "monster") && BU.removeDeadMonsterTarget) {
-        BU.removeDeadMonsterTarget(a.object, a.warlock_name);
+        BU.removeDeadMonsterTarget(a.object);
     }
     if (ww && ww.showDeath) {
         ww.showDeath(a.object_type, a.object);
+    }
+    if (a.object_type === "monster") {
+        // The owner may be missing from the hint index; refresh every board so
+        // no ListView keeps a delegate whose source was just removed.
+        for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+            var item = iWarlocks.children[i];
+            if (item && item.refreshMonsters) {
+                item.refreshMonsters();
+            }
+        }
     }
 }
 
