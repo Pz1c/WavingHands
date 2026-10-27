@@ -1286,6 +1286,19 @@ Item {
         }
     }
 
+    // The gesture of a paralysed hand is forced by the server. The order form
+    // still lists every gesture, so derive the frozen one from the last real
+    // gesture the same way the order generator does.
+    function frozenGesture(Hand) {
+        var fg = l_warlock.fg || "";
+        if (fg !== "") {
+            return fg;
+        }
+        var last = (Hand === "L") ? l_warlock.lgL : l_warlock.lgR;
+        var gesture = SG.getNextParalyzedGesture(last || "", mainWindow.gBattle.is_fc);
+        return gesture || "-";
+    }
+
     function finishWarlockCreation() {
         console.log("finishWarlockCreation", JSON.stringify(l_warlock));
         l_hpDisplay = l_warlock.hp;
@@ -1305,10 +1318,15 @@ Item {
 
         prepareHands();
 
-        if (!l_warlock.player && (l_warlock.fh > 0)) {
+        if (l_warlock.fh > 0) {
             var lh = l_warlock.fh === 1 ? "L" : "R";
-            var ng = (l_warlock.charmed > 0) ? "-" : SG.getNextParalyzedGesture(l_warlock["lg"+lh], mainWindow.gBattle.is_fc);
-            setGesture(lh, SG.getIconByGesture(ng, true), ng);
+            var ng = (l_warlock.charmed > 0) ? "-" : frozenGesture(lh);
+            // Inside=true for the player: show the frozen gesture without
+            // triggering the normal auto-reset/order submission path.
+            setGesture(lh, SG.getIconByGesture(ng, true), ng, l_warlock.player);
+            if (l_warlock.player && mainWindow.gBattle.actions[lh]) {
+                mainWindow.gBattle.actions[lh].g = ng;
+            }
         }
 
         iiBanked.visible = (l_warlock.banked_spell !== "");
