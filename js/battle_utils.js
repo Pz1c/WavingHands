@@ -41,6 +41,19 @@ function assignWizardColor(w) {
     return WIZARD_COLORS[idx]; // more warlocks than colors (monsters battles): reuse
 }
 
+// Current page <SELECT NAME=LH/RH> is stored as "value;label#value;label#".
+// "X" is "As Right": it is not a gesture of its own.
+function pageGestureValues(str) {
+    var res = [], parts = (str || "").split("#");
+    for (var i = 0, Ln = parts.length; i < Ln; ++i) {
+        var value = parts[i].split(";")[0];
+        if (value !== "") {
+            res.push(value);
+        }
+    }
+    return res;
+}
+
 function prepareWarlock(w) {
     w.color = assignWizardColor(w);
     w.monsters = battle.monsters[w.name];
@@ -53,6 +66,9 @@ function prepareWarlock(w) {
     if (!w.paralyzed_hand) {
         w.paralyzed_hand = "";
     }
+    // The current form is authoritative; do not let a stale analyzed fh from
+    // the previous turn's history lock a hand.
+    w.fh = (w.paralyzed_hand === "LH") ? 1 : ((w.paralyzed_hand === "RH") ? 2 : 0);
     if (w.fh > 0) {
         w.paralyzed_hand = w.fh === 1 ? "LH" : "RH";
         if (battle.actions.CP[w.id]) {
@@ -66,6 +82,26 @@ function prepareWarlock(w) {
     w.control_paralyze = battle.paralyze.indexOf(w.id) !== -1;
     w.control_charmed  = battle.charm.indexOf(w.id) !== -1;
     w.statusIcons = BGU.prepareStatusIcon(w);
+    if (w.player) {
+        var left = pageGestureValues(battle.page_plg);
+        var right = pageGestureValues(battle.page_prg);
+        var normal_left = [];
+        for (var gi = 0, Gn = left.length; gi < Gn; ++gi) {
+            if (left[gi] !== "X") {
+                normal_left.push(left[gi]);
+            }
+        }
+        // "As Right" means the left hand uses the right hand's options.
+        if ((normal_left.length === 0) && (left.indexOf("X") !== -1)) {
+            normal_left = right;
+        }
+        if (normal_left.length > 0) {
+            w.plg = normal_left.join(",");
+        }
+        if (right.length > 0) {
+            w.prg = right.join(",");
+        }
+    }
     w.banked_spell = w.bank;//player && */(battle.fire !== "") ? battle.fire : "";
     w.turn_num = battle.turn_num;
     if (w.player) {
@@ -1408,6 +1444,7 @@ function prepareBattle(raw_battle) {
     // The live board is the snapshot. The current page supplies history/order state.
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
+        page_plg: raw_battle.plg, page_prg: raw_battle.prg,
         battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit,
         // https://github.com/Pz1c/WavingHands/issues/315: true while the site offers its SUICIDE checkbox.
         // battleInfo() sends 1/0; a battle prepared once already holds the bool. Note "0" is truthy in JS.

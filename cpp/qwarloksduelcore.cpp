@@ -1854,7 +1854,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
                 setSBL(5);
             }
         }
-        setPossibleSpell(Data);
+        setPossibleSpell();
 
         calcBattleDecision();
 
@@ -1974,7 +1974,7 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
     _chat = intToStr(chat_cnt);
 }
 
-void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
+void QWarloksDuelCore::setPossibleSpell() {
     if (_isAsService) qDebug() << "QWarloksDuelCore::setPossibleSpell";
     _player = nullptr;
     _enemy = nullptr;
@@ -1989,17 +1989,19 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         w->setIsParaFDF(_isParaFDF);
         w->setIsParaFC(_isParaFC);
         w->setIsMaladroit(_isMaladroit);
-        // Record which hand is ALREADY paralysed before analyzeEnemy overwrites
-        // _forcedHand with the hand it would prefer to lock this turn. The rules
-        // require a repeat paralysis to land on the same hand, and the server only
-        // enforces that by limiting the <SELECT> options it renders.
+        // The current order form is authoritative. The spliced page also holds
+        // the previous turn's history, which must not lock a hand for this turn.
         w->setLockedParalyzedHand(WARLOCK_HAND_NONE);
-        if ((w->paralized() > 0) && (Data.indexOf(QString("%1's left hand is paralysed.").arg(w->name())) != -1)) {
-            w->setParalyzedHand(WARLOCK_HAND_LEFT);
+        QString hand_key = QString("[%1,\"").arg(_WarlockID.value(w->name()));
+        int hand_pos = _paralyzedHands.indexOf(hand_key);
+        QString current_hand = (hand_pos == -1)
+                ? QString()
+                : _paralyzedHands.mid(hand_pos + hand_key.length(), 2);
+        if (current_hand.compare("LH", Qt::CaseInsensitive) == 0) {
+            w->setParalyzedHand(WARLOCK_HAND_LEFT, "", w->AI());
             w->setLockedParalyzedHand(WARLOCK_HAND_LEFT);
-        }
-        if ((w->paralized() > 0) && (Data.indexOf(QString("%1's right hand is paralysed.").arg(w->name())) != -1)) {
-            w->setParalyzedHand(WARLOCK_HAND_RIGHT);
+        } else if (current_hand.compare("RH", Qt::CaseInsensitive) == 0) {
+            w->setParalyzedHand(WARLOCK_HAND_RIGHT, "", w->AI());
             w->setLockedParalyzedHand(WARLOCK_HAND_RIGHT);
         }
         if (_WarlockID.contains(w->name())) {
