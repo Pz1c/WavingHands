@@ -633,25 +633,8 @@ BaseWindow {
                             // paralyzed or charmed
                             mainWindow.setCharm(handIdx === 1 ? "LH" : "RH", currGesture);
                         } else {
-                            var spell = arrSpell[mainWindow.gBattle.spellIdx], s;
-                            console.log("choose spell", mainWindow.gBattle.spellIdx, JSON.stringify(spell));
-
-                            var need_targeting = (spell.gp !== "None");
-                            if (need_targeting) {
-                                need_targeting = ((spell.n === "Stab") || (mainWindow.gBattle.spellIdx !== 0));
-                                if (!need_targeting) {
-                                    for(var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
-                                        s = arrSpell[i];
-                                        console.log("choose spell nn", JSON.stringify(s));
-                                        if ((s.ng === currGesture) && (s.t === 1) && (s.dt !== 0)) {
-                                            need_targeting = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                            mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], need_targeting);
+                            mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx],
+                                                  selectedSpellNeedsTarget());
                         }
                     }
 
@@ -660,7 +643,8 @@ BaseWindow {
                             return;
                         }
 
-                        mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
+                        mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx],
+                                              selectedSpellNeedsTarget());
                         mainWindow.logEvent("Play_Gesture_Submit", {Letter:currGesture});
                     }
                 }
@@ -866,6 +850,26 @@ BaseWindow {
                 logEvent("Play_CompletedSpells_View", {Letter:new_gesture,Warning:rpAlert.visible ? "surrendering" : "none"});
             }
         }
+    }
+
+    // Only a spell completed by the chosen gesture opens the target window.
+    // Incomplete spells, None and section headers do not.
+    function selectedSpellNeedsTarget() {
+        var spell = arrSpell[mainWindow.gBattle.spellIdx];
+        if (!spell) {
+            return false;
+        }
+        if (spell.n === "Stab") {
+            return true;
+        }
+        if ((spell.n === "None") || !spell.n) {
+            return false;
+        }
+        if (spell.cast_type === 1) {
+            return true;
+        }
+        // Defensive fallback for a completed spell whose cast_type was not set.
+        return (spell.t === 1) && (spell.ng === currGesture);
     }
 
     function initGFields() {
