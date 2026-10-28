@@ -307,6 +307,7 @@ protected:
     bool parseSpecReadyBattleValues(QString &Data);
     void setPossibleSpell(const QString &Data);
     void calcBattleDecision();
+    QString currentTurnHistory(const QString &Data);
     void prepareBattleChatAndHistory(QString &Data);
     void processRefferer();
     void setCheckUrl(const QString &check_url);

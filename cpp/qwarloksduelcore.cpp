@@ -1963,19 +1963,25 @@ QString QWarloksDuelCore::prepareBattleOrders() {
     return res;
 }
 
-void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
-    qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << _loadedBattleTurn << _loadedBattleID;// << _battleChat[_loadedBattleID].size() << _battleHistory[_loadedBattleID].size();
+QString QWarloksDuelCore::currentTurnHistory(const QString &Data) {
     int cidx1 = Data.indexOf("</U></H2><BR><BLOCKQUOTE>");
     if (cidx1 == -1) {
-        return;
+        return "";
     }
     cidx1 += 25;
     int cidx2 = Data.indexOf("</BLOCKQUOTE>", cidx1);
     if (cidx2 == -1) {
+        return "";
+    }
+    return Data.mid(cidx1, cidx2 - cidx1).replace("\n", " ");
+}
+
+void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
+    qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << _loadedBattleTurn << _loadedBattleID;// << _battleChat[_loadedBattleID].size() << _battleHistory[_loadedBattleID].size();
+    QString turn_hist = currentTurnHistory(Data);
+    if (turn_hist.isEmpty()) {
         return;
     }
-
-    QString turn_hist = Data.mid(cidx1, cidx2 - cidx1).replace("\n", " ");
     butifyTurnMessage(turn_hist);
 
     //qDebug() << "QWarloksDuelCore::prepareBattleChatAndHistory" << turn_hist;
@@ -2013,6 +2019,20 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
 
 void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
     if (_isAsService) qDebug() << "QWarloksDuelCore::setPossibleSpell";
+    QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
+
+    // Current page only. currentTurnHistory() stops at </BLOCKQUOTE>, so the
+    // snapshot-replaced unit section can never leak an old hand line into this.
+    QString current_lines = currentTurnHistory(Data);
+    QString current_actions;
+    foreach (const QString &line, current_lines.split("<BR>")) {
+        if (!line.trimmed().isEmpty() && (line.indexOf(" says ") == -1)) {
+            current_actions.append(line).append("<BR>");
+        }
+    }
+    // Previous turn only: the cast that produced the hand which just expired.
+    QString prev_actions = battleInfo->getTurnInfo(_loadedBattleTurn - 1, _login);
+
     _player = nullptr;
     _enemy = nullptr;
     foreach(QWarlock *w, _Warlock) {
@@ -2026,18 +2046,59 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         w->setIsParaFDF(_isParaFDF);
         w->setIsParaFC(_isParaFC);
         w->setIsMaladroit(_isMaladroit);
-        // Record which hand is ALREADY paralysed before analyzeEnemy overwrites
-        // _forcedHand with the hand it would prefer to lock this turn. The rules
-        // require a repeat paralysis to land on the same hand, and the server only
-        // enforces that by limiting the <SELECT> options it renders.
+
+        // The current order form is authoritative. Keep the same-caster
+        // restriction only for a hand that is in this form.
         w->setLockedParalyzedHand(WARLOCK_HAND_NONE);
-        if ((w->paralized() > 0) && (Data.indexOf(QString("%1's left hand is paralysed.").arg(w->name())) != -1)) {
-            w->setParalyzedHand(WARLOCK_HAND_LEFT);
+        QString hand_key = QString("[%1,\"").arg(_WarlockID.value(w->name()));
+        int hand_pos = _paralyzedHands.indexOf(hand_key);
+        QString current_hand = (hand_pos == -1)
+                ? QString()
+                : _paralyzedHands.mid(hand_pos + hand_key.length(), 2);
+        if (current_hand.compare("LH", Qt::CaseInsensitive) == 0) {
+            w->setParalyzedHand(WARLOCK_HAND_LEFT, "", w->AI());
             w->setLockedParalyzedHand(WARLOCK_HAND_LEFT);
-        }
-        if ((w->paralized() > 0) && (Data.indexOf(QString("%1's right hand is paralysed.").arg(w->name())) != -1)) {
-            w->setParalyzedHand(WARLOCK_HAND_RIGHT);
+        } else if (current_hand.compare("RH", Qt::CaseInsensitive) == 0) {
+            w->setParalyzedHand(WARLOCK_HAND_RIGHT, "", w->AI());
             w->setLockedParalyzedHand(WARLOCK_HAND_RIGHT);
+        } else if (w->paralized() > 0) {
+            // The victim's page does not carry PARALYZE for an enemy cast.
+            // Recover the carried-over hand only when the same caster repeats.
+            int inferred_hand = WARLOCK_HAND_NONE;
+            if (current_actions.contains(QString("%1's left hand is paralysed.").arg(w->name()))) {
+                inferred_hand = WARLOCK_HAND_LEFT;
+            } else if (current_actions.contains(QString("%1's right hand is paralysed.").arg(w->name()))) {
+                inferred_hand = WARLOCK_HAND_RIGHT;
+            }
+            if (inferred_hand != WARLOCK_HAND_NONE) {
+                QString prev_caster;
+                int prev_pos = -1;
+                QStringList new_casters;
+                foreach (QWarlock *caster, _Warlock) {
+                    QString cast_line = (caster == w)
+                            ? QString("%1 casts Paralysis at himself.").arg(caster->name())
+                            : QString("%1 casts Paralysis at %2.").arg(caster->name(), w->name());
+                    if (current_actions.contains(cast_line)) {
+                        new_casters.append(caster->name());
+                    }
+                    int pos = prev_actions.indexOf(cast_line);
+                    if ((pos != -1) && ((prev_pos == -1) || (pos < prev_pos))) {
+                        prev_pos = pos;
+                        prev_caster = caster->name();
+                    }
+                }
+                bool same_caster = !new_casters.isEmpty() && !prev_caster.isEmpty();
+                foreach (const QString &caster_name, new_casters) {
+                    if (caster_name != prev_caster) {
+                        same_caster = false;
+                    }
+                }
+                if (same_caster) {
+                    // true also narrows the AI-visible possible gestures.
+                    // Do not set lockedParalyzedHand: this is the victim state.
+                    w->setParalyzedHand(inferred_hand, "", true);
+                }
+            }
         }
         if (_WarlockID.contains(w->name())) {
             w->setId(_WarlockID[w->name()]);
