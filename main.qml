@@ -291,6 +291,23 @@ ApplicationWindow {
                                 text: ">"
                             }
 
+                            // https://github.com/Pz1c/WavingHands/issues/320: Messages has
+                            // a mark while the inbox holds something
+                            Rectangle {
+                                id: rmiiDot
+                                width: 24 * ratioObject
+                                height: 24 * ratioObject
+                                anchors.verticalCenter: rdmiItem.verticalCenter
+                                anchors.right: rmiiLink.left
+                                anchors.rightMargin: 24 * ratioObject
+                                radius: width / 2
+                                visible: (lvmItem.model[index].c === "messages") && (core.messageCount > 0)
+                                gradient: Gradient {
+                                    GradientStop { position: 0.0; color: "#9DFFD3" }
+                                    GradientStop { position: 1.0; color: "#9CDFFF" }
+                                }
+                            }
+
                             MouseArea {
                                 id: maMainMenuItem
                                 anchors.fill: parent
@@ -447,9 +464,95 @@ ApplicationWindow {
             }
     }
 
+    // https://github.com/Pz1c/WavingHands/issues/320: the first message of the inbox, with
+    // the way to the Messages window; gone (and 0 high) while the inbox is empty.
+    Rectangle {
+        id: rMsgBanner
+        anchors.top: tbTop.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: visible ? 72 * ratioObject : 0
+        visible: tbTop.visible && (core.messageCount > 0)
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#0654C0" }
+            GradientStop { position: 1.0; color: "#210430" }
+        }
+
+        property var first: core.messageCount > 0 ? JSON.parse(core.messages)[0] : ({from: "", text: ""})
+
+        MouseArea {
+            id: maMsgBanner
+            anchors.fill: parent
+            onClicked: {
+                logEvent("Messages_Banner_Clicked", {});
+                showMessagesWnd();
+            }
+        }
+
+        Text {
+            id: tMsgBannerFrom
+            anchors.left: parent.left
+            anchors.leftMargin: 24 * ratioObject
+            anchors.verticalCenter: parent.verticalCenter
+            font.pixelSize: 28 * ratioFont
+            color: "#FEE2D6"
+            text: rMsgBanner.first.from + ":"
+        }
+
+        // The snippet keeps its closing quote after the ellipsis, so the text is
+        // elided by hand to the room left beside the quotes.
+        TextMetrics {
+            id: tmMsgBannerQuotes
+            font: tMsgBannerText.font
+            text: "\"\""
+        }
+
+        TextMetrics {
+            id: tmMsgBannerText
+            font: tMsgBannerText.font
+            elide: Text.ElideRight
+            // a few px of slack: the quotes' advance differs once a glyph sits between them
+            elideWidth: Math.max(0, tMsgBannerText.width - tmMsgBannerQuotes.width - 6 * ratioObject)
+            text: rMsgBanner.first.text.replace(/\s+/g, " ")
+        }
+
+        Text {
+            id: tMsgBannerText
+            anchors.left: tMsgBannerFrom.right
+            anchors.leftMargin: 12 * ratioObject
+            anchors.right: ltMsgBannerView.left
+            anchors.rightMargin: 12 * ratioObject
+            anchors.verticalCenter: parent.verticalCenter
+            font.pixelSize: 28 * ratioFont
+            font.italic: true
+            color: "#FEE2D6"
+            text: "\"" + tmMsgBannerText.elidedText + "\""
+        }
+
+        LargeText {
+            id: ltMsgBannerView
+            anchors.right: parent.right
+            anchors.rightMargin: 24 * ratioObject
+            anchors.verticalCenter: parent.verticalCenter
+            height: 48 * ratioObject
+            width: 72 * ratioObject
+            font.pixelSize: 28 * ratioFont
+            font.underline: true
+            fontSizeMode: Text.VerticalFit
+            horizontalAlignment: Text.AlignRight
+            color: "#A8F4F4"
+            text: warlockDictionary.getStringByCode("MessageView")
+
+            onClicked: {
+                logEvent("Messages_Banner_View", {});
+                showMessagesWnd();
+            }
+        }
+    }
+
     Item {
         id: rBody
-        anchors.top: tbTop.bottom
+        anchors.top: rMsgBanner.bottom
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -1299,6 +1402,12 @@ ApplicationWindow {
     function showSettingsWnd() {
         logEvent("Settings_View", {});
         WNDU.showSettings();
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/320
+    function showMessagesWnd() {
+        logEvent("Messages_View", {});
+        WNDU.showMessages();
     }
 
     function showSBLWnd() {

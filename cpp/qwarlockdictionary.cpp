@@ -127,6 +127,16 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("Refresh", "", "", "Refresh");
     // https://github.com/Pz1c/WavingHands/issues/291
     fillDictionary("WhoIsOnline", "", "", "Who's online");
+    // https://github.com/Pz1c/WavingHands/issues/320
+    fillDictionary("NoIncomingMessages", "", "", "No incoming messages");
+    fillDictionary("NewMessage", "", "", "New Message");
+    fillDictionary("MessageTo", "", "", "To:");
+    fillDictionary("MessageSay", "", "", "Say:");
+    fillDictionary("MessageToHint", "", "", "Who do you want to write to?");
+    fillDictionary("MessageSayHint", "", "", "What are you thinking about?");
+    fillDictionary("MessageDelete", "", "", "Delete");
+    fillDictionary("MessageView", "", "", "View");
+    fillDictionary("MessageSent", "", "", "Message sent to %1");
     fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
     fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");

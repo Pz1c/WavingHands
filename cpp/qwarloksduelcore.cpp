@@ -1,6 +1,7 @@
 #include "qwarloksduelcore.h"
 
 #include <QUrlQuery>
+#include <QRegularExpression>
 #ifdef Q_OS_ANDROID
 #include <QJniEnvironment>
 #include <QAtomicPointer>
@@ -303,15 +304,124 @@ void QWarloksDuelCore::storeFullParsedBattle(QBattleInfo *bi) {
     sendPostRequest(QString(GAME_SERVER_URL_STORE_FINISHED_BATTLE).arg(intToStr(bi->battleID())), p_data.toUtf8(), true);
 }
 
+// To the warlock whose profile page was loaded last (the profile window's form).
 void QWarloksDuelCore::sendMessage(const QString &Msg) {
+    qDebug() << "QWarloksDuelCore::sendMessage to" << _warlockId;
+    postMessage(QString(), _warlockId, Msg);
+}
+
+// Messages (https://github.com/Pz1c/WavingHands/issues/320): the New Message form. The id of
+// a warlock whose profile page the app has loaded (QWarlockStat::warlockId), or who wrote to
+// the player (the inbox), is at hand; for anyone else the profile page is fetched first, see
+// finishMessageRecipient.
+void QWarloksDuelCore::sendMessageTo(const QString &Login, const QString &Msg) {
+    QString login = Login.trimmed(), msg = Msg.trimmed();
+    qDebug() << "QWarloksDuelCore::sendMessageTo" << login << msg.length();
+    if (login.isEmpty() || msg.isEmpty()) {
+        return;
+    }
+    QString rcpt = messageRecipientId(login);
+    if (!rcpt.isEmpty()) {
+        postMessage(login, rcpt, msg);
+        return;
+    }
+    _pendingMsgTo = login;
+    _pendingMsgText = msg;
     setIsLoading(true);
+    sendGetRequest(QString(GAME_SERVER_URL_GET_PROFILE).arg(login));
+}
+
+QString QWarloksDuelCore::messageRecipientId(const QString &Login) {
+    QWarlockStat *ws = _playerStats.value(Login.toLower(), nullptr);
+    if (ws && (ws->warlockId() > 0)) {
+        return intToStr(ws->warlockId());
+    }
+    foreach (const QPlayerMessage &m, _inbox) {
+        if (m.from.compare(Login, Qt::CaseInsensitive) == 0) {
+            return m.id;
+        }
+    }
+    return QString();
+}
+
+void QWarloksDuelCore::postMessage(const QString &Login, const QString &RecipientId, const QString &Msg) {
+    setIsLoading(true);
+    _msgSentTo = Login;
 
     QString postData;
-    postData.append(QString("rcpt=%1&message=").arg(_warlockId));
+    postData.append(QString("rcpt=%1&message=").arg(RecipientId));
     postData.append(QUrl::toPercentEncoding(Msg));
 
-    qDebug() << "QWarloksDuelCore::sendMessage to" << _warlockId;
+    qDebug() << "QWarloksDuelCore::postMessage to" << Login << RecipientId;
     sendPostRequest(GAME_SERVER_URL_SENDMESS, postData.toUtf8());
+}
+
+// The profile page fetched by sendMessageTo: the waiting message goes to the id of the
+// page's own send form, or the warlock is reported as unknown.
+bool QWarloksDuelCore::finishMessageRecipient(QString &Data) {
+    QString to = _pendingMsgTo, msg = _pendingMsgText;
+    _pendingMsgTo.clear();
+    _pendingMsgText.clear();
+    int pos = 0;
+    QString login = QWarlockUtils::getStringFromData(Data, "Info for", " ", " ", pos);
+    QString rcpt = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=rcpt VALUE", "=", ">", pos);
+    qDebug() << "QWarloksDuelCore::finishMessageRecipient" << to << login << rcpt;
+    if (login.isEmpty() || (rcpt.toInt() <= 0)) {
+        _errorMsg = QString("Warlock %1 not found").arg(to);
+        emit errorOccurred();
+        return false;
+    }
+    QWarlockStat *ws = _playerStats.value(login.toLower(), nullptr);
+    if (ws) {
+        ws->setWarlockId(rcpt.toInt());
+    }
+    postMessage(login, rcpt, msg);
+    return true;
+}
+
+// The /sendmess reply: a page or a redirect. A session that expired meanwhile gets the
+// login form instead of the page's "Log out" link, the one failure the body shows.
+bool QWarloksDuelCore::finishSendMessage(QString &Data, int StatusCode) {
+    QString to = _msgSentTo;
+    _msgSentTo.clear();
+    bool login_form = (Data.indexOf("ACTION=\"/login\"") != -1) && (Data.indexOf("HREF=\"/logout\"") == -1);
+    qDebug() << "QWarloksDuelCore::finishSendMessage" << to << StatusCode << login_form;
+    if ((StatusCode >= 400) || login_form) {
+        if (login_form) {
+            _isLogined = false;
+            loginToSite(true);
+        }
+        _errorMsg = "Can't send the message, please try again";
+        emit errorOccurred();
+        return false;
+    }
+    emit messageSent(to);
+    return true;
+}
+
+// A profile fetch for sendMessageTo, or the send itself, that got no reply: nothing is
+// waiting any more (else the next profile opened would be posted to).
+void QWarloksDuelCore::releasePendingMessage(const QString &url) {
+    if (!_pendingMsgTo.isEmpty() && (url.indexOf(".html") != -1)) {
+        _pendingMsgTo.clear();
+        _pendingMsgText.clear();
+    }
+    if (url.indexOf("/sendmess") != -1) {
+        _msgSentTo.clear();
+    }
+}
+
+void QWarloksDuelCore::clearMessages() {
+    _msg.clear();
+    _inbox.clear();
+    _pendingMsgTo.clear();
+    _pendingMsgText.clear();
+    _msgSentTo.clear();
+    if (_messageCount > 0) {
+        _messages = "[]";
+        _messageCount = 0;
+        emit messagesChanged();
+    }
 }
 
 void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, const QString &Pass) {
@@ -1998,16 +2108,79 @@ int QWarloksDuelCore::getLoadedBattleTurn()
     return _loadedBattleTurn;
 }
 
+// The text of a site message as the sender wrote it: line breaks kept, any other markup
+// dropped, entities decoded.
+static QString messageBodyText(QString html) {
+    html.replace(QRegularExpression("<br\\s*/?>", QRegularExpression::CaseInsensitiveOption), "\n");
+    html.remove(QRegularExpression("<[^>]*>"));
+    return html.replace("&quot;", "\"").replace("&#39;", "'").replace("&lt;", "<").replace("&gt;", ">")
+            .replace("&nbsp;", " ").replace("&amp;", "&").trimmed();
+}
+
+// Messages between players (https://github.com/Pz1c/WavingHands/issues/320). The player page
+// lists the inbox as one table per message:
+//   <TABLE><TR><TD CLASS=lightbg>Message from <A HREF="/player/Zoom">Zoom</A>:</TD></TR>
+//   <TR><TD>Hey...? (<A HREF="/delmess?from=19910">Delete</A>)</TD></TR></TABLE>
+// where "from" is the sender's player id: what /delmess takes, and what /sendmess takes as
+// the recipient (rcpt) of an answer.
 void QWarloksDuelCore::parseMessages(QString &Data) {
-    int idx1 = 0, idx2;
-    QString tmp;
+    int idx1 = 0, idx2, sep, p1, p2;
+    QString tmp, head, body, json = "[";
+    QList<QPlayerMessage> inbox;
     _msg.clear();
     while((idx1 = Data.indexOf("<TABLE><TR><TD CLASS=lightbg>", idx1)) != -1) {
         idx1 += 29;
         idx2 = Data.indexOf("</TD></TR></TABLE>", idx1);
-        tmp = Data.mid(idx1, idx2 - idx1).replace("</TD></TR><TR><TD>", " ");
-        _msg.append(tmp);
+        if (idx2 == -1) {
+            break;
+        }
+        tmp = Data.mid(idx1, idx2 - idx1);
         idx1 = idx2;
+        sep = tmp.indexOf("</TD></TR><TR><TD>");
+        if ((sep == -1) || (tmp.indexOf("Message from") == -1)) {
+            continue;
+        }
+        _msg.append(QString(tmp).replace("</TD></TR><TR><TD>", " "));
+        head = tmp.left(sep);
+        body = tmp.mid(sep + 18);
+        QPlayerMessage m;
+        p1 = head.indexOf("HREF=\"/player/");
+        if (p1 != -1) {
+            p1 = head.indexOf("\">", p1);
+            p2 = p1 == -1 ? -1 : head.indexOf("</A>", p1);
+            if (p2 != -1) {
+                m.from = head.mid(p1 + 2, p2 - p1 - 2).trimmed();
+            }
+        }
+        p1 = body.indexOf("delmess?from=");
+        if (p1 != -1) {
+            p2 = body.indexOf("\"", p1 + 13);
+            m.id = body.mid(p1 + 13, p2 == -1 ? -1 : p2 - p1 - 13);
+            // the text ends where its Delete link begins
+            p2 = body.indexOf("<A HREF=\"/delmess");
+            QString text = (p2 == -1 ? body : body.left(p2)).trimmed();
+            if (text.endsWith("(")) {
+                text.chop(1);
+            }
+            m.text = messageBodyText(text);
+        }
+        if (m.from.isEmpty() || (m.id.toInt() <= 0)) {
+            continue;
+        }
+        if (!inbox.isEmpty()) {
+            json.append(",");
+        }
+        json.append(QString("{\"from\":\"%1\",\"id\":%2,\"text\":\"%3\"}")
+                    .arg(QWarlockUtils::jsonEscape(m.from), m.id, QWarlockUtils::jsonEscape(m.text)));
+        inbox.append(m);
+    }
+    json.append("]");
+    _inbox = inbox;
+    if ((json != _messages) || (inbox.size() != _messageCount)) {
+        _messages = json;
+        _messageCount = inbox.size();
+        qDebug() << "QWarloksDuelCore::parseMessages" << _messageCount << _messages;
+        emit messagesChanged();
     }
 }
 
@@ -3027,6 +3200,10 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return true;
     }
 
+    if (url.indexOf("/sendmess") != -1) {
+        return finishSendMessage(data, statusCode);
+    }
+
     if (url.indexOf("/login") != -1) {
         return finishLogin(data, statusCode, new_url);
     }
@@ -3042,6 +3219,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
             // for is reported.
             bool background = isBackground(_currentReply);
             _isLogined = false;
+            releasePendingMessage(url);
             if (_rosterLink) {
                 // The cookie the link authenticated with is dead too.
                 _rosterLink->stop();
@@ -3054,7 +3232,11 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
             return false;
         }
         if (url.indexOf(".html") != -1) {
-            finishScanWarlock(data);
+            if (!_pendingMsgTo.isEmpty()) {
+                finishMessageRecipient(data);
+            } else {
+                finishScanWarlock(data);
+            }
         } else {
             finishScan(data, (url.indexOf("mess=Orders") != -1));
         }
@@ -3169,6 +3351,7 @@ void QWarloksDuelCore::slotReadyRead() {
         releaseAiBusy(url);
         releaseResultFetch(url);
         releaseKeepMeOn(url);
+        releasePendingMessage(url);
         if (!isBackground(reply)) {
             _errorMsg = QString("Server problem (HTTP %1), please try again later").arg(_httpResponceCode);
             emit errorOccurred();
@@ -3194,6 +3377,7 @@ void QWarloksDuelCore::slotReadyRead() {
         releaseAiBusy(url);
         releaseResultFetch(url);
         releaseKeepMeOn(url);
+        releasePendingMessage(url);
         if ((url.indexOf("/warlocksubmit") != -1) || (url.indexOf("/newchallenge") != -1) || (url.indexOf("/leave") != -1)) {
             // The server may well have taken it: show what it actually recorded.
             // Silently: the failure is reported already, and a foreground scan
@@ -3595,6 +3779,14 @@ QString QWarloksDuelCore::password() {
 
 QString QWarloksDuelCore::errorMsg() {
     return _errorMsg;
+}
+
+QString QWarloksDuelCore::messages() {
+    return _messages;
+}
+
+int QWarloksDuelCore::messageCount() {
+    return _messageCount;
 }
 
 QString QWarloksDuelCore::playerJson() {
@@ -4062,6 +4254,7 @@ void QWarloksDuelCore::logout() {
     _isLogined = false;
     _login.clear();
     _password.clear();
+    clearMessages();
 
     _finished_battles.clear();
     _shown_battles.clear();
