@@ -135,7 +135,7 @@ function getHintLetterFrames(a) {
         frame = [];
         for (i = 0; i < Ln; ++i) {
             g = a.data[i];
-            frame.push({l:g.l,r:g.r,lv:g.lv,rv:g.rv,la:g.la && (i <= lit),ra:g.ra && (i <= lit),
+            frame.push({t:g.t,l:g.l,r:g.r,lv:g.lv,rv:g.rv,la:g.la && (i <= lit),ra:g.ra && (i <= lit),
                         lp:g.la && (i === lit),rp:g.ra && (i === lit)});
         }
         res.push({action:a.action,warlock_name:a.warlock_name,object_type:a.object_type,object:a.object,data:frame});

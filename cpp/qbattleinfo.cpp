@@ -1,6 +1,35 @@
 #include "qbattleinfo.h"
 #include "qwarlockutils.h"
 
+#include <QRegularExpression>
+
+// The game server sometimes drops the opening quote on a colour tag, e.g.
+// <FONT COLOR=#88FFFF">. Older builds parsed that as a default-colour line and
+// stored the tag itself as text:
+//   <font color=&quot;#FEE2D6&quot;>COLOR=#54EBEB&quot;>Azi is covered ...</font>
+// Repair such entries on the way out so archives written before the parser fix
+// display correctly too. The wrapper's quote style (&quot; or ") is preserved.
+static QString repairMalformedColors(const QString &Text) {
+    static const QRegularExpression re(
+        "<font color=(\"|&quot;)([^\"&<>]+)\\1>COLOR=(#[0-9A-Fa-f]{6})(\"|&quot;)>",
+        QRegularExpression::CaseInsensitiveOption);
+    QString res = Text;
+    res.replace(re, "<font color=\\1\\3\\1>");
+    return res;
+}
+
+// Gestures are stored in the history so a parsed turn is never empty, but the
+// History window has always shown only the turn's news. Remove the #CCCCCC spans
+// (both the parser's &quot; form and a live page's quoted form) on output.
+static QString withoutGestures(const QString &Text) {
+    static const QRegularExpression re(
+        R"(<font\b[^>]*\bcolor\s*=\s*(?:"#CCCCCC"|&quot;#CCCCCC&quot;|#CCCCCC)[^>]*>.*?</font>\s*(?:<br\s*/?>)?)",
+        QRegularExpression::CaseInsensitiveOption | QRegularExpression::DotMatchesEverythingOption);
+    QString res = Text;
+    res.remove(re);
+    return res;
+}
+
 QBattleInfo::QBattleInfo()
 {
     //qDebug() << "QBattleInfo::QBattleInfo";
@@ -444,7 +473,7 @@ QString QBattleInfo::getChat() const {
         if (s.isEmpty()) {
             continue;
         }
-        tmpBC.prepend(prepareToPrint(s));
+        tmpBC.prepend(prepareToPrint(repairMalformedColors(s)));
         tmpBC.prepend(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(turn_idx)));
     }
     return tmpBC;
@@ -465,13 +494,41 @@ QString QBattleInfo::getHistory() const {
     QString tmpBH;
     int turn_idx = -1;
     foreach(QString s, _history) {
-        if (++turn_idx == 0) {
-            //continue;
+        ++turn_idx;
+        QString shown = repairMalformedColors(s);
+        if (turn_idx > 0) {
+            // Turn 0 keeps the opening bows; the rest are combat gestures.
+            shown = withoutGestures(shown);
         }
-        tmpBH.prepend(prepareToPrint(s));
+        tmpBH.prepend(prepareToPrint(shown));
         tmpBH.prepend(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(turn_idx)));
     }
     return tmpBH;
+}
+
+bool QBattleInfo::historyComplete() const {
+    // A waiting battle carries no log on its page, and the profile can still call it
+    // waiting after the log has advanced. There is no reliable high-water mark in
+    // that state, so ask for the full log on every History open.
+    if (_status == BATTLE_INFO_STATUS_WAIT) {
+        return false;
+    }
+    // On a ready page battleInfo() sets _turn to the hidden turn to play, one past
+    // the newest block in the full log. A finished battle uses _turn directly.
+    const int lastTurn = (_status == BATTLE_INFO_STATUS_READY) ? (_turn - 1) : _turn;
+    if (lastTurn < 0) {
+        return true;
+    }
+    if (_history.size() <= lastTurn) {
+        return false;
+    }
+    for (int t = 0; t <= lastTurn; ++t) {
+        // Gestures are stored, so an empty entry means this turn was never parsed.
+        if (_history.at(t).isEmpty()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 QString QBattleInfo::prepareToPrint(QString str) const {
@@ -479,7 +536,9 @@ QString QBattleInfo::prepareToPrint(QString str) const {
 }
 
 QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
-    if ((Turn <= 1) || (Turn > _turn)) {
+    // Turn 0 is the opening (the bows), there is no turn news for it. The arrays are only grown up
+    // to the turns that were seen, so keep the index inside them as well.
+    if ((Turn < 1) || (Turn > _turn) || (Turn >= _history.size()) || (Turn >= _chat.size())) {
         return "[]";
     }
     QString res = "";
@@ -705,6 +764,31 @@ void QBattleInfo::parseAllTurns(QString &Data, QString &Login, bool Last) {
     generateJSON(Login);
 }
 
+bool QBattleInfo::parseFullHistory(const QString &Data) {
+    // Same slice of the page parseAllTurns uses, but without parseUnits/generateJSON:
+    // the battle may only exist in the archive here, and rebuilding fullJSON from
+    // empty unit lists would blank the window it is shown in. addHistory/addChat
+    // replace each turn in place, so any newer turn already in memory survives.
+    int first_idx = Data.indexOf("<U>Turn");
+    if (first_idx == -1) {
+        return false;
+    }
+    int last_idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=", first_idx);
+    if (last_idx == -1) {
+        last_idx = Data.length();
+    }
+    QString hist = Data.mid(first_idx, last_idx - first_idx).replace("<a href=\"/player", "<b atr=\"")
+        .replace("<A CLASS=amonoturn HREF=\"/warlocks", "<b atr=\"").replace("</A>", "</b>").replace("</a>", "</b>")
+        .replace("BLOCKQUOTE", "p").replace("WIDTH=\"100%\"", "").replace("WIDTH=\"50%\"", "").replace("<H2>", "").replace("</H2>", "")
+        .replace("<p>", "").replace("</p>", "").replace("#FFFF88", "#F5C88E").replace("#88FFFF", "#54EBEB").replace("#88FF88", "#79D979");
+    // The first <U>Turn is the page title; without a second one there is no log.
+    if (hist.count("<U>Turn") <= 1) {
+        return false;
+    }
+    QWarlockUtils::parseBattleHistory(hist, this);
+    return true;
+}
+
 void QBattleInfo::generateJSON(QString &Login) {
     QString _WarlockHtml, _MonstersHtml;
     foreach(QMonster *m, _Monsters) {
@@ -736,7 +820,7 @@ void QBattleInfo::generateJSON(QString &Login) {
 
 QString QBattleInfo::fullJSON() const
 {
-    return _fullJSON;
+    return repairMalformedColors(_fullJSON);
 }
 
 void QBattleInfo::setSubTitle(const QString &newSub_title)

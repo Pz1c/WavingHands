@@ -23,6 +23,9 @@ ApplicationWindow {
     visibility: isMobile() ? Window.FullScreen : Window.Windowed
     property real ratioObject: 1
     property real ratioFont: 1
+    // Shared horizontal offset of the warlocks' gesture strips: every row mirrors it,
+    // so scrolling one row scrolls them all together. Reset per battle in prepareWarlocks().
+    property real gesturesScrollX: 0
     property string afterCloseAction: ""
     property alias gameCore: core
     property alias mainContainer: iWndContainer
@@ -88,6 +91,7 @@ ApplicationWindow {
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onOpponentTurnReady: function(by) { refreshAfterOpponentTurn(by); }
+        onBattleHistoryReady: function(battle_id, history) { applyBattleHistory(battle_id, history); }
         onRegisterNewUserChanged: GUI.newUserRegistered()
         //onTimerStateChanged: changeTimerState()
         onChallengeListChanged: GUI.loadChallengeList()
@@ -1068,8 +1072,29 @@ ApplicationWindow {
         showErrorWnd({type:23,spell:spell_code});
     }
 
-    function showBattleHistory(txt) {
-        showErrorWnd({type:16,history:txt});
+    function showBattleHistory(txt, turn) {
+        var history = txt;
+        // The battle page only carries the newest turn. A log already parsed in full
+        // comes back right here; otherwise the rest arrives in the background and
+        // refreshes this window (applyBattleHistory).
+        if (gBattle && gBattle.id) {
+            history = core.requestBattleHistory(gBattle.id) || txt;
+            gBattle.battle_hist = history;
+        }
+        showErrorWnd({type:16,history:history,turn:turn});
+    }
+
+    // battleHistoryReady: replace the log with the complete one, keeping the turn the
+    // window was opened on. A reply for another battle is ignored.
+    function applyBattleHistory(battle_id, history) {
+        if (!gBattle || (gBattle.id !== battle_id)) {
+            return;
+        }
+        gBattle.battle_hist = history;
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_spell];
+        if (wnd && wnd.visible && wnd.isShowingHistory()) {
+            wnd.rebuildBattleHistory(history);
+        }
     }
 
     function showGesture(isLeft, possible_gestures, action_type, warlock_idx, last_gesture) {
