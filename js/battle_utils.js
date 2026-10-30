@@ -690,7 +690,8 @@ function getOrdersForReview(dictionary) {
 function getCharmDataByAction(action_data) {
     var arr = action_data.action === "charmed" ? battle.actions.CC : battle.actions.CP;
     var id = battle.targetsMap[action_data.warlock_name];
-    var res = arr[id];
+    // https://github.com/Pz1c/WavingHands/issues/367: a copy, the order changes only in setCharm, Back keeps it
+    var res = {h:arr[id].h, g:arr[id].g, t:arr[id].t};
     res.id = id;
     res.warlock_idx = action_data.warlock_idx;
     if (!!action_data.hand) {
