@@ -15,6 +15,9 @@ Rectangle {
     property string border_color_active: "royalblue"
     property string border_color_inactive: "gray"
     property alias textObj: btnText
+    // optional second line under the text, empty keeps the text centred alone
+    property alias subtitle: btnSubtitle.text
+    property alias subtitleObj: btnSubtitle
 
     signal clicked
 
@@ -25,10 +28,25 @@ Rectangle {
     LargeText {
         id: btnText
         anchors.centerIn: parent
-        height: 0.8 * parent.height
+        anchors.verticalCenterOffset: btnSubtitle.visible ? -0.15 * parent.height : 0
+        height: (btnSubtitle.visible ? 0.5 : 0.8) * parent.height
         width: 0.8 * parent.width
         color: "yellow"
         fontSizeMode: Text.Fit
+    }
+
+    Text {
+        id: btnSubtitle
+        anchors.top: btnText.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        height: 0.3 * parent.height
+        width: 0.8 * parent.width
+        visible: text !== ""
+        color: btnText.color
+        fontSizeMode: Text.Fit
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
+        text: ""
     }
 
     //Mouse area to react on click events
