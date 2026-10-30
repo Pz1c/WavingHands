@@ -70,7 +70,7 @@ InfoWindow {
                 font.pixelSize: 42 * mainWindow.ratioFont
                 color: "#0654C0"
                 horizontalAlignment: Text.AlignHCenter
-                text: "The dove is on its way!"
+                text: dict.getStringByCode("NotifPopupTitle")
             }
 
             Text {
@@ -83,7 +83,7 @@ InfoWindow {
                 font.pixelSize: 48 * mainWindow.ratioFont
                 color: "#10C9F5"
                 horizontalAlignment: Text.AlignHCenter
-                text: "Get a note when<br>your turn is ready"
+                text: dict.getStringByCode("NotifPopupDesc")
             }
 
             Text {
@@ -143,7 +143,7 @@ InfoWindow {
             BtnBig {
                 id: bbAction
                 text_color: "#ABF4F4"
-                text: "Enable Notifications"
+                text: dict.getStringByCode("NotifPopupEnable")
                 border.width: 0
                 radius: 30
                 z: 30
@@ -171,7 +171,7 @@ InfoWindow {
             Text {
                 id: bbSkipAction
                 color: "#A8F4F4"
-                text: "Skip"
+                text: dict.getStringByCode("Skip")
                 font.underline: true
                 horizontalAlignment: Text.AlignLeft
                 font.pixelSize: 28 * mainWindow.ratioFont

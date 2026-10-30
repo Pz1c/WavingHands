@@ -32,7 +32,7 @@ InfoWindow {
                 font.pixelSize: 42 * mainWindow.ratioFont
                 color: "#10C9F5"
                 horizontalAlignment: Text.AlignLeft
-                text: "Challenge to a live match?"
+                text: dict.getStringByCode("LiveMatchTitle")
             }
 
             Text {
@@ -47,7 +47,7 @@ InfoWindow {
                 font.pixelSize: 28 * mainWindow.ratioFont
                 //fontSizeMode: Text.VerticalFit
                 wrapMode: Text.WordWrap
-                text: "In a live match each player has upto 30 minutes to play a whole game.<br>After time runs out you ha ve 45 seconds per turn"
+                text: dict.getStringByCode("LiveMatchDesc")
             }
 
             ScrollView {
@@ -71,8 +71,7 @@ InfoWindow {
                     font.pixelSize: 21 * mainWindow.ratioFont
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignJustify
-                    text: "Note: On each turn, the time counter continues counting once you enter the game,\n" +
-                          "                           or when 1 minute passes from the time when you get notified of a new turn (the erlier of the two)"
+                    text: dict.getStringByCode("LiveMatchNote")
                     //onLinkActivated: function (link) { errorLinkActivated(link) }
                 }
             }
@@ -87,7 +86,7 @@ InfoWindow {
             BtnBig {
                 id: bbAction
                 text_color: "#ABF4F4"
-                text: "Live Match"
+                text: dict.getStringByCode("LiveMatch")
                 border.width: 0
                 radius: 30
                 visible: false
@@ -112,7 +111,7 @@ InfoWindow {
             Text {
                 id: bbBtn3
                 color: "#A8F4F4"
-                text: "Regular Match"
+                text: dict.getStringByCode("RegularMatch")
                 font.underline: true
                 visible: true
                 horizontalAlignment: Text.AlignLeft

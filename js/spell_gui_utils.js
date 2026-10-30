@@ -30,14 +30,14 @@ function prepareUnstartedGame(l_data, dict) {
         var data = l_data.battle_data;
         if ((data.size === 2) && (data.level === 0)) {
             if (data.with_bot || data.for_bot) {
-                ltShortDesc.text = "Training with a training bot";
+                ltShortDesc.text = dict.getStringByCode("TrainingWithBot");
             } else {
-                ltShortDesc.text = "Training with another warlock";
+                ltShortDesc.text = dict.getStringByCode("TrainingWithWarlock");
             }
         } else if ((data.size === 2) && (data.level === 1)) {
-            ltShortDesc.text = "Warlock vs. warlock";
+            ltShortDesc.text = dict.getStringByCode("WarlockVsWarlock");
         } else {
-            ltShortDesc.text = "Multi player game for " + l_data.battle_data.size + " players";
+            ltShortDesc.text = dict.getStringByCode("MultiPlayerGame").replace("%1", l_data.battle_data.size);
         }
         if (!l_data.battle_data.participant || (l_data.battle_data.participant === '')) {
             ltError.text = "";//"No one other warlock in then circle<br>";
@@ -45,7 +45,7 @@ function prepareUnstartedGame(l_data, dict) {
                 ltError.text = "Warlocks accepted: only you(";
             }*/
         } else {
-            ltError.text = "Warlocks accepted: ";
+            ltError.text = dict.getStringByCode("WarlocksAccepted");
             var arr_p = l_data.battle_data.participant.split(",");
             var first = true, not_empty = false;
             for(var i = 0, Ln = arr_p.length; i < Ln; ++i) {
@@ -61,7 +61,7 @@ function prepareUnstartedGame(l_data, dict) {
                 not_empty = true;
             }
             if (!l_data.battle_data.active) {
-                ltError.text += not_empty ? " and you" : " only you";
+                ltError.text += dict.getStringByCode(not_empty ? "AcceptedAndYou" : "AcceptedOnlyYou");
             }
             ltError.text += "<br>";
             if (!not_empty) {
@@ -72,37 +72,37 @@ function prepareUnstartedGame(l_data, dict) {
         if (!l_data.battle_data.challenged || (l_data.battle_data.challenged === '')) {
 
         } else {
-            ltError.text = "Warlocks challenged:<br>";
+            ltError.text = dict.getStringByCode("WarlocksChallenged") + "<br>";
             var arr_c = l_data.battle_data.challenged.split(",");
             var arr_r = l_data.battle_data.rejected.split(",");
             for(var j = 0, LnJ = arr_c.length; j < LnJ; ++j) {
                 var arr_wr = arr_c[j].split(":");
                 if (arr_r.indexOf(arr_wr[0]) !== -1) {
-                    ltError.text += arr_wr[0] + '&nbsp;&nbsp;&nbsp;reject invitation<br>';
+                    ltError.text += arr_wr[0] + '&nbsp;&nbsp;&nbsp;' + dict.getStringByCode("RejectInvitation") + '<br>';
                 } else {
-                    ltError.text += arr_wr[0] + '&nbsp;&nbsp;&nbsp;<a href="/reject/'+arr_wr[1]+'"><font color="#10C9F5">Cancel invite</font></a><br>';
+                    ltError.text += arr_wr[0] + '&nbsp;&nbsp;&nbsp;<a href="/reject/'+arr_wr[1]+'"><font color="#10C9F5">' + dict.getStringByCode("CancelInvite") + '</font></a><br>';
                 }
             }
         }
         //var tarr2 = tarr[1].split("/");
         var need_cnt = l_data.battle_data.need;
         if (need_cnt > 1) {
-            ltError.text += "Waiting for " + (need_cnt) + " more warlocks to join<br>";
+            ltError.text += dict.getStringByCode("WaitingMoreWarlocks").replace("%1", need_cnt) + "<br>";
         } else if (need_cnt === 1) {
             //ltError.text += "Join to start battle<br>";
         }
     }
     ltError.text += "<br><font size=\"-1\">" + dict.getStringByCode('DefNotStartDesc') + "</font>";
-    bbAction.text = "Keep Waiting";
+    bbAction.text = dict.getStringByCode("KeepWaiting");
     bbAction.visible = true;
-    bbSkipAction.text = "Leave";
+    bbSkipAction.text = dict.getStringByCode("Leave");
     bbSkipAction.visible = true;
 }
 
 function prepareDataType11(l_data, dict) {
     ltTitle.text = dict.getStringByCode('DefErrTitle');
     ltShortDesc.text = dict.getStringByCode('JoinBattleError');
-    ltError.text = l_data.d ? replaceAll(l_data.d, "''", '"') : "Unknown error";
+    ltError.text = l_data.d ? replaceAll(l_data.d, "''", '"') : dict.getStringByCode("UnknownError");
 }
 
 function prepareDataType10(l_data, dict) {
@@ -126,12 +126,12 @@ function prepareDataType9(l_data, dict) {
 }
 
 function prepareDataOrderSubmitted(l_data, dict) {
-    ltTitle.text = "Orders Submitted";
-    ltShortDesc.text = "Your orders are in for this turn. Players may take up to 3 days to submit orders.";
+    ltTitle.text = dict.getStringByCode("OrdersSubmittedTitle");
+    ltShortDesc.text = dict.getStringByCode("OrdersSubmittedSDesc");
     ltError.text = l_data.d;
-    bbAction.text = "View";
+    bbAction.text = dict.getStringByCode("View");
     bbAction.visible = true;
-    bbSkipAction.text = "Force Turn";
+    bbSkipAction.text = dict.getStringByCode("ForceTurn");
     bbSkipAction.visible = l_data.fst > 0;
     bbSkipAction.gradient = gDef;
     bbSkipAction.transparent = false;
@@ -145,12 +145,12 @@ function prepareMonsterDetails(l_data, dict) {
     icon.source = "qrc:/res/" + l_data.icon + ".png";
     icon.visible = true;
     icon.text = l_data.hp;
-    var details = "Life: " + l_data.hp + "<br>Power: "+l_data.strength;
+    var details = dict.getStringByCode("StatLife") + l_data.hp + "<br>" + dict.getStringByCode("StatPower") + l_data.strength;
     if (l_data.name.indexOf("RH:") === 0) {
         ltTitle.text = dict.getStringByCode("RH_summon");
         ltShortDesc.text = dict.getStringByCode("WH_summon");
         if (l_data.hp === "R") {
-            details = "Life: Unknown<br>Power: Unknown";
+            details = dict.getStringByCode("StatLife") + dict.getStringByCode("Unknown") + "<br>" + dict.getStringByCode("StatPower") + dict.getStringByCode("Unknown");
         } else {
             ltTitle.text += " ("+BGU.getMonsterNameByStrength(l_data.strength)+")";
         }
@@ -158,7 +158,7 @@ function prepareMonsterDetails(l_data, dict) {
         ltTitle.text = dict.getStringByCode("LH_summon");
         ltShortDesc.text = dict.getStringByCode("WH_summon");
         if (l_data.hp === "L") {
-            details = "Life: Unknown<br>Power: Unknown";
+            details = dict.getStringByCode("StatLife") + dict.getStringByCode("Unknown") + "<br>" + dict.getStringByCode("StatPower") + dict.getStringByCode("Unknown");
         } else {
             ltTitle.text += " ("+BGU.getMonsterNameByStrength(l_data.strength) +")";
         }
@@ -166,12 +166,12 @@ function prepareMonsterDetails(l_data, dict) {
       ltTitle.text = l_data.name;
       ltShortDesc.text = dict.getStringByCode("Warlock");
     }
-    details += "<br>Owner: " + l_data.owner + "<br>Target: " + l_data.target;
+    details += "<br>" + dict.getStringByCode("StatOwner") + l_data.owner + "<br>" + dict.getStringByCode("StatTarget") + l_data.target;
     if (l_data.status.indexOf("-") !== -1) {
         icon.iconInfoSource = l_data.enchantment_icon;
         icon.iconInfoVisible = true;
 
-        details += "<br><font color=#10C9F5>Enchantments:</font><br>";
+        details += "<br><font color=#10C9F5>" + dict.getStringByCode("Enchantments") + "</font><br>";
         var ench_lst = l_data.status.substr(l_data.status.indexOf("-") + 1).split(" ");
         for(var i = 0, Ln = ench_lst.length; i < Ln; ++i) {
             var ss = ench_lst[i];
@@ -182,10 +182,7 @@ function prepareMonsterDetails(l_data, dict) {
             details += ss.substr(0, sidx1) + ": ";
             var sidx2 = ss.indexOf(")", sidx1);
             var cnt = ss.substr(sidx1 + 1, sidx2 - sidx1 - 1) * 1;
-            details += cnt + " turn";
-            if (cnt > 1) {
-                details += "s";
-            }
+            details += cnt + dict.getStringByCode(cnt > 1 ? "EnchantmentTurns" : "EnchantmentTurn");
             details += "<br>";
         }
     }
@@ -201,7 +198,7 @@ function prepareHPDetails(l_data, dict) {
     icon.visible = true;
     ltTitle.text = l_data.warlock_name;
     ltShortDesc.text = dict.getStringByCode("Warlock");
-    ltError.text = "Life: " + l_data.value;
+    ltError.text = dict.getStringByCode("StatLife") + l_data.value;
 }
 
 function prepareSpellDescription(spell_code, spell_icon) {
@@ -254,9 +251,9 @@ function prepareRateUs(l_data, dict) {
 
 function prepareUserScore(l_data, dict) {
     //ltDesc.visible = true;
-    ltTitle.text = l_data.name + ": Stats";
+    ltTitle.text = dict.getStringByCode("UserStatsTitle").replace("%1", l_data.name);
     ltShortDesc.visible = false;
-    ltError.text = "Score: " + l_data.elo + "<br>Played: " + l_data.played + "<br>Won: " + l_data.won + "<br>Died: " + l_data.died;
+    ltError.text = dict.getStringByCode("StatScore") + l_data.elo + "<br>" + dict.getStringByCode("StatPlayed") + l_data.played + "<br>" + dict.getStringByCode("StatWon") + l_data.won + "<br>" + dict.getStringByCode("StatDied") + l_data.died;
 }
 
 function replaceAll(str, find, replace) {
@@ -277,7 +274,7 @@ function preparePersonalChallenge(l_data, dict) {
     ltShortDesc.text = dict.getStringByCode(l_data.s === 5 ? "NewChalengeSDesc" : (l_data.s === 3 ? "PersonalChalengeSDesc" : "OpenChalengeSDesc")) + l_data.el;
 
     var enemy = JSON.parse(mainWindow.gameCore.getWarlockStats(l_data.el));
-    ltError.text = l_data.dt.replace("Waiting", "<br>Waiting").replace(", need", "<br>Need") + "<br>Score: " + enemy.elo + "<br>Played: " + enemy.played + "<br>Won: " + enemy.won + "<br>Died: " + enemy.died;
+    ltError.text = l_data.dt.replace("Waiting", "<br>Waiting").replace(", need", "<br>Need") + "<br>" + dict.getStringByCode("StatScore") + enemy.elo + "<br>" + dict.getStringByCode("StatPlayed") + enemy.played + "<br>" + dict.getStringByCode("StatWon") + enemy.won + "<br>" + dict.getStringByCode("StatDied") + enemy.died;
     bbAction.visible = true;
     bbAction.text = dict.getStringByCode("PersonalChalengeAccept");
     bbSkipAction.visible = l_data.s !== 4;

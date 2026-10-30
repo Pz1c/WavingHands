@@ -69,7 +69,7 @@ InfoWindow {
             border_color: "#E7FFFF"
             text_color: "#E7FFFF"
             transparent: true
-            placeholderText: "e.g. Galbarad"
+            placeholderText: dict.getStringByCode("SearchWizardInputHint")
             placeholderTextColor: "#544653"
             regularExpression: /^[a-zA-Z0-9_-]{2,10}$/
 

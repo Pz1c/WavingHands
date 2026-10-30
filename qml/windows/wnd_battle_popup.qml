@@ -143,7 +143,7 @@ InfoWindow {
             BtnBig {
                 id: bbAction
                 text_color: "#ABF4F4"
-                text: "View"
+                text: dict.getStringByCode("View")
                 border.width: 0
                 radius: 30
                 z: 30

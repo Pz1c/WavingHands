@@ -38,12 +38,12 @@ function getLastActivityText(last_activity_in_sec) {
     console.log("UPU.getLastActivityText", Math.floor(date.getTime()/1000), last_activity_in_sec, date.getTime(), diff);
 
     if (Math.floor(diff / (24 * 60 * 60)) > 0) {
-        return "Last active ~" + Math.floor(diff / (24 * 60 * 60)) + " days ago";
+        return mainWindow.warlockDictionary.getStringByCode("LastActiveDays").replace("%1", Math.floor(diff / (24 * 60 * 60)));
     } else if (Math.floor(diff / (60 * 60)) > 0) {
-        return "Last active ~" + Math.floor(diff / (60 * 60)) + " hours ago";
+        return mainWindow.warlockDictionary.getStringByCode("LastActiveHours").replace("%1", Math.floor(diff / (60 * 60)));
     } else if (Math.floor(diff / (60)) > 0) {
-        return "Last active ~" + Math.floor(diff / (60)) + " minutes ago";
+        return mainWindow.warlockDictionary.getStringByCode("LastActiveMinutes").replace("%1", Math.floor(diff / (60)));
     } else {
-        return "Active right now";
+        return mainWindow.warlockDictionary.getStringByCode("ActiveNow");
     }
 }

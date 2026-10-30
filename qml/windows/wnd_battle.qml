@@ -18,7 +18,7 @@ BaseWindow {
     title_height_prc: 0
     control_height_prc: 0
     with_action1: false
-    action1_text: "Chat"
+    action1_text: dict.getStringByCode("Chat")
     bg_source: "qrc:/res/background_battle.png"
 
     property int operationMode: 0
@@ -178,7 +178,7 @@ BaseWindow {
 
                 color: "transparent"
                 text_color: active ? "#A8F4F4" : "#544653"
-                text: "Submit"
+                text: dict.getStringByCode("Submit")
 
                 onClicked: {
                     console.log("wnd_battle.bbSendOrders", mainWindow.gBattle.read_only, JSON.stringify(mainWindow.gBattle.actions));
@@ -216,7 +216,7 @@ BaseWindow {
 
                 color: "transparent"
                 text_color: active ? "#A8F4F4" : "#544653"
-                text: "Done"
+                text: dict.getStringByCode("Done")
 
                 onClicked: {
                     console.log("bbChooseTarget.Clicked", JSON.stringify(mainWindow.gBattle.actions), JSON.stringify(target));
@@ -419,7 +419,7 @@ BaseWindow {
                     height: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 0.80 * parent.height : 0.50 * parent.height
                     fontSizeMode: Text.VerticalFit
                     font.underline: !(ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1)
-                    text: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? ">" : "got it!"
+                    text: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? ">" : dict.getStringByCode("TutorialGotIt")
                     color: "#210430"
                     font.pixelSize: (ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 48 : 21) * mainWindow.ratioFont
                     onClicked: {
@@ -577,7 +577,7 @@ BaseWindow {
                 target.target_name = data.action === "hp" ? data.warlock_name : data.name;
                 tTargetTitle.text = getTargetTitle(operationMode === 1, currentSpell.n);
             } else {
-                mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
+                mainWindow.showErrorWnd({type:0,text:dict.getStringByCode("WrongTargetText"),title:dict.getStringByCode("WrongTargetTitle")});
             }
         } else /*if (data.action === "m") {
             data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
@@ -586,12 +586,12 @@ BaseWindow {
         } else */if (data.action === "banked") {
             mainWindow.gBattle.actions.F = data.checked ? 1 : 0;
             if (data.checked) {
-                showShortHint("Banked "+data.value+" will be fired");
+                showShortHint(dict.getStringByCode("BankedWillFire").replace("%1", data.value));
             } else {
-                showShortHint("Do not fire banked spell: " + data.value);
+                showShortHint(dict.getStringByCode("BankedNotFire").replace("%1", data.value));
             }
         } else if (data.action === "banked_info") {
-            showShortHint(data.warlock_name + " banked a " + data.value);
+            showShortHint(dict.getStringByCode("BankedBy").replace("%1", data.warlock_name).replace("%2", data.value));
         } else if (delay && (data.action === "delay")) {
             mainWindow.cleanDelay();
         } else if (permanency && (data.action === "permanency")) {
@@ -616,15 +616,15 @@ BaseWindow {
         switch(data.action) {
         case "hp":
             msg_type = 4;
-            msg_title = "Warlock's hit point"
-            msg_text = data.value + " damage to death";
+            msg_title = dict.getStringByCode("WarlockHPTitle")
+            msg_text = dict.getStringByCode("WarlockHPText").replace("%1", data.value);
             break;
         case "m":
             msg_type = 4;
-            msg_title = "Monster"
+            msg_title = dict.getStringByCode("Monster")
             msg_text = data.name;
             if (data.owner !== "Nobody") {
-                msg_text += " (owner by "+data.owner+")";
+                msg_text += dict.getStringByCode("MonsterOwnedBy").replace("%1", data.owner);
                 console.log("get target", JSON.stringify(mainWindow.gBattle.actions), mainWindow.gBattle.actions.M[data.action_idx].target);
                 data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
                 //data.allow_choose_target = mainWindow.gBattle.actions.M[data.action_idx].allow_choose_target;
@@ -636,12 +636,12 @@ BaseWindow {
                 msg_text += " " + data.status;
             }
             if (data.target) {
-                msg_text += " attack " + data.target;
+                msg_text += dict.getStringByCode("MonsterAttack").replace("%1", data.target);
             }
             break;
         case "banked":
-            msg_title = "Banked spell";
-            msg_text = data.value + "<br>To get delayed spell cast Delay Effect DWSSSP<br>" + dict.getStringByCode("DWSSSP_desc");
+            msg_title = dict.getStringByCode("BankedSpellTitle");
+            msg_text = dict.getStringByCode("BankedSpellText").replace("%1", data.value) + dict.getStringByCode("DWSSSP_desc");
             break;
         default: // spell
             msg_type = 7
@@ -651,7 +651,7 @@ BaseWindow {
                 msg_text  = dict.getStringByCode(spell_code + "_desc");
             } else {
                 spell_code = "PSDF";
-                msg_title  = "Charm";
+                msg_title  = dict.getStringByCode("Charm");
                 msg_text   = data.action;
             }
             break;
@@ -680,9 +680,9 @@ BaseWindow {
                 var txt = "";//"Select target for " + Title;
                 if (IsSpell) {
                     if (mainWindow.gBattle.player_has_bank) {
-                        txt = "To bank a "+Title+", click the bank icon and then choose a target";
+                        txt = dict.getStringByCode("HintBankSpell").replace("%1", Title);
                     } else if (mainWindow.gBattle.player_has_permanency) {
-                        txt = "To make "+Title+" permanent, click the permanency icon and then choose a target";
+                        txt = dict.getStringByCode("HintPermanentSpell").replace("%1", Title);
                     } else if (Title !== "Counter Spell") {
                         //txt += " spell";
                     }
@@ -815,7 +815,7 @@ BaseWindow {
         readyWarlocks = 0;
         // frames left over from the last battle must not touch the new warlocks
         BWU.stopHintAnimation();
-        title_text = "Battle #" + mainWindow.gBattle.id;
+        title_text = dict.getStringByCode("BattleTitle").replace("%1", mainWindow.gBattle.id);
         rTT.visible = false;
         BU.applyBattle();
         battleChanged();

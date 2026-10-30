@@ -46,24 +46,24 @@ function local_log_spell_event(spell_name) {
 }
 
 function getTargetTitle(IsSpell, Title, TargetName, Permanency, Delay, NoColor) {
-    var res = "";
+    var res = "", dict = mainWindow.warlockDictionary;
     if (IsSpell && (Title.indexOf("Summon") !== -1) && (Title.indexOf("Elemental") === -1)) {
-        res = Title + ' to serve: ';
+        res = dict.getStringByCode("TargetTitleSummon").replace("%1", Title);
     } else if (IsSpell) {
-        res = "Cast " + Title;
+        res = dict.getStringByCode("TargetTitleCast").replace("%1", Title);
         if (Title.indexOf("Counter") !== -1) {
-            res += ' spell';
+            res += dict.getStringByCode("TargetTitleSpell");
         }
         if (Permanency) {
-            res += " (make permanent)";
+            res += dict.getStringByCode("TargetTitlePermanent");
         }
         if (Delay) {
-            res += " (bank it)";
+            res += dict.getStringByCode("TargetTitleBank");
         }
 
-        res += ' at: ';
+        res += dict.getStringByCode("TargetTitleAt");
     } else {
-        res = "Direct  " + Title + " at ";
+        res = dict.getStringByCode("TargetTitleDirect").replace("%1", Title);
         res = res.replace("Right Hand Monster", "Right Hand");
         res = res.replace("Left Hand Monster", "Left Hand");
     }

@@ -222,7 +222,7 @@ function prepareTurnActionInfo(last_turn_hist) {
             continue;
         }
         // https://github.com/Pz1c/WavingHands/issues/311
-        BGU.processHintText(real_actions[i]);
+        BGU.processHintText(real_actions[i], mainWindow.warlockDictionary);
 
         if ((real_actions[i].color === "#FF6666") || (real_actions[i].color === "#FF8888")) {
             real_actions[i].color = "#FEE2D6";
@@ -602,7 +602,7 @@ function getOrdersForReview(dictionary) {
     }
 
     if (actions.C !== "") {
-        res.push({row_type:"0",type:"C",v:"Say: " + actions.C,c:"snow",icon:"chat",icon_text:"",icon_visible:true,icon_width:60});
+        res.push({row_type:"0",type:"C",v:dictionary.getStringByCode("MessageSay") + " " + actions.C,c:"snow",icon:"chat",icon_text:"",icon_visible:true,icon_width:60});
         console.log("getOrdersForReview", "point1", JSON.stringify(res));
     }
     // gesture

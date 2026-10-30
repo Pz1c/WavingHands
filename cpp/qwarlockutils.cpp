@@ -727,7 +727,7 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
         }
         if (battle_id > 0) {
             QStringList lg = logins.split(",");
-            result.append(QString("{\"id\":%1,\"s\":3,\"d\":\"Challenged by %2\",\"dt\":\"%3\",\"el\":\"%4\"}").arg(intToStr(battle_id), lg.at(0).trimmed(), desc, lg.at(0).trimmed()));
+            result.append(QString("{\"id\":%1,\"s\":3,\"d\":\"%2\",\"dt\":\"%3\",\"el\":\"%4\"}").arg(intToStr(battle_id), QWarlockDictionary::getInstance()->getStringByCode("ChallengedBy").arg(lg.at(0).trimmed()), desc, lg.at(0).trimmed()));
         }
     }
 }
