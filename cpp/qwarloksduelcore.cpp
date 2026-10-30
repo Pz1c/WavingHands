@@ -1757,14 +1757,20 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     return res;
 }
 
-void QWarloksDuelCore::requestBattleHistory(int battle_id) {
+QString QWarloksDuelCore::requestBattleHistory(int battle_id) {
     qDebug() << "requestBattleHistory" << battle_id << _isLogined;
     if (_isAI || _isAsService || !_isLogined || (battle_id <= 0)) {
-        return;
+        return QString();
+    }
+    QBattleInfo *battleInfo = getBattleInfo(battle_id);
+    if (battleInfo->historyComplete()) {
+        qDebug() << "requestBattleHistory" << "history complete" << battle_id;
+        return battleInfo->getHistory();
     }
     // Background: the history window is already open with whatever the battle page
     // had; this only fills in the rest, so it must not raise or hold the overlay.
     sendGetRequest(QString(GAME_SERVER_URL_GET_BATTLE_HISTORY).arg(intToStr(battle_id)), true);
+    return QString();
 }
 
 void QWarloksDuelCore::finishBattleHistory(QString &Data, int StatusCode, const QString &url) {

@@ -49,6 +49,9 @@ public:
     // Fill the turn log from a "&full=1" page without touching the units, winner or
     // the stored battle JSON. Returns false when the page carries no turn log.
     bool parseFullHistory(const QString &Data);
+    // True when every resolved turn is present in the history. Gestures are stored,
+    // so an empty entry means the turn was never parsed, not a turn without news.
+    bool historyComplete() const;
 
     bool active(const QString &login) const;
 

@@ -560,7 +560,6 @@ void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int cur
     qDebug() << "QWarlockUtils::parseBattleTurn" << current_turn << last_turn;
     QString result_c, result_h, line, def_color = "#FEE2D6", current_color = def_color, sub_line, ssln, sssline, last_line, red_desc;
     int idx1;
-    bool first_turn = current_turn == 0;
     // Tag names are normally uppercase, but be tolerant of pages that lower-case them.
     turn_text.replace("<font", "<FONT", Qt::CaseInsensitive).replace("</font", "</FONT", Qt::CaseInsensitive);
     QStringList lst = turn_text.split("<FONT "), sslines, ssslines;
@@ -607,13 +606,8 @@ void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int cur
                 if (sssline.isEmpty()) {
                     continue;
                 }
-                // Inactive (#CCCCCC) lines are gestures whose results are already
-                // reported; keep only the opening bows (turn 0). Skipping them still
-                // leaves an entry below, so getHistory() emits this turn's label even
-                // when the turn itself had no news.
-                if ((current_color.compare("#CCCCCC") == 0) && !first_turn) {
-                    continue;
-                }
+                // Gestures are stored as well, so a parsed turn is never empty; the
+                // History window filters the #CCCCCC spans out again.
                 if (sssline.indexOf(" says ") != -1) {
                     if (!result_c.isEmpty()) {
                         result_c.append("<br>");
@@ -628,7 +622,8 @@ void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int cur
                     }
                     result_h.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
                 }
-                if (last_turn) {
+                // A stored gesture must not become the result line for subtitle/winner.
+                if (last_turn && (current_color.compare("#CCCCCC") != 0)) {
                     last_line = sssline;
                 }
                 if (last_turn && (current_color.compare("#FF6666") == 0) && !bi->containParticipant(sssline).isEmpty()) {

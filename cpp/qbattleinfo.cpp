@@ -18,6 +18,18 @@ static QString repairMalformedColors(const QString &Text) {
     return res;
 }
 
+// Gestures are stored in the history so a parsed turn is never empty, but the
+// History window has always shown only the turn's news. Remove the #CCCCCC spans
+// (both the parser's &quot; form and a live page's quoted form) on output.
+static QString withoutGestures(const QString &Text) {
+    static const QRegularExpression re(
+        R"(<font\b[^>]*\bcolor\s*=\s*(?:"#CCCCCC"|&quot;#CCCCCC&quot;|#CCCCCC)[^>]*>.*?</font>\s*(?:<br\s*/?>)?)",
+        QRegularExpression::CaseInsensitiveOption | QRegularExpression::DotMatchesEverythingOption);
+    QString res = Text;
+    res.remove(re);
+    return res;
+}
+
 QBattleInfo::QBattleInfo()
 {
     //qDebug() << "QBattleInfo::QBattleInfo";
@@ -482,13 +494,41 @@ QString QBattleInfo::getHistory() const {
     QString tmpBH;
     int turn_idx = -1;
     foreach(QString s, _history) {
-        if (++turn_idx == 0) {
-            //continue;
+        ++turn_idx;
+        QString shown = repairMalformedColors(s);
+        if (turn_idx > 0) {
+            // Turn 0 keeps the opening bows; the rest are combat gestures.
+            shown = withoutGestures(shown);
         }
-        tmpBH.prepend(prepareToPrint(repairMalformedColors(s)));
+        tmpBH.prepend(prepareToPrint(shown));
         tmpBH.prepend(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(turn_idx)));
     }
     return tmpBH;
+}
+
+bool QBattleInfo::historyComplete() const {
+    // A waiting battle carries no log on its page, and the profile can still call it
+    // waiting after the log has advanced. There is no reliable high-water mark in
+    // that state, so ask for the full log on every History open.
+    if (_status == BATTLE_INFO_STATUS_WAIT) {
+        return false;
+    }
+    // On a ready page battleInfo() sets _turn to the hidden turn to play, one past
+    // the newest block in the full log. A finished battle uses _turn directly.
+    const int lastTurn = (_status == BATTLE_INFO_STATUS_READY) ? (_turn - 1) : _turn;
+    if (lastTurn < 0) {
+        return true;
+    }
+    if (_history.size() <= lastTurn) {
+        return false;
+    }
+    for (int t = 0; t <= lastTurn; ++t) {
+        // Gestures are stored, so an empty entry means this turn was never parsed.
+        if (_history.at(t).isEmpty()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 QString QBattleInfo::prepareToPrint(QString str) const {

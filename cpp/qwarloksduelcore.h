@@ -180,10 +180,11 @@ public slots:
     void aiCreateNewChallenge();
     void regNewUser(const QString &Login, const QString &Email, const QString &Pass = "");
     void getBattle(int battle_id, int battle_type, bool silent = false);
-    // Ask for the complete turn log in the background; the reply arrives as
+    // The complete turn log if this session already has it; otherwise an empty string
+    // while a background "&full=1" fetch runs, whose reply arrives as
     // battleHistoryReady(). Used when the Battle history window opens, because the
     // plain battle page only carries the newest turn.
-    void requestBattleHistory(int battle_id);
+    QString requestBattleHistory(int battle_id);
     void getWarlockInfo(const QString &Login);
     void sendMessage(const QString &Msg);
     // Messages (issue #320): the New Message form. The site addresses a message by the

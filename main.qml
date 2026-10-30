@@ -1073,12 +1073,15 @@ ApplicationWindow {
     }
 
     function showBattleHistory(txt, turn) {
-        showErrorWnd({type:16,history:txt,turn:turn});
-        // The battle page only carries the newest turn; the rest arrives in the
-        // background and refreshes this window (applyBattleHistory).
+        var history = txt;
+        // The battle page only carries the newest turn. A log already parsed in full
+        // comes back right here; otherwise the rest arrives in the background and
+        // refreshes this window (applyBattleHistory).
         if (gBattle && gBattle.id) {
-            core.requestBattleHistory(gBattle.id);
+            history = core.requestBattleHistory(gBattle.id) || txt;
+            gBattle.battle_hist = history;
         }
+        showErrorWnd({type:16,history:history,turn:turn});
     }
 
     // battleHistoryReady: replace the log with the complete one, keeping the turn the
