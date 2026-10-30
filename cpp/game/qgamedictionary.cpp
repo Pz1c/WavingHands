@@ -8,67 +8,67 @@ QGameDictionary::QGameDictionary(QObject *parent) :
     lang = getLang();
 
     if (lang.isEmpty()) {
-        QLocale *locale = new QLocale();
-        int c = locale->territory();
-        delete locale;
+        QLocale::Language l = QLocale().language();
 
-        if (c == 222) { // Ukraine
-            setCurrentLang("ua");
-        } else if (c == 178) { // RussianPederation
-            setCurrentLang("ru");
+        if (l == QLocale::German) {
+            setCurrentLang("de");
+        } else if (l == QLocale::Spanish) {
+            setCurrentLang("es");
         } else {
             setCurrentLang("en");
         }
     }
 
     // fill dictionary
-    fillDictionary("AreYouSure", "Ви впевненні?", "Вы уверенны?", "Are you sure?");
-    fillDictionary("SurrenderForTurn", "Ви хочете здатись? Точно?", "Вы хотите сдаться? Точно?", "Are you really want to surrender? Are you sure?");
-    fillDictionary("EnterLoginPass", "Введіть логін та пароль, будь ласка", "Введите логин и пароль, пожалуйста", "Please enter Login and Password");
+    fillDictionary("AreYouSure", "Are you sure?", "Bist du sicher?", "¿Estás seguro?");
+    fillDictionary("SurrenderForTurn", "Are you really want to surrender? Are you sure?", "Willst du wirklich aufgeben? Bist du sicher?", "¿De verdad quieres rendirte? ¿Estás seguro?");
+    fillDictionary("EnterLoginPass", "Please enter Login and Password", "Bitte gib Login und Passwort ein", "Introduce tu usuario y contraseña");
     fillDictionary("OK", "OK", "OK", "OK");
-    fillDictionary("Cancel", "Відміна", "Отмена", "Cancel");
-    fillDictionary("EnterProxy", "Введіть налаштування проксі", "Введите настройки прокси", "Enter proxy settigns");
-    fillDictionary("ProxyHost", "Проксі адреса", "Прокси адрес", "Proxy host");
-    fillDictionary("ProxyPort", "Проксі порт", "Прокси порт", "Proxy port");
-    fillDictionary("ProxyUser", "Проксі користувач", "Прокси пользователь", "Proxy user");
-    fillDictionary("ProxyPass", "Проксі пароль", "Прокси пароль", "Proxy password");
-    fillDictionary("Close", "Закрити", "Закрыть", "Close");
-    fillDictionary("LoginSett", "Налаштування входу", "Настройки входа", "Login settings");
-    fillDictionary("NetworkSett", "Налаштування підключення", "Настройки сети", "Network settings");
-    fillDictionary("LangSett", "Налаштування мови", "Настройки языка", "Language settings");
-    fillDictionary("EnterNewUser", "Заповніть дані нового гравця", "Введите данные нового игрока", "Enter new gamer data");
-    fillDictionary("Login", "Логін", "Логин", "Login");
-    fillDictionary("Password", "Пароль", "Пароль", "Password");
-    fillDictionary("Email", "Email", "Email", "Email");
-    fillDictionary("Im13", "Мені як мінімум 13", "Мне как минимум 13", "I am a least 13 years old");
-    fillDictionary("Register", "Зареєструвати", "Зарегистрировать", "Register");
-    fillDictionary("LoginIn", "Зайти", "Войти", "Login in");
-    fillDictionary("LangUA", "Українська", "Українська", "Українська");
+    fillDictionary("Cancel", "Cancel", "Abbrechen", "Cancelar");
+    fillDictionary("EnterProxy", "Enter proxy settigns", "Proxy-Einstellungen eingeben", "Introduce la configuración del proxy");
+    fillDictionary("ProxyHost", "Proxy host", "Proxy-Host", "Host del proxy");
+    fillDictionary("ProxyPort", "Proxy port", "Proxy-Port", "Puerto del proxy");
+    fillDictionary("ProxyUser", "Proxy user", "Proxy-Benutzer", "Usuario del proxy");
+    fillDictionary("ProxyPass", "Proxy password", "Proxy-Passwort", "Contraseña del proxy");
+    fillDictionary("Close", "Close", "Schließen", "Cerrar");
+    fillDictionary("LoginSett", "Login settings", "Anmeldeeinstellungen", "Ajustes de inicio de sesión");
+    fillDictionary("NetworkSett", "Network settings", "Netzwerkeinstellungen", "Ajustes de red");
+    fillDictionary("LangSett", "Language settings", "Spracheinstellungen", "Ajustes de idioma");
+    fillDictionary("EnterNewUser", "Enter new gamer data", "Daten des neuen Spielers eingeben", "Introduce los datos del nuevo jugador");
+    fillDictionary("Login", "Login", "Login", "Usuario");
+    fillDictionary("Password", "Password", "Passwort", "Contraseña");
+    fillDictionary("Email", "Email", "E-Mail", "Correo electrónico");
+    fillDictionary("Im13", "I am a least 13 years old", "Ich bin mindestens 13 Jahre alt", "Tengo al menos 13 años");
+    fillDictionary("Register", "Register", "Registrieren", "Registrarse");
+    fillDictionary("LoginIn", "Login in", "Anmelden", "Iniciar sesión");
+    fillDictionary("LangDE", "Deutsch", "Deutsch", "Deutsch");
     fillDictionary("LangEN", "English", "English", "English");
-    fillDictionary("LangRU", "Русский", "Русский", "Русский");
-    fillDictionary("Hint", "Підказка", "Подсказка", "Hint");
-    fillDictionary("Description", "Опис", "Описание", "Description");
-    fillDictionary("Accept", "Прийняти", "Принять", "Accept");
+    fillDictionary("LangES", "Español", "Español", "Español");
+    fillDictionary("Hint", "Hint", "Hinweis", "Pista");
+    fillDictionary("Description", "Description", "Beschreibung", "Descripción");
+    fillDictionary("Accept", "Accept", "Annehmen", "Aceptar");
 
     // game dictionary
     fillGameDictionary();
 }
 
-void QGameDictionary::fillDictionary(const QString& Code, const QString& ua, const QString& ru, const QString& en) {
-    dictionary_ua[Code] = ua;
-    dictionary_ru[Code] = ru;
+void QGameDictionary::fillDictionary(const QString& Code, const QString& en, const QString& de, const QString& es) {
     dictionary_en[Code] = en;
+    dictionary_de[Code] = de;
+    dictionary_es[Code] = es;
 }
 
 QString QGameDictionary::getStringByCode(const QString &Code) {
     // value(), not operator[]: the non-const operator inserts every missing code, and
     // this singleton is read by the UI thread and the bot service thread at once.
     QString result;
-    if (lang.compare("ua") == 0) {
-        result = dictionary_ua.value(Code);
-    } else if (lang.compare("ru") == 0) {
-        result = dictionary_ru.value(Code);
-    } else {
+    if (lang.compare("de") == 0) {
+        result = dictionary_de.value(Code);
+    } else if (lang.compare("es") == 0) {
+        result = dictionary_es.value(Code);
+    }
+    // English is the default, and stands in for a code added with an empty de/es text
+    if (result.isEmpty()) {
         result = dictionary_en.value(Code);
     }
     if (result.isNull()) {
@@ -83,7 +83,7 @@ QString QGameDictionary::getCurrentLang() {
 }
 
 void QGameDictionary::setCurrentLang(QString Lang) {
-    if ((Lang.compare("ua") == 0 && Lang.compare("ru") == 0 && Lang.compare("en") == 0) || (Lang.compare(lang) == 0)) {
+    if ((Lang.compare("en") != 0 && Lang.compare("de") != 0 && Lang.compare("es") != 0) || (Lang.compare(lang) == 0)) {
         return;
     }
 

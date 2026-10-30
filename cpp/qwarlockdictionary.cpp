@@ -5,828 +5,829 @@ void QWarlockDictionary::fillGameDictionary() {
     qDebug() << "QWarlockDictionary::fillGameDictionary";
 
     // fill dictionary
-    fillDictionary("AreYouSure", "Ви впевненні?", "Вы уверенны?", "Are you sure?");
-    fillDictionary("NoGestureForTurn", "Ви не задали жестів на цей хід!", "Вы не задали жесты для хода!", "You have no set gesture for this turn!");
-    fillDictionary("SurrenderForTurn", "Ви хочете здатись?", "Вы хотите сдаться?", "Are you really want to surrender?");
-    fillDictionary("ConfirmOrdersForTurn", "", "", "Are you confirm your orders?");
-    fillDictionary("ConfirmLogout" ,"" , "", "Are you confirm your decision?");
-    fillDictionary("LeftHand", "Ліва рука", "Левая рука", "Left Hand");
-    fillDictionary("RightHand", "Права рука", "Правая рука", "Right Hand");
-    fillDictionary("LH", "Ліва рука", "Левая рука", "Left Hand");
-    fillDictionary("RH", "Права рука", "Правая рука", "Right Hand");
-    fillDictionary("Submit", "Походити", "Походить", "Submit");
-    fillDictionary("DelaySpell", "Зберегти закляття", "Сохранить заклятие", "Delay Spell");
-    fillDictionary("Neither", "Зберегти закляття", "Сохранить заклятие", "Neither");
-    fillDictionary("Left", "Лівої руки", "Левой руки", "Left");
-    fillDictionary("Right", "Правої руки", "Правой руки", "Right");
-    fillDictionary("Two-handed", "Двуручне", "Двухручное", "Two-handed");
-    fillDictionary("MakeSpellPermanent", "Зробити закляття постійним", "Сделать проклятие посчтоянным", "Make spell permanent");
-    fillDictionary("ChatMessage", "Повідомлення в чат", "Сообщение в чат", "Chat message");
-    fillDictionary("MonsterFrom", "монстр з", "монстр с", "monster from");
-    fillDictionary("EnterLoginPass", "Введіть логін та пароль, будь ласка", "Введите логин и пароль, пожалуйста", "Please enter Login and Password");
-    fillDictionary("Apply", "OK", "OK", "Apply");
+    fillDictionary("AreYouSure", "Are you sure?", "Bist du sicher?", "¿Estás seguro?");
+    fillDictionary("NoGestureForTurn", "You have no set gesture for this turn!", "Du hast für diesen Zug keine Geste gewählt!", "¡No has elegido ningún gesto para este turno!");
+    fillDictionary("SurrenderForTurn", "Are you really want to surrender?", "Willst du wirklich aufgeben?", "¿De verdad quieres rendirte?");
+    fillDictionary("ConfirmOrdersForTurn", "Are you confirm your orders?", "Bestätigst du deine Befehle?", "¿Confirmas tus órdenes?");
+    fillDictionary("ConfirmLogout", "Are you confirm your decision?", "Bestätigst du deine Entscheidung?", "¿Confirmas tu decisión?");
+    fillDictionary("LeftHand", "Left Hand", "Linke Hand", "Mano izquierda");
+    fillDictionary("RightHand", "Right Hand", "Rechte Hand", "Mano derecha");
+    fillDictionary("LH", "Left Hand", "Linke Hand", "Mano izquierda");
+    fillDictionary("RH", "Right Hand", "Rechte Hand", "Mano derecha");
+    fillDictionary("Submit", "Submit", "Absenden", "Enviar");
+    fillDictionary("DelaySpell", "Delay Spell", "Zauber verzögern", "Retrasar hechizo");
+    fillDictionary("Neither", "Neither", "Keine", "Ninguna");
+    fillDictionary("Left", "Left", "Links", "Izquierda");
+    fillDictionary("Right", "Right", "Rechts", "Derecha");
+    fillDictionary("Two-handed", "Two-handed", "Beidhändig", "A dos manos");
+    fillDictionary("MakeSpellPermanent", "Make spell permanent", "Zauber dauerhaft machen", "Hacer permanente el hechizo");
+    fillDictionary("ChatMessage", "Chat message", "Chatnachricht", "Mensaje de chat");
+    fillDictionary("MonsterFrom", "monster from", "Monster von", "monstruo de");
+    fillDictionary("EnterLoginPass", "Please enter Login and Password", "Bitte gib Login und Passwort ein", "Introduce tu usuario y contraseña");
+    fillDictionary("Apply", "Apply", "Übernehmen", "Aplicar");
     fillDictionary("OK", "OK", "OK", "OK");
-    fillDictionary("Cancel", "Відміна", "Отмена", "Cancel");
-    fillDictionary("EnterProxy", "Введіть налаштування проксі", "Введите настройки прокси", "Enter proxy settigns");
-    fillDictionary("ProxyHost", "Проксі адреса", "Прокси адрес", "Proxy host");
-    fillDictionary("ProxyPort", "Проксі порт", "Прокси порт", "Proxy port");
-    fillDictionary("ProxyUser", "Проксі користувач", "Прокси пользователь", "Proxy user");
-    fillDictionary("ProxyPass", "Проксі пароль", "Прокси пароль", "Proxy password");
-    fillDictionary("Close", "Закрити", "Закрыть", "Close");
-    fillDictionary("WatchOnline", "Переглянути онлайн", "Смотреть онлайн", "Watch in browser");
-    fillDictionary("Settings", "Налаштування", "Настройки", "Settings");
-    fillDictionary("LoginSett", "Налаштування входу", "Настройки входа", "Login settings");
-    fillDictionary("NetworkSett", "Налаштування підключення", "Настройки сети", "Network settings");
-    fillDictionary("LangSett", "Налаштування мови", "Настройки языка", "Language settings");
-    fillDictionary("Exit", "Вихід", "Выход", "Exit");
-    fillDictionary("AddChallengeTitle", "Ваша нова битва", "Ваша новая битва", "Your own new battle");
-    fillDictionary("AddChallenge", "Додати поєдинок", "Добавить поединок", "Add Challenge");
-    fillDictionary("EnterChallenge", "Налаштування дуелі", "Настройки дуели", "Please enter Challenge settings");
-    fillDictionary("WarlocksCount", "Кількість учасників", "Количество участников", "WarlocksCount");
-    fillDictionary("FriendlyLevel", "Рівень поєдинку", "Уровень поединка", "Friendly level");
-    fillDictionary("Ladder", "Турнірний", "Турнирный", "Ladder");
-    fillDictionary("Friendly", "Дружній", "Дружественный", "Friendly");
-    fillDictionary("VFriendly", "Тренувальний", "Тренировочный", "Very friendly");
-    fillDictionary("Description", "Декілька слів опонентам", "Несколько слов противникам", "Few word for opponents");
-    fillDictionary("EnterNewUser", "Заповніть дані нового чаклуна", "Введите данные нового колдуна", "Enter new warlock data");
-    fillDictionary("Login", "Логін", "Логин", "Login");
-    fillDictionary("Password", "Пароль", "Пароль", "Password");
-    fillDictionary("Email", "Email", "Email", "Email");
-    fillDictionary("Im13", "Мені як мінімум 13", "Мне как минимум 13", "I am a least 13 years old");
-    fillDictionary("Register", "Зареєструвати", "Зарегистрировать", "Register");
-    fillDictionary("LoginIn", "Зайти", "Войти", "Login in");
-    fillDictionary("LangUA", "Українська", "Українська", "Українська");
+    fillDictionary("Cancel", "Cancel", "Abbrechen", "Cancelar");
+    fillDictionary("EnterProxy", "Enter proxy settigns", "Proxy-Einstellungen eingeben", "Introduce la configuración del proxy");
+    fillDictionary("ProxyHost", "Proxy host", "Proxy-Host", "Host del proxy");
+    fillDictionary("ProxyPort", "Proxy port", "Proxy-Port", "Puerto del proxy");
+    fillDictionary("ProxyUser", "Proxy user", "Proxy-Benutzer", "Usuario del proxy");
+    fillDictionary("ProxyPass", "Proxy password", "Proxy-Passwort", "Contraseña del proxy");
+    fillDictionary("Close", "Close", "Schließen", "Cerrar");
+    fillDictionary("WatchOnline", "Watch in browser", "Im Browser ansehen", "Ver en el navegador");
+    fillDictionary("Settings", "Settings", "Einstellungen", "Ajustes");
+    fillDictionary("LoginSett", "Login settings", "Anmeldeeinstellungen", "Ajustes de inicio de sesión");
+    fillDictionary("NetworkSett", "Network settings", "Netzwerkeinstellungen", "Ajustes de red");
+    fillDictionary("LangSett", "Language settings", "Spracheinstellungen", "Ajustes de idioma");
+    fillDictionary("Exit", "Exit", "Beenden", "Salir");
+    fillDictionary("AddChallengeTitle", "Your own new battle", "Dein eigener neuer Kampf", "Tu propia batalla nueva");
+    fillDictionary("AddChallenge", "Add Challenge", "Herausforderung erstellen", "Crear desafío");
+    fillDictionary("EnterChallenge", "Please enter Challenge settings", "Bitte gib die Einstellungen der Herausforderung ein", "Introduce los ajustes del desafío");
+    fillDictionary("WarlocksCount", "WarlocksCount", "Anzahl der Hexer", "Número de brujos");
+    fillDictionary("FriendlyLevel", "Friendly level", "Freundschaftsstufe", "Nivel de amistad");
+    fillDictionary("Ladder", "Ladder", "Rangliste", "Clasificatoria");
+    fillDictionary("Friendly", "Friendly", "Freundschaftlich", "Amistoso");
+    fillDictionary("VFriendly", "Very friendly", "Sehr freundschaftlich", "Muy amistoso");
+    fillDictionary("Description", "Few word for opponents", "Ein paar Worte an die Gegner", "Unas palabras para los rivales");
+    fillDictionary("EnterNewUser", "Enter new warlock data", "Daten des neuen Hexers eingeben", "Introduce los datos del nuevo brujo");
+    fillDictionary("Login", "Login", "Login", "Usuario");
+    fillDictionary("Password", "Password", "Passwort", "Contraseña");
+    fillDictionary("Email", "Email", "E-Mail", "Correo electrónico");
+    fillDictionary("Im13", "I am a least 13 years old", "Ich bin mindestens 13 Jahre alt", "Tengo al menos 13 años");
+    fillDictionary("Register", "Register", "Registrieren", "Registrarse");
+    fillDictionary("LoginIn", "Login in", "Anmelden", "Iniciar sesión");
+    fillDictionary("LangDE", "Deutsch", "Deutsch", "Deutsch");
     fillDictionary("LangEN", "English", "English", "English");
-    fillDictionary("LangRU", "Русский", "Русский", "Русский");
-    fillDictionary("Gestures", "Жести", "Жесты", "Gestures");
-    fillDictionary("Hint", "Підказка", "Подсказка", "Hint");
-    fillDictionary("SpellName", "Назва закляття", "Название заклинания", "Spell name");
-    fillDictionary("Warlocks", "Чаклуни", "Колдуны", "Warlocks");
-    fillDictionary("Fast", "Швидкий", "Быстрый", "Fast");
-    fillDictionary("Level", "Рівень", "Уровень", "Level");
+    fillDictionary("LangES", "Español", "Español", "Español");
+    fillDictionary("Gestures", "Gestures", "Gesten", "Gestos");
+    fillDictionary("Hint", "Hint", "Hinweis", "Pista");
+    fillDictionary("SpellName", "Spell name", "Zaubername", "Nombre del hechizo");
+    fillDictionary("Warlocks", "Warlocks", "Hexer", "Brujos");
+    fillDictionary("Fast", "Fast", "Schnell", "Rápido");
+    fillDictionary("Level", "Level", "Stufe", "Nivel");
     fillDictionary("ParaFC", "ParaFC", "ParaFC", "ParaFC");
     fillDictionary("Maladroit", "Maladroit", "Maladroit", "Maladroit");
-    fillDictionary("Description", "Опис", "Описание", "Description");
-    fillDictionary("Accept", "Прийняти", "Принять", "Accept");
-    fillDictionary("Melee", "Бугурт", "Толпа", "Melee");
-    fillDictionary("NeedMore", " Потрібно ще %1", " Надо еще %1", " Need %1 more");
-    fillDictionary("Played", "Зіграно", "Сыграно", "Played");
-    fillDictionary("Won", "Перемог", "Выиграшей", "Won");
-    fillDictionary("Died", "Смертей", "Умер", "Died");
-    fillDictionary("LadderScore", "Турнірний рівень", "Турнирный уровень", "Ladder Score");
-    fillDictionary("MeleeScore", "Бугуртний рівень", "Бугуртный уровень", "Melee Score");
-    fillDictionary("Elo", "Рейтинг", "Рейтинг", "Elo");
-    fillDictionary("FinishB", "Завершені поєдинки", "Законченые бои", "Finished battles");
-    fillDictionary("WaitB", "Незавершені поєдинки", "Незаконченые бои", "Waiting in battles");
-    fillDictionary("ReadyB", "Поєдинки, що чекають дій", "Бои которые ожидают действий", "Waiting action");
-    fillDictionary("ChallengeB", "Виклики", "Вызовы", "Challenges");
-    fillDictionary("BattleList", "Поєдинки, до яких можна приєднатись", "Бои к которым можно присоединиться", "Battle list");
-    fillDictionary("TopList", "Чемпіони", "Чемпионы", "Hall of Fame");
-    fillDictionary("Messages", "Повідомлення", "Сообщения", "Messages");
-    fillDictionary("SpellList", "Список доступних заклять", "Список доступніх заклинаний", "Spell list");
-    fillDictionary("Accounts", "Акаунти", "Акаунты", "Accounts");
-    fillDictionary("Iam13", "Мені виповнилось 13", "Мне исполнилось 13", "I am 13+ years old");
-    fillDictionary("ConfirmExit", "Закрити гру?", "Закрыть игру?", "Leave game?");
-    fillDictionary("WndErrorTitle", "Помилка!", "Ошибка!", "Error!");
-    fillDictionary("WaitTrainingBattle", "Ви зможете створювати дуелі, після завершення тренувального бою, почекайте будь ласка", "Вы сможете создавать дуэли, после завершения тренировочного боя, подождите пожалуйста", "You will be able to create duels, after the end of a training battle, please wait");
-    fillDictionary("JustRegistered", "Вітаю нового чарівника! Зачекайте будь ласка скоро розпочнеться ваш перший тренувальний бій.<br>В бою ви будете складати закляття роблячи жести вашими руками. Всього є 6 жестів W,S,D,P,C,F<br>За один раунд бою ви можете зробити 1 жест лівою та 1 жест правою рукою. В наступному раунді ви продовжите ланцюжок женстів для створення закляття лівою та правою рукою. Наприклад в першому раунді ви зробили жест лівою рукою S та правою D, в наступному раунді роблячи лівою рукою жест D ви завершаєте закляття Магічної стріли (SD) а правою можете продовжити побудову закляття Заплутаність (DSF) роблячи жест S. Весь список заклять є в книзі заклятть.",
-                                     "Приветствую нового волшебника! Пожалуйста, подождите скоро начнется ваш первый тренировочный бой. <br> В бою вы будете составлять заклинания делая жесты вашими руками. Всего есть 6 жестов W, S, D, P, C, F <br> За один раунд боя вы можете сделать 1 жест левой и 1 жест правой рукой. В следующем раунде вы продолжите цепочку женстей для создания заклинания левой и правой рукой. Например, в первом раунде вы сделали жест левой рукой S и правой D, в следующем раунде делая левой рукой жест D вы завершают заклятие Магической стрелы (SD), а правой можете продолжить построение заклятие Запутанность (DSF) делая жест S. Полный список заклинаний есть в книге заклинаний.",
-                                     "Hey #login#, let's fight!<br>Check your spell book, and learn how to cast spells.<br>Just pick a gesture for each of your hands.<br>Gestures are letters W, S, D, P, C, F<br>Letters add up to words (like DPP), and words are spells (like Amnesia).<br>Let's go!");
-    fillDictionary("NewGame", "Нова гра", "Новая игра", "New Game");
-    fillDictionary("TrainingGame", "", "", "Start Training");
-    fillDictionary("NewGameWithBot", "Грати з ботом", "Играть с ботом", "Start Training");
-    fillDictionary("NewGameWithPlayer", "Грати з людиною", "Играть с человеком", "Warlock vs. Warlock");
-    fillDictionary("ActiveGameTitle", "", "", "Your Games:");
-    fillDictionary("FinishedGameTitle", "", "", "Completed Games:");
-    fillDictionary("ShowMoreGames", "", "", "Show more");
-    fillDictionary("MonsterSetTarget", "", "", "Choose target");
-    fillDictionary("MonsterOwnerTitle", "", "", "Owner");
-    fillDictionary("MonsterTargetTitle", "", "", "Target");
-    fillDictionary("ReviewOrders", "", "", "Review your orders");
-    fillDictionary("SendOrders", "", "", "Submit");
-    fillDictionary("TitleAction_charmed", "", "", "Choose gesture for Charmed warlock");
-    fillDictionary("TitleAction_paralized", "", "", "Choose paralyzed hand");
-    fillDictionary("TitleAction_D", "", "", "Try to bank the spell cast by ");
-    fillDictionary("TitleAction_P", "", "", "Try do permanent spell cast by ");
-    fillDictionary("TitleAction_CP", "", "", "Paralyze %1 for ");
-    fillDictionary("TitleAction_CC", "", "", "Charm %1 to do %2 for ");
-    fillDictionary("TitleAction_p", "", "", "SURRENDERING (P/P) - raising a white flag");
-    fillDictionary("TitleAction_M", "", "", "direct %1<br>at %2");
-    fillDictionary("TitleActionHint_pp", "", "", "P/P means surrender. Is that what you want?");
-    fillDictionary("TitleActionHint_nobody", "", "", "Really? You are targeting 'nobody'");
-    fillDictionary("TitleActionHint_knifes", "", "", "You only have 1 knife, and right hand goes first");
-    fillDictionary("TitleActionHint_monster1", "", "", "Do you really want the monster to attack you?");
-    fillDictionary("TitleActionHint_monster2", "", "", "Do you really want to target your own monster?");
-    fillDictionary("TitleActionHint_summon", "", "", "Really? Your summon will serve your opponent");
-    fillDictionary("TitleActionHint_clap", "", "", "Really? No spell has 'c' only one one hand");
+    fillDictionary("Description", "Description", "Beschreibung", "Descripción");
+    fillDictionary("Accept", "Accept", "Annehmen", "Aceptar");
+    fillDictionary("Melee", "Melee", "Getümmel", "Refriega");
+    fillDictionary("NeedMore", " Need %1 more", " Noch %1 benötigt", " Faltan %1");
+    fillDictionary("Played", "Played", "Gespielt", "Jugadas");
+    fillDictionary("Won", "Won", "Gewonnen", "Ganadas");
+    fillDictionary("Died", "Died", "Gestorben", "Muertes");
+    fillDictionary("LadderScore", "Ladder Score", "Ranglistenpunkte", "Puntuación clasificatoria");
+    fillDictionary("MeleeScore", "Melee Score", "Getümmelpunkte", "Puntuación de refriega");
+    fillDictionary("Elo", "Elo", "Elo", "Elo");
+    fillDictionary("FinishB", "Finished battles", "Beendete Kämpfe", "Batallas terminadas");
+    fillDictionary("WaitB", "Waiting in battles", "Wartende Kämpfe", "Batallas en espera");
+    fillDictionary("ReadyB", "Waiting action", "Warten auf Aktion", "Esperando acción");
+    fillDictionary("ChallengeB", "Challenges", "Herausforderungen", "Desafíos");
+    fillDictionary("BattleList", "Battle list", "Kampfliste", "Lista de batallas");
+    fillDictionary("TopList", "Hall of Fame", "Ruhmeshalle", "Salón de la fama");
+    fillDictionary("Messages", "Messages", "Nachrichten", "Mensajes");
+    fillDictionary("SpellList", "Spell list", "Zauberliste", "Lista de hechizos");
+    fillDictionary("Accounts", "Accounts", "Konten", "Cuentas");
+    fillDictionary("Iam13", "I am 13+ years old", "Ich bin 13+ Jahre alt", "Tengo 13+ años");
+    fillDictionary("ConfirmExit", "Leave game?", "Spiel verlassen?", "¿Salir del juego?");
+    fillDictionary("WndErrorTitle", "Error!", "Fehler!", "¡Error!");
+    fillDictionary("WaitTrainingBattle", "You will be able to create duels, after the end of a training battle, please wait", "Du kannst Duelle erstellen, sobald der Trainingskampf beendet ist. Bitte warte", "Podrás crear duelos cuando termine la batalla de entrenamiento. Espera, por favor");
+    fillDictionary("JustRegistered",
+                   "Hey #login#, let's fight!<br>Check your spell book, and learn how to cast spells.<br>Just pick a gesture for each of your hands.<br>Gestures are letters W, S, D, P, C, F<br>Letters add up to words (like DPP), and words are spells (like Amnesia).<br>Let's go!",
+                   "Hey #login#, lass uns kämpfen!<br>Schau in dein Zauberbuch und lerne, wie man zaubert.<br>Wähle einfach für jede Hand eine Geste.<br>Gesten sind die Buchstaben W, S, D, P, C, F<br>Buchstaben ergeben Wörter (wie DPP), und Wörter sind Zauber (wie Amnesie).<br>Los geht's!",
+                   "¡Hola #login#, a luchar!<br>Consulta tu libro de hechizos y aprende a lanzarlos.<br>Solo tienes que elegir un gesto para cada mano.<br>Los gestos son las letras W, S, D, P, C, F<br>Las letras forman palabras (como DPP), y las palabras son hechizos (como Amnesia).<br>¡Vamos!");
+    fillDictionary("NewGame", "New Game", "Neues Spiel", "Nueva partida");
+    fillDictionary("TrainingGame", "Start Training", "Training starten", "Empezar entrenamiento");
+    fillDictionary("NewGameWithBot", "Start Training", "Training starten", "Empezar entrenamiento");
+    fillDictionary("NewGameWithPlayer", "Warlock vs. Warlock", "Hexer gegen Hexer", "Brujo contra brujo");
+    fillDictionary("ActiveGameTitle", "Your Games:", "Deine Spiele:", "Tus partidas:");
+    fillDictionary("FinishedGameTitle", "Completed Games:", "Beendete Spiele:", "Partidas terminadas:");
+    fillDictionary("ShowMoreGames", "Show more", "Mehr anzeigen", "Mostrar más");
+    fillDictionary("MonsterSetTarget", "Choose target", "Ziel wählen", "Elegir objetivo");
+    fillDictionary("MonsterOwnerTitle", "Owner", "Besitzer", "Dueño");
+    fillDictionary("MonsterTargetTitle", "Target", "Ziel", "Objetivo");
+    fillDictionary("ReviewOrders", "Review your orders", "Befehle überprüfen", "Revisa tus órdenes");
+    fillDictionary("SendOrders", "Submit", "Absenden", "Enviar");
+    fillDictionary("TitleAction_charmed", "Choose gesture for Charmed warlock", "Wähle eine Geste für den bezauberten Hexer", "Elige un gesto para el brujo hechizado");
+    fillDictionary("TitleAction_paralized", "Choose paralyzed hand", "Wähle die gelähmte Hand", "Elige la mano paralizada");
+    fillDictionary("TitleAction_D", "Try to bank the spell cast by ", "Zauber speichern, gewirkt mit: ", "Guardar el hechizo lanzado con: ");
+    fillDictionary("TitleAction_P", "Try do permanent spell cast by ", "Zauber dauerhaft machen, gewirkt mit: ", "Hacer permanente el hechizo lanzado con: ");
+    fillDictionary("TitleAction_CP", "Paralyze %1 for ", "%1 lähmen von ", "Paralizar %1 de ");
+    fillDictionary("TitleAction_CC", "Charm %1 to do %2 for ", "%1 bezaubern (Geste %2) von ", "Hechizar %1 (gesto %2) de ");
+    fillDictionary("TitleAction_p", "SURRENDERING (P/P) - raising a white flag", "AUFGABE (P/P) - die weiße Flagge hissen", "RENDICIÓN (P/P): izar la bandera blanca");
+    fillDictionary("TitleAction_M", "direct %1<br>at %2", "%1 lenken<br>auf %2", "dirigir %1<br>a %2");
+    fillDictionary("TitleActionHint_pp", "P/P means surrender. Is that what you want?", "P/P bedeutet Aufgabe. Willst du das wirklich?", "P/P significa rendirse. ¿Es lo que quieres?");
+    fillDictionary("TitleActionHint_nobody", "Really? You are targeting 'nobody'", "Wirklich? Dein Ziel ist 'niemand'", "¿En serio? Tu objetivo es 'nadie'");
+    fillDictionary("TitleActionHint_knifes", "You only have 1 knife, and right hand goes first", "Du hast nur 1 Messer, und die rechte Hand hat Vorrang", "Solo tienes 1 cuchillo, y la mano derecha va primero");
+    fillDictionary("TitleActionHint_monster1", "Do you really want the monster to attack you?", "Soll das Monster wirklich dich angreifen?", "¿De verdad quieres que el monstruo te ataque?");
+    fillDictionary("TitleActionHint_monster2", "Do you really want to target your own monster?", "Willst du wirklich dein eigenes Monster als Ziel wählen?", "¿De verdad quieres apuntar a tu propio monstruo?");
+    fillDictionary("TitleActionHint_summon", "Really? Your summon will serve your opponent", "Wirklich? Deine Beschwörung wird deinem Gegner dienen", "¿En serio? Tu invocación servirá a tu rival");
+    fillDictionary("TitleActionHint_clap", "Really? No spell has 'c' only one one hand", "Wirklich? Kein Zauber hat ein 'c' nur mit einer Hand", "¿En serio? Ningún hechizo tiene 'c' con una sola mano");
     // https://github.com/Pz1c/WavingHands/issues/315
-    fillDictionary("TitleActionHint_suicide", "", "", "You are permanently enchanted. You may end this battle for yourself with Suicide.");
-    fillDictionary("SuicideOrders", "", "", "Suicide");
-    fillDictionary("ConfirmSuicideForTurn", "", "", "Death");
+    fillDictionary("TitleActionHint_suicide", "You are permanently enchanted. You may end this battle for yourself with Suicide.", "Du bist dauerhaft verzaubert. Du kannst diesen Kampf für dich mit Selbstmord beenden.", "Estás encantado de forma permanente. Puedes terminar esta batalla para ti con el suicidio.");
+    fillDictionary("SuicideOrders", "Suicide", "Selbstmord", "Suicidio");
+    fillDictionary("ConfirmSuicideForTurn", "Death", "Tod", "Muerte");
 
-    fillDictionary("Refresh", "", "", "Refresh");
+    fillDictionary("Refresh", "Refresh", "Aktualisieren", "Actualizar");
     // https://github.com/Pz1c/WavingHands/issues/291
-    fillDictionary("WhoIsOnline", "", "", "Who's online");
+    fillDictionary("WhoIsOnline", "Who's online", "Wer ist online", "Quién está en línea");
     // https://github.com/Pz1c/WavingHands/issues/320
-    fillDictionary("NoIncomingMessages", "", "", "No incoming messages");
-    fillDictionary("NewMessage", "", "", "New Message");
-    fillDictionary("MessageTo", "", "", "To:");
-    fillDictionary("MessageSay", "", "", "Say:");
-    fillDictionary("MessageToHint", "", "", "Who do you want to write to?");
-    fillDictionary("MessageSayHint", "", "", "What are you thinking about?");
-    fillDictionary("MessageDelete", "", "", "Delete");
-    fillDictionary("MessageView", "", "", "View");
-    fillDictionary("MessageSent", "", "", "Message sent to %1");
-    fillDictionary("DialogStartBattle", "", "", "Start battle #ID #FL with #LOGINS");
-    fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
-    fillDictionary("DialogJoinBattle", "", "", "Join battle #ID #FL with #LOGINS need #NEED more except you");
-    fillDictionary("LoginAs", "", "", "Login as ...");
-    fillDictionary("SpellbookActionTitle", "", "", "Spellbook");
-    fillDictionary("SpellbookTitle", "", "", "Spellbook Level: ");
-    fillDictionary("SpellbookSubTitle", "", "", "Note: Small caps like 'c' indicate gestures that need to be performed with both hands");
-    fillDictionary("SpellbookHint1", "", "", "Stay alive for at least 15 turns to unlock spellbook level 2!");
-    fillDictionary("SpellbookHint2", "", "", "Win a training game to unlock spellbook level 3!");
-    fillDictionary("SpellbookHint3", "", "", "Win 2 more training games to unlock spellbook level 4!");
-    fillDictionary("SpellbookHint3.1", "", "", "Win 1 more training games to unlock spellbook level 4!");
-    fillDictionary("SpellbookHint4", "", "", "Survive 15 turns or win in a warlock vs. warlock game to unlock the Master Warlock Spellbook!");
-    fillDictionary("SpellbookName1", "", "", "Spellbook: Apprentice Level 1");
-    fillDictionary("SpellbookName2", "", "", "Spellbook: Apprentice Level 2");
-    fillDictionary("SpellbookName3", "", "", "Spellbook: Apprentice Level 3");
-    fillDictionary("SpellbookName4", "", "", "Spellbook: Warlock Level 4");
-    fillDictionary("SpellbookName5", "", "", "Master Warlock Spellbook");
-    fillDictionary("Warlock", "", "", "Warlock");
-    fillDictionary("RH_summon", "", "", "Right Hand Monster");
-    fillDictionary("LH_summon", "", "", "Left Hand Monster");
-    fillDictionary("WH_summon", "", "", "Monster that warlock may be summoning");
-    fillDictionary("DefErrTitle", "", "", "Something is wrong...");
-    fillDictionary("BattleCreateError", "", "", "The battle couldn't be created");
-    fillDictionary("JoinBattleError", "", "", "Can't join battle");
-    fillDictionary("BattleCreateErrorDetails", "", "", "You may only play 3 games at any given time.<br><br>Note: This open source project was build based on Ravenblack Games services (whicj are not affiliated with this android app)<br><br>You may register with Ravenblack Games to increase the number of concurrent games to 20.");
-    fillDictionary("LearnMore", "", "", "Learn More");
-    fillDictionary("DefNotStartTitle", "", "", "Waiting to Start...");
-    fillDictionary("DefNotStartSTitle", "", "", "The battle has not yet begun.");
-    fillDictionary("DefNotStartDesc", "", "", "Training games may take a few minutes to start. In games against other warlocks it may take a few hours until another warlock joins your game.");
-    fillDictionary("SpellGroup0", "", "", "Undefined");
-    fillDictionary("SpellGroup1", "", "", "Disruptions");
-    fillDictionary("SpellGroup2", "", "", "Damaging");
-    fillDictionary("SpellGroup3", "", "", "Healing");
-    fillDictionary("SpellGroup4", "", "", "Monsters");
-    fillDictionary("SpellGroup5", "", "", "Protection");
-    fillDictionary("SpellGroup6", "", "", "Counters");
-    fillDictionary("SpellGroup7", "", "", "Advanced Enchantments");
-    fillDictionary("SpellGroup8", "", "", "Elements");
-    fillDictionary("NewGameWithFriend", "", "", "Duel with a Friend");
-    fillDictionary("FnNotReadyTitle", "", "", "Coming Soon");
-    fillDictionary("FnNotReady_short_desc", "", "", "Hey! this is not ready yet, wanna help?");
-    fillDictionary("FnNotReady_desc", "", "", "Warlock's Duel is a free open source game, developed by the Spellcaster community. You can give us a hand, or just chat with like-minded people");
-    fillDictionary("JoinUs", "", "", "Join us");
-    fillDictionary("Feedback", "", "", "Feedback");
-    fillDictionary("FeedbackTitle", "", "", "We need your help :)");
-    fillDictionary("Feedback_short_desc", "", "", "We're putting a lot of love to bring this old (1977) favorite game back to life.<br><br>Would you help us improve by answering 3 quick questions?");
-    fillDictionary("RateUs", "", "", "Rate Us");
-    fillDictionary("RateUsAction", "", "", "Rate");
-    fillDictionary("SendFeedback", "", "", "Send Feedback");
-    fillDictionary("RateUs_short_desc", "", "", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us with a 5 star rating?");
-    fillDictionary("miRulesTitle", "", "", "Advanced Rules");
-    fillDictionary("miLogoutTitle", "", "", "Sign Out");
+    fillDictionary("NoIncomingMessages", "No incoming messages", "Keine eingehenden Nachrichten", "No hay mensajes entrantes");
+    fillDictionary("NewMessage", "New Message", "Neue Nachricht", "Nuevo mensaje");
+    fillDictionary("MessageTo", "To:", "An:", "Para:");
+    fillDictionary("MessageSay", "Say:", "Nachricht:", "Mensaje:");
+    fillDictionary("MessageToHint", "Who do you want to write to?", "Wem möchtest du schreiben?", "¿A quién quieres escribir?");
+    fillDictionary("MessageSayHint", "What are you thinking about?", "Woran denkst du?", "¿En qué estás pensando?");
+    fillDictionary("MessageDelete", "Delete", "Löschen", "Eliminar");
+    fillDictionary("MessageView", "View", "Ansehen", "Ver");
+    fillDictionary("MessageSent", "Message sent to %1", "Nachricht an %1 gesendet", "Mensaje enviado a %1");
+    fillDictionary("DialogStartBattle", "Start battle #ID #FL with #LOGINS", "Kampf #ID #FL mit #LOGINS starten", "Empezar la batalla #ID #FL con #LOGINS");
+    fillDictionary("DialogJoinBattle", "Join battle #ID #FL with #LOGINS need #NEED more except you", "Kampf #ID #FL mit #LOGINS beitreten, außer dir werden noch #NEED benötigt", "Unirse a la batalla #ID #FL con #LOGINS, faltan #NEED además de ti");
+    fillDictionary("DialogJoinBattle", "Join battle #ID #FL with #LOGINS need #NEED more except you", "Kampf #ID #FL mit #LOGINS beitreten, außer dir werden noch #NEED benötigt", "Unirse a la batalla #ID #FL con #LOGINS, faltan #NEED además de ti");
+    fillDictionary("LoginAs", "Login as ...", "Anmelden als ...", "Iniciar sesión como ...");
+    fillDictionary("SpellbookActionTitle", "Spellbook", "Zauberbuch", "Libro de hechizos");
+    fillDictionary("SpellbookTitle", "Spellbook Level: ", "Zauberbuch-Stufe: ", "Nivel del libro de hechizos: ");
+    fillDictionary("SpellbookSubTitle", "Note: Small caps like 'c' indicate gestures that need to be performed with both hands", "Hinweis: Kleinbuchstaben wie 'c' stehen für Gesten, die mit beiden Händen ausgeführt werden müssen", "Nota: las minúsculas como 'c' indican gestos que deben hacerse con ambas manos");
+    fillDictionary("SpellbookHint1", "Stay alive for at least 15 turns to unlock spellbook level 2!", "Überlebe mindestens 15 Züge, um Zauberbuch-Stufe 2 freizuschalten!", "¡Sobrevive al menos 15 turnos para desbloquear el nivel 2 del libro de hechizos!");
+    fillDictionary("SpellbookHint2", "Win a training game to unlock spellbook level 3!", "Gewinne ein Trainingsspiel, um Zauberbuch-Stufe 3 freizuschalten!", "¡Gana una partida de entrenamiento para desbloquear el nivel 3 del libro de hechizos!");
+    fillDictionary("SpellbookHint3", "Win 2 more training games to unlock spellbook level 4!", "Gewinne 2 weitere Trainingsspiele, um Zauberbuch-Stufe 4 freizuschalten!", "¡Gana 2 partidas de entrenamiento más para desbloquear el nivel 4 del libro de hechizos!");
+    fillDictionary("SpellbookHint3.1", "Win 1 more training games to unlock spellbook level 4!", "Gewinne 1 weiteres Trainingsspiel, um Zauberbuch-Stufe 4 freizuschalten!", "¡Gana 1 partida de entrenamiento más para desbloquear el nivel 4 del libro de hechizos!");
+    fillDictionary("SpellbookHint4", "Survive 15 turns or win in a warlock vs. warlock game to unlock the Master Warlock Spellbook!", "Überlebe 15 Züge oder gewinne ein Spiel Hexer gegen Hexer, um das Zauberbuch des Meisterhexers freizuschalten!", "¡Sobrevive 15 turnos o gana una partida brujo contra brujo para desbloquear el libro de hechizos de Maestro Brujo!");
+    fillDictionary("SpellbookName1", "Spellbook: Apprentice Level 1", "Zauberbuch: Lehrling Stufe 1", "Libro de hechizos: Aprendiz nivel 1");
+    fillDictionary("SpellbookName2", "Spellbook: Apprentice Level 2", "Zauberbuch: Lehrling Stufe 2", "Libro de hechizos: Aprendiz nivel 2");
+    fillDictionary("SpellbookName3", "Spellbook: Apprentice Level 3", "Zauberbuch: Lehrling Stufe 3", "Libro de hechizos: Aprendiz nivel 3");
+    fillDictionary("SpellbookName4", "Spellbook: Warlock Level 4", "Zauberbuch: Hexer Stufe 4", "Libro de hechizos: Brujo nivel 4");
+    fillDictionary("SpellbookName5", "Master Warlock Spellbook", "Zauberbuch des Meisterhexers", "Libro de hechizos de Maestro Brujo");
+    fillDictionary("Warlock", "Warlock", "Hexer", "Brujo");
+    fillDictionary("RH_summon", "Right Hand Monster", "Monster der rechten Hand", "Monstruo de la mano derecha");
+    fillDictionary("LH_summon", "Left Hand Monster", "Monster der linken Hand", "Monstruo de la mano izquierda");
+    fillDictionary("WH_summon", "Monster that warlock may be summoning", "Monster, das der Hexer gerade beschwören könnte", "Monstruo que el brujo podría estar invocando");
+    fillDictionary("DefErrTitle", "Something is wrong...", "Etwas stimmt nicht...", "Algo va mal...");
+    fillDictionary("BattleCreateError", "The battle couldn't be created", "Der Kampf konnte nicht erstellt werden", "No se pudo crear la batalla");
+    fillDictionary("JoinBattleError", "Can't join battle", "Beitritt zum Kampf nicht möglich", "No se puede unir a la batalla");
+    fillDictionary("BattleCreateErrorDetails", "You may only play 3 games at any given time.<br><br>Note: This open source project was build based on Ravenblack Games services (whicj are not affiliated with this android app)<br><br>You may register with Ravenblack Games to increase the number of concurrent games to 20.", "Du kannst gleichzeitig nur 3 Spiele spielen.<br><br>Hinweis: Dieses Open-Source-Projekt basiert auf den Diensten von Ravenblack Games (die nicht mit dieser Android-App verbunden sind)<br><br>Wenn du dich bei Ravenblack Games registrierst, kannst du bis zu 20 Spiele gleichzeitig spielen.", "Solo puedes jugar 3 partidas a la vez.<br><br>Nota: este proyecto de código abierto se basa en los servicios de Ravenblack Games (que no están afiliados a esta aplicación de Android)<br><br>Si te registras en Ravenblack Games, podrás jugar hasta 20 partidas a la vez.");
+    fillDictionary("LearnMore", "Learn More", "Mehr erfahren", "Más información");
+    fillDictionary("DefNotStartTitle", "Waiting to Start...", "Warten auf den Start...", "Esperando para empezar...");
+    fillDictionary("DefNotStartSTitle", "The battle has not yet begun.", "Der Kampf hat noch nicht begonnen.", "La batalla aún no ha empezado.");
+    fillDictionary("DefNotStartDesc", "Training games may take a few minutes to start. In games against other warlocks it may take a few hours until another warlock joins your game.", "Trainingsspiele können ein paar Minuten bis zum Start brauchen. In Spielen gegen andere Hexer kann es einige Stunden dauern, bis ein anderer Hexer deinem Spiel beitritt.", "Las partidas de entrenamiento pueden tardar unos minutos en empezar. En partidas contra otros brujos pueden pasar algunas horas hasta que otro brujo se una a tu partida.");
+    fillDictionary("SpellGroup0", "Undefined", "Undefiniert", "Sin definir");
+    fillDictionary("SpellGroup1", "Disruptions", "Störungen", "Perturbaciones");
+    fillDictionary("SpellGroup2", "Damaging", "Schaden", "Daño");
+    fillDictionary("SpellGroup3", "Healing", "Heilung", "Curación");
+    fillDictionary("SpellGroup4", "Monsters", "Monster", "Monstruos");
+    fillDictionary("SpellGroup5", "Protection", "Schutz", "Protección");
+    fillDictionary("SpellGroup6", "Counters", "Gegenzauber", "Contrahechizos");
+    fillDictionary("SpellGroup7", "Advanced Enchantments", "Fortgeschrittene Verzauberungen", "Encantamientos avanzados");
+    fillDictionary("SpellGroup8", "Elements", "Elemente", "Elementos");
+    fillDictionary("NewGameWithFriend", "Duel with a Friend", "Duell mit einem Freund", "Duelo con un amigo");
+    fillDictionary("FnNotReadyTitle", "Coming Soon", "Demnächst", "Próximamente");
+    fillDictionary("FnNotReady_short_desc", "Hey! this is not ready yet, wanna help?", "Hey! Das ist noch nicht fertig. Willst du helfen?", "¡Eh! Esto aún no está listo. ¿Quieres ayudar?");
+    fillDictionary("FnNotReady_desc", "Warlock's Duel is a free open source game, developed by the Spellcaster community. You can give us a hand, or just chat with like-minded people", "Warlock's Duel ist ein kostenloses Open-Source-Spiel, entwickelt von der Spellcaster-Community. Du kannst uns helfen oder einfach mit Gleichgesinnten plaudern", "Warlock's Duel es un juego gratuito de código abierto, desarrollado por la comunidad Spellcaster. Puedes echarnos una mano o simplemente charlar con gente afín");
+    fillDictionary("JoinUs", "Join us", "Mach mit", "Únete");
+    fillDictionary("Feedback", "Feedback", "Feedback", "Comentarios");
+    fillDictionary("FeedbackTitle", "We need your help :)", "Wir brauchen deine Hilfe :)", "Necesitamos tu ayuda :)");
+    fillDictionary("Feedback_short_desc", "We're putting a lot of love to bring this old (1977) favorite game back to life.<br><br>Would you help us improve by answering 3 quick questions?", "Wir stecken viel Liebe hinein, um dieses alte Lieblingsspiel (1977) wieder zum Leben zu erwecken.<br><br>Hilfst du uns, es zu verbessern, indem du 3 kurze Fragen beantwortest?", "Estamos poniendo mucho cariño en devolver la vida a este viejo juego favorito (1977).<br><br>¿Nos ayudas a mejorar respondiendo 3 preguntas rápidas?");
+    fillDictionary("RateUs", "Rate Us", "Bewerte uns", "Valóranos");
+    fillDictionary("RateUsAction", "Rate", "Bewerten", "Valorar");
+    fillDictionary("SendFeedback", "Send Feedback", "Feedback senden", "Enviar comentarios");
+    fillDictionary("RateUs_short_desc", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us with a 5 star rating?", "Dies ist ein Open-Source-Projekt, und wir geben unser Bestes, um dieses alte Lieblingsspiel (1977) wieder zum Leben zu erwecken.<br><br>Hilfst du uns mit einer 5-Sterne-Bewertung?", "Este es un proyecto de código abierto, y hacemos todo lo posible por devolver la vida a este viejo juego favorito (1977).<br><br>¿Nos ayudas con una valoración de 5 estrellas?");
+    fillDictionary("miRulesTitle", "Advanced Rules", "Erweiterte Regeln", "Reglas avanzadas");
+    fillDictionary("miLogoutTitle", "Sign Out", "Abmelden", "Cerrar sesión");
     // https://github.com/Pz1c/WavingHands/issues/149
-    fillDictionary("Skip", "", "", "Skip");
-    fillDictionary("SwitchOn", "", "", "ON");
-    fillDictionary("SwitchOff", "", "", "OFF");
-    fillDictionary("KeepMeOnBtn", "", "", "Keep me On!");
-    fillDictionary("KeepMeOnTitle", "", "", "Wait for someone to join...");
-    fillDictionary("KeepMeOnShortDesc", "", "", "No worries, we'll let you know when the game is ready! It usually takes a few hours for someone to join.");
-    fillDictionary("KeepMeOnDesc", "", "", "To avoid waiting next time, click \"Keep me On!\" and we will automatically create a new game for you whenever a game is filled.<br>(you can change this later in your settings)");
+    fillDictionary("Skip", "Skip", "Überspringen", "Omitir");
+    fillDictionary("SwitchOn", "ON", "AN", "SÍ");
+    fillDictionary("SwitchOff", "OFF", "AUS", "NO");
+    fillDictionary("KeepMeOnBtn", "Keep me On!", "Dranbleiben!", "¡Mantenerme activo!");
+    fillDictionary("KeepMeOnTitle", "Wait for someone to join...", "Warte, bis jemand beitritt...", "Espera a que alguien se una...");
+    fillDictionary("KeepMeOnShortDesc", "No worries, we'll let you know when the game is ready! It usually takes a few hours for someone to join.", "Keine Sorge, wir sagen dir Bescheid, wenn das Spiel bereit ist! Meist dauert es ein paar Stunden, bis jemand beitritt.", "Tranquilo, ¡te avisaremos cuando la partida esté lista! Normalmente pasan unas horas hasta que alguien se une.");
+    fillDictionary("KeepMeOnDesc", "To avoid waiting next time, click \"Keep me On!\" and we will automatically create a new game for you whenever a game is filled.<br>(you can change this later in your settings)", "Damit du nächstes Mal nicht warten musst, klicke auf \"Dranbleiben!\" und wir erstellen automatisch ein neues Spiel für dich, sobald ein Spiel voll ist.<br>(du kannst das später in den Einstellungen ändern)", "Para no esperar la próxima vez, pulsa \"¡Mantenerme activo!\" y crearemos automáticamente una partida nueva para ti cada vez que se complete una.<br>(puedes cambiarlo más tarde en los ajustes)");
     // https://github.com/Pz1c/WavingHands/issues/216
-    fillDictionary("AutoMatch", "", "", "Auto start matches");
-    fillDictionary("AutoMatchSettingDesc", "", "", "Matching automatically up to 3 simultaneous games: whenever you have fewer than 3 games and none of them is still waiting for an opponent, we join an open duel for you, or create a new one.");
-    fillDictionary("AutoMatchTitle", "", "", "Auto join more games?");
-    fillDictionary("AutoMatchDesc", "", "", "Warlock's Duel is a slow paced game, so it's best to automatically create games and have a few games running simultaneously.<br>You can always change this later.");
-    fillDictionary("AutoMatchBtn", "", "", "Auto join");
-    fillDictionary("AutoMatchOnce", "", "", "Join only once");
-    fillDictionary("AutoMatchBoxTitle", "", "", "Auto start matches ON");
-    fillDictionary("AutoMatchBoxDesc", "", "", "Matching automatically up to 3 simultaneous games");
+    fillDictionary("AutoMatch", "Auto start matches", "Spiele automatisch starten", "Iniciar partidas automáticamente");
+    fillDictionary("AutoMatchSettingDesc", "Matching automatically up to 3 simultaneous games: whenever you have fewer than 3 games and none of them is still waiting for an opponent, we join an open duel for you, or create a new one.", "Automatische Zuordnung für bis zu 3 gleichzeitige Spiele: Wenn du weniger als 3 Spiele hast und keines davon noch auf einen Gegner wartet, treten wir für dich einem offenen Duell bei oder erstellen ein neues.", "Emparejamiento automático de hasta 3 partidas simultáneas: cuando tengas menos de 3 partidas y ninguna esté esperando rival, te unimos a un duelo abierto o creamos uno nuevo.");
+    fillDictionary("AutoMatchTitle", "Auto join more games?", "Automatisch weiteren Spielen beitreten?", "¿Unirte automáticamente a más partidas?");
+    fillDictionary("AutoMatchDesc", "Warlock's Duel is a slow paced game, so it's best to automatically create games and have a few games running simultaneously.<br>You can always change this later.", "Warlock's Duel ist ein gemächliches Spiel, daher ist es am besten, Spiele automatisch zu erstellen und mehrere gleichzeitig laufen zu haben.<br>Du kannst das jederzeit später ändern.", "Warlock's Duel es un juego de ritmo lento, así que lo mejor es crear partidas automáticamente y tener varias en marcha a la vez.<br>Siempre puedes cambiarlo más tarde.");
+    fillDictionary("AutoMatchBtn", "Auto join", "Automatisch beitreten", "Unirse automáticamente");
+    fillDictionary("AutoMatchOnce", "Join only once", "Nur einmal beitreten", "Unirse solo una vez");
+    fillDictionary("AutoMatchBoxTitle", "Auto start matches ON", "Automatischer Spielstart AN", "Inicio automático de partidas: SÍ");
+    fillDictionary("AutoMatchBoxDesc", "Matching automatically up to 3 simultaneous games", "Automatische Zuordnung für bis zu 3 gleichzeitige Spiele", "Emparejamiento automático de hasta 3 partidas simultáneas");
     // https://github.com/Pz1c/WavingHands/issues/336
-    fillDictionary("PushNotifications", "", "", "Game notifications");
-    fillDictionary("PushNotificationsSettingDesc", "", "", "Get a notification when it is your turn or someone invites you to a duel, even when the app is closed.");
-    fillDictionary("SendPushToken", "", "", "Send notification token");
-    fillDictionary("PushTokenSending", "", "", "Sending the token...");
-    fillDictionary("PushTokenSent", "", "", "Token sent");
-    fillDictionary("PushNoSupport", "", "", "Server has no push support");
-    fillDictionary("PushNotConnected", "", "", "Not connected");
-    fillDictionary("PushNotLoggedIn", "", "", "Not logged in");
-    fillDictionary("PushSettingOff", "", "", "Turn Game notifications on first");
-    fillDictionary("PushTokenUnavailable", "", "", "Notification token unavailable");
-    fillDictionary("BattleHistoryTitle", "", "", "Battle History");
-    fillDictionary("Say", "", "", "Add a message");
-    fillDictionary("PersonalChalengeTitle", "", "", "Private Duel Invite");
-    fillDictionary("PersonalChalengeSDesc", "", "", "You are invited for a private duel by ");
-    fillDictionary("OpenChalengeTitle", "", "", "Open duel invite");
-    fillDictionary("OpenChalengeSDesc", "", "", "You are invited for a open duel by ");
-    fillDictionary("NewChalengeSDesc", "", "", "New Match: ");
-    fillDictionary("PersonalChalengeAccept", "", "", "Accept");
-    fillDictionary("PersonalChalengeReject", "", "", "Reject");
-    fillDictionary("DuelWithFriend", "", "", "Duel with a friend");
-    fillDictionary("ShareWndTitle", "", "", "Invite friends");
-    fillDictionary("ShareWndSDesc", "", "", "Please share following link with your friends");
-    fillDictionary("ShareWndDesc", "", "", "Link should be in your clipboad already<br><br>");
-    fillDictionary("SearchWizardTitle", "", "", "Start a Private duel");
-    fillDictionary("SearchWizardShortDesc", "", "", "Find a warlock by name and invite for a private duel");
-    fillDictionary("SearchWizardInputTitle", "", "", "Invite a warlock by name:");
-    fillDictionary("NewGameWithPlayerTitle", "", "", "Choose your partner");
-    fillDictionary("NewGameWithPlayerSDesc", "", "", "Start a duel against a random warlock or invite a friend to play");
-    fillDictionary("NewGameWithPlayerBtn1", "", "", "Warlock");
-    fillDictionary("NewGameWithPlayerBtn2", "", "", "Friend");
-    fillDictionary("NewGameWithPlayerBtn3", "", "", "Find a warlock by name");
-    fillDictionary("NewGameFindByName", "", "", "Find by name");
-    fillDictionary("NewGameWithBotTitle", "", "", "Choose your training partner");
-    fillDictionary("NewGameWithBotSDesc", "", "", "Play against an AI training bot, or invite a friend and train against each other");
-    fillDictionary("NewGameWithBotBtn1", "", "", "Training bot");
-    fillDictionary("NewGameWithBotBtn2", "", "", "Friend");
-    fillDictionary("NewGameWithBotBtn3", "", "", "Find a warlock by name");
-    fillDictionary("NewVFGameBtn1", "", "", "Train vs Bot");
-    fillDictionary("NewVFGameBtn1Desc", "", "", "Practice against AI");
-    fillDictionary("NewVFGameBtn2", "", "", "Unscored Duel");
-    fillDictionary("NewVFGameBtn2Desc", "", "", "Private match · No scoring");
-    fillDictionary("NewVFGameBtn3", "", "", "Invite a friend");
-    fillDictionary("NewFGameBtn1", "", "", "Public");
-    fillDictionary("NewFGameBtn1Desc", "", "", "Anyone can join");
-    fillDictionary("NewFGameBtn2", "", "", "Private");
-    fillDictionary("NewFGameBtn2Desc", "", "", "Choose a warlock");
-    fillDictionary("NewFGameBtn3", "", "", "Invite a friend");
-    fillDictionary("NewFGameBtn3Desc", "", "", "Share a link to join and duel");
-    fillDictionary("TooMuchBotBatleWndTitle", "", "", "Training battle limit");
-    fillDictionary("TooMuchBotBatleWndSDesc", "", "", "Please wait for your turn in current training battle");
-    fillDictionary("FinishedGameResultTitleWin", "", "", "Yey! You won the game.");
-    fillDictionary("FinishedGameResultTitleLose", "", "", "Uh Oh... You lost the game.");
-    fillDictionary("FinishedGameResultTitleDraw", "", "", "Hmm... It's a draw.");
-    fillDictionary("FinishedGameResultTitleUnknown", "", "", "Damn! What's going on?");
-    fillDictionary("NewGameMoreOption", "", "", "More options");
-    fillDictionary("NewGameAutoMatch", "", "", "Play");
-    fillDictionary("NewGameDuel", "", "", "A New Duel:");
-    fillDictionary("NewGamePractice", "", "", "Practice Mode:");
+    fillDictionary("PushNotifications", "Game notifications", "Spielbenachrichtigungen", "Notificaciones del juego");
+    fillDictionary("PushNotificationsSettingDesc", "Get a notification when it is your turn or someone invites you to a duel, even when the app is closed.", "Erhalte eine Benachrichtigung, wenn du am Zug bist oder dich jemand zu einem Duell einlädt, auch wenn die App geschlossen ist.", "Recibe una notificación cuando sea tu turno o alguien te invite a un duelo, incluso con la aplicación cerrada.");
+    fillDictionary("SendPushToken", "Send notification token", "Benachrichtigungs-Token senden", "Enviar token de notificaciones");
+    fillDictionary("PushTokenSending", "Sending the token...", "Token wird gesendet...", "Enviando el token...");
+    fillDictionary("PushTokenSent", "Token sent", "Token gesendet", "Token enviado");
+    fillDictionary("PushNoSupport", "Server has no push support", "Der Server unterstützt keine Push-Benachrichtigungen", "El servidor no admite notificaciones push");
+    fillDictionary("PushNotConnected", "Not connected", "Nicht verbunden", "Sin conexión");
+    fillDictionary("PushNotLoggedIn", "Not logged in", "Nicht angemeldet", "Sesión no iniciada");
+    fillDictionary("PushSettingOff", "Turn Game notifications on first", "Schalte zuerst die Spielbenachrichtigungen ein", "Activa primero las notificaciones del juego");
+    fillDictionary("PushTokenUnavailable", "Notification token unavailable", "Benachrichtigungs-Token nicht verfügbar", "Token de notificaciones no disponible");
+    fillDictionary("BattleHistoryTitle", "Battle History", "Kampfverlauf", "Historial de la batalla");
+    fillDictionary("Say", "Add a message", "Nachricht hinzufügen", "Añadir un mensaje");
+    fillDictionary("PersonalChalengeTitle", "Private Duel Invite", "Einladung zum privaten Duell", "Invitación a duelo privado");
+    fillDictionary("PersonalChalengeSDesc", "You are invited for a private duel by ", "Einladung zu einem privaten Duell von ", "Invitación a un duelo privado de ");
+    fillDictionary("OpenChalengeTitle", "Open duel invite", "Einladung zum offenen Duell", "Invitación a duelo abierto");
+    fillDictionary("OpenChalengeSDesc", "You are invited for a open duel by ", "Einladung zu einem offenen Duell von ", "Invitación a un duelo abierto de ");
+    fillDictionary("NewChalengeSDesc", "New Match: ", "Neues Spiel: ", "Nueva partida: ");
+    fillDictionary("PersonalChalengeAccept", "Accept", "Annehmen", "Aceptar");
+    fillDictionary("PersonalChalengeReject", "Reject", "Ablehnen", "Rechazar");
+    fillDictionary("DuelWithFriend", "Duel with a friend", "Duell mit einem Freund", "Duelo con un amigo");
+    fillDictionary("ShareWndTitle", "Invite friends", "Freunde einladen", "Invitar amigos");
+    fillDictionary("ShareWndSDesc", "Please share following link with your friends", "Bitte teile den folgenden Link mit deinen Freunden", "Comparte el siguiente enlace con tus amigos");
+    fillDictionary("ShareWndDesc", "Link should be in your clipboad already<br><br>", "Der Link sollte bereits in deiner Zwischenablage sein<br><br>", "El enlace ya debería estar en tu portapapeles<br><br>");
+    fillDictionary("SearchWizardTitle", "Start a Private duel", "Privates Duell starten", "Empezar un duelo privado");
+    fillDictionary("SearchWizardShortDesc", "Find a warlock by name and invite for a private duel", "Finde einen Hexer nach Namen und lade ihn zu einem privaten Duell ein", "Busca un brujo por su nombre e invítalo a un duelo privado");
+    fillDictionary("SearchWizardInputTitle", "Invite a warlock by name:", "Hexer nach Namen einladen:", "Invitar a un brujo por su nombre:");
+    fillDictionary("NewGameWithPlayerTitle", "Choose your partner", "Wähle deinen Partner", "Elige a tu compañero");
+    fillDictionary("NewGameWithPlayerSDesc", "Start a duel against a random warlock or invite a friend to play", "Starte ein Duell gegen einen zufälligen Hexer oder lade einen Freund zum Spielen ein", "Empieza un duelo contra un brujo al azar o invita a un amigo a jugar");
+    fillDictionary("NewGameWithPlayerBtn1", "Warlock", "Hexer", "Brujo");
+    fillDictionary("NewGameWithPlayerBtn2", "Friend", "Freund", "Amigo");
+    fillDictionary("NewGameWithPlayerBtn3", "Find a warlock by name", "Hexer nach Namen suchen", "Buscar un brujo por su nombre");
+    fillDictionary("NewGameFindByName", "Find by name", "Nach Namen suchen", "Buscar por nombre");
+    fillDictionary("NewGameWithBotTitle", "Choose your training partner", "Wähle deinen Trainingspartner", "Elige a tu compañero de entrenamiento");
+    fillDictionary("NewGameWithBotSDesc", "Play against an AI training bot, or invite a friend and train against each other", "Spiele gegen einen KI-Trainingsbot oder lade einen Freund ein und trainiert gegeneinander", "Juega contra un bot de entrenamiento con IA, o invita a un amigo y entrenad el uno contra el otro");
+    fillDictionary("NewGameWithBotBtn1", "Training bot", "Trainingsbot", "Bot de entrenamiento");
+    fillDictionary("NewGameWithBotBtn2", "Friend", "Freund", "Amigo");
+    fillDictionary("NewGameWithBotBtn3", "Find a warlock by name", "Hexer nach Namen suchen", "Buscar un brujo por su nombre");
+    fillDictionary("NewVFGameBtn1", "Train vs Bot", "Training gegen Bot", "Entrenar contra bot");
+    fillDictionary("NewVFGameBtn1Desc", "Practice against AI", "Übe gegen die KI", "Practica contra la IA");
+    fillDictionary("NewVFGameBtn2", "Unscored Duel", "Duell ohne Wertung", "Duelo sin puntuación");
+    fillDictionary("NewVFGameBtn2Desc", "Private match · No scoring", "Privates Spiel · Keine Wertung", "Partida privada · Sin puntuación");
+    fillDictionary("NewVFGameBtn3", "Invite a friend", "Einen Freund einladen", "Invitar a un amigo");
+    fillDictionary("NewFGameBtn1", "Public", "Öffentlich", "Público");
+    fillDictionary("NewFGameBtn1Desc", "Anyone can join", "Jeder kann beitreten", "Cualquiera puede unirse");
+    fillDictionary("NewFGameBtn2", "Private", "Privat", "Privado");
+    fillDictionary("NewFGameBtn2Desc", "Choose a warlock", "Wähle einen Hexer", "Elige un brujo");
+    fillDictionary("NewFGameBtn3", "Invite a friend", "Einen Freund einladen", "Invitar a un amigo");
+    fillDictionary("NewFGameBtn3Desc", "Share a link to join and duel", "Teile einen Link zum Beitreten und Duellieren", "Comparte un enlace para unirse y batirse en duelo");
+    fillDictionary("TooMuchBotBatleWndTitle", "Training battle limit", "Limit für Trainingskämpfe", "Límite de batallas de entrenamiento");
+    fillDictionary("TooMuchBotBatleWndSDesc", "Please wait for your turn in current training battle", "Bitte warte auf deinen Zug im aktuellen Trainingskampf", "Espera tu turno en la batalla de entrenamiento actual");
+    fillDictionary("FinishedGameResultTitleWin", "Yey! You won the game.", "Juhu! Du hast das Spiel gewonnen.", "¡Bien! Has ganado la partida.");
+    fillDictionary("FinishedGameResultTitleLose", "Uh Oh... You lost the game.", "Oje... Du hast das Spiel verloren.", "Vaya... Has perdido la partida.");
+    fillDictionary("FinishedGameResultTitleDraw", "Hmm... It's a draw.", "Hmm... Unentschieden.", "Hmm... Es un empate.");
+    fillDictionary("FinishedGameResultTitleUnknown", "Damn! What's going on?", "Verflixt! Was ist hier los?", "¡Maldición! ¿Qué está pasando?");
+    fillDictionary("NewGameMoreOption", "More options", "Weitere Optionen", "Más opciones");
+    fillDictionary("NewGameAutoMatch", "Play", "Spielen", "Jugar");
+    fillDictionary("NewGameDuel", "A New Duel:", "Ein neues Duell:", "Un nuevo duelo:");
+    fillDictionary("NewGamePractice", "Practice Mode:", "Übungsmodus:", "Modo práctica:");
     // GUI texts that used to be hardcoded in QML, JS and the core
     // common
-    fillDictionary("Back", "", "", "Back");
-    fillDictionary("Next", "", "", "Next");
-    fillDictionary("GotIt", "", "", "Got It!");
-    fillDictionary("Done", "", "", "Done");
-    fillDictionary("Start", "", "", "Start");
-    fillDictionary("View", "", "", "View");
-    fillDictionary("Chat", "", "", "Chat");
-    fillDictionary("Go", "", "", "Go");
-    fillDictionary("Details", "", "", "Details");
-    fillDictionary("Leave", "", "", "Leave");
-    fillDictionary("Challenge", "", "", "Challenge");
-    fillDictionary("OnlineLabel", "", "", "online");
-    fillDictionary("Unknown", "", "", "Unknown");
-    fillDictionary("UnknownError", "", "", "Unknown error");
-    fillDictionary("HiLogin", "", "", "Hi, %1");
-    fillDictionary("BattleTitle", "", "", "Battle #%1");
-    fillDictionary("BattleChatTitle", "", "", "Battle #%1 chat");
-    fillDictionary("BattleProblemContact", "", "", "Some problem with this battle, please contact viskgameua@gmail.com");
+    fillDictionary("Back", "Back", "Zurück", "Atrás");
+    fillDictionary("Next", "Next", "Weiter", "Siguiente");
+    fillDictionary("GotIt", "Got It!", "Verstanden!", "¡Entendido!");
+    fillDictionary("Done", "Done", "Fertig", "Hecho");
+    fillDictionary("Start", "Start", "Start", "Empezar");
+    fillDictionary("View", "View", "Ansehen", "Ver");
+    fillDictionary("Chat", "Chat", "Chat", "Chat");
+    fillDictionary("Go", "Go", "Los", "Ir");
+    fillDictionary("Details", "Details", "Details", "Detalles");
+    fillDictionary("Leave", "Leave", "Verlassen", "Salir");
+    fillDictionary("Challenge", "Challenge", "Herausfordern", "Desafiar");
+    fillDictionary("OnlineLabel", "online", "online", "en línea");
+    fillDictionary("Unknown", "Unknown", "Unbekannt", "Desconocido");
+    fillDictionary("UnknownError", "Unknown error", "Unbekannter Fehler", "Error desconocido");
+    fillDictionary("HiLogin", "Hi, %1", "Hallo, %1", "Hola, %1");
+    fillDictionary("BattleTitle", "Battle #%1", "Kampf #%1", "Batalla #%1");
+    fillDictionary("BattleChatTitle", "Battle #%1 chat", "Chat zu Kampf #%1", "Chat de la batalla #%1");
+    fillDictionary("BattleProblemContact", "Some problem with this battle, please contact viskgameua@gmail.com", "Es gibt ein Problem mit diesem Kampf, bitte kontaktiere viskgameua@gmail.com", "Hay un problema con esta batalla, contacta con viskgameua@gmail.com");
     // registration
-    fillDictionary("WarlockName", "", "", "Warlock's name");
-    fillDictionary("HaveAccountLogIn", "", "", "Already have an account? <u><font color=\"#A8F4F4\">Log In</font></u>");
-    fillDictionary("NoAccountSignUp", "", "", "Don't have an account? <u><font color=\"#A8F4F4\">Sign Up</font></u>");
-    fillDictionary("AfterRegTitle", "", "", "Ready to start?");
-    fillDictionary("AfterRegDesc1", "", "", "You will start with a small apprentice spellbook. After you've trained a bit, go ahead and play with other players.");
-    fillDictionary("AfterRegDesc2", "", "", "This can be one of the best games you've ever played, but it takes 2 to 3 games to master, so take your time :)<br><br>Let's play!");
+    fillDictionary("WarlockName", "Warlock's name", "Name des Hexers", "Nombre del brujo");
+    fillDictionary("HaveAccountLogIn", "Already have an account? <u><font color=\"#A8F4F4\">Log In</font></u>", "Schon ein Konto? <u><font color=\"#A8F4F4\">Anmelden</font></u>", "¿Ya tienes una cuenta? <u><font color=\"#A8F4F4\">Inicia sesión</font></u>");
+    fillDictionary("NoAccountSignUp", "Don't have an account? <u><font color=\"#A8F4F4\">Sign Up</font></u>", "Noch kein Konto? <u><font color=\"#A8F4F4\">Registrieren</font></u>", "¿No tienes una cuenta? <u><font color=\"#A8F4F4\">Regístrate</font></u>");
+    fillDictionary("AfterRegTitle", "Ready to start?", "Bereit loszulegen?", "¿Listo para empezar?");
+    fillDictionary("AfterRegDesc1", "You will start with a small apprentice spellbook. After you've trained a bit, go ahead and play with other players.", "Du beginnst mit einem kleinen Zauberbuch für Lehrlinge. Wenn du ein wenig trainiert hast, spiel ruhig mit anderen Spielern.", "Empezarás con un pequeño libro de hechizos de aprendiz. Cuando hayas entrenado un poco, juega con otros jugadores.");
+    fillDictionary("AfterRegDesc2", "This can be one of the best games you've ever played, but it takes 2 to 3 games to master, so take your time :)<br><br>Let's play!", "Das kann eines der besten Spiele werden, die du je gespielt hast, aber man braucht 2 bis 3 Partien, um es zu meistern, also lass dir Zeit :)<br><br>Lass uns spielen!", "Puede ser uno de los mejores juegos que hayas jugado, pero hacen falta 2 o 3 partidas para dominarlo, así que tómatelo con calma :)<br><br>¡A jugar!");
     // popups
-    fillDictionary("NotifPopupTitle", "", "", "The dove is on its way!");
-    fillDictionary("NotifPopupDesc", "", "", "Get a note when<br>your turn is ready");
-    fillDictionary("NotifPopupEnable", "", "", "Enable Notifications");
-    fillDictionary("SpellbookUnlocked", "", "", "Unlocked a new spellbook");
-    fillDictionary("ViewSpellbook", "", "", "View Spellbook");
-    fillDictionary("LiveMatchTitle", "", "", "Challenge to a live match?");
-    fillDictionary("LiveMatchDesc", "", "", "In a live match each player has upto 30 minutes to play a whole game.<br>After time runs out you ha ve 45 seconds per turn");
-    fillDictionary("LiveMatchNote", "", "", "Note: On each turn, the time counter continues counting once you enter the game,\n                           or when 1 minute passes from the time when you get notified of a new turn (the erlier of the two)");
-    fillDictionary("LiveMatch", "", "", "Live Match");
-    fillDictionary("RegularMatch", "", "", "Regular Match");
+    fillDictionary("NotifPopupTitle", "The dove is on its way!", "Die Taube ist unterwegs!", "¡La paloma está en camino!");
+    fillDictionary("NotifPopupDesc", "Get a note when<br>your turn is ready", "Erhalte eine Nachricht,<br>wenn du am Zug bist", "Recibe un aviso cuando<br>sea tu turno");
+    fillDictionary("NotifPopupEnable", "Enable Notifications", "Benachrichtigungen aktivieren", "Activar notificaciones");
+    fillDictionary("SpellbookUnlocked", "Unlocked a new spellbook", "Neues Zauberbuch freigeschaltet", "Nuevo libro de hechizos desbloqueado");
+    fillDictionary("ViewSpellbook", "View Spellbook", "Zauberbuch ansehen", "Ver libro de hechizos");
+    fillDictionary("LiveMatchTitle", "Challenge to a live match?", "Zu einem Live-Spiel herausfordern?", "¿Desafiar a una partida en vivo?");
+    fillDictionary("LiveMatchDesc", "In a live match each player has upto 30 minutes to play a whole game.<br>After time runs out you ha ve 45 seconds per turn", "In einem Live-Spiel hat jeder Spieler bis zu 30 Minuten für das ganze Spiel.<br>Danach hast du 45 Sekunden pro Zug", "En una partida en vivo cada jugador tiene hasta 30 minutos para toda la partida.<br>Cuando se acaba el tiempo, tienes 45 segundos por turno");
+    fillDictionary("LiveMatchNote", "Note: On each turn, the time counter continues counting once you enter the game,\n                           or when 1 minute passes from the time when you get notified of a new turn (the erlier of the two)", "Hinweis: In jedem Zug läuft die Zeit weiter, sobald du das Spiel betrittst,\n                           oder 1 Minute nachdem du über einen neuen Zug benachrichtigt wurdest (je nachdem, was früher eintritt)", "Nota: en cada turno, el contador de tiempo sigue corriendo en cuanto entras en la partida,\n                           o 1 minuto después de que se te notifique un nuevo turno (lo que ocurra primero)");
+    fillDictionary("LiveMatch", "Live Match", "Live-Spiel", "Partida en vivo");
+    fillDictionary("RegularMatch", "Regular Match", "Normales Spiel", "Partida normal");
     // hall of fame, warlock stats, search
-    fillDictionary("TopTabActive", "", "", "Active");
-    fillDictionary("TopTabActiveHint", "", "", "Players active in the last 3 days:");
-    fillDictionary("TopTabAllTime", "", "", "All time");
-    fillDictionary("TopTabOnline", "", "", "Online");
-    fillDictionary("TopTabOnlineHint", "", "", "Players active in the last 3 minutes:");
-    fillDictionary("TopBotsOnlyHint", "", "", "No players online. Bots are always ready:");
-    fillDictionary("TopNobodyOnline", "", "", "Nobody is online right now");
-    fillDictionary("WarlockStats", "", "", "Warlock stats");
-    fillDictionary("PracticeTogether", "", "", "Practice together");
-    fillDictionary("UserStatsTitle", "", "", "%1: Stats");
-    fillDictionary("StatScore", "", "", "Score: ");
-    fillDictionary("StatPlayed", "", "", "Played: ");
-    fillDictionary("StatWon", "", "", "Won: ");
-    fillDictionary("StatLost", "", "", "Lost: ");
-    fillDictionary("StatDied", "", "", "Died: ");
-    fillDictionary("StatLife", "", "", "Life: ");
-    fillDictionary("StatPower", "", "", "Power: ");
-    fillDictionary("StatOwner", "", "", "Owner: ");
-    fillDictionary("StatTarget", "", "", "Target: ");
-    fillDictionary("LastActiveDays", "", "", "Last active ~%1 days ago");
-    fillDictionary("LastActiveHours", "", "", "Last active ~%1 hours ago");
-    fillDictionary("LastActiveMinutes", "", "", "Last active ~%1 minutes ago");
-    fillDictionary("ActiveNow", "", "", "Active right now");
-    fillDictionary("SearchWizardInputHint", "", "", "e.g. Galbarad");
-    fillDictionary("SearchSuggested", "", "", "Suggested");
-    fillDictionary("SearchViewMore", "", "", "View More");
+    fillDictionary("TopTabActive", "Active", "Aktiv", "Activos");
+    fillDictionary("TopTabActiveHint", "Players active in the last 3 days:", "In den letzten 3 Tagen aktive Spieler:", "Jugadores activos en los últimos 3 días:");
+    fillDictionary("TopTabAllTime", "All time", "Alle Zeiten", "Histórico");
+    fillDictionary("TopTabOnline", "Online", "Online", "En línea");
+    fillDictionary("TopTabOnlineHint", "Players active in the last 3 minutes:", "In den letzten 3 Minuten aktive Spieler:", "Jugadores activos en los últimos 3 minutos:");
+    fillDictionary("TopBotsOnlyHint", "No players online. Bots are always ready:", "Keine Spieler online. Bots sind immer bereit:", "No hay jugadores en línea. Los bots siempre están listos:");
+    fillDictionary("TopNobodyOnline", "Nobody is online right now", "Gerade ist niemand online", "Ahora mismo no hay nadie en línea");
+    fillDictionary("WarlockStats", "Warlock stats", "Hexer-Statistik", "Estadísticas del brujo");
+    fillDictionary("PracticeTogether", "Practice together", "Zusammen üben", "Practicar juntos");
+    fillDictionary("UserStatsTitle", "%1: Stats", "%1: Statistik", "%1: Estadísticas");
+    fillDictionary("StatScore", "Score: ", "Punkte: ", "Puntuación: ");
+    fillDictionary("StatPlayed", "Played: ", "Gespielt: ", "Jugadas: ");
+    fillDictionary("StatWon", "Won: ", "Gewonnen: ", "Ganadas: ");
+    fillDictionary("StatLost", "Lost: ", "Verloren: ", "Perdidas: ");
+    fillDictionary("StatDied", "Died: ", "Gestorben: ", "Muertes: ");
+    fillDictionary("StatLife", "Life: ", "Leben: ", "Vida: ");
+    fillDictionary("StatPower", "Power: ", "Stärke: ", "Poder: ");
+    fillDictionary("StatOwner", "Owner: ", "Besitzer: ", "Dueño: ");
+    fillDictionary("StatTarget", "Target: ", "Ziel: ", "Objetivo: ");
+    fillDictionary("LastActiveDays", "Last active ~%1 days ago", "Zuletzt aktiv vor ~%1 Tagen", "Activo por última vez hace ~%1 días");
+    fillDictionary("LastActiveHours", "Last active ~%1 hours ago", "Zuletzt aktiv vor ~%1 Stunden", "Activo por última vez hace ~%1 horas");
+    fillDictionary("LastActiveMinutes", "Last active ~%1 minutes ago", "Zuletzt aktiv vor ~%1 Minuten", "Activo por última vez hace ~%1 minutos");
+    fillDictionary("ActiveNow", "Active right now", "Gerade aktiv", "Activo ahora mismo");
+    fillDictionary("SearchWizardInputHint", "e.g. Galbarad", "z. B. Galbarad", "p. ej. Galbarad");
+    fillDictionary("SearchSuggested", "Suggested", "Vorschläge", "Sugeridos");
+    fillDictionary("SearchViewMore", "View More", "Mehr anzeigen", "Ver más");
     // chat
-    fillDictionary("ChatMessageTitle", "", "", "Message:");
-    fillDictionary("LastTurnChat", "", "", "Last turn's chat");
-    fillDictionary("RematchWith", "", "", "Rematch %1");
+    fillDictionary("ChatMessageTitle", "Message:", "Nachricht:", "Mensaje:");
+    fillDictionary("LastTurnChat", "Last turn's chat", "Chat des letzten Zugs", "Chat del último turno");
+    fillDictionary("RematchWith", "Rematch %1", "Revanche gegen %1", "Revancha con %1");
     // battle
-    fillDictionary("TutorialGotIt", "", "", "got it!");
-    fillDictionary("TurnN", "", "", "Turn %1");
-    fillDictionary("WrongTargetTitle", "", "", "Wrong target");
-    fillDictionary("WrongTargetText", "", "", "Please choose Warlock or Monster as Spell target");
-    fillDictionary("BankedWillFire", "", "", "Banked %1 will be fired");
-    fillDictionary("BankedNotFire", "", "", "Do not fire banked spell: %1");
-    fillDictionary("BankedBy", "", "", "%1 banked a %2");
-    fillDictionary("BankedSpellTitle", "", "", "Banked spell");
-    fillDictionary("BankedSpellText", "", "", "%1<br>To get delayed spell cast Delay Effect DWSSSP<br>");
-    fillDictionary("WarlockHPTitle", "", "", "Warlock's hit point");
-    fillDictionary("WarlockHPText", "", "", "%1 damage to death");
-    fillDictionary("Monster", "", "", "Monster");
-    fillDictionary("MonsterOwnedBy", "", "", " (owner by %1)");
-    fillDictionary("MonsterAttack", "", "", " attack %1");
-    fillDictionary("Charm", "", "", "Charm");
-    fillDictionary("Enchantments", "", "", "Enchantments:");
-    fillDictionary("EnchantmentTurn", "", "", " turn");
-    fillDictionary("EnchantmentTurns", "", "", " turns");
-    fillDictionary("HintBankSpell", "", "", "To bank a %1, click the bank icon and then choose a target");
-    fillDictionary("HintPermanentSpell", "", "", "To make %1 permanent, click the permanency icon and then choose a target");
-    fillDictionary("HintIsParalyzed", "", "", "%1 is paralyzed");
-    fillDictionary("HintLosesCoordination", "", "", "%1 loses coordination");
-    fillDictionary("TargetTitleSummon", "", "", "%1 to serve: ");
-    fillDictionary("TargetTitleCast", "", "", "Cast %1");
-    fillDictionary("TargetTitleSpell", "", "", " spell");
-    fillDictionary("TargetTitlePermanent", "", "", " (make permanent)");
-    fillDictionary("TargetTitleBank", "", "", " (bank it)");
-    fillDictionary("TargetTitleAt", "", "", " at: ");
-    fillDictionary("TargetTitleDirect", "", "", "Direct  %1 at ");
+    fillDictionary("TutorialGotIt", "got it!", "verstanden!", "¡entendido!");
+    fillDictionary("TurnN", "Turn %1", "Zug %1", "Turno %1");
+    fillDictionary("WrongTargetTitle", "Wrong target", "Falsches Ziel", "Objetivo incorrecto");
+    fillDictionary("WrongTargetText", "Please choose Warlock or Monster as Spell target", "Bitte wähle einen Hexer oder ein Monster als Zauberziel", "Elige un brujo o un monstruo como objetivo del hechizo");
+    fillDictionary("BankedWillFire", "Banked %1 will be fired", "Gespeicherter Zauber %1 wird ausgelöst", "Se lanzará el hechizo guardado %1");
+    fillDictionary("BankedNotFire", "Do not fire banked spell: %1", "Gespeicherten Zauber nicht auslösen: %1", "No lanzar el hechizo guardado: %1");
+    fillDictionary("BankedBy", "%1 banked a %2", "%1 hat %2 gespeichert", "%1 ha guardado %2");
+    fillDictionary("BankedSpellTitle", "Banked spell", "Gespeicherter Zauber", "Hechizo guardado");
+    fillDictionary("BankedSpellText", "%1<br>To get delayed spell cast Delay Effect DWSSSP<br>", "%1<br>Um einen Zauber zu verzögern, wirke Verzögerter Effekt DWSSSP<br>", "%1<br>Para retrasar un hechizo, lanza Efecto retardado DWSSSP<br>");
+    fillDictionary("WarlockHPTitle", "Warlock's hit point", "Lebenspunkte des Hexers", "Puntos de vida del brujo");
+    fillDictionary("WarlockHPText", "%1 damage to death", "Noch %1 Schaden bis zum Tod", "%1 de daño hasta la muerte");
+    fillDictionary("Monster", "Monster", "Monster", "Monstruo");
+    fillDictionary("MonsterOwnedBy", " (owner by %1)", " (gehört %1)", " (de %1)");
+    fillDictionary("MonsterAttack", " attack %1", " greift %1 an", " ataca a %1");
+    fillDictionary("Charm", "Charm", "Bezaubern", "Hechizar");
+    fillDictionary("Enchantments", "Enchantments:", "Verzauberungen:", "Encantamientos:");
+    fillDictionary("EnchantmentTurn", " turn", " Zug", " turno");
+    fillDictionary("EnchantmentTurns", " turns", " Züge", " turnos");
+    fillDictionary("HintBankSpell", "To bank a %1, click the bank icon and then choose a target", "Um %1 zu speichern, tippe auf das Speicher-Symbol und wähle dann ein Ziel", "Para guardar %1, pulsa el icono de guardar y luego elige un objetivo");
+    fillDictionary("HintPermanentSpell", "To make %1 permanent, click the permanency icon and then choose a target", "Um %1 dauerhaft zu machen, tippe auf das Dauerhaftigkeits-Symbol und wähle dann ein Ziel", "Para hacer permanente %1, pulsa el icono de permanencia y luego elige un objetivo");
+    fillDictionary("HintIsParalyzed", "%1 is paralyzed", "%1 ist gelähmt", "%1 está paralizado");
+    fillDictionary("HintLosesCoordination", "%1 loses coordination", "%1 verliert die Koordination", "%1 pierde la coordinación");
+    fillDictionary("TargetTitleSummon", "%1 to serve: ", "%1 für: ", "%1 para: ");
+    fillDictionary("TargetTitleCast", "Cast %1", "Wirke %1", "Lanzar %1");
+    fillDictionary("TargetTitleSpell", " spell", " ", " ");
+    fillDictionary("TargetTitlePermanent", " (make permanent)", " (dauerhaft machen)", " (hacer permanente)");
+    fillDictionary("TargetTitleBank", " (bank it)", " (speichern)", " (guardar)");
+    fillDictionary("TargetTitleAt", " at: ", " auf: ", " a: ");
+    fillDictionary("TargetTitleDirect", "Direct  %1 at ", "Lenke %1 auf ", "Dirigir %1 a ");
     // gestures and orders
-    fillDictionary("SurrenderingTitle", "", "", "Surrendering!");
-    fillDictionary("SurrenderingHint", "", "", "('P' with both hands)");
-    fillDictionary("ChooseGestureLeft", "", "", "Choose gesture for left hand");
-    fillDictionary("ChooseGestureRight", "", "", "Choose gesture for right hand");
-    fillDictionary("ParalyzeLeftHand", "", "", "Paralyze Left hand?");
-    fillDictionary("ParalyzeRightHand", "", "", "Paralyze Right hand?");
-    fillDictionary("CharmLeftHand", "", "", "Charm Left hand?");
-    fillDictionary("CharmRightHand", "", "", "Charm Right hand?");
-    fillDictionary("SpellListCompleted", "", "", "Completed spells");
-    fillDictionary("SpellListCompletedOpponent", "", "", "Complete Opponent Spells");
-    fillDictionary("SpellListOpponentMayCast", "", "", "Spells opponent may cast");
-    fillDictionary("SpellListIncomplete", "", "", "Incomplete Spells");
-    fillDictionary("SpellListIncompleteOpponent", "", "", "Incomplete Opponent Spells");
-    fillDictionary("ReviewOrdersTitle", "", "", "Review your orders:");
-    fillDictionary("SurrenderOrders", "", "", "SURRENDER!");
-    fillDictionary("UnknownSpell", "", "", "Unknown spell");
-    fillDictionary("DefaultSpell", "", "", "default spell");
-    fillDictionary("DefaultTarget", "", "", "default target");
-    fillDictionary("NewMonsterHand", "", "", "New monster (%1)");
-    fillDictionary("LeftHandGesture", "", "", "Left hand gesture");
-    fillDictionary("RightHandGesture", "", "", "Right hand gesture");
-    fillDictionary("CastSpellAt", "", "", "cast %1<br>at %2");
-    fillDictionary("HandNone", "", "", "None");
-    fillDictionary("HandLeft", "", "", "Left hand");
-    fillDictionary("HandTwo", "", "", "Two-hand");
-    fillDictionary("HandRight", "", "", "Right hand");
-    fillDictionary("OrdersSubmittedTitle", "", "", "Orders Submitted");
-    fillDictionary("OrdersSubmittedSDesc", "", "", "Your orders are in for this turn. Players may take up to 3 days to submit orders.");
-    fillDictionary("ForceTurn", "", "", "Force Turn");
+    fillDictionary("SurrenderingTitle", "Surrendering!", "Aufgabe!", "¡Rendición!");
+    fillDictionary("SurrenderingHint", "('P' with both hands)", "('P' mit beiden Händen)", "('P' con ambas manos)");
+    fillDictionary("ChooseGestureLeft", "Choose gesture for left hand", "Wähle die Geste für die linke Hand", "Elige el gesto para la mano izquierda");
+    fillDictionary("ChooseGestureRight", "Choose gesture for right hand", "Wähle die Geste für die rechte Hand", "Elige el gesto para la mano derecha");
+    fillDictionary("ParalyzeLeftHand", "Paralyze Left hand?", "Linke Hand lähmen?", "¿Paralizar la mano izquierda?");
+    fillDictionary("ParalyzeRightHand", "Paralyze Right hand?", "Rechte Hand lähmen?", "¿Paralizar la mano derecha?");
+    fillDictionary("CharmLeftHand", "Charm Left hand?", "Linke Hand bezaubern?", "¿Hechizar la mano izquierda?");
+    fillDictionary("CharmRightHand", "Charm Right hand?", "Rechte Hand bezaubern?", "¿Hechizar la mano derecha?");
+    fillDictionary("SpellListCompleted", "Completed spells", "Vollendete Zauber", "Hechizos completados");
+    fillDictionary("SpellListCompletedOpponent", "Complete Opponent Spells", "Vollendete Zauber des Gegners", "Hechizos completados del rival");
+    fillDictionary("SpellListOpponentMayCast", "Spells opponent may cast", "Zauber, die der Gegner wirken könnte", "Hechizos que el rival podría lanzar");
+    fillDictionary("SpellListIncomplete", "Incomplete Spells", "Unvollendete Zauber", "Hechizos incompletos");
+    fillDictionary("SpellListIncompleteOpponent", "Incomplete Opponent Spells", "Unvollendete Zauber des Gegners", "Hechizos incompletos del rival");
+    fillDictionary("ReviewOrdersTitle", "Review your orders:", "Überprüfe deine Befehle:", "Revisa tus órdenes:");
+    fillDictionary("SurrenderOrders", "SURRENDER!", "AUFGEBEN!", "¡RENDIRSE!");
+    fillDictionary("UnknownSpell", "Unknown spell", "Unbekannter Zauber", "Hechizo desconocido");
+    fillDictionary("DefaultSpell", "default spell", "Standardzauber", "hechizo por defecto");
+    fillDictionary("DefaultTarget", "default target", "Standardziel", "objetivo por defecto");
+    fillDictionary("NewMonsterHand", "New monster (%1)", "Neues Monster (%1)", "Nuevo monstruo (%1)");
+    fillDictionary("LeftHandGesture", "Left hand gesture", "Geste der linken Hand", "Gesto de la mano izquierda");
+    fillDictionary("RightHandGesture", "Right hand gesture", "Geste der rechten Hand", "Gesto de la mano derecha");
+    fillDictionary("CastSpellAt", "cast %1<br>at %2", "wirke %1<br>auf %2", "lanzar %1<br>a %2");
+    fillDictionary("HandNone", "None", "Keine", "Ninguna");
+    fillDictionary("HandLeft", "Left hand", "Linke Hand", "Mano izquierda");
+    fillDictionary("HandTwo", "Two-hand", "Beide Hände", "Dos manos");
+    fillDictionary("HandRight", "Right hand", "Rechte Hand", "Mano derecha");
+    fillDictionary("OrdersSubmittedTitle", "Orders Submitted", "Befehle abgeschickt", "Órdenes enviadas");
+    fillDictionary("OrdersSubmittedSDesc", "Your orders are in for this turn. Players may take up to 3 days to submit orders.", "Deine Befehle für diesen Zug sind eingegangen. Spieler haben bis zu 3 Tage Zeit, ihre Befehle abzuschicken.", "Tus órdenes para este turno están enviadas. Los jugadores tienen hasta 3 días para enviar sus órdenes.");
+    fillDictionary("ForceTurn", "Force Turn", "Zug erzwingen", "Forzar turno");
     // game not started yet
-    fillDictionary("TrainingWithBot", "", "", "Training with a training bot");
-    fillDictionary("TrainingWithWarlock", "", "", "Training with another warlock");
-    fillDictionary("WarlockVsWarlock", "", "", "Warlock vs. warlock");
-    fillDictionary("MultiPlayerGame", "", "", "Multi player game for %1 players");
-    fillDictionary("WarlocksAccepted", "", "", "Warlocks accepted: ");
-    fillDictionary("AcceptedAndYou", "", "", " and you");
-    fillDictionary("AcceptedOnlyYou", "", "", " only you");
-    fillDictionary("WarlocksChallenged", "", "", "Warlocks challenged:");
-    fillDictionary("RejectInvitation", "", "", "reject invitation");
-    fillDictionary("CancelInvite", "", "", "Cancel invite");
-    fillDictionary("WaitingMoreWarlocks", "", "", "Waiting for %1 more warlocks to join");
-    fillDictionary("KeepWaiting", "", "", "Keep Waiting");
+    fillDictionary("TrainingWithBot", "Training with a training bot", "Training mit einem Trainingsbot", "Entrenamiento con un bot de entrenamiento");
+    fillDictionary("TrainingWithWarlock", "Training with another warlock", "Training mit einem anderen Hexer", "Entrenamiento con otro brujo");
+    fillDictionary("WarlockVsWarlock", "Warlock vs. warlock", "Hexer gegen Hexer", "Brujo contra brujo");
+    fillDictionary("MultiPlayerGame", "Multi player game for %1 players", "Mehrspielerspiel für %1 Spieler", "Partida multijugador para %1 jugadores");
+    fillDictionary("WarlocksAccepted", "Warlocks accepted: ", "Zugesagte Hexer: ", "Brujos que han aceptado: ");
+    fillDictionary("AcceptedAndYou", " and you", " und du", " y tú");
+    fillDictionary("AcceptedOnlyYou", " only you", " nur du", " solo tú");
+    fillDictionary("WarlocksChallenged", "Warlocks challenged:", "Herausgeforderte Hexer:", "Brujos desafiados:");
+    fillDictionary("RejectInvitation", "reject invitation", "Einladung ablehnen", "rechazar invitación");
+    fillDictionary("CancelInvite", "Cancel invite", "Einladung zurückziehen", "Cancelar invitación");
+    fillDictionary("WaitingMoreWarlocks", "Waiting for %1 more warlocks to join", "Warten auf %1 weitere Hexer", "Esperando a que se unan %1 brujos más");
+    fillDictionary("KeepWaiting", "Keep Waiting", "Weiter warten", "Seguir esperando");
     // battle list (QBattleInfo::getInListDescription and the challenge rows)
-    fillDictionary("BattleListInviteRejected", "", "", "Invite rejected");
-    fillDictionary("BattleListNoInfo", "", "", "Battle #%1 no info");
-    fillDictionary("BattleListDeleted", "", "", "Battle #%1 deleted");
-    fillDictionary("BattleListWaitingStart", "", "", "Waiting to start...");
-    fillDictionary("BattleListWaitingOpponent", "", "", "Waiting opponent #%1");
-    fillDictionary("BattleListWaitingFor", "", "", "Waiting for %1");
-    fillDictionary("BattleListReady", "", "", "Ready #%1");
-    fillDictionary("BattleListReadyVs", "", "", "Ready vs. %1");
-    fillDictionary("BattleListFinished", "", "", "Finished #%1");
-    fillDictionary("BattleListDraw", "", "", "Draw #%1");
-    fillDictionary("BattleListWon", "", "", "Won #%1");
-    fillDictionary("BattleListLost", "", "", "Lost #%1");
-    fillDictionary("BattleListFinishedVs", "", "", "Finished vs. %1");
-    fillDictionary("BattleListDrawVs", "", "", "Draw vs. %1");
-    fillDictionary("BattleListWonVs", "", "", "Won vs. %1");
-    fillDictionary("BattleListLostVs", "", "", "Lost vs. %1");
-    fillDictionary("ChallengedBy", "", "", "Challenged by %1");
-    fillDictionary("ChallengeListOpen", "", "", "Open challenge by %1");
-    fillDictionary("ChallengeListPractice", "", "", "Practice challenge by %1");
-    fillDictionary("NewMatchDesc", "", "", "Players we match you have played recently and are more or less your level");
+    fillDictionary("BattleListInviteRejected", "Invite rejected", "Einladung abgelehnt", "Invitación rechazada");
+    fillDictionary("BattleListNoInfo", "Battle #%1 no info", "Kampf #%1 ohne Info", "Batalla #%1 sin información");
+    fillDictionary("BattleListDeleted", "Battle #%1 deleted", "Kampf #%1 gelöscht", "Batalla #%1 eliminada");
+    fillDictionary("BattleListWaitingStart", "Waiting to start...", "Warten auf den Start...", "Esperando para empezar...");
+    fillDictionary("BattleListWaitingOpponent", "Waiting opponent #%1", "Warten auf Gegner #%1", "Esperando rival #%1");
+    fillDictionary("BattleListWaitingFor", "Waiting for %1", "Warten auf %1", "Esperando a %1");
+    fillDictionary("BattleListReady", "Ready #%1", "Bereit #%1", "Lista #%1");
+    fillDictionary("BattleListReadyVs", "Ready vs. %1", "Bereit gegen %1", "Lista contra %1");
+    fillDictionary("BattleListFinished", "Finished #%1", "Beendet #%1", "Terminada #%1");
+    fillDictionary("BattleListDraw", "Draw #%1", "Unentschieden #%1", "Empate #%1");
+    fillDictionary("BattleListWon", "Won #%1", "Gewonnen #%1", "Victoria #%1");
+    fillDictionary("BattleListLost", "Lost #%1", "Verloren #%1", "Derrota #%1");
+    fillDictionary("BattleListFinishedVs", "Finished vs. %1", "Beendet gegen %1", "Terminada contra %1");
+    fillDictionary("BattleListDrawVs", "Draw vs. %1", "Unentschieden gegen %1", "Empate contra %1");
+    fillDictionary("BattleListWonVs", "Won vs. %1", "Gewonnen gegen %1", "Victoria contra %1");
+    fillDictionary("BattleListLostVs", "Lost vs. %1", "Verloren gegen %1", "Derrota contra %1");
+    fillDictionary("ChallengedBy", "Challenged by %1", "Herausgefordert von %1", "Desafío de %1");
+    fillDictionary("ChallengeListOpen", "Open challenge by %1", "Offene Herausforderung von %1", "Desafío abierto de %1");
+    fillDictionary("ChallengeListPractice", "Practice challenge by %1", "Übungsherausforderung von %1", "Desafío de práctica de %1");
+    fillDictionary("NewMatchDesc", "Players we match you have played recently and are more or less your level", "Die Spieler, die wir dir zuordnen, haben kürzlich gespielt und sind etwa auf deinem Niveau", "Los jugadores con los que te emparejamos han jugado hace poco y tienen más o menos tu nivel");
     // errors from the core
-    fillDictionary("WarlockNotFound", "", "", "Warlock %1 not found");
-    fillDictionary("ErrSendMessage", "", "", "Can't send the message, please try again");
-    fillDictionary("ErrWrongLoginPassword", "", "", "Wrong login or password");
-    fillDictionary("ErrSendOrders", "", "", "Something goes wrong, can't send battle orders");
-    fillDictionary("ErrRegistrationUnknown1", "", "", "Unknown error till registration");
-    fillDictionary("ErrRegistrationUnknown2", "", "", "Unknown error till registration.");
-    fillDictionary("ErrRegistrationUnknown3", "", "", "Unknown error, till registration.");
-    fillDictionary("ErrEmptyOrders", "", "", "Orders can't be empty");
-    fillDictionary("ErrFinishedBattleAnswer", "", "", "Sorry, wrong answer, please contact with viskgameua@gmail.com");
-    fillDictionary("ErrFinishedBattleDeleted", "", "", "Sorry, but you battle already deleted from game server and we not store it on archive server");
-    fillDictionary("ErrWrongBattleAnswer1", "", "", "Wrong battle answer!");
-    fillDictionary("ErrWrongBattleAnswer2", "", "", "Wrong battle answer!!");
-    fillDictionary("ErrWrongBattleAnswer3", "", "", "Wrong battle answer!!!");
-    fillDictionary("ErrBattleFinished", "", "", "Looks like battle already finished, please wait for refresh");
-    fillDictionary("ErrParseTargets", "", "", "Can't parse targets");
-    fillDictionary("ErrParseGestures", "", "", "Can't parse gestures");
-    fillDictionary("ErrParseUnits", "", "", "Can't parse units");
-    fillDictionary("ErrParseTurn", "", "", "Can't found current battle turn");
-    fillDictionary("ErrParseMonsters", "", "", "Can't parse monsters command");
-    fillDictionary("ErrLoadWarlockInfo", "", "", "Can't load warlock info");
-    fillDictionary("ErrReceivePlayerInfo", "", "", "Can't receive player info, try reconnect");
-    fillDictionary("ErrServerHttp", "", "", "Server problem (HTTP %1), please try again later");
-    fillDictionary("ErrNetworkDetails", "", "", "Network problem details: %1");
+    fillDictionary("WarlockNotFound", "Warlock %1 not found", "Hexer %1 nicht gefunden", "No se encontró al brujo %1");
+    fillDictionary("ErrSendMessage", "Can't send the message, please try again", "Die Nachricht konnte nicht gesendet werden, bitte versuche es erneut", "No se pudo enviar el mensaje, inténtalo de nuevo");
+    fillDictionary("ErrWrongLoginPassword", "Wrong login or password", "Falscher Login oder falsches Passwort", "Usuario o contraseña incorrectos");
+    fillDictionary("ErrSendOrders", "Something goes wrong, can't send battle orders", "Etwas ist schiefgelaufen, die Kampfbefehle konnten nicht gesendet werden", "Algo ha ido mal, no se pudieron enviar las órdenes de batalla");
+    fillDictionary("ErrRegistrationUnknown1", "Unknown error till registration", "Unbekannter Fehler bei der Registrierung", "Error desconocido durante el registro");
+    fillDictionary("ErrRegistrationUnknown2", "Unknown error till registration.", "Unbekannter Fehler bei der Registrierung.", "Error desconocido durante el registro.");
+    fillDictionary("ErrRegistrationUnknown3", "Unknown error, till registration.", "Unbekannter Fehler, bei der Registrierung.", "Error desconocido, durante el registro.");
+    fillDictionary("ErrEmptyOrders", "Orders can't be empty", "Befehle dürfen nicht leer sein", "Las órdenes no pueden estar vacías");
+    fillDictionary("ErrFinishedBattleAnswer", "Sorry, wrong answer, please contact with viskgameua@gmail.com", "Entschuldigung, falsche Antwort, bitte kontaktiere viskgameua@gmail.com", "Lo sentimos, respuesta incorrecta; contacta con viskgameua@gmail.com");
+    fillDictionary("ErrFinishedBattleDeleted", "Sorry, but you battle already deleted from game server and we not store it on archive server", "Entschuldigung, dein Kampf wurde bereits vom Spielserver gelöscht und ist nicht auf dem Archivserver gespeichert", "Lo sentimos, tu batalla ya se eliminó del servidor de juego y no está guardada en el servidor de archivo");
+    fillDictionary("ErrWrongBattleAnswer1", "Wrong battle answer!", "Falsche Kampfantwort!", "¡Respuesta de batalla incorrecta!");
+    fillDictionary("ErrWrongBattleAnswer2", "Wrong battle answer!!", "Falsche Kampfantwort!!", "¡¡Respuesta de batalla incorrecta!!");
+    fillDictionary("ErrWrongBattleAnswer3", "Wrong battle answer!!!", "Falsche Kampfantwort!!!", "¡¡¡Respuesta de batalla incorrecta!!!");
+    fillDictionary("ErrBattleFinished", "Looks like battle already finished, please wait for refresh", "Der Kampf scheint bereits beendet zu sein, bitte warte auf die Aktualisierung", "Parece que la batalla ya ha terminado, espera a que se actualice");
+    fillDictionary("ErrParseTargets", "Can't parse targets", "Ziele konnten nicht gelesen werden", "No se pudieron leer los objetivos");
+    fillDictionary("ErrParseGestures", "Can't parse gestures", "Gesten konnten nicht gelesen werden", "No se pudieron leer los gestos");
+    fillDictionary("ErrParseUnits", "Can't parse units", "Einheiten konnten nicht gelesen werden", "No se pudieron leer las unidades");
+    fillDictionary("ErrParseTurn", "Can't found current battle turn", "Der aktuelle Kampfzug wurde nicht gefunden", "No se encontró el turno actual de la batalla");
+    fillDictionary("ErrParseMonsters", "Can't parse monsters command", "Monsterbefehle konnten nicht gelesen werden", "No se pudieron leer las órdenes de los monstruos");
+    fillDictionary("ErrLoadWarlockInfo", "Can't load warlock info", "Hexer-Infos konnten nicht geladen werden", "No se pudo cargar la información del brujo");
+    fillDictionary("ErrReceivePlayerInfo", "Can't receive player info, try reconnect", "Spielerinfos konnten nicht empfangen werden, versuche dich neu zu verbinden", "No se pudo recibir la información del jugador, intenta reconectar");
+    fillDictionary("ErrServerHttp", "Server problem (HTTP %1), please try again later", "Serverproblem (HTTP %1), bitte versuche es später erneut", "Problema del servidor (HTTP %1), inténtalo más tarde");
+    fillDictionary("ErrNetworkDetails", "Network problem details: %1", "Details zum Netzwerkproblem: %1", "Detalles del problema de red: %1");
 
 
-    fillDictionary("old_hint_1_1", "", "", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)");
-    fillDictionary("old_hint_1_2", "", "", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...");
-    fillDictionary("hint_1_1", "", "", "Hint: Start by picking the 'S' gesture with both hands");
-    fillDictionary("hint_1_2", "", "", "Then in the next 2 turns cast Summon Gobline ('SFW')...");
-    fillDictionary("hint_1_3", "", "", "...and Magic Missile ('SD')");
-    fillDictionary("hint_1_4", "", "", "Be careful, P/P with both hands means surrender.");
-    fillDictionary("hint_1_5", "", "", "Check your spellbook to learn more spells. Let's start!");
-    fillDictionary("old_hint_1_1", "", "", "Hint: Pick the '>' gesture (Stab) to inflict 1 point of damage");
-    fillDictionary("old_hint_1_2", "", "", "With your other hand, cast the simplest spell, 'P' (shield) to defend...");
-    fillDictionary("old_hint_1_3", "", "", "...be careful: P/P with both hands means surrender. (marked as lowercase 'p' in your spellbook)");
-    fillDictionary("old_hint_1_4", "", "", "Afterwards you can cast longer spells like Summon Goblin ('SFW'). This takes 3 turns to cast.");
-    fillDictionary("old_hint_1_5", "", "", "Check your spellbook to learn more spells. Let's start!");
-    fillDictionary("hint_2_1", "", "", "Hint: Disruptions like DPP (Amnesia) and SWD (Fear) disrupt your enemy...");
-    fillDictionary("hint_2_2", "", "", "...but when two are cast at the same time they cancel out.");
-    fillDictionary("hint_3_1", "", "", "Hint: When you summon a goblin (SFW), cast it at yourself, so it serves you.");
-    fillDictionary("hint_3_2", "", "", "Afterwards, click the goblin to set its target.");
-    fillDictionary("old_hint_3_3", "", "", "You can also inflict direct damage with Cause light or heavy wounds (WFP, WPFD)");
-    fillDictionary("old_hint_3_4", "", "", "...and heal up with Cure (DFW, DFPW)");
-    fillDictionary("hint_4_1", "", "", "Hint: There are two ways to counter a spell (WPP, WWS).");
-    fillDictionary("hint_4_2", "", "", "Cast it at yourself to prevent spells and monsters from hitting you.");
-    fillDictionary("hint_4_3", "", "", "Cast at an opponent to prevent them from summoning a monster.");
-    fillDictionary("hint_5_1", "", "", "You're doing great! Keep up.");
-    fillDictionary("hint_5_2", "", "", "Playing against other players and friends is fun...");
-    fillDictionary("hint_5_3", "", "", "Games with other players are played in turns.");
-    fillDictionary("hint_5_4", "", "", "You can play up-to 3 games at the same time, and you have up to 3 days to play each turn.");
-    fillDictionary("old_hint_6_1", "", "", "Hint: When playing against real players, you'll be seeing a lot of these spells...");
-    fillDictionary("old_hint_6_2", "", "", "...Charm Person (PSDF) to force a gesture");
-    fillDictionary("old_hint_6_3", "", "", "Charm Monster (PSDD) to take control of a monster, and change its target");
-    fillDictionary("old_hint_6_4", "", "", "Conceal movements with Invisibility (PPws) - lower caps means w/s with both hands");
-    fillDictionary("old_hint_7_1", "", "", "Hint: Summon stronger monsters in addition to Goblins (SFW)...");
-    fillDictionary("old_hint_7_2", "", "", "like Ogre (PSFW), Troll (FPSFW) and Giant (WFPSFW) - notice the pattern ?");
-    fillDictionary("old_hint_8_1", "", "", "Hint: The most powerful spell around? That's Finger of Death (PWPFSSSD).");
-    fillDictionary("old_hint_8_2", "", "", "...It can't be countered, but it can be mirrored (cw)");
-    fillDictionary("old_hint_9_1", "", "", "Hint: Playing with friends can be a lot more fun. Send them an invite.");
-    fillDictionary("old_hint_9_2", "", "", "You can also set up a private game to play together.");
-    fillDictionary("old_hint_9_3", "", "", "Every time you win against a powerful warlocks your score will go up to reflect your skill.");
-    fillDictionary("old_hint_10_1", "", "", "In melee games 3-6 players play at the same time");
-    fillDictionary("old_hint_10_2", "", "", "Common spells are Fire and Ice Elementals (cWSSW, cSWWS) and Storms (SWWc, WSSc)");
-    fillDictionary("old_hint_10_3", "", "", "Resistance will protect you (WWFP, SSFP)");
-    fillDictionary("old_hint_10_4", "", "", "Checkout the full rules at (https://games.ravenblack.net/rules)");
+    fillDictionary("old_hint_1_1", "Every letter represents a gesture. A set of gestures like DPP is a spell (Amnesia)", "Jeder Buchstabe steht für eine Geste. Eine Folge von Gesten wie DPP ist ein Zauber (Amnesie)", "Cada letra representa un gesto. Una serie de gestos como DPP es un hechizo (Amnesia)");
+    fillDictionary("old_hint_1_2", "Some useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it...", "Einige nützliche Zauber: SD (Magisches Geschoss) verursacht 1 Schaden. P (Schild) schützt davor...", "Algunos hechizos útiles: SD (Proyectil mágico) causa 1 de daño. P (Escudo) te protege de él...");
+    fillDictionary("hint_1_1", "Hint: Start by picking the 'S' gesture with both hands", "Tipp: Wähle zuerst die Geste 'S' mit beiden Händen", "Pista: empieza eligiendo el gesto 'S' con ambas manos");
+    fillDictionary("hint_1_2", "Then in the next 2 turns cast Summon Gobline ('SFW')...", "Wirke dann in den nächsten 2 Zügen Goblin beschwören ('SFW')...", "Luego, en los 2 turnos siguientes, lanza Invocar goblin ('SFW')...");
+    fillDictionary("hint_1_3", "...and Magic Missile ('SD')", "...und Magisches Geschoss ('SD')", "...y Proyectil mágico ('SD')");
+    fillDictionary("hint_1_4", "Be careful, P/P with both hands means surrender.", "Vorsicht, P/P mit beiden Händen bedeutet Aufgabe.", "Cuidado: P/P con ambas manos significa rendirse.");
+    fillDictionary("hint_1_5", "Check your spellbook to learn more spells. Let's start!", "Schau in dein Zauberbuch, um mehr Zauber zu lernen. Los geht's!", "Consulta tu libro de hechizos para aprender más hechizos. ¡Empecemos!");
+    fillDictionary("old_hint_1_1", "Hint: Pick the '>' gesture (Stab) to inflict 1 point of damage", "Tipp: Wähle die Geste '>' (Stich), um 1 Punkt Schaden zuzufügen", "Pista: elige el gesto '>' (Puñalada) para causar 1 punto de daño");
+    fillDictionary("old_hint_1_2", "With your other hand, cast the simplest spell, 'P' (shield) to defend...", "Wirke mit der anderen Hand den einfachsten Zauber, 'P' (Schild), um dich zu verteidigen...", "Con la otra mano, lanza el hechizo más sencillo, 'P' (Escudo), para defenderte...");
+    fillDictionary("old_hint_1_3", "...be careful: P/P with both hands means surrender. (marked as lowercase 'p' in your spellbook)", "...Vorsicht: P/P mit beiden Händen bedeutet Aufgabe. (im Zauberbuch als kleines 'p' markiert)", "...cuidado: P/P con ambas manos significa rendirse. (marcado con 'p' minúscula en tu libro de hechizos)");
+    fillDictionary("old_hint_1_4", "Afterwards you can cast longer spells like Summon Goblin ('SFW'). This takes 3 turns to cast.", "Danach kannst du längere Zauber wie Goblin beschwören ('SFW') wirken. Das dauert 3 Züge.", "Después puedes lanzar hechizos más largos como Invocar goblin ('SFW'). Se tarda 3 turnos en lanzarlo.");
+    fillDictionary("old_hint_1_5", "Check your spellbook to learn more spells. Let's start!", "Schau in dein Zauberbuch, um mehr Zauber zu lernen. Los geht's!", "Consulta tu libro de hechizos para aprender más hechizos. ¡Empecemos!");
+    fillDictionary("hint_2_1", "Hint: Disruptions like DPP (Amnesia) and SWD (Fear) disrupt your enemy...", "Tipp: Störzauber wie DPP (Amnesie) und SWD (Furcht) stören deinen Gegner...", "Pista: las perturbaciones como DPP (Amnesia) y SWD (Miedo) entorpecen a tu enemigo...");
+    fillDictionary("hint_2_2", "...but when two are cast at the same time they cancel out.", "...aber wenn zwei gleichzeitig gewirkt werden, heben sie sich auf.", "...pero si se lanzan dos a la vez, se anulan.");
+    fillDictionary("hint_3_1", "Hint: When you summon a goblin (SFW), cast it at yourself, so it serves you.", "Tipp: Wenn du einen Goblin beschwörst (SFW), wirke den Zauber auf dich selbst, damit er dir dient.", "Pista: cuando invoques un goblin (SFW), lánzalo sobre ti mismo para que te sirva.");
+    fillDictionary("hint_3_2", "Afterwards, click the goblin to set its target.", "Tippe danach auf den Goblin, um sein Ziel festzulegen.", "Después, pulsa sobre el goblin para fijar su objetivo.");
+    fillDictionary("old_hint_3_3", "You can also inflict direct damage with Cause light or heavy wounds (WFP, WPFD)", "Mit Leichte Wunden zufügen und Schwere Wunden zufügen (WFP, WPFD) kannst du auch direkten Schaden verursachen", "También puedes causar daño directo con Causar heridas leves o graves (WFP, WPFD)");
+    fillDictionary("old_hint_3_4", "...and heal up with Cure (DFW, DFPW)", "...und dich mit Heilen (DFW, DFPW) heilen", "...y curarte con Curar (DFW, DFPW)");
+    fillDictionary("hint_4_1", "Hint: There are two ways to counter a spell (WPP, WWS).", "Tipp: Es gibt zwei Wege, einen Zauber abzuwehren (WPP, WWS).", "Pista: hay dos formas de contrarrestar un hechizo (WPP, WWS).");
+    fillDictionary("hint_4_2", "Cast it at yourself to prevent spells and monsters from hitting you.", "Wirke ihn auf dich selbst, damit dich Zauber und Monster nicht treffen.", "Lánzalo sobre ti mismo para que no te alcancen hechizos ni monstruos.");
+    fillDictionary("hint_4_3", "Cast at an opponent to prevent them from summoning a monster.", "Wirke ihn auf einen Gegner, um ihn daran zu hindern, ein Monster zu beschwören.", "Lánzalo sobre un rival para impedir que invoque un monstruo.");
+    fillDictionary("hint_5_1", "You're doing great! Keep up.", "Du machst das super! Weiter so.", "¡Lo estás haciendo genial! Sigue así.");
+    fillDictionary("hint_5_2", "Playing against other players and friends is fun...", "Gegen andere Spieler und Freunde zu spielen macht Spaß...", "Jugar contra otros jugadores y amigos es divertido...");
+    fillDictionary("hint_5_3", "Games with other players are played in turns.", "Spiele gegen andere Spieler laufen in Zügen ab.", "Las partidas con otros jugadores se juegan por turnos.");
+    fillDictionary("hint_5_4", "You can play up-to 3 games at the same time, and you have up to 3 days to play each turn.", "Du kannst bis zu 3 Spiele gleichzeitig spielen und hast für jeden Zug bis zu 3 Tage Zeit.", "Puedes jugar hasta 3 partidas a la vez y tienes hasta 3 días para jugar cada turno.");
+    fillDictionary("old_hint_6_1", "Hint: When playing against real players, you'll be seeing a lot of these spells...", "Tipp: Gegen echte Spieler wirst du diese Zauber oft sehen...", "Pista: cuando juegues contra jugadores reales, verás muchos de estos hechizos...");
+    fillDictionary("old_hint_6_2", "...Charm Person (PSDF) to force a gesture", "...Person bezaubern (PSDF), um eine Geste zu erzwingen", "...Hechizar persona (PSDF) para forzar un gesto");
+    fillDictionary("old_hint_6_3", "Charm Monster (PSDD) to take control of a monster, and change its target", "Monster bezaubern (PSDD), um die Kontrolle über ein Monster zu übernehmen und sein Ziel zu ändern", "Hechizar monstruo (PSDD) para controlar un monstruo y cambiar su objetivo");
+    fillDictionary("old_hint_6_4", "Conceal movements with Invisibility (PPws) - lower caps means w/s with both hands", "Bewegungen mit Unsichtbarkeit (PPws) verbergen - Kleinbuchstaben bedeuten w/s mit beiden Händen", "Oculta tus movimientos con Invisibilidad (PPws): las minúsculas significan w/s con ambas manos");
+    fillDictionary("old_hint_7_1", "Hint: Summon stronger monsters in addition to Goblins (SFW)...", "Tipp: Beschwöre neben Goblins (SFW) auch stärkere Monster...", "Pista: además de goblins (SFW), invoca monstruos más fuertes...");
+    fillDictionary("old_hint_7_2", "like Ogre (PSFW), Troll (FPSFW) and Giant (WFPSFW) - notice the pattern ?", "wie Oger (PSFW), Troll (FPSFW) und Riese (WFPSFW) - erkennst du das Muster?", "como el ogro (PSFW), el trol (FPSFW) y el gigante (WFPSFW): ¿ves el patrón?");
+    fillDictionary("old_hint_8_1", "Hint: The most powerful spell around? That's Finger of Death (PWPFSSSD).", "Tipp: Der mächtigste Zauber überhaupt? Das ist Todesfinger (PWPFSSSD).", "Pista: ¿el hechizo más poderoso? Es Dedo de la muerte (PWPFSSSD).");
+    fillDictionary("old_hint_8_2", "...It can't be countered, but it can be mirrored (cw)", "...Er kann nicht abgewehrt, aber gespiegelt werden (cw)", "...No se puede contrarrestar, pero sí reflejar (cw)");
+    fillDictionary("old_hint_9_1", "Hint: Playing with friends can be a lot more fun. Send them an invite.", "Tipp: Mit Freunden zu spielen macht oft viel mehr Spaß. Schick ihnen eine Einladung.", "Pista: jugar con amigos puede ser mucho más divertido. Envíales una invitación.");
+    fillDictionary("old_hint_9_2", "You can also set up a private game to play together.", "Du kannst auch ein privates Spiel erstellen, um zusammen zu spielen.", "También puedes crear una partida privada para jugar juntos.");
+    fillDictionary("old_hint_9_3", "Every time you win against a powerful warlocks your score will go up to reflect your skill.", "Jedes Mal, wenn du gegen mächtige Hexer gewinnst, steigt deine Punktzahl, um dein Können widerzuspiegeln.", "Cada vez que ganes a brujos poderosos, tu puntuación subirá para reflejar tu habilidad.");
+    fillDictionary("old_hint_10_1", "In melee games 3-6 players play at the same time", "In Getümmel-Spielen spielen 3-6 Spieler gleichzeitig", "En las partidas de refriega juegan de 3 a 6 jugadores a la vez");
+    fillDictionary("old_hint_10_2", "Common spells are Fire and Ice Elementals (cWSSW, cSWWS) and Storms (SWWc, WSSc)", "Häufige Zauber sind Feuer- und Eiselementare (cWSSW, cSWWS) und Stürme (SWWc, WSSc)", "Hechizos habituales son los elementales de fuego y de hielo (cWSSW, cSWWS) y las tormentas (SWWc, WSSc)");
+    fillDictionary("old_hint_10_3", "Resistance will protect you (WWFP, SSFP)", "Resistenz schützt dich (WWFP, SSFP)", "La resistencia te protegerá (WWFP, SSFP)");
+    fillDictionary("old_hint_10_4", "Checkout the full rules at (https://games.ravenblack.net/rules)", "Die vollständigen Regeln findest du unter (https://games.ravenblack.net/rules)", "Consulta las reglas completas en (https://games.ravenblack.net/rules)");
     // https://github.com/Pz1c/WavingHands/issues/297
-    fillDictionary("hint_1_1_icon", "", "", "g_s");
-    fillDictionary("hint_1_2_icon", "", "", "goblin");
-    fillDictionary("hint_1_3_icon", "", "", "magic_missile");
-    fillDictionary("hint_1_4_icon", "", "", "RIP2");
-    fillDictionary("hint_1_5_icon", "", "", "spellbook");
-    fillDictionary("hint_2_1_icon", "", "", "amnesia");
-    fillDictionary("hint_2_2_icon", "", "", "target_nobody");
-    fillDictionary("hint_3_1_icon", "", "", "goblin");
-    fillDictionary("hint_3_2_icon", "", "", "goblin");
-    fillDictionary("hint_4_1_icon", "", "", "mshield");
-    fillDictionary("hint_4_2_icon", "", "", "heart_small");
-    fillDictionary("hint_5_1_icon", "", "", "stars");
+    fillDictionary("hint_1_1_icon", "g_s", "g_s", "g_s");
+    fillDictionary("hint_1_2_icon", "goblin", "goblin", "goblin");
+    fillDictionary("hint_1_3_icon", "magic_missile", "magic_missile", "magic_missile");
+    fillDictionary("hint_1_4_icon", "RIP2", "RIP2", "RIP2");
+    fillDictionary("hint_1_5_icon", "spellbook", "spellbook", "spellbook");
+    fillDictionary("hint_2_1_icon", "amnesia", "amnesia", "amnesia");
+    fillDictionary("hint_2_2_icon", "target_nobody", "target_nobody", "target_nobody");
+    fillDictionary("hint_3_1_icon", "goblin", "goblin", "goblin");
+    fillDictionary("hint_3_2_icon", "goblin", "goblin", "goblin");
+    fillDictionary("hint_4_1_icon", "mshield", "mshield", "mshield");
+    fillDictionary("hint_4_2_icon", "heart_small", "heart_small", "heart_small");
+    fillDictionary("hint_5_1_icon", "stars", "stars", "stars");
 
-    fillDictionary("BotSay_1", "", "", "Hi, warlock, I am a golem created for your training, try to beat me. Every letter represents a hand gesture. A set of gestures like DPP is a spell (Amnesia).");
-    fillDictionary("BotSay_2", "", "", "Here are some more useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it. But P/P with both hands will make you surrender.");
-    fillDictionary("BotSay_3", "", "", "Enchantments like DPP (Amnesia), DSF (Maladroit), SWD (Fear) disrupt your enemy. When two are cast at the same Warlock they cancel out.");
-    fillDictionary("BotSay_4", "", "", "Check your spell book to learn more spells...");
-    fillDictionary("BotSay_5", "", "", "Summon a goblin (SFW) to fight for you. Cast it on yourself, and don't forget to set it's target. Stab ('>') is a simple way to hit a goblin. Shield ('P') and Protection (WWP) to defend against it.");
-    fillDictionary("BotSay_6", "", "", "Inflict direct damage with Cause light or heavy wounds (WFP, WPFD), and heal up (DFW, DFPW)");
-    fillDictionary("BotSay_7", "", "", "There are two ways to counter a spell (WPP, WWS). Cast them at yourself to prevent spells and monsters from hitting you. Cast at an opponent to prevent him from summoning a monster.");
-    fillDictionary("BotSay_8", "", "", "You're doing good! Keep up. When you get a bit more training you can start playing against other players and friends.");
-    fillDictionary("BotSay_9", "", "", "Games with other players are played in turns. You can play up-to 3 games at the same time for free, and you're given up to 3 days to play each turn.");
-    fillDictionary("BotSay_10", "", "", "When you start playing against real players, you'll be seeing a lot of these spells: Charm Person (PSDF) to force a gesture (or a no gesture '-'), and Charm Monster (PSDD) to take control of a monster, and change it's target");
-    fillDictionary("BotSay_11", "", "", "You will also see players concealing their movements with Invisibility (PPws - notice the lower caps means you should w and s and both hands together)");
-    fillDictionary("BotSay_12", "", "", "Players will summon stronger monsters in addition to Goblins (SFW) - like Ogre (PSFW), Troll (FPSFW) and Giant (WFPSFW) - noticed the pattern ?");
-    fillDictionary("BotSay_13", "", "", "The most powerful spell around? That's Finger of Death (PWPFSSSD) to instantly kill an opponent. It can't be countered, but it can be mirrored (cw)");
-    fillDictionary("BotSay_14", "", "", "Playing with friends can be a lot more fun. Send them an invite. You can set up a private game to play together.");
-    fillDictionary("BotSay_15", "", "", "Every time you win, you can go up the ladder board. When you win against powerful warlocks your elo score will go up too to reflect your skill.");
-    fillDictionary("BotSay_16", "", "", "In melee games many 3-6 players play at the same time, often using Fire and Ice Elementals (cWSSW, cSWWS), Storms (SWWc, WSSc) and Protections (WWFP, SSFP)");
-    fillDictionary("BotSay_17", "", "", "Want to learn more? checkout the full rules (https://games.ravenblack.net/rules) and join our Facebook community (https://fb.com/WarlocksDuel/)");
+    fillDictionary("BotSay_1", "Hi, warlock, I am a golem created for your training, try to beat me. Every letter represents a hand gesture. A set of gestures like DPP is a spell (Amnesia).", "Hallo, Hexer, ich bin ein Golem, der für dein Training erschaffen wurde. Versuche, mich zu besiegen. Jeder Buchstabe steht für eine Handgeste. Eine Folge von Gesten wie DPP ist ein Zauber (Amnesie).", "Hola, brujo, soy un gólem creado para tu entrenamiento; intenta vencerme. Cada letra representa un gesto de la mano. Una serie de gestos como DPP es un hechizo (Amnesia).");
+    fillDictionary("BotSay_2", "Here are some more useful spells: SD (Magic Missile) deals 1 damage. P (shield) will defend against it. But P/P with both hands will make you surrender.", "Hier sind einige weitere nützliche Zauber: SD (Magisches Geschoss) verursacht 1 Schaden. P (Schild) schützt davor. Aber P/P mit beiden Händen bedeutet, dass du aufgibst.", "Aquí tienes más hechizos útiles: SD (Proyectil mágico) causa 1 de daño. P (Escudo) te protege de él. Pero P/P con ambas manos hará que te rindas.");
+    fillDictionary("BotSay_3", "Enchantments like DPP (Amnesia), DSF (Maladroit), SWD (Fear) disrupt your enemy. When two are cast at the same Warlock they cancel out.", "Verzauberungen wie DPP (Amnesie), DSF (Ungeschick) und SWD (Furcht) stören deinen Gegner. Werden zwei auf denselben Hexer gewirkt, heben sie sich auf.", "Los encantamientos como DPP (Amnesia), DSF (Torpeza) y SWD (Miedo) entorpecen a tu enemigo. Si se lanzan dos sobre el mismo brujo, se anulan.");
+    fillDictionary("BotSay_4", "Check your spell book to learn more spells...", "Schau in dein Zauberbuch, um mehr Zauber zu lernen...", "Consulta tu libro de hechizos para aprender más hechizos...");
+    fillDictionary("BotSay_5", "Summon a goblin (SFW) to fight for you. Cast it on yourself, and don't forget to set it's target. Stab ('>') is a simple way to hit a goblin. Shield ('P') and Protection (WWP) to defend against it.", "Beschwöre einen Goblin (SFW), der für dich kämpft. Wirke den Zauber auf dich selbst und vergiss nicht, sein Ziel festzulegen. Ein Stich ('>') ist ein einfacher Weg, einen Goblin zu treffen. Schild ('P') und Schutz (WWP) wehren ihn ab.", "Invoca un goblin (SFW) para que luche por ti. Lánzalo sobre ti mismo y no olvides fijar su objetivo. La puñalada ('>') es una forma sencilla de golpear a un goblin. Escudo ('P') y Protección (WWP) te defienden de él.");
+    fillDictionary("BotSay_6", "Inflict direct damage with Cause light or heavy wounds (WFP, WPFD), and heal up (DFW, DFPW)", "Verursache direkten Schaden mit Leichte Wunden zufügen und Schwere Wunden zufügen (WFP, WPFD) und heile dich (DFW, DFPW)", "Causa daño directo con Causar heridas leves o graves (WFP, WPFD) y cúrate (DFW, DFPW)");
+    fillDictionary("BotSay_7", "There are two ways to counter a spell (WPP, WWS). Cast them at yourself to prevent spells and monsters from hitting you. Cast at an opponent to prevent him from summoning a monster.", "Es gibt zwei Wege, einen Zauber abzuwehren (WPP, WWS). Wirke sie auf dich selbst, damit dich Zauber und Monster nicht treffen. Wirke sie auf einen Gegner, um ihn daran zu hindern, ein Monster zu beschwören.", "Hay dos formas de contrarrestar un hechizo (WPP, WWS). Lánzalos sobre ti mismo para que no te alcancen hechizos ni monstruos. Lánzalos sobre un rival para impedir que invoque un monstruo.");
+    fillDictionary("BotSay_8", "You're doing good! Keep up. When you get a bit more training you can start playing against other players and friends.", "Du machst das gut! Weiter so. Mit etwas mehr Training kannst du gegen andere Spieler und Freunde antreten.", "¡Lo estás haciendo bien! Sigue así. Con un poco más de entrenamiento podrás jugar contra otros jugadores y amigos.");
+    fillDictionary("BotSay_9", "Games with other players are played in turns. You can play up-to 3 games at the same time for free, and you're given up to 3 days to play each turn.", "Spiele gegen andere Spieler laufen in Zügen ab. Du kannst kostenlos bis zu 3 Spiele gleichzeitig spielen und hast für jeden Zug bis zu 3 Tage Zeit.", "Las partidas con otros jugadores se juegan por turnos. Puedes jugar gratis hasta 3 partidas a la vez y tienes hasta 3 días para jugar cada turno.");
+    fillDictionary("BotSay_10", "When you start playing against real players, you'll be seeing a lot of these spells: Charm Person (PSDF) to force a gesture (or a no gesture '-'), and Charm Monster (PSDD) to take control of a monster, and change it's target", "Wenn du gegen echte Spieler spielst, wirst du diese Zauber oft sehen: Person bezaubern (PSDF), um eine Geste (oder keine Geste '-') zu erzwingen, und Monster bezaubern (PSDD), um die Kontrolle über ein Monster zu übernehmen und sein Ziel zu ändern", "Cuando empieces a jugar contra jugadores reales, verás muchos de estos hechizos: Hechizar persona (PSDF) para forzar un gesto (o ningún gesto '-'), y Hechizar monstruo (PSDD) para controlar un monstruo y cambiar su objetivo");
+    fillDictionary("BotSay_11", "You will also see players concealing their movements with Invisibility (PPws - notice the lower caps means you should w and s and both hands together)", "Du wirst auch sehen, wie Spieler ihre Bewegungen mit Unsichtbarkeit verbergen (PPws - Kleinbuchstaben bedeuten, dass du w und s mit beiden Händen gleichzeitig machen musst)", "También verás jugadores que ocultan sus movimientos con Invisibilidad (PPws: las minúsculas significan que debes hacer w y s con ambas manos a la vez)");
+    fillDictionary("BotSay_12", "Players will summon stronger monsters in addition to Goblins (SFW) - like Ogre (PSFW), Troll (FPSFW) and Giant (WFPSFW) - noticed the pattern ?", "Spieler beschwören neben Goblins (SFW) auch stärkere Monster - wie Oger (PSFW), Troll (FPSFW) und Riese (WFPSFW) - erkennst du das Muster?", "Los jugadores invocarán monstruos más fuertes además de goblins (SFW), como el ogro (PSFW), el trol (FPSFW) y el gigante (WFPSFW). ¿Ves el patrón?");
+    fillDictionary("BotSay_13", "The most powerful spell around? That's Finger of Death (PWPFSSSD) to instantly kill an opponent. It can't be countered, but it can be mirrored (cw)", "Der mächtigste Zauber überhaupt? Das ist Todesfinger (PWPFSSSD), der einen Gegner sofort tötet. Er kann nicht abgewehrt, aber gespiegelt werden (cw)", "¿El hechizo más poderoso? Es Dedo de la muerte (PWPFSSSD), que mata al instante a un rival. No se puede contrarrestar, pero sí reflejar (cw)");
+    fillDictionary("BotSay_14", "Playing with friends can be a lot more fun. Send them an invite. You can set up a private game to play together.", "Mit Freunden zu spielen macht oft viel mehr Spaß. Schick ihnen eine Einladung. Du kannst ein privates Spiel erstellen, um zusammen zu spielen.", "Jugar con amigos puede ser mucho más divertido. Envíales una invitación. Puedes crear una partida privada para jugar juntos.");
+    fillDictionary("BotSay_15", "Every time you win, you can go up the ladder board. When you win against powerful warlocks your elo score will go up too to reflect your skill.", "Mit jedem Sieg kannst du in der Rangliste aufsteigen. Wenn du gegen mächtige Hexer gewinnst, steigt auch deine Elo-Wertung, um dein Können widerzuspiegeln.", "Cada vez que ganas puedes subir en la clasificación. Cuando ganas a brujos poderosos, tu puntuación Elo también sube para reflejar tu habilidad.");
+    fillDictionary("BotSay_16", "In melee games many 3-6 players play at the same time, often using Fire and Ice Elementals (cWSSW, cSWWS), Storms (SWWc, WSSc) and Protections (WWFP, SSFP)", "In Getümmel-Spielen spielen 3-6 Spieler gleichzeitig und setzen oft Feuer- und Eiselementare (cWSSW, cSWWS), Stürme (SWWc, WSSc) und Resistenzen (WWFP, SSFP) ein", "En las partidas de refriega juegan de 3 a 6 jugadores a la vez, a menudo con elementales de fuego y de hielo (cWSSW, cSWWS), tormentas (SWWc, WSSc) y protecciones (WWFP, SSFP)");
+    fillDictionary("BotSay_17", "Want to learn more? checkout the full rules (https://games.ravenblack.net/rules) and join our Facebook community (https://fb.com/WarlocksDuel/)", "Willst du mehr erfahren? Lies die vollständigen Regeln (https://games.ravenblack.net/rules) und tritt unserer Facebook-Community bei (https://fb.com/WarlocksDuel/)", "¿Quieres saber más? Consulta las reglas completas (https://games.ravenblack.net/rules) y únete a nuestra comunidad de Facebook (https://fb.com/WarlocksDuel/)");
 
     // spell book name
-    fillDictionary("cDPW", "Розсіяти магію", "Развеять магию", "Dispel Magic");
-    fillDictionary("cSWWS", "Прикликати Крижаного Елементаля", "Призвать Ледяного Елементаля", "Summon Ice Elemental");
-    fillDictionary("cWSSW", "Прикликати Полум'яного Елементаля", "Призвать Огненного Елементаля", "Summon Fire Elemental");
-    fillDictionary("cw", "Магічне люстерко", "Магическое зеркало", "Magic Mirror");
-    fillDictionary("DFFDD", "Блискавка", "Молния", "Lightning Bolt");
-    fillDictionary("DFPW", "Лікувати тяжкі рани", "Лечить тяжелые ранения", "Cure Heavy Wounds");
-    fillDictionary("DFW", "Лікувати легкі рани", "Лечить легкие ранения", "Cure Light Wounds");
-    fillDictionary("DFWFd", "Сліпота", "Слепота", "Blindness");
-    fillDictionary("DWFFd", "Сліпота", "Слепота", "Blindness");
-    fillDictionary("DPP", "Амнезія", "Амнезия", "Amnesia");
-    fillDictionary("DSF", "Незграбність", "Неуклюжесть", "Maladroitness");
-    fillDictionary("DSFFFc", "Хвороба", "Болезнь", "Disease");
-    fillDictionary("DWSSSP", "Затримка ефекту", "Задержка єфекта", "Delay Effect");    
-    fillDictionary("DWWFWD", "Отрута", "Яд", "Poison");
-    fillDictionary("FFF", "Параліч", "Паралич", "Paralysis");
-    fillDictionary("WFPSFW", "Прикликати Гіганта", "Призвать Гиганта", "Summon Giant");
-    fillDictionary("FPSFW", "Прикликати Тролля", "Призвать Тролля", "Summon Troll");
-    fillDictionary("PSFW", "Прикликати Огра", "Призвать Огра", "Summon Ogre");
-    fillDictionary("SFW", "Прикликати Гобліна", "Призвать Гоблина", "Summon Goblin");
-    fillDictionary("FSSDD", "Вогняна куля", "Огненный шар", "Fireball");
-    fillDictionary("P", "Щит", "Щит", "Shield");
-    fillDictionary("p", "Капітулювати", "Капитулировать", "Surrender");
-    fillDictionary("PDWP", "Зняти чари", "Снять колдовство", "Remove Enchantment");
-    fillDictionary("PPws", "Невидимість", "Невидимость", "Invisibility");
-    fillDictionary("PSDD", "Зачарувати монстра", "Околдовать монстра", "Charm Monster");
-    fillDictionary("PSDF", "Зачарувати людину", "Околдовать человека", "Charm Person");
-    fillDictionary("PWPFSSSD", "Палець Смерті", "Палец Смерти", "Finger of Death");
-    fillDictionary("PWPWWc", "Прискорення", "Ускорение", "Haste");
-    fillDictionary("SD", "Магічна стріла", "Магическая стрела", "Magic Missile");
-    fillDictionary("SPFP", "Анти чари", "Анти колдовство", "Anti-spell");
-    fillDictionary("SPFPSDW", "Постійність", "Постоянство", "Permanency");
-    fillDictionary("SPPc", "Зупинка часу", "Остановка времени", "Time Stop");
-    fillDictionary("SPPFD", "Зупинка часу", "Остановка времени", "Time Stop");
-    fillDictionary("SSFP", "Захист від холоду", "Защита от холода", "Resist Cold");
-    fillDictionary("SWD", "Страх", "Страх", "Fear");
-    fillDictionary("SWWc", "Пекельний шторм", "Огненный шторм", "Fire Storm");
-    fillDictionary("WDDc", "Хлопок Блискавки", "Хлопок Молнии", "Clap of Lightning");
-    fillDictionary("WFP", "Нанести легкі рани", "Нанести легкие раны", "Cause Light Wounds");
-    fillDictionary("WPFD", "Нанести тяжкі рани", "Нанести тяжелые раны", "Cause Heavy Wounds");
-    fillDictionary("WPP", "Магічний захист", "Магическая защита", "Counter Spell");
-    fillDictionary("WSSc", "Крижаний шторм", "Ледяной шторм", "Ice Storm");
-    fillDictionary("WWFP", "Захист від вогню", "Защита от жара", "Resist Heat");
-    fillDictionary("WWP", "Захист", "Захист", "Protection");
-    fillDictionary("WWS", "Магічний захист", "Магическая защита", "Counter Spell");
-    fillDictionary(">", "Удар", "Удар", "Stab");
-    fillDictionary("DSFDFc", "Хвороба", "Болезнь", "Disease");
-    fillDictionary("FDF", "Параліч", "Паралич", "Paralysis");
-    fillDictionary("FDFD", "Параліч", "Паралич", "Paralysis");
+    fillDictionary("cDPW", "Dispel Magic", "Magie bannen", "Disipar magia");
+    fillDictionary("cSWWS", "Summon Ice Elemental", "Eiselementar beschwören", "Invocar elemental de hielo");
+    fillDictionary("cWSSW", "Summon Fire Elemental", "Feuerelementar beschwören", "Invocar elemental de fuego");
+    fillDictionary("cw", "Magic Mirror", "Magischer Spiegel", "Espejo mágico");
+    fillDictionary("DFFDD", "Lightning Bolt", "Blitzschlag", "Rayo");
+    fillDictionary("DFPW", "Cure Heavy Wounds", "Schwere Wunden heilen", "Curar heridas graves");
+    fillDictionary("DFW", "Cure Light Wounds", "Leichte Wunden heilen", "Curar heridas leves");
+    fillDictionary("DFWFd", "Blindness", "Blindheit", "Ceguera");
+    fillDictionary("DWFFd", "Blindness", "Blindheit", "Ceguera");
+    fillDictionary("DPP", "Amnesia", "Amnesie", "Amnesia");
+    fillDictionary("DSF", "Maladroitness", "Ungeschick", "Torpeza");
+    fillDictionary("DSFFFc", "Disease", "Krankheit", "Enfermedad");
+    fillDictionary("DWSSSP", "Delay Effect", "Verzögerter Effekt", "Efecto retardado");
+    fillDictionary("DWWFWD", "Poison", "Gift", "Veneno");
+    fillDictionary("FFF", "Paralysis", "Lähmung", "Parálisis");
+    fillDictionary("WFPSFW", "Summon Giant", "Riesen beschwören", "Invocar gigante");
+    fillDictionary("FPSFW", "Summon Troll", "Troll beschwören", "Invocar trol");
+    fillDictionary("PSFW", "Summon Ogre", "Oger beschwören", "Invocar ogro");
+    fillDictionary("SFW", "Summon Goblin", "Goblin beschwören", "Invocar goblin");
+    fillDictionary("FSSDD", "Fireball", "Feuerball", "Bola de fuego");
+    fillDictionary("P", "Shield", "Schild", "Escudo");
+    fillDictionary("p", "Surrender", "Aufgeben", "Rendirse");
+    fillDictionary("PDWP", "Remove Enchantment", "Verzauberung aufheben", "Eliminar encantamiento");
+    fillDictionary("PPws", "Invisibility", "Unsichtbarkeit", "Invisibilidad");
+    fillDictionary("PSDD", "Charm Monster", "Monster bezaubern", "Hechizar monstruo");
+    fillDictionary("PSDF", "Charm Person", "Person bezaubern", "Hechizar persona");
+    fillDictionary("PWPFSSSD", "Finger of Death", "Todesfinger", "Dedo de la muerte");
+    fillDictionary("PWPWWc", "Haste", "Eile", "Prisa");
+    fillDictionary("SD", "Magic Missile", "Magisches Geschoss", "Proyectil mágico");
+    fillDictionary("SPFP", "Anti-spell", "Antizauber", "Antihechizo");
+    fillDictionary("SPFPSDW", "Permanency", "Dauerhaftigkeit", "Permanencia");
+    fillDictionary("SPPc", "Time Stop", "Zeitstopp", "Detener el tiempo");
+    fillDictionary("SPPFD", "Time Stop", "Zeitstopp", "Detener el tiempo");
+    fillDictionary("SSFP", "Resist Cold", "Kälteresistenz", "Resistir frío");
+    fillDictionary("SWD", "Fear", "Furcht", "Miedo");
+    fillDictionary("SWWc", "Fire Storm", "Feuersturm", "Tormenta de fuego");
+    fillDictionary("WDDc", "Clap of Lightning", "Donnerschlag", "Palmada de rayo");
+    fillDictionary("WFP", "Cause Light Wounds", "Leichte Wunden zufügen", "Causar heridas leves");
+    fillDictionary("WPFD", "Cause Heavy Wounds", "Schwere Wunden zufügen", "Causar heridas graves");
+    fillDictionary("WPP", "Counter Spell", "Gegenzauber", "Contrahechizo");
+    fillDictionary("WSSc", "Ice Storm", "Eissturm", "Tormenta de hielo");
+    fillDictionary("WWFP", "Resist Heat", "Hitzeresistenz", "Resistir calor");
+    fillDictionary("WWP", "Protection", "Schutz", "Protección");
+    fillDictionary("WWS", "Counter Spell", "Gegenzauber", "Contrahechizo");
+    fillDictionary(">", "Stab", "Stich", "Puñalada");
+    fillDictionary("DSFDFc", "Disease", "Krankheit", "Enfermedad");
+    fillDictionary("FDF", "Paralysis", "Lähmung", "Parálisis");
+    fillDictionary("FDFD", "Paralysis", "Lähmung", "Parálisis");
 
     // spell book short desc
-    fillDictionary("p_short_desc", "", "", "Surrender the game ('p' with both hands)");
-    fillDictionary("P_short_desc", "", "", "Defend against monsters and stabs");
-    fillDictionary("WWP_short_desc", "", "", "Defend against monsters and stabs for 3 turns");
-    fillDictionary(">_short_desc", "", "", "Do 1 damage (stab is not a spell)");
-    fillDictionary("SD_short_desc", "", "", "Do 1 damage");
-    fillDictionary("WFP_short_desc", "", "", "Do 2 damage");
-    fillDictionary("WPFD_short_desc", "", "", "Do 3 damage");
-    fillDictionary("DFFDD_short_desc", "", "", "Do 5 damage");
-    fillDictionary("FSSDD_short_desc", "", "", "Do 5 damage");
-    fillDictionary("WDDc_short_desc", "", "", "Do 5 damage, once per battle");
-    fillDictionary("DFW_short_desc", "", "", "Heal 1 damage");
-    fillDictionary("DFPW_short_desc", "", "", "Heal 2 damage");
-    fillDictionary("SFW_short_desc", "", "", "Monster with 1 hp (usually cast at yourself)");
-    fillDictionary("PSFW_short_desc", "", "", "Monster with 2 hp (usually cast at yourself)");
-    fillDictionary("FPSFW_short_desc", "", "", "Monster with 3 hp (usually cast at yourself)");
-    fillDictionary("WFPSFW_short_desc", "", "", "Monster with 4 hp (usually cast at yourself)");
-    fillDictionary("DPP_short_desc", "", "", "Opponent repeats last turn gestures");
-    fillDictionary("DSF_short_desc", "", "", "Opponent must do same gesture with both hands");
-    fillDictionary("SWD_short_desc", "", "", "Opponent may only use 'P', 'W' or '>' gestures");
-    fillDictionary("FFF_short_desc", "", "", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'");
-    fillDictionary("FDF_short_desc", "", "", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'");
-    fillDictionary("FDFD_short_desc", "", "", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'");
-    fillDictionary("PSDF_short_desc", "", "", "Choose opponent's hand, then decide his next gesture");
-    fillDictionary("PSDD_short_desc", "", "", "Take control of a monster. Cast it at the monster, and choose a new target for that monster to attack");
-    fillDictionary("WPP_short_desc", "", "", "Cast it at the target of the spell that you wish to counter (not at the caster). Also acts as a shield");
-    fillDictionary("WWS_short_desc", "", "", "Cast it at the target of the spell that you wish to counter (not at the caster). Also acts as a shield");
-    fillDictionary("cw_short_desc", "", "", "Reflects a spell back to the caster");
-    fillDictionary("cDPW_short_desc", "", "", "Counter all spells, Destroy all monsters and enchantments. Also acts as a shield");
-    fillDictionary("PDWP_short_desc", "", "", "Destroy an enchantment (Amensia, Fear, etc.) or a monster");
-    fillDictionary("PPws_short_desc", "", "", "You cannot be seen or targeted for 3 turns");
-    fillDictionary("DFWFd_short_desc", "", "", "Target cannot see or aim for 3 turns");
-    fillDictionary("DWFFd_short_desc", "", "", "Target cannot see or aim for 3 turns");
-    fillDictionary("SPFP_short_desc", "", "", "Cut opponent's gestures, making him start a new chain of gestures");
-    fillDictionary("SPFPSDW_short_desc", "", "", "Make an enchantment that you cast in the following 3 turns permanent");
-    fillDictionary("DWSSSP_short_desc", "", "", "Bank a spell that you cast in the following 3 turns, so you can use it later");
-    fillDictionary("DSFFFc_short_desc", "", "", "Opponent will die in 6 turns unless removing the enchantment with DFPW, PDWP, cDPW");
-    fillDictionary("DWWFWD_short_desc", "", "", "Opponent will die in 6 turns unless removing the enchantment with PDWP, cDPW");
-    fillDictionary("PWPFSSSD_short_desc", "", "", "Opponent dies. This spell cannot be countered, but it can be mirrored");
-    fillDictionary("PWPWWc_short_desc", "", "", "Play an extra turn for each of the next 3 turns");
-    fillDictionary("SPPc_short_desc", "", "", "Play an extra turn, ignoring enchantments");
-    fillDictionary("SPPFD_short_desc", "", "", "Play an extra turn, ignoring enchantments");
-    fillDictionary("cWSSW_short_desc", "", "", "Elemental with 3 hp, attacking everyone except those resistant to heat");
-    fillDictionary("cSWWS_short_desc", "", "", "Elemental with 3 hp, attacking everyone except those resistant to cold");
-    fillDictionary("WWFP_short_desc", "", "", "Enchantment to protect against or to destroy Fire Elemental, and protect against Fire Storm and Fireball");
-    fillDictionary("SSFP_short_desc", "", "", "Enchantment to protect against or to destroy Ice Elemental, and protect against Ice Storm");
-    fillDictionary("WSSc_short_desc", "", "", "Do 5 damage to all, except those resistant to cold");
-    fillDictionary("SWWc_short_desc", "", "", "Do 5 damage to all, except those resistant to heat");
+    fillDictionary("p_short_desc", "Surrender the game ('p' with both hands)", "Das Spiel aufgeben ('p' mit beiden Händen)", "Rendirse en la partida ('p' con ambas manos)");
+    fillDictionary("P_short_desc", "Defend against monsters and stabs", "Schützt vor Monstern und Stichen", "Defiende de monstruos y puñaladas");
+    fillDictionary("WWP_short_desc", "Defend against monsters and stabs for 3 turns", "Schützt 3 Züge lang vor Monstern und Stichen", "Defiende de monstruos y puñaladas durante 3 turnos");
+    fillDictionary(">_short_desc", "Do 1 damage (stab is not a spell)", "Verursacht 1 Schaden (der Stich ist kein Zauber)", "Causa 1 de daño (la puñalada no es un hechizo)");
+    fillDictionary("SD_short_desc", "Do 1 damage", "Verursacht 1 Schaden", "Causa 1 de daño");
+    fillDictionary("WFP_short_desc", "Do 2 damage", "Verursacht 2 Schaden", "Causa 2 de daño");
+    fillDictionary("WPFD_short_desc", "Do 3 damage", "Verursacht 3 Schaden", "Causa 3 de daño");
+    fillDictionary("DFFDD_short_desc", "Do 5 damage", "Verursacht 5 Schaden", "Causa 5 de daño");
+    fillDictionary("FSSDD_short_desc", "Do 5 damage", "Verursacht 5 Schaden", "Causa 5 de daño");
+    fillDictionary("WDDc_short_desc", "Do 5 damage, once per battle", "Verursacht 5 Schaden, einmal pro Kampf", "Causa 5 de daño, una vez por batalla");
+    fillDictionary("DFW_short_desc", "Heal 1 damage", "Heilt 1 Schaden", "Cura 1 de daño");
+    fillDictionary("DFPW_short_desc", "Heal 2 damage", "Heilt 2 Schaden", "Cura 2 de daño");
+    fillDictionary("SFW_short_desc", "Monster with 1 hp (usually cast at yourself)", "Monster mit 1 LP (meist auf dich selbst gewirkt)", "Monstruo con 1 PV (normalmente lanzado sobre ti mismo)");
+    fillDictionary("PSFW_short_desc", "Monster with 2 hp (usually cast at yourself)", "Monster mit 2 LP (meist auf dich selbst gewirkt)", "Monstruo con 2 PV (normalmente lanzado sobre ti mismo)");
+    fillDictionary("FPSFW_short_desc", "Monster with 3 hp (usually cast at yourself)", "Monster mit 3 LP (meist auf dich selbst gewirkt)", "Monstruo con 3 PV (normalmente lanzado sobre ti mismo)");
+    fillDictionary("WFPSFW_short_desc", "Monster with 4 hp (usually cast at yourself)", "Monster mit 4 LP (meist auf dich selbst gewirkt)", "Monstruo con 4 PV (normalmente lanzado sobre ti mismo)");
+    fillDictionary("DPP_short_desc", "Opponent repeats last turn gestures", "Der Gegner wiederholt die Gesten des letzten Zuges", "El rival repite los gestos del último turno");
+    fillDictionary("DSF_short_desc", "Opponent must do same gesture with both hands", "Der Gegner muss mit beiden Händen dieselbe Geste machen", "El rival debe hacer el mismo gesto con ambas manos");
+    fillDictionary("SWD_short_desc", "Opponent may only use 'P', 'W' or '>' gestures", "Der Gegner darf nur die Gesten 'P', 'W' oder '>' benutzen", "El rival solo puede usar los gestos 'P', 'W' o '>'");
+    fillDictionary("FFF_short_desc", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'", "Wähle eine Hand des Gegners. Sie muss die letzte Geste wiederholen. Ausnahmen: 'F' wird zu 'C', 'W' zu 'P', 'S' zu 'D'", "Elige una mano del rival. La obliga a repetir el último gesto. Excepciones: 'F' se convierte en 'C', 'W' en 'P', 'S' en 'D'");
+    fillDictionary("FDF_short_desc", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'", "Wähle eine Hand des Gegners. Sie muss die letzte Geste wiederholen. Ausnahmen: 'F' wird zu 'C', 'W' zu 'P', 'S' zu 'D'", "Elige una mano del rival. La obliga a repetir el último gesto. Excepciones: 'F' se convierte en 'C', 'W' en 'P', 'S' en 'D'");
+    fillDictionary("FDFD_short_desc", "Choose opponent's hand. Force it to repeat last gesture. Exceptions: 'F' turns to 'C', 'W' to 'P', 'S' to 'D'", "Wähle eine Hand des Gegners. Sie muss die letzte Geste wiederholen. Ausnahmen: 'F' wird zu 'C', 'W' zu 'P', 'S' zu 'D'", "Elige una mano del rival. La obliga a repetir el último gesto. Excepciones: 'F' se convierte en 'C', 'W' en 'P', 'S' en 'D'");
+    fillDictionary("PSDF_short_desc", "Choose opponent's hand, then decide his next gesture", "Wähle eine Hand des Gegners und bestimme dann seine nächste Geste", "Elige una mano del rival y decide su próximo gesto");
+    fillDictionary("PSDD_short_desc", "Take control of a monster. Cast it at the monster, and choose a new target for that monster to attack", "Übernimm die Kontrolle über ein Monster. Wirke den Zauber auf das Monster und wähle ein neues Ziel für seinen Angriff", "Toma el control de un monstruo. Lánzalo sobre el monstruo y elige un nuevo objetivo al que atacar");
+    fillDictionary("WPP_short_desc", "Cast it at the target of the spell that you wish to counter (not at the caster). Also acts as a shield", "Wirke ihn auf das Ziel des Zaubers, den du abwehren willst (nicht auf den Zaubernden). Wirkt auch als Schild", "Lánzalo sobre el objetivo del hechizo que quieres contrarrestar (no sobre quien lo lanza). También actúa como escudo");
+    fillDictionary("WWS_short_desc", "Cast it at the target of the spell that you wish to counter (not at the caster). Also acts as a shield", "Wirke ihn auf das Ziel des Zaubers, den du abwehren willst (nicht auf den Zaubernden). Wirkt auch als Schild", "Lánzalo sobre el objetivo del hechizo que quieres contrarrestar (no sobre quien lo lanza). También actúa como escudo");
+    fillDictionary("cw_short_desc", "Reflects a spell back to the caster", "Wirft einen Zauber auf den Zaubernden zurück", "Refleja un hechizo de vuelta a quien lo lanzó");
+    fillDictionary("cDPW_short_desc", "Counter all spells, Destroy all monsters and enchantments. Also acts as a shield", "Wehrt alle Zauber ab, vernichtet alle Monster und Verzauberungen. Wirkt auch als Schild", "Contrarresta todos los hechizos, destruye todos los monstruos y encantamientos. También actúa como escudo");
+    fillDictionary("PDWP_short_desc", "Destroy an enchantment (Amensia, Fear, etc.) or a monster", "Vernichtet eine Verzauberung (Amnesie, Furcht usw.) oder ein Monster", "Destruye un encantamiento (Amnesia, Miedo, etc.) o un monstruo");
+    fillDictionary("PPws_short_desc", "You cannot be seen or targeted for 3 turns", "Du kannst 3 Züge lang weder gesehen noch anvisiert werden", "No pueden verte ni apuntarte durante 3 turnos");
+    fillDictionary("DFWFd_short_desc", "Target cannot see or aim for 3 turns", "Das Ziel kann 3 Züge lang weder sehen noch zielen", "El objetivo no puede ver ni apuntar durante 3 turnos");
+    fillDictionary("DWFFd_short_desc", "Target cannot see or aim for 3 turns", "Das Ziel kann 3 Züge lang weder sehen noch zielen", "El objetivo no puede ver ni apuntar durante 3 turnos");
+    fillDictionary("SPFP_short_desc", "Cut opponent's gestures, making him start a new chain of gestures", "Unterbricht die Gesten des Gegners, sodass er eine neue Gestenfolge beginnen muss", "Corta los gestos del rival y le obliga a empezar una nueva cadena de gestos");
+    fillDictionary("SPFPSDW_short_desc", "Make an enchantment that you cast in the following 3 turns permanent", "Macht eine Verzauberung, die du in den nächsten 3 Zügen wirkst, dauerhaft", "Hace permanente un encantamiento que lances en los 3 turnos siguientes");
+    fillDictionary("DWSSSP_short_desc", "Bank a spell that you cast in the following 3 turns, so you can use it later", "Speichert einen Zauber, den du in den nächsten 3 Zügen wirkst, damit du ihn später einsetzen kannst", "Guarda un hechizo que lances en los 3 turnos siguientes para usarlo más tarde");
+    fillDictionary("DSFFFc_short_desc", "Opponent will die in 6 turns unless removing the enchantment with DFPW, PDWP, cDPW", "Der Gegner stirbt in 6 Zügen, wenn er die Verzauberung nicht mit DFPW, PDWP oder cDPW entfernt", "El rival morirá en 6 turnos si no elimina el encantamiento con DFPW, PDWP o cDPW");
+    fillDictionary("DWWFWD_short_desc", "Opponent will die in 6 turns unless removing the enchantment with PDWP, cDPW", "Der Gegner stirbt in 6 Zügen, wenn er die Verzauberung nicht mit PDWP oder cDPW entfernt", "El rival morirá en 6 turnos si no elimina el encantamiento con PDWP o cDPW");
+    fillDictionary("PWPFSSSD_short_desc", "Opponent dies. This spell cannot be countered, but it can be mirrored", "Der Gegner stirbt. Dieser Zauber kann nicht abgewehrt, aber gespiegelt werden", "El rival muere. Este hechizo no se puede contrarrestar, pero sí reflejar");
+    fillDictionary("PWPWWc_short_desc", "Play an extra turn for each of the next 3 turns", "Spiele in jedem der nächsten 3 Züge einen Extrazug", "Juega un turno extra en cada uno de los 3 turnos siguientes");
+    fillDictionary("SPPc_short_desc", "Play an extra turn, ignoring enchantments", "Spiele einen Extrazug, Verzauberungen werden ignoriert", "Juega un turno extra ignorando los encantamientos");
+    fillDictionary("SPPFD_short_desc", "Play an extra turn, ignoring enchantments", "Spiele einen Extrazug, Verzauberungen werden ignoriert", "Juega un turno extra ignorando los encantamientos");
+    fillDictionary("cWSSW_short_desc", "Elemental with 3 hp, attacking everyone except those resistant to heat", "Elementar mit 3 LP, greift alle an außer den Hitzeresistenten", "Elemental con 3 PV que ataca a todos excepto a los resistentes al calor");
+    fillDictionary("cSWWS_short_desc", "Elemental with 3 hp, attacking everyone except those resistant to cold", "Elementar mit 3 LP, greift alle an außer den Kälteresistenten", "Elemental con 3 PV que ataca a todos excepto a los resistentes al frío");
+    fillDictionary("WWFP_short_desc", "Enchantment to protect against or to destroy Fire Elemental, and protect against Fire Storm and Fireball", "Verzauberung, die vor Feuerelementaren schützt oder sie vernichtet und vor Feuersturm und Feuerball schützt", "Encantamiento que protege del elemental de fuego o lo destruye, y protege de Tormenta de fuego y Bola de fuego");
+    fillDictionary("SSFP_short_desc", "Enchantment to protect against or to destroy Ice Elemental, and protect against Ice Storm", "Verzauberung, die vor Eiselementaren schützt oder sie vernichtet und vor Eissturm schützt", "Encantamiento que protege del elemental de hielo o lo destruye, y protege de Tormenta de hielo");
+    fillDictionary("WSSc_short_desc", "Do 5 damage to all, except those resistant to cold", "Verursacht 5 Schaden bei allen außer den Kälteresistenten", "Causa 5 de daño a todos excepto a los resistentes al frío");
+    fillDictionary("SWWc_short_desc", "Do 5 damage to all, except those resistant to heat", "Verursacht 5 Schaden bei allen außer den Hitzeresistenten", "Causa 5 de daño a todos excepto a los resistentes al calor");
 
 
     // spell book desc
     fillDictionary("cDPW_desc",
-                   "Це заклинання діє як комбінація Магічного Захисту і Зняття Чар, але його наслідки є універсальними, а не обмежується суб'єктом заклинання. Це закляття зупинить будьяке інше закляття викликане в той же хід (крім іншого Розсіяння Магії), і знімають всі чари з усіх, перш ніж вони будуть мати ефект - крім сліпоти і невидимості які не дадуть побачити жести Чаклуна в той же хід.  Крім того, всі монстри будуть знищені, хоча вони зможуть напасти на цей хід. Удар і Капітуляція вступлять в силу, так як вони не є магічними. Як і Магічний Захист, Розсіювання Магія також виступає в якості Щита для своєї цілі.",
-                   "Это заклинание действует как комбинация Магического Защиты и Снятие Чар, но его последствия являются универсальными, а не ограничивается субъектом заклинания. Это заклятие остановит всякое другое заклятие вызваное в тот же ход (помимо другого Рассеяние Магии), и снимают все чары из всех, прежде чем они будут иметь эффект - кроме слепоты и невидимости которые не дадут увидеть жесты Колдуна в тот же ход. Кроме того, все монстры будут уничтожены, хотя они смогут напасть на этот ход. Удар и Капитуляция вступят в силу, так как они не являются магическими. Как и Магический Защита, Рассеивание Магия также выступает в качестве Щита для своей цели.",
-                   "This spell acts as a combination of Counter Spell and Remove Enchantment, but its effects are universal rather than limited to the subject of the spell. It will stop any spell cast in the same turn from working (apart from another Dispel Magic spell), and will remove all enchantments from all beings before they have effect - except Blindness and Invisibility still prevent Warlocks from seeing Gestures that turn. In addition, all monsters are destroyed although they can attack that turn. Stab and Surrender still take effect, as they are not magical. As with a Counter Spell, Dispel Magic also acts as a Shield for its subject.");
+                   "This spell acts as a combination of Counter Spell and Remove Enchantment, but its effects are universal rather than limited to the subject of the spell. It will stop any spell cast in the same turn from working (apart from another Dispel Magic spell), and will remove all enchantments from all beings before they have effect - except Blindness and Invisibility still prevent Warlocks from seeing Gestures that turn. In addition, all monsters are destroyed although they can attack that turn. Stab and Surrender still take effect, as they are not magical. As with a Counter Spell, Dispel Magic also acts as a Shield for its subject.",
+                   "Dieser Zauber wirkt wie eine Kombination aus Gegenzauber und Verzauberung aufheben, doch seine Wirkung ist universell und nicht auf das Ziel des Zaubers beschränkt. Er verhindert, dass irgendein im selben Zug gewirkter Zauber wirkt (außer einem weiteren Magie bannen), und entfernt alle Verzauberungen von allen Wesen, bevor sie wirken - nur Blindheit und Unsichtbarkeit verhindern trotzdem, dass Hexer in diesem Zug Gesten sehen. Außerdem werden alle Monster vernichtet, können in diesem Zug aber noch angreifen. Stich und Aufgeben wirken weiterhin, da sie nicht magisch sind. Wie ein Gegenzauber wirkt Magie bannen auch als Schild für sein Ziel.",
+                   "Este hechizo actúa como una combinación de Contrahechizo y Eliminar encantamiento, pero sus efectos son universales en lugar de limitarse al objetivo del hechizo. Impide que funcione cualquier hechizo lanzado en el mismo turno (salvo otro Disipar magia) y elimina todos los encantamientos de todos los seres antes de que surtan efecto, aunque Ceguera e Invisibilidad siguen impidiendo que los brujos vean los gestos de ese turno. Además, todos los monstruos son destruidos, aunque pueden atacar en ese turno. La puñalada y la rendición siguen teniendo efecto, ya que no son mágicas. Al igual que Contrahechizo, Disipar magia también actúa como Escudo para su objetivo.");
     fillDictionary("cSWWS_desc",
-                   "Це заклинання створює Крижаного елементаля. При застосуванні заклинання елементаль буде створений, навіть якщо ціль закляття не вказана.<br>Елементалі атакують всіх (у тому числі, того хто викликав), пошкоджують будь-якого, хто не захищений від його типу атаки (Жар або Холод), чи Щитом. Елементал наносить 3 очка пошкоджень за хід кожному незахищеному.<br>Елементалі можуть бути вбиті нанесенням 3 або більше очок пошкоджень (Нанести Тяжкі Рани підійде), в цьому випадку елементаль все одно атакує в раунді, в якому він був знищений.<br>Вогняний Елементаль може бути миттєво знищений (не будуть атакувати в цьому ході) Крижаним Штормом, викликом Крижаного Елементаля, Захист від Вогню або Пекельний Шторм. Крім того, кожне з цих заклинань буде нейтралізоване, якщо Вогняний Елементаль присутній на полі, за винятком Захисту від Вогню чи Пекельного Шторму. Вогнений Елементаль нечутливий до Вогнянної кулі.<br>Крижаний Елементаль може бути миттєво знищений (не будуть атакувати в цьому ході) Пекельним Штормом, викликом Елементаля Вогню, Захіст від Холоду, Вогняною кулею чи Крижаним штормом. Кожене з цих заклинань буде нейтралізоване, якщо Крижаний Елементаль присутній на полі, за винятком Захист від холоду або Крижаний шторм.<br>Новий Елементний того ж типу буде заміняти старого.<br>Кастування Вогяної кулі на себе, не захистить від нападу крижаного елементаля (як у випадку з крижаним Штормом). (Кастуйте Вогняну Кулю на елементаля.)<br>Елементалі нападають у тому ж раунді в якому викликані, а також в раунді в якому були фізично знищені.",
-                   "Это заклинание создает Ледяного элементаля. При применении заклинания элементаль будет создан, даже если цель заклятие не указана.<br>Элементали атакуют всех (в том числе, того кто вызвал), повреждают любого, кто не защищен от его типа атаки (Жар или Холод), или Щитом. Элементал наносит 3 очка повреждений за ход каждому незащищеному.<br>Элементали могут быть убиты нанесением 3 или более очков повреждений (Нанести Тяжелые Раны подойдет), в этом случае элементаль все равно атакует в раунде, в котором он был уничтожен.<br>Огненный Елементаль может быть мгновенно уничтожен (не будут атаковать в этом ходу) Ледяным Штормом, вызовом Ледяного элементаля, Защита от Огня или Огеннным Штормом. Кроме того, каждое из этих заклинаний будет нейтрализовано, если Огненный Елементаль присутствует на поле, за исключением защиты от Огня или Огенного Шторма. Огненный Елементаль нечувствителен к огненных шарам.<br>Ледяной Елементаль может быть мгновенно уничтожен (не будут атаковать в этом ходу) Огенным Штормом, вызовом элементаля Огня, Защитой от Холода, Огненным шаром или Ледяным штормом. Каждый из этих заклинаний будет нейтрализовано, если Ледяной Елементаль присутствует на поле, за исключением Защита от холода или Ледяной шторм.<br>Новый Элементный того же типа будет заменять старого.<br>Каст Огенного шара на себя, не защитит от нападения ледяного элементаля (как в случае с Ледяным Штормом). (Кастуйте Огненный Шар на элементаля.)<br>Элементали нападают в том же раунде в котором вызваны, а также в раунде в котором физически уничтожены.",
-                   "This spell creates an ice elemental. Casting this spell will cause an elemental to be created, even if no target is specified.<br>Elementals attack everyone (including the summoner), damaging anyone who is not resistant to its type (heat or cold), or shielded. They cause three points of damage to each victim, per turn.<br>An elemental can be killed by three or more points of damage, in which case it still attacks for the turn in which it is killed, or may be destroyed by spells of the opposite type.<br>A Fire Elemental is instantly destroyed (and does not attack on the turn) by Ice Storm, Summon Ice Elemental, Resist Fire or Fire Storm. Also, each of these spells will be neutralised if a Fire Elemental is present, except Resist Fire or Fire Storm. A Fire Elemental is unaffected by a Fireball.<br>An Ice Elemental is instantly destroyed (and does not attack on the turn) by Fire Storm, Summon Fire Elemental, Resist Cold, Fireball or Ice Storm. Each of these spells will be neutralised if an Ice Elemental is present, except Resist Cold or Ice Storm.<br>A new Elemental of the same type will supplant the first.<br>Casting a Fireball upon yourself when being attacked by an Ice Elemental is not a defense as it is for an Ice Storm. (Cast Fireball at the elemental.)<br>Elementals first attack on the turn in which they are summoned, and if physically destroyed, also attack on the turn in which they are killed.");
+                   "This spell creates an ice elemental. Casting this spell will cause an elemental to be created, even if no target is specified.<br>Elementals attack everyone (including the summoner), damaging anyone who is not resistant to its type (heat or cold), or shielded. They cause three points of damage to each victim, per turn.<br>An elemental can be killed by three or more points of damage, in which case it still attacks for the turn in which it is killed, or may be destroyed by spells of the opposite type.<br>A Fire Elemental is instantly destroyed (and does not attack on the turn) by Ice Storm, Summon Ice Elemental, Resist Fire or Fire Storm. Also, each of these spells will be neutralised if a Fire Elemental is present, except Resist Fire or Fire Storm. A Fire Elemental is unaffected by a Fireball.<br>An Ice Elemental is instantly destroyed (and does not attack on the turn) by Fire Storm, Summon Fire Elemental, Resist Cold, Fireball or Ice Storm. Each of these spells will be neutralised if an Ice Elemental is present, except Resist Cold or Ice Storm.<br>A new Elemental of the same type will supplant the first.<br>Casting a Fireball upon yourself when being attacked by an Ice Elemental is not a defense as it is for an Ice Storm. (Cast Fireball at the elemental.)<br>Elementals first attack on the turn in which they are summoned, and if physically destroyed, also attack on the turn in which they are killed.",
+                   "Dieser Zauber erschafft einen Eiselementar. Der Zauber erzeugt einen Elementar, auch wenn kein Ziel angegeben ist.<br>Elementare greifen alle an (auch den Beschwörer) und verletzen jeden, der weder gegen ihre Art (Hitze oder Kälte) resistent noch durch einen Schild geschützt ist. Sie verursachen bei jedem Opfer drei Punkte Schaden pro Zug.<br>Ein Elementar kann durch drei oder mehr Punkte Schaden getötet werden und greift dann im Zug seines Todes trotzdem noch an; er kann auch durch Zauber der entgegengesetzten Art vernichtet werden.<br>Ein Feuerelementar wird sofort vernichtet (und greift in diesem Zug nicht an) durch Eissturm, Eiselementar beschwören, Hitzeresistenz oder Feuersturm. Außerdem wird jeder dieser Zauber neutralisiert, wenn ein Feuerelementar anwesend ist, außer Hitzeresistenz und Feuersturm. Ein Feuerball kann einem Feuerelementar nichts anhaben.<br>Ein Eiselementar wird sofort vernichtet (und greift in diesem Zug nicht an) durch Feuersturm, Feuerelementar beschwören, Kälteresistenz, Feuerball oder Eissturm. Jeder dieser Zauber wird neutralisiert, wenn ein Eiselementar anwesend ist, außer Kälteresistenz und Eissturm.<br>Ein neuer Elementar derselben Art ersetzt den ersten.<br>Einen Feuerball auf dich selbst zu wirken schützt nicht vor dem Angriff eines Eiselementars, anders als bei einem Eissturm. (Wirke den Feuerball auf den Elementar.)<br>Elementare greifen erstmals in dem Zug an, in dem sie beschworen werden, und wenn sie physisch vernichtet werden, greifen sie auch in dem Zug an, in dem sie getötet werden.",
+                   "Este hechizo crea un elemental de hielo. Al lanzarlo se crea un elemental aunque no se indique ningún objetivo.<br>Los elementales atacan a todos (incluido quien los invoca) y dañan a cualquiera que no sea resistente a su tipo (calor o frío) ni esté protegido por un escudo. Causan tres puntos de daño a cada víctima por turno.<br>Un elemental puede morir con tres o más puntos de daño, en cuyo caso sigue atacando en el turno en que muere, o puede ser destruido por hechizos del tipo opuesto.<br>Un elemental de fuego queda destruido al instante (y no ataca en ese turno) por Tormenta de hielo, Invocar elemental de hielo, Resistir calor o Tormenta de fuego. Además, cada uno de estos hechizos queda neutralizado si hay un elemental de fuego presente, salvo Resistir calor y Tormenta de fuego. La Bola de fuego no afecta al elemental de fuego.<br>Un elemental de hielo queda destruido al instante (y no ataca en ese turno) por Tormenta de fuego, Invocar elemental de fuego, Resistir frío, Bola de fuego o Tormenta de hielo. Cada uno de estos hechizos queda neutralizado si hay un elemental de hielo presente, salvo Resistir frío y Tormenta de hielo.<br>Un nuevo elemental del mismo tipo sustituye al primero.<br>Lanzar una Bola de fuego sobre ti mismo cuando te ataca un elemental de hielo no te protege, a diferencia de lo que ocurre con una Tormenta de hielo. (Lanza la Bola de fuego contra el elemental.)<br>Los elementales atacan por primera vez en el turno en que son invocados y, si son destruidos físicamente, también atacan en el turno en que mueren.");
     fillDictionary("cWSSW_desc",
-                   "Це заклинання створює Полум'яного елементаля. При застосуванні заклинання елементаль буде створений, навіть якщо ціль закляття не вказана.<br>Елементалі атакують всіх (у тому числі, того хто викликав), пошкоджують будь-якого, хто не захищений від його типу атаки (Жар або Холод), чи Щитом. Елементал наносить 3 очка пошкоджень за хід кожному незахищеному.<br>Елементалі можуть бути вбиті нанесенням 3 або більше очок пошкоджень (Нанести Тяжкі Рани підійде), в цьому випадку елементаль все одно атакує в раунді, в якому він був знищений.<br>Вогняний Елементаль може бути миттєво знищений (не будуть атакувати в цьому ході) Крижаним Штормом, викликом Крижаного Елементаля, Захист від Вогню або Пекельний Шторм. Крім того, кожне з цих заклинань буде нейтралізоване, якщо Вогняний Елементаль присутній на полі, за винятком Захисту від Вогню чи Пекельного Шторму. Вогнений Елементаль нечутливий до Вогнянної кулі.<br>Крижаний Елементаль може бути миттєво знищений (не будуть атакувати в цьому ході) Пекельним Штормом, викликом Елементаля Вогню, Захіст від Холоду, Вогняною кулею чи Крижаним штормом. Кожене з цих заклинань буде нейтралізоване, якщо Крижаний Елементаль присутній на полі, за винятком Захист від холоду або Крижаний шторм.<br>Новий Елементний того ж типу буде заміняти старого.<br>Кастування Вогяної кулі на себе, не захистить від нападу крижаного елементаля (як у випадку з крижаним Штормом). (Кастуйте Вогняну Кулю на елементаля.)<br>Елементалі нападають у тому ж раунді в якому викликані, а також в раунді в якому були фізично знищені.",
-                   "Это заклинание создает Огненного элементаля. При применении заклинания элементаль будет создан, даже если цель заклятие не указана.<br>Элементали атакуют всех (в том числе, того кто вызвал), повреждают любого, кто не защищен от его типа атаки (Жар или Холод), или Щитом. Элементал наносит 3 очка повреждений за ход каждому незащищеному.<br>Элементали могут быть убиты нанесением 3 или более очков повреждений (Нанести Тяжелые Раны подойдет), в этом случае элементаль все равно атакует в раунде, в котором он был уничтожен.<br>Огненный Елементаль может быть мгновенно уничтожен (не будут атаковать в этом ходу) Ледяным Штормом, вызовом Ледяного элементаля, Защита от Огня или Огеннным Штормом. Кроме того, каждое из этих заклинаний будет нейтрализовано, если Огненный Елементаль присутствует на поле, за исключением защиты от Огня или Огенного Шторма. Огненный Елементаль нечувствителен к огненных шарам.<br>Ледяной Елементаль может быть мгновенно уничтожен (не будут атаковать в этом ходу) Огенным Штормом, вызовом элементаля Огня, Защитой от Холода, Огненным шаром или Ледяным штормом. Каждый из этих заклинаний будет нейтрализовано, если Ледяной Елементаль присутствует на поле, за исключением Защита от холода или Ледяной шторм.<br>Новый Элементный того же типа будет заменять старого.<br>Каст Огенного шара на себя, не защитит от нападения ледяного элементаля (как в случае с Ледяным Штормом). (Кастуйте Огненный Шар на элементаля.)<br>Элементали нападают в том же раунде в котором вызваны, а также в раунде в котором физически уничтожены.",
-                   "This spell creates an fire elemental. Casting this spell will cause an elemental to be created, even if no target is specified.<br>Elementals attack everyone (including the summoner), damaging anyone who is not resistant to its type (heat or cold), or shielded. They cause three points of damage to each victim, per turn.<br>An elemental can be killed by three or more points of damage, in which case it still attacks for the turn in which it is killed, or may be destroyed by spells of the opposite type.<br>A Fire Elemental is instantly destroyed (and does not attack on the turn) by Ice Storm, Summon Ice Elemental, Resist Fire or Fire Storm. Also, each of these spells will be neutralised if a Fire Elemental is present, except Resist Fire or Fire Storm. A Fire Elemental is unaffected by a Fireball.<br>An Ice Elemental is instantly destroyed (and does not attack on the turn) by Fire Storm, Summon Fire Elemental, Resist Cold, Fireball or Ice Storm. Each of these spells will be neutralised if an Ice Elemental is present, except Resist Cold or Ice Storm.<br>A new Elemental of the same type will supplant the first.<br>Casting a Fireball upon yourself when being attacked by an Ice Elemental is not a defense as it is for an Ice Storm. (Cast Fireball at the elemental.)<br>Elementals first attack on the turn in which they are summoned, and if physically destroyed, also attack on the turn in which they are killed.");
+                   "This spell creates an fire elemental. Casting this spell will cause an elemental to be created, even if no target is specified.<br>Elementals attack everyone (including the summoner), damaging anyone who is not resistant to its type (heat or cold), or shielded. They cause three points of damage to each victim, per turn.<br>An elemental can be killed by three or more points of damage, in which case it still attacks for the turn in which it is killed, or may be destroyed by spells of the opposite type.<br>A Fire Elemental is instantly destroyed (and does not attack on the turn) by Ice Storm, Summon Ice Elemental, Resist Fire or Fire Storm. Also, each of these spells will be neutralised if a Fire Elemental is present, except Resist Fire or Fire Storm. A Fire Elemental is unaffected by a Fireball.<br>An Ice Elemental is instantly destroyed (and does not attack on the turn) by Fire Storm, Summon Fire Elemental, Resist Cold, Fireball or Ice Storm. Each of these spells will be neutralised if an Ice Elemental is present, except Resist Cold or Ice Storm.<br>A new Elemental of the same type will supplant the first.<br>Casting a Fireball upon yourself when being attacked by an Ice Elemental is not a defense as it is for an Ice Storm. (Cast Fireball at the elemental.)<br>Elementals first attack on the turn in which they are summoned, and if physically destroyed, also attack on the turn in which they are killed.",
+                   "Dieser Zauber erschafft einen Feuerelementar. Der Zauber erzeugt einen Elementar, auch wenn kein Ziel angegeben ist.<br>Elementare greifen alle an (auch den Beschwörer) und verletzen jeden, der weder gegen ihre Art (Hitze oder Kälte) resistent noch durch einen Schild geschützt ist. Sie verursachen bei jedem Opfer drei Punkte Schaden pro Zug.<br>Ein Elementar kann durch drei oder mehr Punkte Schaden getötet werden und greift dann im Zug seines Todes trotzdem noch an; er kann auch durch Zauber der entgegengesetzten Art vernichtet werden.<br>Ein Feuerelementar wird sofort vernichtet (und greift in diesem Zug nicht an) durch Eissturm, Eiselementar beschwören, Hitzeresistenz oder Feuersturm. Außerdem wird jeder dieser Zauber neutralisiert, wenn ein Feuerelementar anwesend ist, außer Hitzeresistenz und Feuersturm. Ein Feuerball kann einem Feuerelementar nichts anhaben.<br>Ein Eiselementar wird sofort vernichtet (und greift in diesem Zug nicht an) durch Feuersturm, Feuerelementar beschwören, Kälteresistenz, Feuerball oder Eissturm. Jeder dieser Zauber wird neutralisiert, wenn ein Eiselementar anwesend ist, außer Kälteresistenz und Eissturm.<br>Ein neuer Elementar derselben Art ersetzt den ersten.<br>Einen Feuerball auf dich selbst zu wirken schützt nicht vor dem Angriff eines Eiselementars, anders als bei einem Eissturm. (Wirke den Feuerball auf den Elementar.)<br>Elementare greifen erstmals in dem Zug an, in dem sie beschworen werden, und wenn sie physisch vernichtet werden, greifen sie auch in dem Zug an, in dem sie getötet werden.",
+                   "Este hechizo crea un elemental de fuego. Al lanzarlo se crea un elemental aunque no se indique ningún objetivo.<br>Los elementales atacan a todos (incluido quien los invoca) y dañan a cualquiera que no sea resistente a su tipo (calor o frío) ni esté protegido por un escudo. Causan tres puntos de daño a cada víctima por turno.<br>Un elemental puede morir con tres o más puntos de daño, en cuyo caso sigue atacando en el turno en que muere, o puede ser destruido por hechizos del tipo opuesto.<br>Un elemental de fuego queda destruido al instante (y no ataca en ese turno) por Tormenta de hielo, Invocar elemental de hielo, Resistir calor o Tormenta de fuego. Además, cada uno de estos hechizos queda neutralizado si hay un elemental de fuego presente, salvo Resistir calor y Tormenta de fuego. La Bola de fuego no afecta al elemental de fuego.<br>Un elemental de hielo queda destruido al instante (y no ataca en ese turno) por Tormenta de fuego, Invocar elemental de fuego, Resistir frío, Bola de fuego o Tormenta de hielo. Cada uno de estos hechizos queda neutralizado si hay un elemental de hielo presente, salvo Resistir frío y Tormenta de hielo.<br>Un nuevo elemental del mismo tipo sustituye al primero.<br>Lanzar una Bola de fuego sobre ti mismo cuando te ataca un elemental de hielo no te protege, a diferencia de lo que ocurre con una Tormenta de hielo. (Lanza la Bola de fuego contra el elemental.)<br>Los elementales atacan por primera vez en el turno en que son invocados y, si son destruidos físicamente, también atacan en el turno en que mueren.");
     fillDictionary("cw_desc",
-                   "Будь яке закляття направлене на об'єкт, захищений Чарівним Люстерком відбивається назад на заклинателя. Чарівне люстерко захищає тільки під час раунду в якому він було скастоване. Захист працює від заклять таки як Магічна Стріла та Блискавка, але не захищае від атак монстрів та ударів Чаклунів. Чарівне люстерко не буде відхилятися заклинання Чарівника, якого захищае. Для чар (наприклад Зачаклувати людину), якщо закляття відбивається від чарівного люстерка, то ціль закляття стає заклинателем, і отримує можливість змінити жести оригінального заклинателя. Магічний захист повністю поглинає Магічне Люстерко якщо накладене в той же хід. Люстерко не має жодного впливу на закляття, які діють на більш ніж одну людину (наприклад, Пекельний Шторм). Закляття може відбиваеться тільки 1 раз, тобто якщо чаклун А захистився Люстерком і кинув на чаклуна Б (який також захистився люстерком) блискавку, то чаклун А втратить 5 очок життя. Неочікувано але Чарівне Люстерко може відбити Палець Смерті.",
-                   "Любое заклинание направлено на объект, защищенный Волшебным Зеркалом отражается обратно на заклинателя. Волшебное зеркальце защищает только во время раунда в котором он было скастовано. Защита работает от заклинаний таких как Магическая Стрела и Молния, но не защищает от атак монстров и ударов Колдунов. Волшебное зеркальце не будет отклонять заклинания Волшебника, которого защищает. Для чар (например Заколдовать Человека)​​, если заклятие отражается от волшебного зеркальца, то цель заклинания становится заклинателем, и получает возможность изменить жесты оригинального заклинателя. Магическая защита полностью поглощает Магическое Зеркало наложенное в тот же ход. Зеркальце не имеет никакого влияния на заклинания, которые действуют на более чем одного человека (например, Огненый Шторм). Заклятие может отражаться только 1 раз, т.е. если колдун А защитился зеркалом и бросил на колдуна Б (также защитился зеркалом) молнию, то колдун А потеряет 5 очков жизни. Неожиданно, но Волшебное Зеркало может отразить Палец Смерти.",
-                   "Any spell cast at a subject protected by Magic Mirror is reflected back upon the caster of the spell. The Magic Mirror protects only during the turn in which it was cast. The protection includes spells like Magic Missile and Lightning Bolt but does not include attacks by monsters or stabs from Warlocks. A Magic Mirror will not deflect spells cast by the Warlock that the mirror protects. For the purpose of enchantments (eg. Charm Person), if a spell is reflected from a Magic Mirror, the original target becomes the caster, and gets to modify the gestures of the original caster. The mirror is countered totally if a Counter Spell is cast on the subject in the same turn as the mirror. The mirror has no effect on spells which affect more than one person (such as Fire Storm). In the unlikely event of a spell being cast such that it would reflect from more than one Magic Mirror (this requires the collusion of three Warlocks, or some help from a Delay Effect), the spell is reflected only once. See also the unexpected.<br>Suprise that Finger of Deth can be reflected by a Magic Mirror. The surprise catch to this is that a Magic Mirror can be countered by a Counter Spell. So, if Bob casts Finger of Death and Counter Spell at Tim, and Tim casts Magic Mirror at himself, the Magic Mirror will be countered and the Finger of Death will still succeed; Tim dies.");
+                   "Any spell cast at a subject protected by Magic Mirror is reflected back upon the caster of the spell. The Magic Mirror protects only during the turn in which it was cast. The protection includes spells like Magic Missile and Lightning Bolt but does not include attacks by monsters or stabs from Warlocks. A Magic Mirror will not deflect spells cast by the Warlock that the mirror protects. For the purpose of enchantments (eg. Charm Person), if a spell is reflected from a Magic Mirror, the original target becomes the caster, and gets to modify the gestures of the original caster. The mirror is countered totally if a Counter Spell is cast on the subject in the same turn as the mirror. The mirror has no effect on spells which affect more than one person (such as Fire Storm). In the unlikely event of a spell being cast such that it would reflect from more than one Magic Mirror (this requires the collusion of three Warlocks, or some help from a Delay Effect), the spell is reflected only once. See also the unexpected.<br>Suprise that Finger of Deth can be reflected by a Magic Mirror. The surprise catch to this is that a Magic Mirror can be countered by a Counter Spell. So, if Bob casts Finger of Death and Counter Spell at Tim, and Tim casts Magic Mirror at himself, the Magic Mirror will be countered and the Finger of Death will still succeed; Tim dies.",
+                   "Jeder Zauber, der auf ein durch Magischer Spiegel geschütztes Ziel gewirkt wird, wird auf den Zaubernden zurückgeworfen. Der Magische Spiegel schützt nur in dem Zug, in dem er gewirkt wurde. Der Schutz umfasst Zauber wie Magisches Geschoss und Blitzschlag, aber keine Angriffe von Monstern oder Stiche von Hexern. Ein Magischer Spiegel lenkt keine Zauber ab, die der Hexer wirkt, den der Spiegel schützt. Bei Verzauberungen (z. B. Person bezaubern) gilt: Wird ein Zauber von einem Magischen Spiegel zurückgeworfen, wird das ursprüngliche Ziel zum Zaubernden und darf die Gesten des ursprünglichen Zaubernden verändern. Der Spiegel wird vollständig aufgehoben, wenn im selben Zug ein Gegenzauber auf das Ziel gewirkt wird. Der Spiegel wirkt nicht bei Zaubern, die mehr als eine Person betreffen (wie Feuersturm). Im unwahrscheinlichen Fall, dass ein Zauber von mehr als einem Magischen Spiegel zurückgeworfen würde (dazu müssten drei Hexer zusammenarbeiten oder ein Verzögerter Effekt helfen), wird der Zauber nur einmal zurückgeworfen.<br>Überraschenderweise kann auch Todesfinger von einem Magischen Spiegel zurückgeworfen werden. Der Haken dabei: Ein Magischer Spiegel kann durch einen Gegenzauber aufgehoben werden. Wenn also Bob Todesfinger und Gegenzauber auf Tim wirkt und Tim Magischer Spiegel auf sich selbst wirkt, wird der Magische Spiegel aufgehoben und der Todesfinger wirkt trotzdem; Tim stirbt.",
+                   "Cualquier hechizo lanzado sobre un objetivo protegido por Espejo mágico se refleja de vuelta sobre quien lo lanzó. El Espejo mágico solo protege durante el turno en que se lanzó. La protección incluye hechizos como Proyectil mágico y Rayo, pero no los ataques de monstruos ni las puñaladas de los brujos. El Espejo mágico no desvía los hechizos lanzados por el brujo al que protege. En el caso de los encantamientos (p. ej., Hechizar persona), si un hechizo se refleja en un Espejo mágico, el objetivo original pasa a ser quien lo lanza y puede modificar los gestos del lanzador original. El espejo queda anulado por completo si se lanza un Contrahechizo sobre el objetivo en el mismo turno que el espejo. El espejo no tiene efecto sobre los hechizos que afectan a más de una persona (como Tormenta de fuego). En el improbable caso de que un hechizo se reflejara en más de un Espejo mágico (esto requiere la complicidad de tres brujos o la ayuda de un Efecto retardado), el hechizo solo se refleja una vez.<br>Sorprendentemente, Dedo de la muerte puede reflejarse con un Espejo mágico. La trampa es que un Espejo mágico puede anularse con un Contrahechizo. Así, si Bob lanza Dedo de la muerte y Contrahechizo sobre Tim, y Tim lanza Espejo mágico sobre sí mismo, el Espejo mágico queda anulado y el Dedo de la muerte surte efecto igualmente; Tim muere.");
     fillDictionary("DFFDD_desc",
-                   "Ціль цього заклинання простраждає від удару блискавки і отримає п'ять очок ушкоджень. Щит не захищае від цього закляття, але Магчний Захист допоможе, Магічне Люстерко ;) навіть краще.",
-                   "Цель этого заклинания простраждае от удара молнии и получит пять очков повреждений. Щит не защищает от этого заклинания, но Магчний Защита поможет, Магическое Зеркальце ;) даже лучше.",
-                   "The subject of this spell is hit by a bolt of lightning and sustains five points of damage. A Shield spell offers no defence.");
+                   "The subject of this spell is hit by a bolt of lightning and sustains five points of damage. A Shield spell offers no defence.",
+                   "Das Ziel dieses Zaubers wird von einem Blitz getroffen und erleidet fünf Punkte Schaden. Ein Schild bietet keinen Schutz.",
+                   "El objetivo de este hechizo recibe el impacto de un rayo y sufre cinco puntos de daño. El Escudo no ofrece ninguna protección.");
     fillDictionary("DFPW_desc",
-                   "Це заклинання подібно закляттю Лікування Легких Ран, але додає два очка здоров'я. Також це заклинання виліковує Хворобу.",
-                   "Это заклинание подобно заклятию Лечение Легких Ран, но добавляет два очка здоровья. Также это заклинание излечивает Болезнь.",
-                   "This spell is similar to Cure Light Wounds in effect but two points of damage are cured. This spell will also cure any diseases the subject might have at the time.");
+                   "This spell is similar to Cure Light Wounds in effect but two points of damage are cured. This spell will also cure any diseases the subject might have at the time.",
+                   "Dieser Zauber wirkt ähnlich wie Leichte Wunden heilen, heilt aber zwei Punkte Schaden. Außerdem heilt er jede Krankheit, die das Ziel zu diesem Zeitpunkt hat.",
+                   "Este hechizo tiene un efecto similar a Curar heridas leves, pero cura dos puntos de daño. También cura cualquier enfermedad que el objetivo tenga en ese momento.");
     fillDictionary("DFW_desc",
-                   "Ціль закляття лікується на одне очко здоров'я, до максимуму його вихідного здоров'я плюс 1. Якщо шкода заподіяна в той же хід і в іншому випадку привести до смерті суб'єкта (тобто Якщо чаклун має 5 очок здоров'я, і його вдарили по блискавка), то ціль закляття виживає.",
-                   "Цель заклинания лечится на одно очко здоровья, до максимума его исходного здоровья плюс 1. Если ущерб причинен в тот же ход и в другом случае привести к смерти субъекта (т.е. Если колдун имеет 5 очков здоровья, и его ударили по молния), то цель заклинания выживает.",
-                   "The subject is cured by one Health point, up to a maximum of their starting health plus 1. If damage is inflicted in the same turn which would otherwise result in the subject's death (ie. if they are on 5 Health, and hit by a Lightning Bolt), the subject survives.");
+                   "The subject is cured by one Health point, up to a maximum of their starting health plus 1. If damage is inflicted in the same turn which would otherwise result in the subject's death (ie. if they are on 5 Health, and hit by a Lightning Bolt), the subject survives.",
+                   "Das Ziel wird um einen Lebenspunkt geheilt, höchstens bis zu seinen Anfangslebenspunkten plus 1. Wird im selben Zug Schaden zugefügt, der sonst zum Tod des Ziels führen würde (z. B. bei 5 Lebenspunkten und einem Treffer durch Blitzschlag), überlebt das Ziel.",
+                   "El objetivo recupera un punto de vida, hasta un máximo de su vida inicial más 1. Si en el mismo turno recibe un daño que de otro modo le causaría la muerte (p. ej., si tiene 5 de vida y le alcanza un Rayo), el objetivo sobrevive.");
     fillDictionary("DFWFd_desc",
-                   "Протягом наступних 3 ходів не рахуючи того, в якій було закляття, об'єкт не в змозі бачити. Якщо він Чернокнижник, він не може бачити, що жести своїх опонентів, хоча він буде поінформований про наслідки заклинань. Він може контролювати своїх монстри, але він не може направити свої заклинання на цілі, які він не може бачити. Засліплені монстри (включаючи Елементалів) миттєво знищується і не можуть атакувати в цьому ходу.",
-                   "В течение следующих 3 ходов кроме того, в котором было заклятие, объект не в состоянии видеть. Если он Чернокнижник, он не может видеть, что жесты своих оппонентов, хотя он будет проинформирован о последствиях заклинаний. Он может контролировать своих монстры, но он не может направить свои заклинания на цели, которые он не может видеть. Ослепленные монстры (включая элементалей) мгновенно уничтожается и не могут атаковать в этом ходу.",
-                   "For the next 3 turns not including the one in which the spell was cast, the subject is unable to see. If he is a Warlock, he cannot tell what his opponents' gestures are, although he will be informed of the effects of spells cast. He can control his monsters (he can say 'Attack that cursed Zarquon'), but he cannot direct his spells at things that he cannot see. Blinded monsters (including Elementals) are instantly destroyed and cannot attack in that turn.");
+                   "For the next 3 turns not including the one in which the spell was cast, the subject is unable to see. If he is a Warlock, he cannot tell what his opponents' gestures are, although he will be informed of the effects of spells cast. He can control his monsters (he can say 'Attack that cursed Zarquon'), but he cannot direct his spells at things that he cannot see. Blinded monsters (including Elementals) are instantly destroyed and cannot attack in that turn.",
+                   "In den nächsten 3 Zügen, den Zug des Zaubers nicht mitgerechnet, kann das Ziel nichts sehen. Ist es ein Hexer, erkennt er die Gesten seiner Gegner nicht, wird aber über die Wirkung gewirkter Zauber informiert. Er kann seine Monster steuern (er kann sagen: 'Greift diesen verfluchten Zarquon an'), aber er kann seine Zauber nicht auf Dinge richten, die er nicht sieht. Geblendete Monster (auch Elementare) werden sofort vernichtet und können in diesem Zug nicht angreifen.",
+                   "Durante los 3 turnos siguientes, sin contar aquel en que se lanzó el hechizo, el objetivo no puede ver. Si es un brujo, no puede saber qué gestos hacen sus rivales, aunque se le informa de los efectos de los hechizos lanzados. Puede controlar a sus monstruos (puede decir 'Atacad a ese maldito Zarquon'), pero no puede dirigir sus hechizos a lo que no ve. Los monstruos cegados (incluidos los elementales) quedan destruidos al instante y no pueden atacar en ese turno.");
     fillDictionary("DPP_desc",
-                   "Якщо суб'єкт цього заклинання Чернокнижник, наступний раунд він буде повторить тіж жести які зробив у поточному раунді.<br>Якщо предметом заклинання це чудовисько або елементал, він забуває атакувати в цьому раунді.<br>Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або іншої Амнезії то жодне з цих заклять не спрацює.",
-                   "Если субъект этого заклинания Чернокнижник, следующий раунд он будет повторить те же жесты сделанных в текущем раунде.<br>Если предметом заклинание это чудовище или Элементал, он забывает атаковать в этом раунде.<br>Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.",
-                   "If the subject of this spell is a Warlock, next turn he will repeat identically the gestures he made in the current turn.<br>If the subject of the spell is a monster or elemental, it forgets to attack in that round.<br>If the subject is simultaneously the subject of any of Paralysis, Confusion, Charm Person, Charm Monster, Fear or another Amnesia then none of the spells work.");
+                   "If the subject of this spell is a Warlock, next turn he will repeat identically the gestures he made in the current turn.<br>If the subject of the spell is a monster or elemental, it forgets to attack in that round.<br>If the subject is simultaneously the subject of any of Paralysis, Confusion, Charm Person, Charm Monster, Fear or another Amnesia then none of the spells work.",
+                   "Ist das Ziel dieses Zaubers ein Hexer, wiederholt er im nächsten Zug genau die Gesten, die er im aktuellen Zug gemacht hat.<br>Ist das Ziel ein Monster oder Elementar, vergisst es in dieser Runde anzugreifen.<br>Ist das Ziel gleichzeitig Ziel von Lähmung, Verwirrung, Person bezaubern, Monster bezaubern, Furcht oder einer weiteren Amnesie, wirkt keiner dieser Zauber.",
+                   "Si el objetivo de este hechizo es un brujo, en el turno siguiente repetirá exactamente los gestos que hizo en el turno actual.<br>Si el objetivo es un monstruo o un elemental, se olvida de atacar en esa ronda.<br>Si el objetivo es a la vez objetivo de Parálisis, Confusión, Hechizar persona, Hechizar monstruo, Miedo u otra Amnesia, ninguno de esos hechizos funciona.");
     fillDictionary("old_DSF_desc",
-                   "Якщо суб'єкт цього закляття Чорнокнижник, наступний раунд він робить жести як звичайно, як зазвичай. Але сервер випадковим чином визначае яка рука була вражена закляттям і замінить жест на випадковий.<br>Якщо суб'єкт цього закляття чудовисько, він атакує випадкову жертву.<br>Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або Амнезії то жодне з цих заклять не спрацює.<br>В Maladroit грі, закляття Плутанина замінюється закляттям Незграбність (жести: DSF): Якщо суб'єкт цього закляття Чорнокнижник, в наступному раунді він повинен вибрати тільки один жест, і виконаю його обома руками (тобто. якщо він вибирає P, він здасться).<br>Якщо предметом закляття це чудовисько, його атака не відбувається в цей раунд. Заклинання не впливає елементалів. Як і з закляттям Плутанина, воно скасовується тими чарами.",
-                   "Если субъект этого заклинания Чернокнижник, следующий раунд он делает жесты как обычно, как обычно. Но сервер случайным образом определяет какая рука была поражена заклятием и заменит жест на случайный.<br>Если субъект этого заклинания чудовище, он атакует случайную жертву.<br>Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.<br>В Maladroit игре, заклятие Путаница заменяется заклинанием Неуклюжесть (жесты: DSF): Если субъект этого заклинания Чернокнижник, в следующем раунде он должен выбрать только один жест, и исполню его обеими руками (то есть. Если он выбирает P, он капитулирует).<br>Если предметом заклятие это чудовище, его атака не происходит в этот раунд. Заклинание не влияет элементалей. Как и с заклятием Путаница, оно отменяется теми чарами.",
-                   "If the subject of this spell is a Warlock, next turn he submits orders as usual. However, during resolution of the round, the server will randomly determine which hand is affected, and will randomly replace the ordered gesture with one of the eight possible gestures.<br>If the subject of the spell is a monster, it attacks a random victim that turn.<br>If the subject is also the subject of any of: Paralysis, Amnesia, another Confusion, Charm Person, Charm Monster, or Fear, none of the spells work.<br>In a Maladroit game, the Confusion spell is replaced with Maladroitness (gestures: DSF): If the subject of this spell is a Warlock, on the next round he must select only a single gesture, and will perform it with both hands (ie. if he selects P, he will surrender).<br>If the subject of the spell is a monster, its attack fails this round. The spell does not affect elementals. As with Confusion, it cancels with the same other enchantments.");
+                   "If the subject of this spell is a Warlock, next turn he submits orders as usual. However, during resolution of the round, the server will randomly determine which hand is affected, and will randomly replace the ordered gesture with one of the eight possible gestures.<br>If the subject of the spell is a monster, it attacks a random victim that turn.<br>If the subject is also the subject of any of: Paralysis, Amnesia, another Confusion, Charm Person, Charm Monster, or Fear, none of the spells work.<br>In a Maladroit game, the Confusion spell is replaced with Maladroitness (gestures: DSF): If the subject of this spell is a Warlock, on the next round he must select only a single gesture, and will perform it with both hands (ie. if he selects P, he will surrender).<br>If the subject of the spell is a monster, its attack fails this round. The spell does not affect elementals. As with Confusion, it cancels with the same other enchantments.",
+                   "Ist das Ziel dieses Zaubers ein Hexer, gibt er im nächsten Zug wie gewohnt seine Befehle ab. Bei der Auswertung der Runde bestimmt der Server jedoch zufällig, welche Hand betroffen ist, und ersetzt die befohlene Geste durch eine zufällige der acht möglichen Gesten.<br>Ist das Ziel ein Monster, greift es in diesem Zug ein zufälliges Opfer an.<br>Ist das Ziel zusätzlich Ziel von Lähmung, Amnesie, einer weiteren Verwirrung, Person bezaubern, Monster bezaubern oder Furcht, wirkt keiner dieser Zauber.<br>In einem Maladroit-Spiel wird der Zauber Verwirrung durch Ungeschick (Gesten: DSF) ersetzt: Ist das Ziel dieses Zaubers ein Hexer, darf er in der nächsten Runde nur eine einzige Geste wählen und führt sie mit beiden Händen aus (wählt er also P, gibt er auf).<br>Ist das Ziel ein Monster, scheitert sein Angriff in dieser Runde. Der Zauber wirkt nicht auf Elementare. Wie Verwirrung hebt er sich mit denselben anderen Verzauberungen auf.",
+                   "Si el objetivo de este hechizo es un brujo, en el turno siguiente da sus órdenes como de costumbre. Sin embargo, al resolver la ronda, el servidor decide al azar qué mano queda afectada y sustituye el gesto ordenado por uno al azar de los ocho gestos posibles.<br>Si el objetivo es un monstruo, ese turno ataca a una víctima al azar.<br>Si el objetivo es también objetivo de Parálisis, Amnesia, otra Confusión, Hechizar persona, Hechizar monstruo o Miedo, ninguno de esos hechizos funciona.<br>En una partida Maladroit, el hechizo Confusión se sustituye por Torpeza (gestos: DSF): si el objetivo de este hechizo es un brujo, en la ronda siguiente solo puede elegir un único gesto y lo hará con ambas manos (es decir, si elige P, se rendirá).<br>Si el objetivo es un monstruo, su ataque falla en esa ronda. El hechizo no afecta a los elementales. Igual que Confusión, se anula con los mismos encantamientos.");
      fillDictionary("DSF_desc",
-                   "Якщо суб'єкт цього закляття Чорнокнижник, наступний раунд він робить жести як звичайно, як зазвичай. Але сервер випадковим чином визначае яка рука була вражена закляттям і замінить жест на випадковий.<br>Якщо суб'єкт цього закляття чудовисько, він атакує випадкову жертву.<br>Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або Амнезії то жодне з цих заклять не спрацює.<br>В Maladroit грі, закляття Плутанина замінюється закляттям Незграбність (жести: DSF): Якщо суб'єкт цього закляття Чорнокнижник, в наступному раунді він повинен вибрати тільки один жест, і виконаю його обома руками (тобто. якщо він вибирає P, він здасться).<br>Якщо предметом закляття це чудовисько, його атака не відбувається в цей раунд. Заклинання не впливає елементалів. Як і з закляттям Плутанина, воно скасовується тими чарами.",
-                   "Если субъект этого заклинания Чернокнижник, следующий раунд он делает жесты как обычно, как обычно. Но сервер случайным образом определяет какая рука была поражена заклятием и заменит жест на случайный.<br>Если субъект этого заклинания чудовище, он атакует случайную жертву.<br>Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.<br>В Maladroit игре, заклятие Путаница заменяется заклинанием Неуклюжесть (жесты: DSF): Если субъект этого заклинания Чернокнижник, в следующем раунде он должен выбрать только один жест, и исполню его обеими руками (то есть. Если он выбирает P, он капитулирует).<br>Если предметом заклятие это чудовище, его атака не происходит в этот раунд. Заклинание не влияет элементалей. Как и с заклятием Путаница, оно отменяется теми чарами.",
-                   "If the subject is also the subject of any of: Paralysis, Amnesia, another Maladroit, Charm Person, Charm Monster, or Fear, none of the spells work. If the subject of this spell is a Warlock, on the next round he must select only a single gesture, and will perform it with both hands (ie. if he selects P, he will surrender).<br>If the subject of the spell is a monster, its attack fails this round. The spell does not affect elementals.");
+                    "If the subject is also the subject of any of: Paralysis, Amnesia, another Maladroit, Charm Person, Charm Monster, or Fear, none of the spells work. If the subject of this spell is a Warlock, on the next round he must select only a single gesture, and will perform it with both hands (ie. if he selects P, he will surrender).<br>If the subject of the spell is a monster, its attack fails this round. The spell does not affect elementals.",
+                    "Ist das Ziel zusätzlich Ziel von Lähmung, Amnesie, einem weiteren Ungeschick, Person bezaubern, Monster bezaubern oder Furcht, wirkt keiner dieser Zauber. Ist das Ziel dieses Zaubers ein Hexer, darf er in der nächsten Runde nur eine einzige Geste wählen und führt sie mit beiden Händen aus (wählt er also P, gibt er auf).<br>Ist das Ziel ein Monster, scheitert sein Angriff in dieser Runde. Der Zauber wirkt nicht auf Elementare.",
+                    "Si el objetivo es también objetivo de Parálisis, Amnesia, otra Torpeza, Hechizar persona, Hechizar monstruo o Miedo, ninguno de esos hechizos funciona. Si el objetivo de este hechizo es un brujo, en la ronda siguiente solo puede elegir un único gesto y lo hará con ambas manos (es decir, si elige P, se rendirá).<br>Si el objetivo es un monstruo, su ataque falla en esa ronda. El hechizo no afecta a los elementales.");
     fillDictionary("DSFFFc_desc",
-                   "Ціль цього закляття негайно захворіває смертельною (не заразною) хворобою, яке вб'є його наприкінці шостого раунду після захворювання. Лічильник в рядку чорнокнижника показуватиме кількість ходів до смерті. Коли лічильник досягне нуля, чорнокнижник вмирає. Хвороба лікується Видаленням Чар або Вилікувати Важкі Рани або Розсіювання Магії. Якщо предметом заклинання це чудовисько, він відразу ж помирає, але все ще може атакувати в цьому ході.",
-                   "Цель этого заклинания немедленно заболевает смертельной (не заразно) болезнью, которое убьет его в конце шестого раунда после заболевания. Счетчик в строке чернокнижника показывать количество ходов до смерти. Когда счетчик достигнет нуля, чернокнижник умирает. Болезнь лечится Удалением Чар или Вылечить Тяжелые Раны или Рассеивание Магии. Если предметом заклинание это чудовище, он сразу же умирает, но все еще может атаковать в этом ходу.",
-                   "The subject of this spell immediately contracts a deadly (non contagious) disease which will kill him at the end of the sixth turn following the one upon which the spell is cast. A counter in the warlock's status bar indicates the number of turns he has left to live. When the counter reaches zero, the warlock dies. The malady is cured by Remove Enchantment or Cure Heavy Wounds or Dispel Magic in the meantime. If the subject of the spell is a monster, it dies immediately, but still gets to attack that turn.");
+                   "The subject of this spell immediately contracts a deadly (non contagious) disease which will kill him at the end of the sixth turn following the one upon which the spell is cast. A counter in the warlock's status bar indicates the number of turns he has left to live. When the counter reaches zero, the warlock dies. The malady is cured by Remove Enchantment or Cure Heavy Wounds or Dispel Magic in the meantime. If the subject of the spell is a monster, it dies immediately, but still gets to attack that turn.",
+                   "Das Ziel dieses Zaubers erkrankt sofort an einer tödlichen (nicht ansteckenden) Krankheit, die es am Ende des sechsten Zuges nach dem Zug des Zaubers tötet. Ein Zähler in der Statusleiste des Hexers zeigt, wie viele Züge er noch zu leben hat. Erreicht der Zähler null, stirbt der Hexer. Bis dahin heilen Verzauberung aufheben, Schwere Wunden heilen oder Magie bannen die Krankheit. Ist das Ziel ein Monster, stirbt es sofort, darf in diesem Zug aber noch angreifen.",
+                   "El objetivo de este hechizo contrae al instante una enfermedad mortal (no contagiosa) que lo matará al final del sexto turno posterior a aquel en que se lanzó el hechizo. Un contador en la barra de estado del brujo indica cuántos turnos le quedan de vida. Cuando el contador llega a cero, el brujo muere. Mientras tanto, la enfermedad se cura con Eliminar encantamiento, Curar heridas graves o Disipar magia. Si el objetivo es un monstruo, muere al instante, pero aún puede atacar en ese turno.");
     fillDictionary("DSFDFc_desc",
-                   "Ціль цього закляття негайно захворіває смертельною (не заразною) хворобою, яке вб'є його наприкінці шостого раунду після захворювання. Лічильник в рядку чорнокнижника показуватиме кількість ходів до смерті. Коли лічильник досягне нуля, чорнокнижник вмирає. Хвороба лікується Видаленням Чар або Вилікувати Важкі Рани або Розсіювання Магії. Якщо предметом заклинання це чудовисько, він відразу ж помирає, але все ще може атакувати в цьому ході.",
-                   "Цель этого заклинания немедленно заболевает смертельной (не заразно) болезнью, которое убьет его в конце шестого раунда после заболевания. Счетчик в строке чернокнижника показывать количество ходов до смерти. Когда счетчик достигнет нуля, чернокнижник умирает. Болезнь лечится Удалением Чар или Вылечить Тяжелые Раны или Рассеивание Магии. Если предметом заклинание это чудовище, он сразу же умирает, но все еще может атаковать в этом ходу.",
-                   "The subject of this spell immediately contracts a deadly (non contagious) disease which will kill him at the end of the sixth turn following the one upon which the spell is cast. A counter in the warlock's status bar indicates the number of turns he has left to live. When the counter reaches zero, the warlock dies. The malady is cured by Remove Enchantment or Cure Heavy Wounds or Dispel Magic in the meantime. If the subject of the spell is a monster, it dies immediately, but still gets to attack that turn.");
+                   "The subject of this spell immediately contracts a deadly (non contagious) disease which will kill him at the end of the sixth turn following the one upon which the spell is cast. A counter in the warlock's status bar indicates the number of turns he has left to live. When the counter reaches zero, the warlock dies. The malady is cured by Remove Enchantment or Cure Heavy Wounds or Dispel Magic in the meantime. If the subject of the spell is a monster, it dies immediately, but still gets to attack that turn.",
+                   "Das Ziel dieses Zaubers erkrankt sofort an einer tödlichen (nicht ansteckenden) Krankheit, die es am Ende des sechsten Zuges nach dem Zug des Zaubers tötet. Ein Zähler in der Statusleiste des Hexers zeigt, wie viele Züge er noch zu leben hat. Erreicht der Zähler null, stirbt der Hexer. Bis dahin heilen Verzauberung aufheben, Schwere Wunden heilen oder Magie bannen die Krankheit. Ist das Ziel ein Monster, stirbt es sofort, darf in diesem Zug aber noch angreifen.",
+                   "El objetivo de este hechizo contrae al instante una enfermedad mortal (no contagiosa) que lo matará al final del sexto turno posterior a aquel en que se lanzó el hechizo. Un contador en la barra de estado del brujo indica cuántos turnos le quedan de vida. Cuando el contador llega a cero, el brujo muere. Mientras tanto, la enfermedad se cura con Eliminar encantamiento, Curar heridas graves o Disipar magia. Si el objetivo es un monstruo, muere al instante, pero aún puede atacar en ese turno.");
     fillDictionary("DWFWd_desc",
-                   "Протягом наступних 3 ходів не рахуючи того, в якій було закляття, об'єкт не в змозі бачити. Якщо він Чернокнижник, він не може бачити, що жести своїх опонентів, хоча він буде поінформований про наслідки заклинань. Він може контролювати своїх монстри, але він не може направити свої заклинання на цілі, які він не може бачити. Засліплені монстри (включаючи Елементалів) миттєво знищується і не можуть атакувати в цьому ходу.",
-                   "В течение следующих 3 ходов кроме того, в котором было заклятие, объект не в состоянии видеть. Если он Чернокнижник, он не может видеть, что жесты своих оппонентов, хотя он будет проинформирован о последствиях заклинаний. Он может контролировать своих монстры, но он не может направить свои заклинания на цели, которые он не может видеть. Ослепленные монстры (включая элементалей) мгновенно уничтожается и не могут атаковать в этом ходу.",
-                   "For the next 3 turns not including the one in which the spell was cast, the subject is unable to see. If he is a Warlock, he cannot tell what his opponents' gestures are, although he will be informed of the effects of spells cast. He can control his monsters (he can say 'Attack that cursed Zarquon'), but he cannot direct his spells at things that he cannot see. Blinded monsters (including Elementals) are instantly destroyed and cannot attack in that turn.");
+                   "For the next 3 turns not including the one in which the spell was cast, the subject is unable to see. If he is a Warlock, he cannot tell what his opponents' gestures are, although he will be informed of the effects of spells cast. He can control his monsters (he can say 'Attack that cursed Zarquon'), but he cannot direct his spells at things that he cannot see. Blinded monsters (including Elementals) are instantly destroyed and cannot attack in that turn.",
+                   "In den nächsten 3 Zügen, den Zug des Zaubers nicht mitgerechnet, kann das Ziel nichts sehen. Ist es ein Hexer, erkennt er die Gesten seiner Gegner nicht, wird aber über die Wirkung gewirkter Zauber informiert. Er kann seine Monster steuern (er kann sagen: 'Greift diesen verfluchten Zarquon an'), aber er kann seine Zauber nicht auf Dinge richten, die er nicht sieht. Geblendete Monster (auch Elementare) werden sofort vernichtet und können in diesem Zug nicht angreifen.",
+                   "Durante los 3 turnos siguientes, sin contar aquel en que se lanzó el hechizo, el objetivo no puede ver. Si es un brujo, no puede saber qué gestos hacen sus rivales, aunque se le informa de los efectos de los hechizos lanzados. Puede controlar a sus monstruos (puede decir 'Atacad a ese maldito Zarquon'), pero no puede dirigir sus hechizos a lo que no ve. Los monstruos cegados (incluidos los elementales) quedan destruidos al instante y no pueden atacar en ese turno.");
     fillDictionary("DWFFd_desc",
-                   "Протягом наступних 3 ходів не рахуючи того, в якій було закляття, об'єкт не в змозі бачити. Якщо він Чернокнижник, він не може бачити, що жести своїх опонентів, хоча він буде поінформований про наслідки заклинань. Він може контролювати своїх монстри, але він не може направити свої заклинання на цілі, які він не може бачити. Засліплені монстри (включаючи Елементалів) миттєво знищується і не можуть атакувати в цьому ходу.",
-                   "В течение следующих 3 ходов кроме того, в котором было заклятие, объект не в состоянии видеть. Если он Чернокнижник, он не может видеть, что жесты своих оппонентов, хотя он будет проинформирован о последствиях заклинаний. Он может контролировать своих монстры, но он не может направить свои заклинания на цели, которые он не может видеть. Ослепленные монстры (включая элементалей) мгновенно уничтожается и не могут атаковать в этом ходу.",
-                   "For the next 3 turns not including the one in which the spell was cast, the subject is unable to see. If he is a Warlock, he cannot tell what his opponents' gestures are, although he will be informed of the effects of spells cast. He can control his monsters (he can say 'Attack that cursed Zarquon'), but he cannot direct his spells at things that he cannot see. Blinded monsters (including Elementals) are instantly destroyed and cannot attack in that turn.");
+                   "For the next 3 turns not including the one in which the spell was cast, the subject is unable to see. If he is a Warlock, he cannot tell what his opponents' gestures are, although he will be informed of the effects of spells cast. He can control his monsters (he can say 'Attack that cursed Zarquon'), but he cannot direct his spells at things that he cannot see. Blinded monsters (including Elementals) are instantly destroyed and cannot attack in that turn.",
+                   "In den nächsten 3 Zügen, den Zug des Zaubers nicht mitgerechnet, kann das Ziel nichts sehen. Ist es ein Hexer, erkennt er die Gesten seiner Gegner nicht, wird aber über die Wirkung gewirkter Zauber informiert. Er kann seine Monster steuern (er kann sagen: 'Greift diesen verfluchten Zarquon an'), aber er kann seine Zauber nicht auf Dinge richten, die er nicht sieht. Geblendete Monster (auch Elementare) werden sofort vernichtet und können in diesem Zug nicht angreifen.",
+                   "Durante los 3 turnos siguientes, sin contar aquel en que se lanzó el hechizo, el objetivo no puede ver. Si es un brujo, no puede saber qué gestos hacen sus rivales, aunque se le informa de los efectos de los hechizos lanzados. Puede controlar a sus monstruos (puede decir 'Atacad a ese maldito Zarquon'), pero no puede dirigir sus hechizos a lo que no ve. Los monstruos cegados (incluidos los elementales) quedan destruidos al instante y no pueden atacar en ese turno.");
     fillDictionary("DWSSSP_desc",
-                   "Це заклинання працює тільки тоді, коли накладається на Чорнокнижник. Один заклинань яке він завершує, за умови, що на одному з найближчих 3 ходів (не включаючи той хід, в якому скастоване), може бути збережено для використання на майбутне. Після збереження Чаклун може 1 раз використатти закляття з тимимж параметрами і цілюю як в момент збереження. Збереженне закляття може ьути стерте Розсіянням Магії та Зняттям Чар",
-                   "Это заклинание работает только тогда, когда накладывается на Чернокнижник. Один заклинаний которое он завершает, при условии, что на одном из ближайших 3 ходов (не включая тот ход, в котором скастоване), может быть сохранено для использования на будущее. После сохранения Колдун может 1 раз використатты заклятие с тимимж параметрами и целю как в момент сохранения. Сохранение заклятие может ьуты стерто рассеянии Магии и Снятием Чар",
-                   "This spell only works if cast upon a Warlock. One of the next spells he completes, provided it is on one of the next 3 turns (not including the turn in which Delay Effect is cast), is \"banked\" until needed, i.e. it fails to work until its caster desires. The spell to be banked can be selected with a radio button while Delay Effect is active. Note that spells banked are those cast by the subject not those cast at him. The target of the spell is banked along with the spell itself (i.e. the complete effect of the spell, including target, is what gets saved). Remember that Surrender is not a spell. A Warlock may only have one spell banked at any one time. Banking a second spell will overwrite the first. When a spell is banked, a Warlock can fire it by checking the 'Fire Banked Spell' option which will appear. A banked spell will not be removed by Dispel Magic or Remove Enchantment. To counter a banked spell, you must cast the counter-spell on the turn the spell is fired - you cannot counter it on the turn in which it is banked.");
+                   "This spell only works if cast upon a Warlock. One of the next spells he completes, provided it is on one of the next 3 turns (not including the turn in which Delay Effect is cast), is \"banked\" until needed, i.e. it fails to work until its caster desires. The spell to be banked can be selected with a radio button while Delay Effect is active. Note that spells banked are those cast by the subject not those cast at him. The target of the spell is banked along with the spell itself (i.e. the complete effect of the spell, including target, is what gets saved). Remember that Surrender is not a spell. A Warlock may only have one spell banked at any one time. Banking a second spell will overwrite the first. When a spell is banked, a Warlock can fire it by checking the 'Fire Banked Spell' option which will appear. A banked spell will not be removed by Dispel Magic or Remove Enchantment. To counter a banked spell, you must cast the counter-spell on the turn the spell is fired - you cannot counter it on the turn in which it is banked.",
+                   "Dieser Zauber wirkt nur, wenn er auf einen Hexer gewirkt wird. Einer der nächsten Zauber, die er vollendet, sofern dies in einem der nächsten 3 Züge geschieht (den Zug, in dem Verzögerter Effekt gewirkt wird, nicht mitgerechnet), wird \"gespeichert\", bis er gebraucht wird, d. h. er wirkt erst, wenn sein Zaubernder es will. Der zu speichernde Zauber kann per Auswahlknopf gewählt werden, solange Verzögerter Effekt aktiv ist. Beachte, dass die Zauber gespeichert werden, die das Ziel wirkt, nicht die, die auf es gewirkt werden. Das Ziel des Zaubers wird zusammen mit dem Zauber gespeichert (d. h. gespeichert wird die vollständige Wirkung des Zaubers einschließlich des Ziels). Denk daran, dass Aufgeben kein Zauber ist. Ein Hexer kann immer nur einen Zauber gespeichert haben. Wird ein zweiter Zauber gespeichert, überschreibt er den ersten. Ist ein Zauber gespeichert, kann der Hexer ihn auslösen, indem er die dann erscheinende Option 'Gespeicherten Zauber auslösen' aktiviert. Ein gespeicherter Zauber wird weder durch Magie bannen noch durch Verzauberung aufheben entfernt. Um einen gespeicherten Zauber abzuwehren, musst du den Gegenzauber in dem Zug wirken, in dem der Zauber ausgelöst wird - in dem Zug, in dem er gespeichert wird, kannst du ihn nicht abwehren.",
+                   "Este hechizo solo funciona si se lanza sobre un brujo. Uno de los próximos hechizos que complete, siempre que sea en uno de los 3 turnos siguientes (sin contar el turno en que se lanza Efecto retardado), queda \"guardado\" hasta que se necesite, es decir, no surte efecto hasta que su lanzador lo desee. El hechizo que se guardará puede elegirse con un botón de opción mientras Efecto retardado esté activo. Ten en cuenta que se guardan los hechizos que lanza el objetivo, no los que se lanzan sobre él. El objetivo del hechizo se guarda junto con el propio hechizo (es decir, lo que se guarda es el efecto completo del hechizo, incluido el objetivo). Recuerda que rendirse no es un hechizo. Un brujo solo puede tener un hechizo guardado a la vez. Guardar un segundo hechizo sobrescribe el primero. Cuando hay un hechizo guardado, el brujo puede lanzarlo marcando la opción 'Lanzar hechizo guardado' que aparecerá. Un hechizo guardado no se elimina con Disipar magia ni con Eliminar encantamiento. Para contrarrestar un hechizo guardado, debes lanzar el contrahechizo en el turno en que se lanza el hechizo; no puedes contrarrestarlo en el turno en que se guarda.");
     fillDictionary("DWWFWD_desc",
-                   "Це те ж саме як Хвороба, але Вилікувати Важкі Рани не допомагає.",
-                   "Это то же самое как Болезнь, но Вылечить Тяжелые Раны не помогает.",
-                   "This is the same as the disease spell except that Cure Heavy Wounds does not stop its effects.");
+                   "This is the same as the disease spell except that Cure Heavy Wounds does not stop its effects.",
+                   "Wie der Zauber Krankheit, nur dass Schwere Wunden heilen seine Wirkung nicht aufhält.",
+                   "Es igual que el hechizo Enfermedad, salvo que Curar heridas graves no detiene sus efectos.");
     fillDictionary("FFF_desc",
-                   "Якщо предметом заклинання Чернокнижник, то у наступному раунді заклинатель вибирає один з рук зачаклованого і в цьому раунді, вибрана рука паралізована. Якщо Чорнокнижник вже має паралізовану руку, того ж заклинателя, то ця ж рука буде паралізована знову.<br>Рука будучи паралізованою замінює жести C, S або W на F, D або P відповідно, для наступного раунду. В іншому випадку вона буде повторювати жест попереднього раунду (удар також).<br>Оновлення: у грі \"ParaFC\" паралізована рука перетворює F у C і навпаки C у F.<br>Якщо предметом заклинання це чудовисько або елементал воно просто не атакує в раунді, в якому було паралізоване.<br>Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або іншої Амнезії то жодне з цих заклять не спрацює.",
-                   "Если предметом заклинание Чернокнижник, то в следующем раунде заклинатель выбирает один из рук околдованого и в этом раунде, выбранная рука парализована. Если Чернокнижник уже имеет парализованную руку, того же заклинателя, то эта же рука будет парализована снова.<br>Рука будучи парализованной заменяет жесты C, S или W на F, D или P соответственно, для следующего раунда. В противном случае она будет повторять жест предыдущего раунда (удар тоже).<br>Обновление: в игре \"ParaFC\" парализована рука превращает F в C и наоборот C в F.<br>Если предметом заклинание это чудовище или элементаль воно просто не атакует в раунде, в котором было парализовано.<br>Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.",
-                   "If the subject of the spell is a Warlock, then for the following turn the caster selects one of the Warlock's hands and on that turn, the selected hand is paralysed. If the target Warlock already had a paralysed hand, paralysed by the same caster, the caster will not have the choice - the same hand will be paralysed again.<br>If the hand being paralysed is, at the time the spell is cast, performing a F, S or W it is instead paralysed into C, D or P respectively, for the next turn. Otherwise it will repeat the original position (this allows repeated stabs).<br>If the subject of the spell is a monster or an elemental it simply does not attack in the turn in which the spell was cast.<br>If the subject of the spell is also the subject of any of Amnesia, Confusion, Charm Person, Charm Monster, Fear or another Paralysis, none of the spells work.");
+                   "If the subject of the spell is a Warlock, then for the following turn the caster selects one of the Warlock's hands and on that turn, the selected hand is paralysed. If the target Warlock already had a paralysed hand, paralysed by the same caster, the caster will not have the choice - the same hand will be paralysed again.<br>If the hand being paralysed is, at the time the spell is cast, performing a F, S or W it is instead paralysed into C, D or P respectively, for the next turn. Otherwise it will repeat the original position (this allows repeated stabs).<br>If the subject of the spell is a monster or an elemental it simply does not attack in the turn in which the spell was cast.<br>If the subject of the spell is also the subject of any of Amnesia, Confusion, Charm Person, Charm Monster, Fear or another Paralysis, none of the spells work.",
+                   "Ist das Ziel des Zaubers ein Hexer, wählt der Zaubernde für den folgenden Zug eine Hand des Hexers, und in diesem Zug ist die gewählte Hand gelähmt. Hatte der Hexer bereits eine vom selben Zaubernden gelähmte Hand, hat der Zaubernde keine Wahl - dieselbe Hand wird erneut gelähmt.<br>Macht die gelähmte Hand zum Zeitpunkt des Zaubers ein F, S oder W, wird sie stattdessen für den nächsten Zug in C, D bzw. P gelähmt. Andernfalls wiederholt sie die ursprüngliche Haltung (so sind wiederholte Stiche möglich).<br>Ist das Ziel ein Monster oder ein Elementar, greift es in dem Zug, in dem der Zauber gewirkt wurde, einfach nicht an.<br>Ist das Ziel zusätzlich Ziel von Amnesie, Verwirrung, Person bezaubern, Monster bezaubern, Furcht oder einer weiteren Lähmung, wirkt keiner dieser Zauber.",
+                   "Si el objetivo del hechizo es un brujo, para el turno siguiente el lanzador elige una de las manos del brujo y en ese turno la mano elegida queda paralizada. Si el brujo ya tenía una mano paralizada por el mismo lanzador, este no puede elegir: se vuelve a paralizar la misma mano.<br>Si en el momento de lanzar el hechizo la mano que se paraliza está haciendo F, S o W, en el turno siguiente queda paralizada en C, D o P respectivamente. En otro caso repite la posición original (esto permite puñaladas repetidas).<br>Si el objetivo es un monstruo o un elemental, simplemente no ataca en el turno en que se lanzó el hechizo.<br>Si el objetivo es también objetivo de Amnesia, Confusión, Hechizar persona, Hechizar monstruo, Miedo u otra Parálisis, ninguno de esos hechizos funciona.");
     fillDictionary("FDF_desc",
-                   "Якщо предметом заклинання Чернокнижник, то у наступному раунді заклинатель вибирає один з рук зачаклованого і в цьому раунді, вибрана рука паралізована. Якщо Чорнокнижник вже має паралізовану руку, того ж заклинателя, то ця ж рука буде паралізована знову.<br>Рука будучи паралізованою замінює жести C, S або W на F, D або P відповідно, для наступного раунду. В іншому випадку вона буде повторювати жест попереднього раунду (удар також).<br>Оновлення: у грі \"ParaFC\" паралізована рука перетворює F у C і навпаки C у F.<br>Якщо предметом заклинання це чудовисько або елементал воно просто не атакує в раунді, в якому було паралізоване.<br>Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або іншої Амнезії то жодне з цих заклять не спрацює.",
-                   "Если предметом заклинание Чернокнижник, то в следующем раунде заклинатель выбирает один из рук околдованого и в этом раунде, выбранная рука парализована. Если Чернокнижник уже имеет парализованную руку, того же заклинателя, то эта же рука будет парализована снова.<br>Рука будучи парализованной заменяет жесты C, S или W на F, D или P соответственно, для следующего раунда. В противном случае она будет повторять жест предыдущего раунда (удар тоже).<br>Обновление: в игре \"ParaFC\" парализована рука превращает F в C и наоборот C в F.<br>Если предметом заклинание это чудовище или элементаль воно просто не атакует в раунде, в котором было парализовано.<br>Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.",
-                   "If the subject of the spell is a Warlock, then for the following turn the caster selects one of the Warlock's hands and on that turn, the selected hand is paralysed. If the target Warlock already had a paralysed hand, paralysed by the same caster, the caster will not have the choice - the same hand will be paralysed again.<br>If the hand being paralysed is, at the time the spell is cast, performing a C, S or W it is instead paralysed into F, D or P respectively, for the next turn. Otherwise it will repeat the original position (this allows repeated stabs).<br>UPDATE: A \"ParaFC\" game paralyses F to C instead of C to F. See Challenges for how to start a ParaFC game.<br>If the subject of the spell is a monster or an elemental it simply does not attack in the turn in which the spell was cast.<br>If the subject of the spell is also the subject of any of Amnesia, Confusion, Charm Person, Charm Monster, Fear or another Paralysis, none of the spells work.");
+                   "If the subject of the spell is a Warlock, then for the following turn the caster selects one of the Warlock's hands and on that turn, the selected hand is paralysed. If the target Warlock already had a paralysed hand, paralysed by the same caster, the caster will not have the choice - the same hand will be paralysed again.<br>If the hand being paralysed is, at the time the spell is cast, performing a C, S or W it is instead paralysed into F, D or P respectively, for the next turn. Otherwise it will repeat the original position (this allows repeated stabs).<br>UPDATE: A \"ParaFC\" game paralyses F to C instead of C to F. See Challenges for how to start a ParaFC game.<br>If the subject of the spell is a monster or an elemental it simply does not attack in the turn in which the spell was cast.<br>If the subject of the spell is also the subject of any of Amnesia, Confusion, Charm Person, Charm Monster, Fear or another Paralysis, none of the spells work.",
+                   "Ist das Ziel des Zaubers ein Hexer, wählt der Zaubernde für den folgenden Zug eine Hand des Hexers, und in diesem Zug ist die gewählte Hand gelähmt. Hatte der Hexer bereits eine vom selben Zaubernden gelähmte Hand, hat der Zaubernde keine Wahl - dieselbe Hand wird erneut gelähmt.<br>Macht die gelähmte Hand zum Zeitpunkt des Zaubers ein C, S oder W, wird sie stattdessen für den nächsten Zug in F, D bzw. P gelähmt. Andernfalls wiederholt sie die ursprüngliche Haltung (so sind wiederholte Stiche möglich).<br>UPDATE: Ein \"ParaFC\"-Spiel lähmt F zu C statt C zu F. Unter Herausforderungen erfährst du, wie man ein ParaFC-Spiel startet.<br>Ist das Ziel ein Monster oder ein Elementar, greift es in dem Zug, in dem der Zauber gewirkt wurde, einfach nicht an.<br>Ist das Ziel zusätzlich Ziel von Amnesie, Verwirrung, Person bezaubern, Monster bezaubern, Furcht oder einer weiteren Lähmung, wirkt keiner dieser Zauber.",
+                   "Si el objetivo del hechizo es un brujo, para el turno siguiente el lanzador elige una de las manos del brujo y en ese turno la mano elegida queda paralizada. Si el brujo ya tenía una mano paralizada por el mismo lanzador, este no puede elegir: se vuelve a paralizar la misma mano.<br>Si en el momento de lanzar el hechizo la mano que se paraliza está haciendo C, S o W, en el turno siguiente queda paralizada en F, D o P respectivamente. En otro caso repite la posición original (esto permite puñaladas repetidas).<br>ACTUALIZACIÓN: una partida \"ParaFC\" paraliza F en C en lugar de C en F. Consulta Desafíos para saber cómo empezar una partida ParaFC.<br>Si el objetivo es un monstruo o un elemental, simplemente no ataca en el turno en que se lanzó el hechizo.<br>Si el objetivo es también objetivo de Amnesia, Confusión, Hechizar persona, Hechizar monstruo, Miedo u otra Parálisis, ninguno de esos hechizos funciona.");
     fillDictionary("FDFD_desc",
-                   "Якщо предметом заклинання Чернокнижник, то у наступному раунді заклинатель вибирає один з рук зачаклованого і в цьому раунді, вибрана рука паралізована. Якщо Чорнокнижник вже має паралізовану руку, того ж заклинателя, то ця ж рука буде паралізована знову.<br>Рука будучи паралізованою замінює жести C, S або W на F, D або P відповідно, для наступного раунду. В іншому випадку вона буде повторювати жест попереднього раунду (удар також).<br>Оновлення: у грі \"ParaFC\" паралізована рука перетворює F у C і навпаки C у F.<br>Якщо предметом заклинання це чудовисько або елементал воно просто не атакує в раунді, в якому було паралізоване.<br>Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або іншої Амнезії то жодне з цих заклять не спрацює.",
-                   "Если предметом заклинание Чернокнижник, то в следующем раунде заклинатель выбирает один из рук околдованого и в этом раунде, выбранная рука парализована. Если Чернокнижник уже имеет парализованную руку, того же заклинателя, то эта же рука будет парализована снова.<br>Рука будучи парализованной заменяет жесты C, S или W на F, D или P соответственно, для следующего раунда. В противном случае она будет повторять жест предыдущего раунда (удар тоже).<br>Обновление: в игре \"ParaFC\" парализована рука превращает F в C и наоборот C в F.<br>Если предметом заклинание это чудовище или элементаль воно просто не атакует в раунде, в котором было парализовано.<br>Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.",
-                   "If the subject of the spell is a Warlock, then for the following turn the caster selects one of the Warlock's hands and on that turn, the selected hand is paralysed. If the target Warlock already had a paralysed hand, paralysed by the same caster, the caster will not have the choice - the same hand will be paralysed again.<br>If the hand being paralysed is, at the time the spell is cast, performing a C, S or W it is instead paralysed into F, D or P respectively, for the next turn. Otherwise it will repeat the original position (this allows repeated stabs).<br>UPDATE: A \"ParaFC\" game paralyses F to C instead of C to F. See Challenges for how to start a ParaFC game.<br>If the subject of the spell is a monster or an elemental it simply does not attack in the turn in which the spell was cast.<br>If the subject of the spell is also the subject of any of Amnesia, Confusion, Charm Person, Charm Monster, Fear or another Paralysis, none of the spells work.");
+                   "If the subject of the spell is a Warlock, then for the following turn the caster selects one of the Warlock's hands and on that turn, the selected hand is paralysed. If the target Warlock already had a paralysed hand, paralysed by the same caster, the caster will not have the choice - the same hand will be paralysed again.<br>If the hand being paralysed is, at the time the spell is cast, performing a C, S or W it is instead paralysed into F, D or P respectively, for the next turn. Otherwise it will repeat the original position (this allows repeated stabs).<br>UPDATE: A \"ParaFC\" game paralyses F to C instead of C to F. See Challenges for how to start a ParaFC game.<br>If the subject of the spell is a monster or an elemental it simply does not attack in the turn in which the spell was cast.<br>If the subject of the spell is also the subject of any of Amnesia, Confusion, Charm Person, Charm Monster, Fear or another Paralysis, none of the spells work.",
+                   "Ist das Ziel des Zaubers ein Hexer, wählt der Zaubernde für den folgenden Zug eine Hand des Hexers, und in diesem Zug ist die gewählte Hand gelähmt. Hatte der Hexer bereits eine vom selben Zaubernden gelähmte Hand, hat der Zaubernde keine Wahl - dieselbe Hand wird erneut gelähmt.<br>Macht die gelähmte Hand zum Zeitpunkt des Zaubers ein C, S oder W, wird sie stattdessen für den nächsten Zug in F, D bzw. P gelähmt. Andernfalls wiederholt sie die ursprüngliche Haltung (so sind wiederholte Stiche möglich).<br>UPDATE: Ein \"ParaFC\"-Spiel lähmt F zu C statt C zu F. Unter Herausforderungen erfährst du, wie man ein ParaFC-Spiel startet.<br>Ist das Ziel ein Monster oder ein Elementar, greift es in dem Zug, in dem der Zauber gewirkt wurde, einfach nicht an.<br>Ist das Ziel zusätzlich Ziel von Amnesie, Verwirrung, Person bezaubern, Monster bezaubern, Furcht oder einer weiteren Lähmung, wirkt keiner dieser Zauber.",
+                   "Si el objetivo del hechizo es un brujo, para el turno siguiente el lanzador elige una de las manos del brujo y en ese turno la mano elegida queda paralizada. Si el brujo ya tenía una mano paralizada por el mismo lanzador, este no puede elegir: se vuelve a paralizar la misma mano.<br>Si en el momento de lanzar el hechizo la mano que se paraliza está haciendo C, S o W, en el turno siguiente queda paralizada en F, D o P respectivamente. En otro caso repite la posición original (esto permite puñaladas repetidas).<br>ACTUALIZACIÓN: una partida \"ParaFC\" paraliza F en C en lugar de C en F. Consulta Desafíos para saber cómo empezar una partida ParaFC.<br>Si el objetivo es un monstruo o un elemental, simplemente no ataca en el turno en que se lanzó el hechizo.<br>Si el objetivo es también objetivo de Amnesia, Confusión, Hechizar persona, Hechizar monstruo, Miedo u otra Parálisis, ninguno de esos hechizos funciona.");
     fillDictionary("WFPSFW_desc",
-                   "Це заклинання такий же, як Прикликання Гобліна, але Гігант завдає і руйнується 4 одиницями пошкодження, а не 1.",
-                   "Это заклинание такой же, как Вызов Гоблина, но Гигант наносит и разрушается 4 единицами повреждения, а не 1.",
-                   "This spell is the same as Summon Goblin but the giant created inflicts and is destroyed by four points of damage rather than one.");
+                   "This spell is the same as Summon Goblin but the giant created inflicts and is destroyed by four points of damage rather than one.",
+                   "Dieser Zauber entspricht Goblin beschwören, doch der erschaffene Riese verursacht vier statt einem Punkt Schaden und wird erst durch vier Punkte Schaden vernichtet.",
+                   "Este hechizo es igual que Invocar goblin, pero el gigante creado causa cuatro puntos de daño en lugar de uno y hacen falta cuatro puntos de daño para destruirlo.");
     fillDictionary("FPSFW_desc",
-                   "Це заклинання такий же, як Прикликання Гобліна, але Тролль завдає і руйнується 3 одиницями пошкодження, а не 1.",
-                   "Это заклинание такой же, как Вызов Гоблина, но Тролль наносит и разрушается 3 единицами повреждения, а не 1.",
-                   "This spell is the same as Summon Goblin but the troll created inflicts and is destroyed by three points of damage rather than one.");
+                   "This spell is the same as Summon Goblin but the troll created inflicts and is destroyed by three points of damage rather than one.",
+                   "Dieser Zauber entspricht Goblin beschwören, doch der erschaffene Troll verursacht drei statt einem Punkt Schaden und wird erst durch drei Punkte Schaden vernichtet.",
+                   "Este hechizo es igual que Invocar goblin, pero el trol creado causa tres puntos de daño en lugar de uno y hacen falta tres puntos de daño para destruirlo.");
     fillDictionary("PSFW_desc",
-                   "Це заклинання такий же, як Прикликання Гобліна, але Огр завдає і руйнується 2 одиницями пошкодження, а не 1.",
-                   "Это заклинание такой же, как Вызов Гоблина, но Огр наносит и разрушается 2 единицами повреждения, а не 1.",
-                   "This spell is the same as Summon Goblin but the ogre created inflicts and is destroyed by two points of damage rather than one.");
+                   "This spell is the same as Summon Goblin but the ogre created inflicts and is destroyed by two points of damage rather than one.",
+                   "Dieser Zauber entspricht Goblin beschwören, doch der erschaffene Oger verursacht zwei statt einem Punkt Schaden und wird erst durch zwei Punkte Schaden vernichtet.",
+                   "Este hechizo es igual que Invocar goblin, pero el ogro creado causa dos puntos de daño en lugar de uno y hacen falta dos puntos de daño para destruirlo.");
     fillDictionary("SFW_desc",
-                   "Це заклинання викликає гобліна підконтрольного цілі закляття. Увага, ціль закляття стає власником а не жертвою монстра! Гоблін може атакувати в той же хід що він був викликаний. Своєю атакою він забирає одне очко здоров'я своєї жертви. Гобліна можна знищити якщо нанести йому 1 очко шкоди (Удар, Магічна Стріла підійде). Ваш монстр може бути вкрадений за допомогою Зачарування Монстра і це може статись в той же хід що і виклик монстра. Також майте на увазі, якщо ціль закляття захищена Магічним Захистом монстр не буде викликаний. Також якщо цілью закляття є монстр, то власником нового монстру стане власник монстра на якого направлене закляття.",
-                   "Это заклинание вызывает гоблина подконтрольного цели заклинания. Внимание цель заклинания становится владельцем а не жертвой монстра! Гоблин может атаковать в тот же ход что он был вызван. Своей атакой он забирает одно очко здоровья своей жертвы. Гоблина можно уничтожить если нанести ему 1 очко вреда (Удар, Магическая Стрела подойдет). Ваш монстр может быть украден с помощью Очарование Монстра и это может произойти в тот же ход что и вызов монстра. Также имейте в виду, если цель заклинания защищена Магическим Защитой монстр не будет вызван. Также если цель заклинания есть монстр, то владельцем нового монстра станет владелец монстра на которого направлено заклинание.",
-                   "This spell creates a goblin under the control of the target of the spell (or the target's controller, if the target is a monster). Note that the spell target becomes the controller, not the victim! The goblin can attack immediately and its victim will be an opponent of its controller. It does one point of damage to its victim per turn and is destroyed after one point of damage is inflicted upon it. The summoning spell cannot be cast at an elemental, and if cast at something which doesn't exist, the spell has no effect. Be aware, target of spell become monster's owner not a victim. Your monster can be stolen with Charm Monster and it's possible to steal monster in the same turm that summon. Also take in mind, if target of spell covered with Counter Spell monster not summoned.");
+                   "This spell creates a goblin under the control of the target of the spell (or the target's controller, if the target is a monster). Note that the spell target becomes the controller, not the victim! The goblin can attack immediately and its victim will be an opponent of its controller. It does one point of damage to its victim per turn and is destroyed after one point of damage is inflicted upon it. The summoning spell cannot be cast at an elemental, and if cast at something which doesn't exist, the spell has no effect. Be aware, target of spell become monster's owner not a victim. Your monster can be stolen with Charm Monster and it's possible to steal monster in the same turm that summon. Also take in mind, if target of spell covered with Counter Spell monster not summoned.",
+                   "Dieser Zauber erschafft einen Goblin unter der Kontrolle des Ziels des Zaubers (oder dessen Herrn, wenn das Ziel ein Monster ist). Beachte, dass das Ziel des Zaubers zum Herrn wird, nicht zum Opfer! Der Goblin kann sofort angreifen, und sein Opfer ist ein Gegner seines Herrn. Er fügt seinem Opfer einen Punkt Schaden pro Zug zu und wird durch einen Punkt Schaden vernichtet. Der Beschwörungszauber kann nicht auf einen Elementar gewirkt werden, und auf etwas Nicht-Existierendes gewirkt, bleibt er wirkungslos. Denk daran: Das Ziel des Zaubers wird Besitzer des Monsters, nicht sein Opfer. Dein Monster kann mit Monster bezaubern gestohlen werden, sogar im selben Zug, in dem es beschworen wird. Und beachte: Ist das Ziel des Zaubers durch einen Gegenzauber geschützt, wird kein Monster beschworen.",
+                   "Este hechizo crea un goblin bajo el control del objetivo del hechizo (o de quien controle al objetivo, si este es un monstruo). ¡Ten en cuenta que el objetivo del hechizo se convierte en el amo, no en la víctima! El goblin puede atacar de inmediato y su víctima será un rival de su amo. Causa un punto de daño a su víctima por turno y queda destruido al recibir un punto de daño. El hechizo de invocación no puede lanzarse sobre un elemental y, si se lanza sobre algo que no existe, no tiene efecto. Recuerda: el objetivo del hechizo pasa a ser el dueño del monstruo, no su víctima. Tu monstruo puede ser robado con Hechizar monstruo, incluso en el mismo turno en que se invoca. Ten en cuenta también que, si el objetivo del hechizo está protegido por un Contrahechizo, el monstruo no se invoca.");
     fillDictionary("FSSDD_desc",
-                   "Ціль закляття буде вдарена Вогненою Кулею та отримає п'ять одиниць пошкодження, якщо він не стійкий до вогню. Якщо Вогняна куля викликана одночасно із Крижаним штормом, то ціль Вогняної Кулі не постраждає ні від Кулі ні від шторму, хоча на інших Шторм вплине як звичайно. Якщо Вогняна Куля спрямована на Крижаного Елементаля, то елементаль буде знищений перш, ніж він зможе атакувати.",
-                   "Цель заклятие получит удар Огеннім Шаром и получит пять очек урона, если он не устойчива к огню. Если Огненный шар вызван одновременно с Ледяным штормом, то цель Огненного Шара не пострадает ни от Шара ни от Шторма, хотя на других Шторм повлияет как обычно. Если Огненный Шар направлен ​​на Ледяного элементаля, то элементаль будет уничтожен прежде, чем он сможет атаковать.",
-                   "The subject of this spell is hit by a ball of fire and sustains five points of damage unless he is resistant to fire. If at the same time an Ice Storm prevails, the subject of the Fireball is instead not harmed by either spell, although the storm will affect others as normal. If directed at an ice elemental, the fireball will destroy it before it can attack.");
+                   "The subject of this spell is hit by a ball of fire and sustains five points of damage unless he is resistant to fire. If at the same time an Ice Storm prevails, the subject of the Fireball is instead not harmed by either spell, although the storm will affect others as normal. If directed at an ice elemental, the fireball will destroy it before it can attack.",
+                   "Das Ziel dieses Zaubers wird von einem Feuerball getroffen und erleidet fünf Punkte Schaden, sofern es nicht feuerresistent ist. Tobt gleichzeitig ein Eissturm, wird das Ziel des Feuerballs stattdessen von keinem der beiden Zauber verletzt, während der Sturm alle anderen wie gewohnt trifft. Auf einen Eiselementar gerichtet, vernichtet der Feuerball ihn, bevor er angreifen kann.",
+                   "El objetivo de este hechizo recibe el impacto de una bola de fuego y sufre cinco puntos de daño, salvo que sea resistente al fuego. Si al mismo tiempo hay una Tormenta de hielo, el objetivo de la Bola de fuego no sufre daño de ninguno de los dos hechizos, aunque la tormenta afecta a los demás con normalidad. Si se dirige contra un elemental de hielo, la bola de fuego lo destruye antes de que pueda atacar.");
     fillDictionary("P_desc",
-                   "Це закляття захистить об'єкт від всіх атак прикликаних монстрів, закляття Магічної стрілиб а також від ударів Чаклунів. Щит блокує будь яку кількість атак, але діє тільки протягом 1 раунду. Щит захищає об'єкт протягом раунду в якому скастований",
-                   "Это заклятие защитит обект от всех атак призваных существ, заклятия Магическая стрела, и ударов Колдунов. Щит блокирует любое количество атак, но действует только 1 раунд. Щит защищает обект в тот раунд в котором он скастован",
-                   "This spell protects the subject from all attacks from summoned monsters, from Magic Missile spells, and from stabs by Warlocks. The shield will block any number of such attacks but lasts for only one round. The shield protects the subject on the turn in which it is cast.");
+                   "This spell protects the subject from all attacks from summoned monsters, from Magic Missile spells, and from stabs by Warlocks. The shield will block any number of such attacks but lasts for only one round. The shield protects the subject on the turn in which it is cast.",
+                   "Dieser Zauber schützt das Ziel vor allen Angriffen beschworener Monster, vor Magisches Geschoss und vor Stichen von Hexern. Der Schild blockt beliebig viele solcher Angriffe, hält aber nur eine Runde. Er schützt das Ziel in dem Zug, in dem er gewirkt wird.",
+                   "Este hechizo protege al objetivo de todos los ataques de monstruos invocados, de los hechizos Proyectil mágico y de las puñaladas de los brujos. El escudo bloquea cualquier número de estos ataques, pero solo dura una ronda. Protege al objetivo en el turno en que se lanza.");
     fillDictionary("p_desc",
-                   "Чаклун який капітулював припиняє дуєль і визнає поразку",
-                   "Колдун который капитулировал покидает дуель и признает поражение",
-                   "This is not a spell and consequently cannot be cast at anyone. The Warlock making these gestures, irrespective of whether they terminate spells or not, surrenders and the contest is over. If the gestures do complete spells, those spells will be cast as usual - the surrender does not happen until the end of the round. The surrendering Warlock is deemed to have lost unless his gestures completed spells which killed all remaining opponents, in which case he is deemed to have won. Two or more simultaneous surrenders count as a draw, in the same way as two or more simultaneous deaths - none of the Warlocks gain or lose any points, even those which died earlier in the Battle. It is a skill for Warlocks to work their spells so that they never accidentally perform 2 P gestures simultaneously. It is too late to surrender on the turn you are killed - if you are killed as you make the surrender gesture, you will still die. However, if you live to the end of the turn, the referee will cure any diseases, poisons etc. in time for your next battle.");
+                   "This is not a spell and consequently cannot be cast at anyone. The Warlock making these gestures, irrespective of whether they terminate spells or not, surrenders and the contest is over. If the gestures do complete spells, those spells will be cast as usual - the surrender does not happen until the end of the round. The surrendering Warlock is deemed to have lost unless his gestures completed spells which killed all remaining opponents, in which case he is deemed to have won. Two or more simultaneous surrenders count as a draw, in the same way as two or more simultaneous deaths - none of the Warlocks gain or lose any points, even those which died earlier in the Battle. It is a skill for Warlocks to work their spells so that they never accidentally perform 2 P gestures simultaneously. It is too late to surrender on the turn you are killed - if you are killed as you make the surrender gesture, you will still die. However, if you live to the end of the turn, the referee will cure any diseases, poisons etc. in time for your next battle.",
+                   "Dies ist kein Zauber und kann daher auf niemanden gewirkt werden. Der Hexer, der diese Gesten macht, gibt auf, egal ob sie Zauber vollenden oder nicht, und der Wettkampf ist vorbei. Vollenden die Gesten Zauber, werden diese wie gewohnt gewirkt - die Aufgabe erfolgt erst am Ende der Runde. Der aufgebende Hexer gilt als Verlierer, es sei denn, seine Gesten haben Zauber vollendet, die alle verbliebenen Gegner getötet haben; dann gilt er als Sieger. Zwei oder mehr gleichzeitige Aufgaben zählen als Unentschieden, genauso wie zwei oder mehr gleichzeitige Tode - keiner der Hexer gewinnt oder verliert Punkte, auch nicht die, die früher im Kampf gestorben sind. Es gehört zum Können eines Hexers, seine Zauber so zu planen, dass er nie versehentlich gleichzeitig 2 P-Gesten macht. In dem Zug, in dem du getötet wirst, ist es zu spät zum Aufgeben - wirst du getötet, während du die Aufgabegeste machst, stirbst du trotzdem. Überlebst du aber bis zum Ende des Zuges, heilt der Schiedsrichter alle Krankheiten, Vergiftungen usw. rechtzeitig vor deinem nächsten Kampf.",
+                   "Esto no es un hechizo y, por tanto, no puede lanzarse sobre nadie. El brujo que hace estos gestos, completen o no hechizos, se rinde y el combate termina. Si los gestos completan hechizos, estos se lanzan como de costumbre: la rendición no se produce hasta el final de la ronda. Se considera que el brujo que se rinde ha perdido, salvo que sus gestos completaran hechizos que mataran a todos los rivales restantes, en cuyo caso se considera que ha ganado. Dos o más rendiciones simultáneas cuentan como empate, igual que dos o más muertes simultáneas: ninguno de los brujos gana ni pierde puntos, ni siquiera los que murieron antes en la batalla. Es parte de la habilidad de un brujo planear sus hechizos para no hacer nunca 2 gestos P a la vez por accidente. Es demasiado tarde para rendirse en el turno en que te matan: si te matan mientras haces el gesto de rendición, morirás igualmente. Sin embargo, si sobrevives hasta el final del turno, el árbitro curará cualquier enfermedad, veneno, etc. a tiempo para tu próxima batalla.");
     fillDictionary("PDWP_desc",
-                   "Припиняє дію всіх Зачаровуючих заклять що були накладені на об'єкт включаючи ті що були накладені в тому ж раунді що і Зняти чари.<br>Ефекти що вже відбулися не відміняються, для прикладу жертва закляття Сліпота не побачить жести противника які були виконані, навіть жести з раунда коли зняття чар було скастоване і Сліпота пропала. Всі ефекти будуть відмінені без вибору, також Зняття Чар знищуе викликаного монстра якщо було скастоване на нього, але монстр ще може атакувати цього раунду. Чаклуни немають ніяких негативних ефектів від закляття окрім знаття чар.",
-                   "Прекращает действие всех завораживающий заклинаний которые были наложены на объект включая те, что были наложены в том же раунде что и Снять чары.<br>Эффекты которые уже произошли не отменяются, например жертва заклинания Слепота не увидит жесты противника которые были выполнены, даже жесты раунда когда снятие чар было скастовано и Слепота пропала. Все эффекты будут отменены без выбора, также Снятие Чар уничтожает вызванного монстра если было скастовано на него, но монстр еще может атаковать в этот раунда. Колдуны не имеют никаких негативных эфектов от заклятия кроме снятия чар.",
-                   "Terminates the effects of all Enchantment Spells that have been cast on the subject including those that were cast on the subject in the same turn as the Remove Enchantment.<br>Effects that have already taken place are not cancelled, for example, the victim of a Blindness spell will not be able to see what their opponent's gestures were on the same turn that the Blindness is removed. All enchantments are removed and the caster may not pick and choose. Remove Enchantment also destroys any monster upon which it is cast, although the monster can still attack in that turn. Warlocks suffer no adverse effects from this spell, aside from the removal of their enchantments.");
+                   "Terminates the effects of all Enchantment Spells that have been cast on the subject including those that were cast on the subject in the same turn as the Remove Enchantment.<br>Effects that have already taken place are not cancelled, for example, the victim of a Blindness spell will not be able to see what their opponent's gestures were on the same turn that the Blindness is removed. All enchantments are removed and the caster may not pick and choose. Remove Enchantment also destroys any monster upon which it is cast, although the monster can still attack in that turn. Warlocks suffer no adverse effects from this spell, aside from the removal of their enchantments.",
+                   "Beendet die Wirkung aller Verzauberungen, die auf das Ziel gewirkt wurden, auch derjenigen, die im selben Zug wie Verzauberung aufheben auf das Ziel gewirkt wurden.<br>Bereits eingetretene Wirkungen werden nicht rückgängig gemacht: Das Opfer einer Blindheit kann zum Beispiel in dem Zug, in dem die Blindheit aufgehoben wird, die Gesten seines Gegners nicht sehen. Es werden alle Verzauberungen entfernt; der Zaubernde kann keine auswählen. Verzauberung aufheben vernichtet außerdem jedes Monster, auf das er gewirkt wird, wobei das Monster in diesem Zug noch angreifen kann. Hexer erleiden durch diesen Zauber keine Nachteile, abgesehen vom Verlust ihrer Verzauberungen.",
+                   "Termina los efectos de todos los encantamientos lanzados sobre el objetivo, incluidos los lanzados sobre él en el mismo turno que Eliminar encantamiento.<br>Los efectos que ya se han producido no se anulan; por ejemplo, la víctima de una Ceguera no podrá ver los gestos de su rival en el mismo turno en que se le quita la Ceguera. Se eliminan todos los encantamientos y el lanzador no puede elegir cuáles. Eliminar encantamiento también destruye cualquier monstruo sobre el que se lance, aunque el monstruo todavía puede atacar en ese turno. Los brujos no sufren efectos negativos por este hechizo, aparte de perder sus encantamientos.");
     fillDictionary("PPws_desc",
-                   "Це заклинання подібно Сліпоті тільки ціль закляття стає невидимим для свого противника і його монстрів. Його жести не видно його опонентами, і він не може бути атакований будь-яких монстрів або постраждали від будь-яких цільових конкретних заклинань, хоча вони можуть бути спрямовані на нього на випадок, якщо він стане видимим передчасно. Чаклуни ще можуть завдати удар в тій же надії. Будь монстр який стає невидимим руйнується у зв'язку з нестабільною природи істот створених магією, і не може атакувати.",
-                   "Это заклинание подобно Слепоте только цель заклинания становится невидимым для своего противника и его монстров. Его жесты не видно оппонентами, и он не может быть атакован любых монстров или пострадали от любых целевых конкретных заклинаний, хотя они могут быть направлены на него на случай, если он станет видимым преждевременно. Колдуны еще могут нанести удар в той же надежды. Любой монстр который становится невидимым разрушается в связи с нестабильной природы существ созданных магией, и не может атаковать.",
-                   "This spell is similar to Blindness only the subject of the spell becomes invisible to his opponent and his monsters. His gestures cannot be seen by his opponents, and he cannot be attacked by any monsters or hit by any target-specific Spells, although they can be directed at him in case he becomes visible prematurely. Warlocks can still stab at him, with the same hope. Any monster made invisible is destroyed due to the unstable nature of such magically created creatures, and doesn't get to attack that turn.");
+                   "This spell is similar to Blindness only the subject of the spell becomes invisible to his opponent and his monsters. His gestures cannot be seen by his opponents, and he cannot be attacked by any monsters or hit by any target-specific Spells, although they can be directed at him in case he becomes visible prematurely. Warlocks can still stab at him, with the same hope. Any monster made invisible is destroyed due to the unstable nature of such magically created creatures, and doesn't get to attack that turn.",
+                   "Dieser Zauber ähnelt Blindheit, nur wird das Ziel für seinen Gegner und dessen Monster unsichtbar. Seine Gegner können seine Gesten nicht sehen, und er kann weder von Monstern angegriffen noch von gezielten Zaubern getroffen werden, obwohl diese auf ihn gerichtet werden können, falls er vorzeitig sichtbar wird. Hexer können mit derselben Hoffnung trotzdem nach ihm stechen. Jedes unsichtbar gemachte Monster wird wegen der instabilen Natur solcher magisch erschaffener Kreaturen vernichtet und kann in diesem Zug nicht angreifen.",
+                   "Este hechizo es similar a Ceguera, pero el objetivo se vuelve invisible para su rival y los monstruos de este. Sus rivales no pueden ver sus gestos, y no puede ser atacado por monstruos ni alcanzado por hechizos dirigidos, aunque pueden dirigirse contra él por si vuelve a ser visible antes de tiempo. Los brujos pueden seguir intentando apuñalarle con la misma esperanza. Cualquier monstruo que se vuelva invisible queda destruido debido a la naturaleza inestable de estas criaturas creadas por magia, y no llega a atacar en ese turno.");
     fillDictionary("PSDD_desc",
-                   "Крім відміни з іншими чарами, це заклинання впливає тільки на монстрів (крім елементалів). Контроль монстра передається заклинателю закляття (або зберігаються за ним), у цьому рунді, тобто монстр буде атакувати того на кого вкаже йому новий хазяїн. В подальшому монстра можна перечаклувати назад. Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або іншої Амнезії то жодне з цих заклять не спрацює.",
-                   "Кроме отмены с другими чарами, это заклинание влияет только на монстров (кроме элементалей). Контроль монстра передается заклинателя заклинания (или сохраняются за ним), в этом рунди, есть монстр будет атаковать того на кого укажет ему новый хозяин. В дальнейшем монстра можно околдовать назад. Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.",
-                   "Except for cancellation with other enchantments, this spell only affects monsters (excluding elementals). Control of the monster is transferred to the caster of the spell (or retained by him) as of this turn, i.e. the monster will attack whosoever its new controller directs, from that turn onwards including that turn. Further charms are, of course, possible, transferring as before. If the subject of the charm is also the subject of any of: Paralysis, Amnesia, Confusion, Charm Person, another Charm Monster, or Fear none of the spells work.");
+                   "Except for cancellation with other enchantments, this spell only affects monsters (excluding elementals). Control of the monster is transferred to the caster of the spell (or retained by him) as of this turn, i.e. the monster will attack whosoever its new controller directs, from that turn onwards including that turn. Further charms are, of course, possible, transferring as before. If the subject of the charm is also the subject of any of: Paralysis, Amnesia, Confusion, Charm Person, another Charm Monster, or Fear none of the spells work.",
+                   "Abgesehen von der Aufhebung mit anderen Verzauberungen wirkt dieser Zauber nur auf Monster (außer Elementare). Die Kontrolle über das Monster geht ab diesem Zug auf den Zaubernden über (oder bleibt bei ihm), d. h. das Monster greift ab diesem Zug, einschließlich dieses Zuges, an, wen sein neuer Herr bestimmt. Weitere Bezauberungen sind natürlich möglich und übertragen die Kontrolle wie zuvor. Ist das Ziel der Bezauberung zusätzlich Ziel von Lähmung, Amnesie, Verwirrung, Person bezaubern, einem weiteren Monster bezaubern oder Furcht, wirkt keiner dieser Zauber.",
+                   "Salvo por la anulación con otros encantamientos, este hechizo solo afecta a monstruos (excepto elementales). El control del monstruo pasa al lanzador del hechizo (o lo conserva) a partir de este turno, es decir, el monstruo atacará a quien indique su nuevo amo desde ese turno en adelante, incluido ese turno. Por supuesto, son posibles más hechizos de este tipo, que transfieren el control igual que antes. Si el objetivo es también objetivo de Parálisis, Amnesia, Confusión, Hechizar persona, otro Hechizar monstruo o Miedo, ninguno de esos hechizos funciona.");
     fillDictionary("PSDF_desc",
-                   "Крім відміни з іншими чарами, це заклинання впливає тільки на чорнокнижників. Ціль закляття вибирає жести як зазвичай, але заклинатель встановлює свій жест для однієї руки зачаклованого. Зачаклований використовує жест, вибраний Чаклуном наступного раунду. Якщо ціль закляття захищена Чарівним Люстерком, то ціль вибирає жести для заклинателя.  Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або іншої Амнезії то жодне з цих заклять не спрацює.",
-                   "Кроме отмены с другими чарами, это заклинание влияет только на чернокнижников. Цель заклинания выбирает жесты как обычно, но заклинатель устанавливает свой жест для одной руки околдованого. Заколдованный использует жест, выбранный Колдуном в следующем раунде. Если цель заклятие защищена Волшебным Зеркалом, то цель выбирает жесты для заклинателя. Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.",
-                   "Except for cancellation with other enchantments, this spell only affects Warlocks. The subject of the spell submits orders as normal, but the caster of the spell also submits a gesture for one of the subject's hands. The subject uses the gesture submitted by the caster for the next turn. If the subject is only so because of a reflection from a Magic Mirror the subject of the mirror assumes the role of caster and decides his opponent's gesture. If the subject is also the subject of any of Paralysis, Amnesia, Confusion, another Charm Person, Charm Monster, or Fear, none of the spells work.");
+                   "Except for cancellation with other enchantments, this spell only affects Warlocks. The subject of the spell submits orders as normal, but the caster of the spell also submits a gesture for one of the subject's hands. The subject uses the gesture submitted by the caster for the next turn. If the subject is only so because of a reflection from a Magic Mirror the subject of the mirror assumes the role of caster and decides his opponent's gesture. If the subject is also the subject of any of Paralysis, Amnesia, Confusion, another Charm Person, Charm Monster, or Fear, none of the spells work.",
+                   "Abgesehen von der Aufhebung mit anderen Verzauberungen wirkt dieser Zauber nur auf Hexer. Das Ziel des Zaubers gibt wie gewohnt seine Befehle ab, aber der Zaubernde legt zusätzlich eine Geste für eine der Hände des Ziels fest. Im nächsten Zug verwendet das Ziel die vom Zaubernden festgelegte Geste. Ist das Ziel nur durch die Spiegelung eines Magischen Spiegels zum Ziel geworden, übernimmt der durch den Spiegel Geschützte die Rolle des Zaubernden und bestimmt die Geste seines Gegners. Ist das Ziel zusätzlich Ziel von Lähmung, Amnesie, Verwirrung, einem weiteren Person bezaubern, Monster bezaubern oder Furcht, wirkt keiner dieser Zauber.",
+                   "Salvo por la anulación con otros encantamientos, este hechizo solo afecta a brujos. El objetivo del hechizo da sus órdenes con normalidad, pero el lanzador también elige un gesto para una de las manos del objetivo. En el turno siguiente, el objetivo usa el gesto elegido por el lanzador. Si alguien es objetivo solo por el reflejo de un Espejo mágico, el protegido por el espejo asume el papel de lanzador y decide el gesto de su rival. Si el objetivo es también objetivo de Parálisis, Amnesia, Confusión, otro Hechizar persona, Hechizar monstruo o Miedo, ninguno de esos hechizos funciona.");
     fillDictionary("PWPFSSSD_desc",
-                   "Ціль закляття стає мертвою мов камінь. Це заклинання настільки сильне, що він його не може зипинити Магічний Захист, хоча Розсіювання Магія виконане в той же хід зупинить.<br>Звичайний спосіб запобігти цього закляттю, щоб запобігти його кастуванню використовуючи, наприклад, Анти Закляття.",
-                   "Цель заклинания становится мертвой как камень. Это заклинание настолько сильное, что он его не может остановить Магический Защита, хотя Рассеивание Магия выполнено в тот же ход остановит.<br>Обычный способ предотвращения этого заклятию, чтобы предотвратить его кастуванню используя, например, Анти Заклятие.",
-                   "Kills the subject stone dead. This spell is so powerful that it is unaffected by a Counter Spell, although a Dispel Magic spell cast upon the final gesture will stop it.<br>The usual way to prevent being harmed by this spell is to prevent its casting using, for example, an Anti Spell.");
+                   "Kills the subject stone dead. This spell is so powerful that it is unaffected by a Counter Spell, although a Dispel Magic spell cast upon the final gesture will stop it.<br>The usual way to prevent being harmed by this spell is to prevent its casting using, for example, an Anti Spell.",
+                   "Tötet das Ziel auf der Stelle. Dieser Zauber ist so mächtig, dass ihm ein Gegenzauber nichts anhaben kann; ein mit der letzten Geste gewirktes Magie bannen hält ihn jedoch auf.<br>Der übliche Weg, sich vor diesem Zauber zu schützen, ist, sein Wirken zu verhindern, zum Beispiel mit einem Antizauber.",
+                   "Mata al objetivo en el acto. Este hechizo es tan poderoso que Contrahechizo no le afecta, aunque un Disipar magia lanzado en el gesto final lo detiene.<br>La forma habitual de evitar el daño de este hechizo es impedir que se lance usando, por ejemplo, un Antihechizo.");
     fillDictionary("PWPWWc_desc",
-                   "Протягом наступних 3 ходів, ціль закліття (але не його монстри якщо ціль Чаклун) робить додатковий набір жестів у зв'язку з його прискоренням. Це набуває чинності негайно, відразу після раунду в якому скастоване Прискорення. Всі інші бачать що прискорений Чаклун робить.<br>Зверніть увагу, що будь-яке заклинання яке почало дію в неприскореному раунді, продовжить свою дію у прискореному. Це означає, що (наприклад) Щит навіяний не прискореним Чаклуном також захистити його від удар ножем від прискореного Чаклуна у прискореному раунді.<br>Також зверніть увагу що дія закляття яке почалось у прискореному ході, завершиться у кінці прискореного ходу.<br>Нарешті, зверніть увагу, що чари все ще ефективні під час прискореного раунду, тобто при амнезії прискорений чаклун у прискореному раунді знову повторить свої жести.",
-                   "В течение следующих 3 ходов, цель заклиття (но не его монстры если цель Колдун) делает дополнительный набор жестов в связи с его ускорением. Это вступает в силу немедленно, сразу после раунда в котором скастоване Ускорение. Все другие видят что ускоренный Колдун делает.<br>Обратите внимание, что любое заклинание которое начало действие в неускоренной раунде, продолжит свое действие в ускоренном. Это означает, что (например) Щит производимое не ускоренным Колдуном также защитить его от удар ножом от ускоренного Колдуна в ускоренном раунде.<br>Также обратите внимание, что действие заклятия которое началось в ускоренном ходе, завершится в конце ускоренного хода.<br>Наконец, обратите внимание, что волшебство все еще эффективны при ускоренного раунда, т.е. при амнезии ускоренный колдун в ускоренном раунде снова повторит свои жесты.",
-                   "For the next 3 turns, the subject (but not his monsters if a Warlock) makes an extra set of gestures due to being speeded up. This takes effect immediately, so that immediately after the turn in which the Haste is cast the Hastened Warlock gets a \"free\" set of orders. Non-hastened Warlocks and monsters can see everything the hastened individual is doing.<br>Note that any spells cast during a non-hastened turn do not expire before the end of the extra hastened turn. This means that (for example) a Shield cast by a non-hastened Warlock would also protect him against a stab from a hastened Warlock in the hastened Warlock's free turn.<br>Note also that lasting spells cast during the hastened turn will begin to time out before the next turn. For example, a Shield cast during the free turn is not effective in the next.<br>Finally, note that enchantments are still effective during a Hasted turn, but, if the caster doesn't submit orders that turn, and the enchantment requires direction (as Paralysis and Charm Person do), then it will not take effect.");
+                   "For the next 3 turns, the subject (but not his monsters if a Warlock) makes an extra set of gestures due to being speeded up. This takes effect immediately, so that immediately after the turn in which the Haste is cast the Hastened Warlock gets a \"free\" set of orders. Non-hastened Warlocks and monsters can see everything the hastened individual is doing.<br>Note that any spells cast during a non-hastened turn do not expire before the end of the extra hastened turn. This means that (for example) a Shield cast by a non-hastened Warlock would also protect him against a stab from a hastened Warlock in the hastened Warlock's free turn.<br>Note also that lasting spells cast during the hastened turn will begin to time out before the next turn. For example, a Shield cast during the free turn is not effective in the next.<br>Finally, note that enchantments are still effective during a Hasted turn, but, if the caster doesn't submit orders that turn, and the enchantment requires direction (as Paralysis and Charm Person do), then it will not take effect.",
+                   "In den nächsten 3 Zügen macht das Ziel (bei einem Hexer aber nicht seine Monster) durch die Beschleunigung einen zusätzlichen Satz Gesten. Das wirkt sofort: Direkt nach dem Zug, in dem Eile gewirkt wird, erhält der beschleunigte Hexer einen \"freien\" Satz Befehle. Nicht beschleunigte Hexer und Monster sehen alles, was der Beschleunigte tut.<br>Beachte, dass Zauber, die in einem nicht beschleunigten Zug gewirkt wurden, nicht vor dem Ende des zusätzlichen beschleunigten Zuges enden. Das heißt zum Beispiel, dass ein Schild, den ein nicht beschleunigter Hexer gewirkt hat, ihn im freien Zug des beschleunigten Hexers auch vor dessen Stich schützt.<br>Beachte auch, dass länger wirkende Zauber, die im beschleunigten Zug gewirkt wurden, schon vor dem nächsten Zug ablaufen. Ein im freien Zug gewirkter Schild wirkt zum Beispiel im nächsten Zug nicht mehr.<br>Und schließlich wirken Verzauberungen auch in einem beschleunigten Zug; gibt der Zaubernde in diesem Zug jedoch keine Befehle ab und braucht die Verzauberung eine Anweisung (wie Lähmung und Person bezaubern), tritt sie nicht in Kraft.",
+                   "Durante los 3 turnos siguientes, el objetivo (pero no sus monstruos, si es un brujo) hace una serie extra de gestos por estar acelerado. Tiene efecto inmediato, de modo que justo después del turno en que se lanza Prisa el brujo acelerado recibe una serie de órdenes \"gratis\". Los brujos y monstruos no acelerados pueden ver todo lo que hace el acelerado.<br>Ten en cuenta que los hechizos lanzados durante un turno no acelerado no expiran antes del final del turno acelerado extra. Esto significa (por ejemplo) que un Escudo lanzado por un brujo no acelerado también le protegerá de la puñalada de un brujo acelerado en el turno gratis de este.<br>Ten en cuenta también que los hechizos duraderos lanzados durante el turno acelerado empiezan a agotarse antes del turno siguiente. Por ejemplo, un Escudo lanzado durante el turno gratis no tiene efecto en el siguiente.<br>Por último, los encantamientos siguen siendo efectivos durante un turno acelerado, pero si el lanzador no da órdenes en ese turno y el encantamiento requiere dirección (como Parálisis y Hechizar persona), no tendrá efecto.");
     fillDictionary("SD_desc",
-                   "Це заклинання створює матеріальний об'єкт твердої речовини, яка летить у бік суб'єкта заклинання і спричиняє один пункт ушкодження. Від заклинання можна захиститись Щитом.",
-                   "Это заклинание создает материальный объект твердого вещества, которая летит в сторону субъекта заклинание и вызывает один пункт повреждения. От заклинания можно защититься Щитом.",
-                   "This spell creates a material object of hard substance which is hurled towards the subject of the spell and causes him one point of damage. The spell is thwarted by a Shield.");
+                   "This spell creates a material object of hard substance which is hurled towards the subject of the spell and causes him one point of damage. The spell is thwarted by a Shield.",
+                   "Dieser Zauber erschafft einen festen, harten Gegenstand, der auf das Ziel geschleudert wird und ihm einen Punkt Schaden zufügt. Ein Schild vereitelt den Zauber.",
+                   "Este hechizo crea un objeto material de sustancia dura que se lanza contra el objetivo y le causa un punto de daño. Un Escudo frustra el hechizo.");
     fillDictionary("SPFP_desc",
-                   "Наступного ходу ціль заклинання, не зможе використовувати жести, зроблені у попередніх раунда для побудови заклять. Заклинання не впливає на заклинання, які застосовані в цьому раунді і не впливають на монстрів.",
-                   "Следующего хода цель заклинание, не сможет использовать жесты, сделанные в предыдущих раунда для построения заклинаний. Заклинание не влияет на заклинания, которые применены в этом раунде и не влияют на монстров.",
-                   "On the turn following the casting of this spell, the subject cannot include any gestures made on or before this turn in a spell sequence and must restart a new spell from the beginning of that spell sequence. The spell does not affect spells which are cast on the same turn nor does it affect monsters.");
+                   "On the turn following the casting of this spell, the subject cannot include any gestures made on or before this turn in a spell sequence and must restart a new spell from the beginning of that spell sequence. The spell does not affect spells which are cast on the same turn nor does it affect monsters.",
+                   "Im Zug nach dem Wirken dieses Zaubers kann das Ziel keine Gesten aus diesem oder früheren Zügen in eine Zauberfolge einbeziehen und muss einen neuen Zauber von Anfang an beginnen. Der Zauber wirkt weder auf Zauber, die im selben Zug gewirkt werden, noch auf Monster.",
+                   "En el turno siguiente al lanzamiento de este hechizo, el objetivo no puede incluir en una secuencia de hechizo ningún gesto hecho en este turno o antes, y debe empezar un nuevo hechizo desde el principio. El hechizo no afecta a los hechizos lanzados en el mismo turno ni a los monstruos.");
     fillDictionary("SPFPSDW_desc",
-                   "Це заклинання працює тільки тоді, коли накладається на Чаклуна. Будь-яке заклинання він завершує (тобто завершує жести і кидає), за умови, що на одному з найближчих 3 ходу, і які потрапляє в категорію «чари» (за винятком Анти Чари, Хвороба, Отрута, або Time Stop) стає постійним.",
-                   "Это заклинание работает только тогда, когда накладывается на Колдуна. Любое заклинание он завершает (т.е. завершает жесты и бросает), при условии, что на одном из ближайших 3 хода, и которые попадает в категорию «чары» (за исключением Анти Чары, Болезнь, Яд, или Time Stop) становится постоянным",
-                   "This spell only works if cast upon a Warlock. Any spell he completes (i.e. completes the gestures of and casts), provided it is on one of the next 3 turns, and which falls into the category of \"Enchantments\" (except Anti Spell, Disease, Poison, or Time Stop) can have its effect made permanent. Delay Effect and Permanency can be made permanent, which prevents the three turn timeout, but they are still used up after being triggered. Note that the person who has his spell made permanent does not necessarily have to make himself the subject of the spell. A Permanency spell cannot increase the duration of a spell which is being banked by Delay Effect. Note that an attempt to make permanent an enchantment spell that is countered (or fails for any other reason) still uses up the Permanency. Note: Cast Permanency at yourself! Permanency doesn't work with Charm Monster, as that spell has an instant effect rather than actually behaving as an enchantment.");
+                   "This spell only works if cast upon a Warlock. Any spell he completes (i.e. completes the gestures of and casts), provided it is on one of the next 3 turns, and which falls into the category of \"Enchantments\" (except Anti Spell, Disease, Poison, or Time Stop) can have its effect made permanent. Delay Effect and Permanency can be made permanent, which prevents the three turn timeout, but they are still used up after being triggered. Note that the person who has his spell made permanent does not necessarily have to make himself the subject of the spell. A Permanency spell cannot increase the duration of a spell which is being banked by Delay Effect. Note that an attempt to make permanent an enchantment spell that is countered (or fails for any other reason) still uses up the Permanency. Note: Cast Permanency at yourself! Permanency doesn't work with Charm Monster, as that spell has an instant effect rather than actually behaving as an enchantment.",
+                   "Dieser Zauber wirkt nur, wenn er auf einen Hexer gewirkt wird. Jeder Zauber, den er vollendet (also dessen Gesten er abschließt und den er wirkt), sofern dies in einem der nächsten 3 Züge geschieht und der Zauber zur Kategorie \"Verzauberungen\" gehört (außer Antizauber, Krankheit, Gift und Zeitstopp), kann dauerhaft gemacht werden. Verzögerter Effekt und Dauerhaftigkeit können dauerhaft gemacht werden, wodurch die Frist von drei Zügen entfällt; nach dem Auslösen sind sie aber trotzdem verbraucht. Beachte, dass derjenige, dessen Zauber dauerhaft gemacht wird, nicht unbedingt selbst das Ziel dieses Zaubers sein muss. Dauerhaftigkeit kann die Dauer eines Zaubers, der durch Verzögerter Effekt gespeichert wird, nicht verlängern. Beachte, dass der Versuch, eine Verzauberung dauerhaft zu machen, die abgewehrt wird (oder aus einem anderen Grund scheitert), die Dauerhaftigkeit trotzdem verbraucht. Hinweis: Wirke Dauerhaftigkeit auf dich selbst! Dauerhaftigkeit funktioniert nicht mit Monster bezaubern, da dieser Zauber sofort wirkt, statt sich wie eine Verzauberung zu verhalten.",
+                   "Este hechizo solo funciona si se lanza sobre un brujo. Cualquier hechizo que complete (es decir, cuyos gestos complete y lance), siempre que sea en uno de los 3 turnos siguientes y pertenezca a la categoría de \"Encantamientos\" (salvo Antihechizo, Enfermedad, Veneno o Detener el tiempo), puede volverse permanente. Efecto retardado y Permanencia pueden volverse permanentes, lo que evita el límite de tres turnos, pero aun así se consumen al activarse. Ten en cuenta que quien hace permanente su hechizo no tiene por qué ser el objetivo de ese hechizo. Permanencia no puede alargar la duración de un hechizo guardado con Efecto retardado. Ten en cuenta que intentar hacer permanente un encantamiento que es contrarrestado (o que falla por cualquier otro motivo) consume igualmente la Permanencia. Nota: ¡lanza Permanencia sobre ti mismo! Permanencia no funciona con Hechizar monstruo, ya que ese hechizo tiene un efecto instantáneo en lugar de comportarse como un encantamiento.");
     fillDictionary("SPPc_desc",
-                   "Ціль цього закляття отримує додатковий хід відразу ж по закінченні поточного раунду, якщо дуєль ще не закінчилась. В ході додаткового рукнду ніхто не бачить жести Чаклуна. Також ніхто немає захисту від атак проведених під часс цього додаткового раунду.",
-                   "Цель этого заклинания получает дополнительный ход сразу же по окончании текущего раунда, если дуель еще не закончился. В ходе дополнительного рукнду никто не видит жесты Колдуна. Также никто не имеет защиты от атак проведенных под часс этого дополнительного раунда.",
-                   "The subject of this spell takes an extra turn immediately at the end of the current turn, assuming they are still alive. During the extra turn, no-one can see the gestures he makes (though they can detect the effects of spells he casts). All beings have no resistance to any form of attack during a Time-Stopped turn, e.g. a Warlock halfway through the duration of a Protection spell can be harmed by a monster which has had its time stopped. Time stopped monsters attack whoever they were attacking in the round Time Stop is cast, and time stopped elementals affect everyone, resistance to heat or cold being immaterial. Also, enchantments which affect a Warlock's gestures are not effective during the time-stopped turn (though they still take effect afterwards). It's possible, therefore, to negate an enchantment by casting another on yourself during a time-stopped turn. Essentially, no persistent effects are relevant in a time-stopped turn. Also, a counter-spell or shield cast during a time-stopped turn will not last into the next turn. A time-stopped monster will attack before a surrender is recognised, though a time-stopped player will not. Finally, if two Warlocks are both time-stopped in the same turn, they can both see the other.");
+                   "The subject of this spell takes an extra turn immediately at the end of the current turn, assuming they are still alive. During the extra turn, no-one can see the gestures he makes (though they can detect the effects of spells he casts). All beings have no resistance to any form of attack during a Time-Stopped turn, e.g. a Warlock halfway through the duration of a Protection spell can be harmed by a monster which has had its time stopped. Time stopped monsters attack whoever they were attacking in the round Time Stop is cast, and time stopped elementals affect everyone, resistance to heat or cold being immaterial. Also, enchantments which affect a Warlock's gestures are not effective during the time-stopped turn (though they still take effect afterwards). It's possible, therefore, to negate an enchantment by casting another on yourself during a time-stopped turn. Essentially, no persistent effects are relevant in a time-stopped turn. Also, a counter-spell or shield cast during a time-stopped turn will not last into the next turn. A time-stopped monster will attack before a surrender is recognised, though a time-stopped player will not. Finally, if two Warlocks are both time-stopped in the same turn, they can both see the other.",
+                   "Das Ziel dieses Zaubers erhält unmittelbar am Ende des aktuellen Zuges einen Extrazug, sofern es noch lebt. Während des Extrazuges kann niemand seine Gesten sehen (die Wirkung seiner Zauber ist aber erkennbar). In einem Zeitstopp-Zug hat kein Wesen Resistenz gegen irgendeine Angriffsart; so kann zum Beispiel ein Hexer mitten in der Wirkungsdauer eines Schutz-Zaubers von einem Monster verletzt werden, dessen Zeit angehalten wurde. Monster mit angehaltener Zeit greifen an, wen sie in der Runde angegriffen haben, in der Zeitstopp gewirkt wurde, und Elementare mit angehaltener Zeit treffen alle, ganz gleich ob hitze- oder kälteresistent. Außerdem wirken Verzauberungen, die die Gesten eines Hexers beeinflussen, im Zeitstopp-Zug nicht (danach aber schon). Man kann also eine Verzauberung aufheben, indem man in einem Zeitstopp-Zug eine weitere auf sich selbst wirkt. Im Grunde spielen anhaltende Wirkungen in einem Zeitstopp-Zug keine Rolle. Auch ein im Zeitstopp-Zug gewirkter Gegenzauber oder Schild hält nicht bis in den nächsten Zug. Ein Monster mit angehaltener Zeit greift an, bevor eine Aufgabe anerkannt wird, ein Spieler mit angehaltener Zeit dagegen nicht. Und schließlich: Wird bei zwei Hexern im selben Zug die Zeit angehalten, können beide einander sehen.",
+                   "El objetivo de este hechizo juega un turno extra justo al final del turno actual, siempre que siga vivo. Durante el turno extra nadie puede ver los gestos que hace (aunque sí pueden notar los efectos de los hechizos que lanza). Durante un turno con el tiempo detenido ningún ser tiene resistencia a ninguna forma de ataque; por ejemplo, un brujo a mitad de la duración de un hechizo de Protección puede ser herido por un monstruo cuyo tiempo se haya detenido. Los monstruos con el tiempo detenido atacan a quien estuvieran atacando en la ronda en que se lanzó Detener el tiempo, y los elementales con el tiempo detenido afectan a todos, sin importar la resistencia al calor o al frío. Además, los encantamientos que afectan a los gestos de un brujo no tienen efecto durante el turno con el tiempo detenido (aunque sí lo tienen después). Por tanto, es posible anular un encantamiento lanzándote otro durante un turno con el tiempo detenido. En esencia, ningún efecto persistente cuenta en un turno con el tiempo detenido. Además, un contrahechizo o escudo lanzado durante un turno con el tiempo detenido no dura hasta el turno siguiente. Un monstruo con el tiempo detenido ataca antes de que se reconozca una rendición, pero un jugador con el tiempo detenido no. Por último, si dos brujos tienen el tiempo detenido en el mismo turno, ambos pueden verse.");
     fillDictionary("SPPFD_desc",
-                   "Ціль цього закляття отримує додатковий хід відразу ж по закінченні поточного раунду, якщо дуєль ще не закінчилась. В ході додаткового рукнду ніхто не бачить жести Чаклуна. Також ніхто немає захисту від атак проведених під часс цього додаткового раунду.",
-                   "Цель этого заклинания получает дополнительный ход сразу же по окончании текущего раунда, если дуель еще не закончился. В ходе дополнительного рукнду никто не видит жесты Колдуна. Также никто не имеет защиты от атак проведенных под часс этого дополнительного раунда.",
-                   "The subject of this spell takes an extra turn immediately at the end of the current turn, assuming they are still alive. During the extra turn, no-one can see the gestures he makes (though they can detect the effects of spells he casts). All beings have no resistance to any form of attack during a Time-Stopped turn, e.g. a Warlock halfway through the duration of a Protection spell can be harmed by a monster which has had its time stopped. Time stopped monsters attack whoever they were attacking in the round Time Stop is cast, and time stopped elementals affect everyone, resistance to heat or cold being immaterial. Also, enchantments which affect a Warlock's gestures are not effective during the time-stopped turn (though they still take effect afterwards). It's possible, therefore, to negate an enchantment by casting another on yourself during a time-stopped turn. Essentially, no persistent effects are relevant in a time-stopped turn. Also, a counter-spell or shield cast during a time-stopped turn will not last into the next turn. A time-stopped monster will attack before a surrender is recognised, though a time-stopped player will not. Finally, if two Warlocks are both time-stopped in the same turn, they can both see the other.");
+                   "The subject of this spell takes an extra turn immediately at the end of the current turn, assuming they are still alive. During the extra turn, no-one can see the gestures he makes (though they can detect the effects of spells he casts). All beings have no resistance to any form of attack during a Time-Stopped turn, e.g. a Warlock halfway through the duration of a Protection spell can be harmed by a monster which has had its time stopped. Time stopped monsters attack whoever they were attacking in the round Time Stop is cast, and time stopped elementals affect everyone, resistance to heat or cold being immaterial. Also, enchantments which affect a Warlock's gestures are not effective during the time-stopped turn (though they still take effect afterwards). It's possible, therefore, to negate an enchantment by casting another on yourself during a time-stopped turn. Essentially, no persistent effects are relevant in a time-stopped turn. Also, a counter-spell or shield cast during a time-stopped turn will not last into the next turn. A time-stopped monster will attack before a surrender is recognised, though a time-stopped player will not. Finally, if two Warlocks are both time-stopped in the same turn, they can both see the other.",
+                   "Das Ziel dieses Zaubers erhält unmittelbar am Ende des aktuellen Zuges einen Extrazug, sofern es noch lebt. Während des Extrazuges kann niemand seine Gesten sehen (die Wirkung seiner Zauber ist aber erkennbar). In einem Zeitstopp-Zug hat kein Wesen Resistenz gegen irgendeine Angriffsart; so kann zum Beispiel ein Hexer mitten in der Wirkungsdauer eines Schutz-Zaubers von einem Monster verletzt werden, dessen Zeit angehalten wurde. Monster mit angehaltener Zeit greifen an, wen sie in der Runde angegriffen haben, in der Zeitstopp gewirkt wurde, und Elementare mit angehaltener Zeit treffen alle, ganz gleich ob hitze- oder kälteresistent. Außerdem wirken Verzauberungen, die die Gesten eines Hexers beeinflussen, im Zeitstopp-Zug nicht (danach aber schon). Man kann also eine Verzauberung aufheben, indem man in einem Zeitstopp-Zug eine weitere auf sich selbst wirkt. Im Grunde spielen anhaltende Wirkungen in einem Zeitstopp-Zug keine Rolle. Auch ein im Zeitstopp-Zug gewirkter Gegenzauber oder Schild hält nicht bis in den nächsten Zug. Ein Monster mit angehaltener Zeit greift an, bevor eine Aufgabe anerkannt wird, ein Spieler mit angehaltener Zeit dagegen nicht. Und schließlich: Wird bei zwei Hexern im selben Zug die Zeit angehalten, können beide einander sehen.",
+                   "El objetivo de este hechizo juega un turno extra justo al final del turno actual, siempre que siga vivo. Durante el turno extra nadie puede ver los gestos que hace (aunque sí pueden notar los efectos de los hechizos que lanza). Durante un turno con el tiempo detenido ningún ser tiene resistencia a ninguna forma de ataque; por ejemplo, un brujo a mitad de la duración de un hechizo de Protección puede ser herido por un monstruo cuyo tiempo se haya detenido. Los monstruos con el tiempo detenido atacan a quien estuvieran atacando en la ronda en que se lanzó Detener el tiempo, y los elementales con el tiempo detenido afectan a todos, sin importar la resistencia al calor o al frío. Además, los encantamientos que afectan a los gestos de un brujo no tienen efecto durante el turno con el tiempo detenido (aunque sí lo tienen después). Por tanto, es posible anular un encantamiento lanzándote otro durante un turno con el tiempo detenido. En esencia, ningún efecto persistente cuenta en un turno con el tiempo detenido. Además, un contrahechizo o escudo lanzado durante un turno con el tiempo detenido no dura hasta el turno siguiente. Un monstruo con el tiempo detenido ataca antes de que se reconozca una rendición, pero un jugador con el tiempo detenido no. Por último, si dos brujos tienen el tiempo detenido en el mismo turno, ambos pueden verse.");
     fillDictionary("SSFP_desc",
-                   "Ефект цього закляття ідентичний Захисту від Жару, але захищаэ выд Холоду (Крижаний Шторм та Крижаний Елементаль), воно руйнує крижаних елементалів, якщо вони є цыллю заклинання, але не впливає на вогненних елементалів.",
-                   "Эффект этого заклинания идентичен Защиты от Жара, но захищаэ выд Холода (Ледяной Шторм и Ледяной Елементаль), оно разрушает ледяных элементалей, если они цыллю заклинание, но не влияет на огненных элементалей.",
-                   "The effects of this spell are identical to Resist Heat but resistance is to cold (Ice Storm and ice elementals) and it destroys ice elementals if they are the subject of the spell but doesn't affect fire elementals.");
+                   "The effects of this spell are identical to Resist Heat but resistance is to cold (Ice Storm and ice elementals) and it destroys ice elementals if they are the subject of the spell but doesn't affect fire elementals.",
+                   "Die Wirkung dieses Zaubers entspricht Hitzeresistenz, nur gilt die Resistenz gegen Kälte (Eissturm und Eiselementare); er vernichtet Eiselementare, auf die er gewirkt wird, hat aber keine Wirkung auf Feuerelementare.",
+                   "Los efectos de este hechizo son idénticos a Resistir calor, pero la resistencia es al frío (Tormenta de hielo y elementales de hielo); destruye a los elementales de hielo sobre los que se lanza, pero no afecta a los elementales de fuego.");
     fillDictionary("SWD_desc",
-                   "Якщо суб'єкт цього заклинання Чернокнижник, то у наступному раунді, зачарованийй може не виконати жести C, D, F S (якщо вони будуть замінені на -).<br>Якщо предметом заклинання це чудовисько (за винятком елементалів), то воно буде занадто налякане, щоб атакувати в цьому раунді.<br>Якщо об'єкт є також ціллю Паралічу, Заплутаності, Зачарування Людини, Зачарування Монстра, Страху або іншої Амнезії то жодне з цих заклять не спрацює.",
-                   "Если субъект этого заклинания Чернокнижник, то в следующем раунде, зачарованийй может не выполнить жесты C, D, FS (если они будут заменены на -).<br>Если предметом заклинание это чудовище (за исключением элементалей), то оно будет слишком напугано, чтобы атаковать в этом раунде.<br>Если объект является также целью Паралича, Запутаности, Очарование Человека, Очарование Монстра, Страха или иной Амнезии то ни одно из этих заклинаний не сработает.",
-                   "If the subject of this spell is a Warlock, then on the turn following the casting of this spell, the subject cannot perform a C, D, F or S gesture (if they submit orders to make one of these gestures, their gesture will be replaced with '-' - no gesture).<br>If the subject of the spell is a monster (excluding elementals, which are unaffected), it will be too afraid to attack in that round.<br>If the subject is also the subject of Paralysis, Amnesia, Confusion, Charm Person, Charm Monster, or another Fear, then none of the spells work.");
+                   "If the subject of this spell is a Warlock, then on the turn following the casting of this spell, the subject cannot perform a C, D, F or S gesture (if they submit orders to make one of these gestures, their gesture will be replaced with '-' - no gesture).<br>If the subject of the spell is a monster (excluding elementals, which are unaffected), it will be too afraid to attack in that round.<br>If the subject is also the subject of Paralysis, Amnesia, Confusion, Charm Person, Charm Monster, or another Fear, then none of the spells work.",
+                   "Ist das Ziel dieses Zaubers ein Hexer, kann es im Zug nach dem Wirken dieses Zaubers keine C-, D-, F- oder S-Geste ausführen (befiehlt es eine dieser Gesten, wird sie durch '-' ersetzt - keine Geste).<br>Ist das Ziel ein Monster (außer Elementaren, die nicht betroffen sind), hat es in dieser Runde zu viel Angst, um anzugreifen.<br>Ist das Ziel zusätzlich Ziel von Lähmung, Amnesie, Verwirrung, Person bezaubern, Monster bezaubern oder einer weiteren Furcht, wirkt keiner dieser Zauber.",
+                   "Si el objetivo de este hechizo es un brujo, en el turno siguiente al lanzamiento no puede hacer los gestos C, D, F ni S (si ordena uno de esos gestos, se sustituirá por '-', ningún gesto).<br>Si el objetivo es un monstruo (excepto los elementales, a los que no afecta), tendrá demasiado miedo para atacar en esa ronda.<br>Si el objetivo es también objetivo de Parálisis, Amnesia, Confusión, Hechizar persona, Hechizar monstruo u otro Miedo, ninguno de esos hechizos funciona.");
     fillDictionary("SWWc_desc",
-                   "Кожен, хто не стійкій до жару отримує 5 пунктів ушкодження. Заклинання скасовується повністю, не завдаючи шкоди, або з Крижаним Штормом або Крижаним Елементалем. Вогнянний Шторм знищить також Вогненого елементаля, але також завдасть шкоді всім іншим як звичайно. Два  Шторми будуть діяти як один. Магічний захист не зупинить Пекельний Шторм, але захистить власника.",
-                   "Каждый, кто не устойчивой к жару получает 5 пунктов повреждения. Заклинание отменяется полностью, не причиняя вреда, или Ледяным штормом или Ледяным элементалем. Огненных Шторм уничтожит также огненные элементаля, но также нанесет вред всем остальным как обычно. Два Штормы будут действовать как один. Магическая защита не остановит Огненный Шторм, но защитит владельца.",
-                   "Everything not resistant to heat sustains 5 points of damage that turn. The spell cancels wholly, causing no damage, with either an Ice Storm or an ice elemental. It will destroy but not be destroyed by a fire elemental. Two Fire Storms act as one. A Counter Spell will not prevent a Fire Storm, but it will protect the target of the Counter Spell.");
+                   "Everything not resistant to heat sustains 5 points of damage that turn. The spell cancels wholly, causing no damage, with either an Ice Storm or an ice elemental. It will destroy but not be destroyed by a fire elemental. Two Fire Storms act as one. A Counter Spell will not prevent a Fire Storm, but it will protect the target of the Counter Spell.",
+                   "Alles, was nicht hitzeresistent ist, erleidet in diesem Zug 5 Punkte Schaden. Zusammen mit einem Eissturm oder einem Eiselementar hebt sich der Zauber vollständig auf und verursacht keinen Schaden. Er vernichtet einen Feuerelementar, wird von ihm aber nicht vernichtet. Zwei Feuerstürme wirken wie einer. Ein Gegenzauber verhindert keinen Feuersturm, schützt aber das Ziel des Gegenzaubers.",
+                   "Todo lo que no sea resistente al calor sufre 5 puntos de daño en ese turno. El hechizo se anula por completo, sin causar daño, con una Tormenta de hielo o un elemental de hielo. Destruye a un elemental de fuego sin ser destruido por él. Dos Tormentas de fuego actúan como una. Un Contrahechizo no impide una Tormenta de fuego, pero protege al objetivo del Contrahechizo.");
     fillDictionary("WDDc_desc",
-                   "Аналогічно до Блискавки, але це закляття Чаклун може використати тільки раз в битві. (Примітка - якщо закляття заблоковане контр-заклинання, то не може бути використане знову, але якщо закляття зупинене Розсіюванням магії, то може бути використане знову)",
-                   "Аналогично Молнии, но это заклятие Колдун может использовать только раз в битве. (Примечание - если заклятие заблокировано контр-заклинание, не может быть использовано снова, но если заклятие остановлено Рассеиванием магии, то может быть использовано снова)",
-                   "The subject of this spell is hit by a bolt of lightning and sustains five points of damage. A Shield spell offers no defence. This spell may only be cast once per Warlock in any one Battle. (Note - if it is blocked by a counter-spell, it still may not be cast again. If it is prevented by Dispel Magic, it can be cast again.)");
+                   "The subject of this spell is hit by a bolt of lightning and sustains five points of damage. A Shield spell offers no defence. This spell may only be cast once per Warlock in any one Battle. (Note - if it is blocked by a counter-spell, it still may not be cast again. If it is prevented by Dispel Magic, it can be cast again.)",
+                   "Das Ziel dieses Zaubers wird von einem Blitz getroffen und erleidet fünf Punkte Schaden. Ein Schild bietet keinen Schutz. Dieser Zauber kann von jedem Hexer nur einmal pro Kampf gewirkt werden. (Hinweis: Wird er durch einen Gegenzauber geblockt, kann er trotzdem nicht erneut gewirkt werden. Wird er durch Magie bannen verhindert, kann er erneut gewirkt werden.)",
+                   "El objetivo de este hechizo recibe el impacto de un rayo y sufre cinco puntos de daño. El Escudo no ofrece ninguna protección. Cada brujo solo puede lanzar este hechizo una vez por batalla. (Nota: si lo bloquea un contrahechizo, tampoco puede volver a lanzarse. Si lo impide Disipar magia, puede volver a lanzarse.)");
     fillDictionary("WFP_desc",
-                   "Ціль закляття отримує 2 очка ушкодження. Щит не дає захисту.",
-                   "Цель заклинания получает 2 очка повреждения. Щит не дает защиты.",
-                   "The subject of this spell is inflicted with two points of damage. A Shield spell offers no defence.");
+                   "The subject of this spell is inflicted with two points of damage. A Shield spell offers no defence.",
+                   "Dem Ziel dieses Zaubers werden zwei Punkte Schaden zugefügt. Ein Schild bietet keinen Schutz.",
+                   "El objetivo de este hechizo sufre dos puntos de daño. El Escudo no ofrece ninguna protección.");
     fillDictionary("WPFD_desc",
-                   "Таке ж як Нанести Легкі Рани, але завдає три очка ушкодження замість двох.",
-                   "Такое же как Нанести Легкие Раны, но наносит три очка повреждения вместо двух.",
-                   "This has the same effect as Cause Light Wounds but inflicts three points of damage instead of two.");
+                   "This has the same effect as Cause Light Wounds but inflicts three points of damage instead of two.",
+                   "Wirkt wie Leichte Wunden zufügen, verursacht aber drei statt zwei Punkte Schaden.",
+                   "Tiene el mismo efecto que Causar heridas leves, pero causa tres puntos de daño en lugar de dos.");
     fillDictionary("WPP_desc",
-                   "Будь-яке інше заклинання націлене на ціль захищену Магічним Захистом не буде мати ніякого ефекту. Магічний захист також зберігає від впливу заклятть які діють більш ніж на одну ціль, наприклад Пекельний Шторм. Магічний захист знешкоджує всі закляття крім Розсіяння Магії та Палець Смерті, а також працює в якості щита для своєї цілі.",
-                   "Любое другое заклинание нацелено на цель защищенную Магическим защиты не будет иметь никакого эффекта. Магическая защита также сохраняет от воздействия заклинаний действующих более чем на одну цель, например Огненный Шторм. Магическую защиту обезвреживает все заклинания кроме Рассеяние Магии и Пальца Смерти, а также работает в качестве щита для своей цели.",
-                   "Any other spell cast upon the subject in the same turn has no effect. In the case of blanket spells, which affect more than one person, the subject of the Counter Spell alone is protected. For example, a Fire Storm spell could kill off a monster but not if a Counter Spell were cast on the monster in the same turn. Everyone else would be affected as usual by the Fire Storm unless they had their own protection. Counter Spell works on all spells except Dispel Magic and Finger of Death, and also works as a Shield for its Target.");
+                   "Any other spell cast upon the subject in the same turn has no effect. In the case of blanket spells, which affect more than one person, the subject of the Counter Spell alone is protected. For example, a Fire Storm spell could kill off a monster but not if a Counter Spell were cast on the monster in the same turn. Everyone else would be affected as usual by the Fire Storm unless they had their own protection. Counter Spell works on all spells except Dispel Magic and Finger of Death, and also works as a Shield for its Target.",
+                   "Jeder andere Zauber, der im selben Zug auf das Ziel gewirkt wird, bleibt wirkungslos. Bei Flächenzaubern, die mehr als eine Person betreffen, ist nur das Ziel des Gegenzaubers geschützt. Ein Feuersturm könnte zum Beispiel ein Monster töten, aber nicht, wenn im selben Zug ein Gegenzauber auf das Monster gewirkt wurde. Alle anderen wären wie gewohnt vom Feuersturm betroffen, sofern sie keinen eigenen Schutz haben. Gegenzauber wirkt gegen alle Zauber außer Magie bannen und Todesfinger und wirkt außerdem als Schild für sein Ziel.",
+                   "Cualquier otro hechizo lanzado sobre el objetivo en el mismo turno no tiene efecto. En el caso de los hechizos de área, que afectan a más de una persona, solo queda protegido el objetivo del Contrahechizo. Por ejemplo, una Tormenta de fuego podría matar a un monstruo, pero no si se lanzó un Contrahechizo sobre él en el mismo turno. Todos los demás se verían afectados por la Tormenta de fuego con normalidad, salvo que tuvieran su propia protección. Contrahechizo funciona contra todos los hechizos excepto Disipar magia y Dedo de la muerte, y también actúa como Escudo para su objetivo.");
     fillDictionary("WSSc_desc",
-                   "Кожен, хто не стійкий до холоду отримає 5 пунктів ушкодження. Заклинання скасовує повністю, не завдаючи шкоди, або Пекельним Штормом або Вогняним Елементалем, і скасується локально Вогняною Кулею. Вогняний Шторм знищить, але не бути знищеньй Крижаним Елементалем. Два Крижаних Шторма будуть діяти як один. Магічний захист не зупинить Крижаний Шторм, але захистить власника.",
-                   "Каждый, кто не устойчив к холоду получит 5 пунктов повреждения. Заклинание отменяет полностью, не причиняя вреда, или Адским Штормом или Огненным элементалей, и упразднится локально Огненной Пулей. Огненный Шторм уничтожит, но не быть знищеньй Ледяным элементалей. Два Ледяных Шторма будут действовать как один. Магическую защиту не остановит Ледяной Шторм, но защитит владельца.",
-                   "Everything not resistant to cold sustains 5 points of damage that turn. The spell cancels wholly, causing no damage, with either a Fire Storm or a fire elemental, and will cancel locally with a Fireball. It will destroy but not be destroyed by an ice elemental. Two Ice Storms act as one. A Counter Spell will not prevent an Ice Storm, but it will protect the target of the Counter Spell.");
+                   "Everything not resistant to cold sustains 5 points of damage that turn. The spell cancels wholly, causing no damage, with either a Fire Storm or a fire elemental, and will cancel locally with a Fireball. It will destroy but not be destroyed by an ice elemental. Two Ice Storms act as one. A Counter Spell will not prevent an Ice Storm, but it will protect the target of the Counter Spell.",
+                   "Alles, was nicht kälteresistent ist, erleidet in diesem Zug 5 Punkte Schaden. Zusammen mit einem Feuersturm oder einem Feuerelementar hebt sich der Zauber vollständig auf und verursacht keinen Schaden; mit einem Feuerball hebt er sich örtlich auf. Er vernichtet einen Eiselementar, wird von ihm aber nicht vernichtet. Zwei Eisstürme wirken wie einer. Ein Gegenzauber verhindert keinen Eissturm, schützt aber das Ziel des Gegenzaubers.",
+                   "Todo lo que no sea resistente al frío sufre 5 puntos de daño en ese turno. El hechizo se anula por completo, sin causar daño, con una Tormenta de fuego o un elemental de fuego, y se anula localmente con una Bola de fuego. Destruye a un elemental de hielo sin ser destruido por él. Dos Tormentas de hielo actúan como una. Un Contrahechizo no impide una Tormenta de hielo, pero protege al objetivo del Contrahechizo.");
     fillDictionary("WWFP_desc",
-                   "Ціль закляття стає повністю стійка до всіх форм атаки Жаром (Вогненна Куля, Пекельний Шторм і Вогняний Елементаль). Тільки Розсіювання Магія і Зняття Чар припинять дію цього захисту (Магічний захист поглине це закляття якщо бути задіяне в той же раунд що і Захист выд Жару). Захист від Жару знищить Вогенного Елементаля, перш ніж він може атакувати, але не вплине на крижаних елементалів.",
-                   "Цель заклинания становится полностью устойчива ко всем формам атаки Жаром (Огненный Шар, Огненный Шторм и Огненный Елементаль). Только Рассеивание Магия и Снятие Чар прекратят действие защиты (Магическая защита поглотит это заклятие если будет задействовано в том же раунд что и Защита от Жара). Защита от Жара уничтожит Огенного элементаля, прежде чем он может атаковать, но не повлияет на ледяных элементалей.",
-                   "The subject of this spell becomes totally resistant to all forms of heat attack (Fireball, Fire Storm and fire elementals). Only Dispel Magic or Remove Enchantment will terminate this resistance once started (although a Counter Spell will prevent it from working if cast at the subject at the same time as this spell). A Resist Heat cast directly on a fire elemental will destroy it before it can attack that turn, but there is no effect on ice elementals.");
+                   "The subject of this spell becomes totally resistant to all forms of heat attack (Fireball, Fire Storm and fire elementals). Only Dispel Magic or Remove Enchantment will terminate this resistance once started (although a Counter Spell will prevent it from working if cast at the subject at the same time as this spell). A Resist Heat cast directly on a fire elemental will destroy it before it can attack that turn, but there is no effect on ice elementals.",
+                   "Das Ziel dieses Zaubers wird völlig resistent gegen alle Arten von Hitzeangriffen (Feuerball, Feuersturm und Feuerelementare). Einmal begonnen, beenden nur Magie bannen oder Verzauberung aufheben diese Resistenz (ein Gegenzauber, der gleichzeitig mit diesem Zauber auf das Ziel gewirkt wird, verhindert jedoch ihre Wirkung). Direkt auf einen Feuerelementar gewirkt, vernichtet Hitzeresistenz ihn, bevor er in diesem Zug angreifen kann; auf Eiselementare hat sie keine Wirkung.",
+                   "El objetivo de este hechizo se vuelve totalmente resistente a todas las formas de ataque de calor (Bola de fuego, Tormenta de fuego y elementales de fuego). Una vez iniciada, solo Disipar magia o Eliminar encantamiento ponen fin a esta resistencia (aunque un Contrahechizo lanzado sobre el objetivo al mismo tiempo que este hechizo impide que funcione). Resistir calor lanzado directamente sobre un elemental de fuego lo destruye antes de que pueda atacar en ese turno, pero no tiene efecto sobre los elementales de hielo.");
     fillDictionary("WWP_desc",
-                   "Аналогічно Щиту, тільки продовжуеться 3 раунди (раунд в якому скастоване + ще 2).",
-                   "Аналогично Щиту, только продолжаеться 3 раунда (раунд в котором скастовано + еще 2).",
-                   "For this turn and the following two turns the subject of this spell is protected as if using a Shield spell, thus leaving both hands free. Concurrent Shield spells offer no further protection and compound Protection spells merely overlap offering no extra cover.");
+                   "For this turn and the following two turns the subject of this spell is protected as if using a Shield spell, thus leaving both hands free. Concurrent Shield spells offer no further protection and compound Protection spells merely overlap offering no extra cover.",
+                   "In diesem und den beiden folgenden Zügen ist das Ziel dieses Zaubers geschützt, als hätte es einen Schild, und hat dabei beide Hände frei. Gleichzeitige Schild-Zauber bieten keinen zusätzlichen Schutz, und mehrere Schutz-Zauber überlappen sich nur, ohne zusätzlichen Schutz zu bieten.",
+                   "Durante este turno y los dos siguientes, el objetivo de este hechizo está protegido como si usara un Escudo, lo que le deja ambas manos libres. Los Escudos simultáneos no ofrecen protección adicional y varios hechizos de Protección simplemente se solapan sin dar más cobertura.");
     fillDictionary("WWS_desc",
-                   "Будь-яке інше заклинання націлене на ціль захищену Магічним Захистом не буде мати ніякого ефекту. Магічний захист також зберігає від впливу заклятть які діють більш ніж на одну ціль, наприклад Пекельний Шторм. Магічний захист знешкоджує всі закляття крім Розсіяння Магії та Палець Смерті, а також працює в якості щита для своєї цілі.",
-                   "Любое другое заклинание нацелено на цель защищенную Магическим защиты не будет иметь никакого эффекта. Магическая защита также сохраняет от воздействия заклинаний действующих более чем на одну цель, например Огненный Шторм. Магическую защиту обезвреживает все заклинания кроме Рассеяние Магии и Пальца Смерти, а также работает в качестве щита для своей цели.",
-                   "Any other spell cast upon the subject in the same turn has no effect. In the case of blanket spells, which affect more than one person, the subject of the Counter Spell alone is protected. For example, a Fire Storm spell could kill off a monster but not if a Counter Spell were cast on the monster in the same turn. Everyone else would be affected as usual by the Fire Storm unless they had their own protection. Counter Spell works on all spells except Dispel Magic and Finger of Death, and also works as a Shield for its Target.");
+                   "Any other spell cast upon the subject in the same turn has no effect. In the case of blanket spells, which affect more than one person, the subject of the Counter Spell alone is protected. For example, a Fire Storm spell could kill off a monster but not if a Counter Spell were cast on the monster in the same turn. Everyone else would be affected as usual by the Fire Storm unless they had their own protection. Counter Spell works on all spells except Dispel Magic and Finger of Death, and also works as a Shield for its Target.",
+                   "Jeder andere Zauber, der im selben Zug auf das Ziel gewirkt wird, bleibt wirkungslos. Bei Flächenzaubern, die mehr als eine Person betreffen, ist nur das Ziel des Gegenzaubers geschützt. Ein Feuersturm könnte zum Beispiel ein Monster töten, aber nicht, wenn im selben Zug ein Gegenzauber auf das Monster gewirkt wurde. Alle anderen wären wie gewohnt vom Feuersturm betroffen, sofern sie keinen eigenen Schutz haben. Gegenzauber wirkt gegen alle Zauber außer Magie bannen und Todesfinger und wirkt außerdem als Schild für sein Ziel.",
+                   "Cualquier otro hechizo lanzado sobre el objetivo en el mismo turno no tiene efecto. En el caso de los hechizos de área, que afectan a más de una persona, solo queda protegido el objetivo del Contrahechizo. Por ejemplo, una Tormenta de fuego podría matar a un monstruo, pero no si se lanzó un Contrahechizo sobre él en el mismo turno. Todos los demás se verían afectados por la Tormenta de fuego con normalidad, salvo que tuvieran su propia protección. Contrahechizo funciona contra todos los hechizos excepto Disipar magia y Dedo de la muerte, y también actúa como Escudo para su objetivo.");
     fillDictionary(">_desc",
-                   "Удар ножем, наносить 1 очко",
-                   "Удар ножом, наносит 1 очко урона",
-                   "This is not a spell but an attack which can be directed at any individual monster or Warlock (no spell need be selected, but a target should be, unless you want to attack a random opposing Warlock). Unless protected in that turn by a Shield spell or another spell with the same effect, the stabbed being suffers 1 point of damage. The Warlock only has one knife so can only stab with one hand in any turn - if a Warlock's gestures are such that he stabs with both hands, only the right hand will do damage. The stab cannot be reflected by a Magic Mirror or stopped by Dispel Magic (although its Shield effect *could* stop the stab). Clumsy Warlocks are allowed to stab themselves. Knives cannot be thrown. ");
+                   "This is not a spell but an attack which can be directed at any individual monster or Warlock (no spell need be selected, but a target should be, unless you want to attack a random opposing Warlock). Unless protected in that turn by a Shield spell or another spell with the same effect, the stabbed being suffers 1 point of damage. The Warlock only has one knife so can only stab with one hand in any turn - if a Warlock's gestures are such that he stabs with both hands, only the right hand will do damage. The stab cannot be reflected by a Magic Mirror or stopped by Dispel Magic (although its Shield effect *could* stop the stab). Clumsy Warlocks are allowed to stab themselves. Knives cannot be thrown. ",
+                   "Dies ist kein Zauber, sondern ein Angriff, der auf ein einzelnes Monster oder einen Hexer gerichtet werden kann (es muss kein Zauber gewählt werden, aber ein Ziel, es sei denn, du willst einen zufälligen gegnerischen Hexer angreifen). Ist das gestochene Wesen in diesem Zug nicht durch einen Schild oder einen Zauber mit derselben Wirkung geschützt, erleidet es 1 Punkt Schaden. Der Hexer hat nur ein Messer und kann daher pro Zug nur mit einer Hand stechen - sticht ein Hexer mit beiden Händen, verursacht nur die rechte Hand Schaden. Der Stich kann weder von einem Magischen Spiegel zurückgeworfen noch durch Magie bannen aufgehalten werden (dessen Schildwirkung *könnte* den Stich aber stoppen). Ungeschickte Hexer dürfen sich selbst stechen. Messer können nicht geworfen werden. ",
+                   "No es un hechizo, sino un ataque que puede dirigirse contra cualquier monstruo o brujo concreto (no hace falta elegir hechizo, pero sí objetivo, salvo que quieras atacar a un brujo rival al azar). Salvo que esté protegido en ese turno por un Escudo u otro hechizo con el mismo efecto, el ser apuñalado sufre 1 punto de daño. El brujo solo tiene un cuchillo, así que solo puede apuñalar con una mano por turno: si sus gestos hacen que apuñale con ambas manos, solo la mano derecha causa daño. La puñalada no puede reflejarse con un Espejo mágico ni detenerse con Disipar magia (aunque su efecto de Escudo *sí podría* detenerla). Los brujos torpes pueden apuñalarse a sí mismos. Los cuchillos no se pueden lanzar. ");
 }
 
 void QWarlockDictionary::storeLang() {

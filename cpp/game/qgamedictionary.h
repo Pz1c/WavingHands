@@ -22,17 +22,17 @@ public:
     Q_INVOKABLE void setCurrentLang(QString Lang);
 
 protected:
-    QMap<QString, QString> dictionary_ua;
-    QMap<QString, QString> dictionary_ru;
     QMap<QString, QString> dictionary_en;
+    QMap<QString, QString> dictionary_de;
+    QMap<QString, QString> dictionary_es;
 
-    void fillDictionary(const QString& Code, const QString& ua, const QString& ru, const QString& en);
+    void fillDictionary(const QString& Code, const QString& en, const QString& de, const QString& es);
 
     virtual void fillGameDictionary();
     virtual void storeLang();
     virtual QString getLang();
 
-    QString lang; //en, ua, ru
+    QString lang; //en (default), de, es
 
     static QGameDictionary *self;
     explicit QGameDictionary(QObject *parent = 0);
