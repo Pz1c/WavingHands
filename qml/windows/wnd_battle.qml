@@ -811,9 +811,10 @@ BaseWindow {
     }
 
     function setGesture(gesture, is_maladroit) {
-        iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture), gesture);
-        if (is_maladroit || (gesture === "C")) {
-            iWarlocks.children[0].setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture), gesture);
+        var ww = iWarlocks.children[0];
+        ww.setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture), gesture);
+        if ((is_maladroit || (gesture === "C")) && !ww.l_warlock.control_paralyze && !ww.l_warlock.control_charmed) {
+            ww.setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture), gesture, true);
         }
     }
 
@@ -826,7 +827,7 @@ BaseWindow {
             console.log(BU.battle.currentCharm.warlock_idx, "try to find", JSON.stringify(BU.battle.currentCharm));
             var ww = iWarlocks.children[BU.battle.currentCharm.warlock_idx];
             if (ww && ww.l_warlock) {
-                ww.setGesture(hand.substr(0, 1), "g_" + BU.getIconByGesture(gesture));
+                ww.setGesture(hand.substr(0, 1), "g_" + BU.getIconByGesture(gesture), gesture, true);
             } else {
                 console.log(BU.battle.currentCharm.warlock_idx, "now found warlock");
             }

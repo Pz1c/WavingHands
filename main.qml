@@ -1316,9 +1316,11 @@ ApplicationWindow {
     }
 
     function setGesture(gesture, spell, need_target) {
+        // Two-handed spells own both hands. Maladroit and C must not
+        // overwrite the other hand while paralysis/charm forces it.
         var is_two_handed = isTwoHandedSpell(spell);
-        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) ||
-                ((gesture === "C") && !gBattle.player_under_control);
+        var is_maladroit = !gBattle.player_under_control &&
+                ((gBattle.warlocks[0].maladroit > 0) || (gesture === "C"));
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
         if (!spell.n) {
             spell.n = "None";
