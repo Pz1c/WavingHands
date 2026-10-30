@@ -105,7 +105,7 @@ BaseWindow {
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: 49 * ratioFont
                 color: "#10C9F5"
-                text: "Surrendering!"
+                text: dict.getStringByCode("SurrenderingTitle")
             }
 
             Text {
@@ -115,7 +115,7 @@ BaseWindow {
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: 28 * ratioFont
                 color: "#10C9F5"
-                text: "('P' with both hands)"
+                text: dict.getStringByCode("SurrenderingHint")
             }
         }
 
@@ -605,7 +605,7 @@ BaseWindow {
                     id: iiSend
                     source: "qrc:/res/send_"+(active ? "1" : "0")+".png"
                     //textVisible: false
-                    text: "Go"
+                    text: dict.getStringByCode("Go")
                     textVisible: active
                     textAnchors.top:  iiSend.bottom
                     textAnchors.horizontalCenter: iiSend.horizontalCenter
@@ -844,7 +844,7 @@ BaseWindow {
             if (actionType === 0) {
                 mainWindow.gBattle.spellIdx = 0;
             }
-            arrSpell = [{gp:"?",n:"Completed spells",choose:0,t:0,cast_type:100,row_type:2},
+            arrSpell = [{gp:"?",n:dict.getStringByCode("SpellListCompleted"),choose:0,t:0,cast_type:100,row_type:2},
                         {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1}];
             //arrSpellLater = [];
         } else if (new_gesture === ">") {
@@ -888,11 +888,11 @@ BaseWindow {
             case "paralized":
                 actionType = 2;
                 lastGesture = mainWindow.gERROR.lg;
-                tCharmTitle.text = "Paralyze " + (mainWindow.gERROR.is_left ? "Left" : "Right") + " hand?"
+                tCharmTitle.text = dict.getStringByCode(mainWindow.gERROR.is_left ? "ParalyzeLeftHand" : "ParalyzeRightHand")
                 break;
             case "charmed":
                 actionType = 3;
-                tCharmTitle.text = "Charm " + (mainWindow.gERROR.is_left ? "Left" : "Right") + " hand?"
+                tCharmTitle.text = dict.getStringByCode(mainWindow.gERROR.is_left ? "CharmLeftHand" : "CharmRightHand")
                 break;
             default:
                 actionType = 0;

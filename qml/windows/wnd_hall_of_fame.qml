@@ -36,7 +36,7 @@ InfoWindow {
             font.pixelSize: 49 * mainWindow.ratioFont
             color: "#E7FFFF"
             horizontalAlignment: Text.AlignLeft
-            text: "Hall of Fame"
+            text: dict.getStringByCode("TopList")
         }
 
         Rectangle {
@@ -107,7 +107,7 @@ InfoWindow {
                 color: "#E7FFFF"
                 horizontalAlignment: Text.AlignLeft
                 visible: text !== ""
-                text: dMainItem.botsOnly ? "No players online. Bots are always ready:" : dMainItem.tabs[dMainItem.switchStateValue].hint
+                text: dMainItem.botsOnly ? dict.getStringByCode("TopBotsOnlyHint") : dMainItem.tabs[dMainItem.switchStateValue].hint
             }
         }
 
@@ -124,7 +124,7 @@ InfoWindow {
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
             visible: (dMainItem.switchStateValue === dMainItem.tabOnline) && (lvSpellList.count === 0)
-            text: "Nobody is online right now"
+            text: dict.getStringByCode("TopNobodyOnline")
             z: 14
         }
 
@@ -219,7 +219,7 @@ InfoWindow {
                             color: "#FEE2D6"
                             horizontalAlignment: Text.AlignLeft
                             verticalAlignment: Text.AlignVCenter
-                            text: "online"
+                            text: dict.getStringByCode("OnlineLabel")
                             font.italic: true
                             visible: lvSpellList.model[index].a
                         }
@@ -419,9 +419,9 @@ InfoWindow {
     // Indexed by the core's list (QWarloksDuelCore::getTopList); pos is the
     // place on the switch.
     readonly property var tabs: [
-        {title: "Active", pos: 1, hint: "Players active in the last 3 days:"},
-        {title: "All time", pos: 2, hint: ""},
-        {title: "Online", pos: 0, hint: "Players active in the last 3 minutes:"}
+        {title: dict.getStringByCode("TopTabActive"), pos: 1, hint: dict.getStringByCode("TopTabActiveHint")},
+        {title: dict.getStringByCode("TopTabAllTime"), pos: 2, hint: ""},
+        {title: dict.getStringByCode("TopTabOnline"), pos: 0, hint: dict.getStringByCode("TopTabOnlineHint")}
     ]
     // https://github.com/Pz1c/WavingHands/issues/291
     readonly property int tabOnline: 2

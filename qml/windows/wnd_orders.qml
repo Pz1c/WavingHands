@@ -87,7 +87,7 @@ BaseWindow {
                     width: parent.width
                     color: "#2DA0A5"
                     horizontalAlignment: Text.AlignLeft
-                    text: "Review your orders:"
+                    text: dict.getStringByCode("ReviewOrdersTitle")
                 }
 
                 Rectangle {
@@ -257,7 +257,7 @@ BaseWindow {
                                             break;
                                         case "M":
                                             mainWindow.gBattle.currentMonsterIdx = item.action_idx;
-                                            mainWindow.showErrorWnd({type:4,text:"",title:"Monster",data:mainWindow.gBattle.actions.M[item.action_idx],close_current:1});
+                                            mainWindow.showErrorWnd({type:4,text:"",title:dict.getStringByCode("Monster"),data:mainWindow.gBattle.actions.M[item.action_idx],close_current:1});
                                             break;
                                         case "H":
                                             break;
@@ -347,7 +347,7 @@ BaseWindow {
                     active: true
                     color: "transparent"
                     text_color: "#E7FFFF"
-                    text: "Submit"
+                    text: dict.getStringByCode("Submit")
 
                     onClicked: {
                         mainWindow.confirmOrdersEx();
@@ -388,7 +388,7 @@ BaseWindow {
         suicideOffered = !!(mainWindow.gBattle && mainWindow.gBattle.suicide && !mainWindow.gBattle.read_only);
         iiSend.width = (!is_surrender ? (64 + 30 + 80) : (64 + 30 + 120)) * mainWindow.ratioObject;
         iiSend.textWidth = (!is_surrender ? 80 : 120)* mainWindow.ratioObject;
-        iiSend.text = is_surrender ? "SURRENDER!" : "Submit";
+        iiSend.text = dict.getStringByCode(is_surrender ? "SurrenderOrders" : "Submit");
         iiSend.animate(1);
         mainWindow.gERROR = {};
         mainWindow.logEvent("Play_Submit_Clicked", {Warning: is_surrender ? "surrendering" : "none"});

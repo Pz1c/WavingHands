@@ -55,7 +55,7 @@ function mainMenuAction(code) {
 function newUserRegistered() {
     var l_login = core.login;
     closeChild();
-    lPlayerTitle.text = "Hi, " + l_login;
+    lPlayerTitle.text = warlockDictionary.getStringByCode("HiLogin").replace("%1", l_login);
     //showTipMessage(warlockDictionary.getStringByCode("JustRegistered").replace("#login#", l_login), true);
     showAfterRegWnd();
     logEvent("registration_finished", {login: l_login});

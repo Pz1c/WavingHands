@@ -265,18 +265,18 @@ function getSpellNameForOrder(action) {
     return action.s.n.replace(" ", "+");
 }
 
-function getSpellNameForOrderReview(action) {
+function getSpellNameForOrderReview(action, dict) {
     // strange gestures
     if (action.g === ">") {
         return "Stab";
     }
 
     if ((action.g === "?") || (action.g === "-")) {
-        return "Unknown spell";
+        return dict.getStringByCode("UnknownSpell");
     }
     // default spell
     if ((action.s.gp === "?") || (action.s.n === "Default")) {
-        return "default spell";
+        return dict.getStringByCode("DefaultSpell");
     }
 
     return action.s.n;
@@ -289,12 +289,12 @@ function getSpellTargetForOrder(action, targetMap) {
     return targetMap[action.target].replace(" ", "+");
 }
 
-function getSpellTargetForOrderReview(action, targetMap) {
+function getSpellTargetForOrderReview(action, targetMap, dict) {
     if (!action.target || !targetMap[action.target]) {
-        return "default target";
+        return dict.getStringByCode("DefaultTarget");
     }
     if (action.target.indexOf(":") !== -1) {
-        return "New monster (" + action.target.substr(0, 1) + ")";
+        return dict.getStringByCode("NewMonsterHand").replace("%1", action.target.substr(0, 1));
     }
 
     return action.target;
@@ -302,27 +302,27 @@ function getSpellTargetForOrderReview(action, targetMap) {
 
 // res.push({type:"RH",g:actions.R.g,s:getSpellNameForOrderReview(actions.R),t:getSpellTargetForOrderReview(actions.R, battle.targetsMap)});
 function getTextForHandAction(hand, action, targetMap, dict, exist_completed_spell) {
-    var spell_name = getSpellNameForOrderReview(action);
-    var target_name = getSpellTargetForOrderReview(action, targetMap);
+    var spell_name = getSpellNameForOrderReview(action, dict);
+    var target_name = getSpellTargetForOrderReview(action, targetMap, dict);
     var res;
-    if ((spell_name === "default spell") && (target_name === "default target") && (exist_completed_spell === 0)) {
+    if ((spell_name === dict.getStringByCode("DefaultSpell")) && (target_name === dict.getStringByCode("DefaultTarget")) && (exist_completed_spell === 0)) {
         if (hand === "LH") {
-            res = "Left hand gesture";
+            res = dict.getStringByCode("LeftHandGesture");
         } else {
-            res = "Right hand gesture";
+            res = dict.getStringByCode("RightHandGesture");
         }
     } else {
-        res = "cast " + spell_name + "<br>at " + target_name;
+        res = dict.getStringByCode("CastSpellAt").replace("%1", spell_name).replace("%2", target_name);
     }
     return res;
 }
 
 function getSpecActionText(type, action, dict) {
-    return dict.getStringByCode("TitleAction_" + type) + getHandTitleByIdx(action);
+    return dict.getStringByCode("TitleAction_" + type) + getHandTitleByIdx(action, dict);
 }
 
 function getCharmActionText(type, action, target, dict) {
-    return dict.getStringByCode("TitleAction_" + type).replace("%1", getHandTitleByIdx(action.h)).replace("%2", action.g) + target;
+    return dict.getStringByCode("TitleAction_" + type).replace("%1", getHandTitleByIdx(action.h, dict)).replace("%2", action.g) + target;
 }
 
 function getMonsterActionText(action, target, targetMap, dict) {
@@ -331,7 +331,7 @@ function getMonsterActionText(action, target, targetMap, dict) {
         target = "Default";
     }
     if (name.indexOf(":") !== -1) {
-        name = "New monster (" + action.id.substr(0, 1) + ")";
+        name = dict.getStringByCode("NewMonsterHand").replace("%1", action.id.substr(0, 1));
     }
 
     var t = dict.getStringByCode("TitleAction_M").replace("%1", name).replace("%2", target);
@@ -339,13 +339,13 @@ function getMonsterActionText(action, target, targetMap, dict) {
     return t;
 }
 
-function getHandTitleByIdx(idx) {
+function getHandTitleByIdx(idx, dict) {
     switch(idx) {
-        case 0: return "None";
+        case 0: return dict.getStringByCode("HandNone");
         case 1:
-        case "LH": return "Left hand";
-        case 3: return "Two-hand";
-        default: return "Right hand";
+        case "LH": return dict.getStringByCode("HandLeft");
+        case 3: return dict.getStringByCode("HandTwo");
+        default: return dict.getStringByCode("HandRight");
     }
 }
 
@@ -1163,7 +1163,7 @@ function prepareAndSortRealAction(actions, battle) {
     }
 }
 
-function processHintText(obj) {
+function processHintText(obj, dict) {
     console.log("processHintText.1", obj.txt, obj.font_size);
     if (obj.txt.indexOf(" attacks ") !== -1) {
         obj.txt = obj.txt.substring(0, obj.txt.indexOf(" attacks ") + 8);
@@ -1172,10 +1172,10 @@ function processHintText(obj) {
         obj.txt = obj.txt.substring(0, obj.txt.indexOf(" is hit by a") + 7);
         obj.font_size = 28;
     } else if (obj.txt.indexOf(" hand is paralysed") !== -1) {
-        obj.txt = obj.obj.target + " is paralyzed";
+        obj.txt = dict.getStringByCode("HintIsParalyzed").replace("%1", obj.obj.target);
         obj.font_size = 28;
     } else if (obj.txt.indexOf(" starts to lose coordination") !== -1) {
-        obj.txt = obj.txt.substring(0, obj.txt.indexOf(" starts to lose coordination")) + " loses coordination";
+        obj.txt = dict.getStringByCode("HintLosesCoordination").replace("%1", obj.txt.substring(0, obj.txt.indexOf(" starts to lose coordination")));
         obj.font_size = 28;
     }
     console.log("processHintText.2", obj.txt, obj.font_size);

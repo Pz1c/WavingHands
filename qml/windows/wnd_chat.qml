@@ -11,7 +11,7 @@ InfoWindow {
     //with_controls: true
     //with_apply: true
     //body_height_prc: 60
-    title: "Chat"
+    title: dict.getStringByCode("Chat")
     //title.font.pixelSize: 49 * mainWindow.ratioFont
     //title.color: "#10C9F5"
 
@@ -202,8 +202,8 @@ InfoWindow {
 
     function setNewMsgText(txt) {
         if (txt !== "") {
-            tMsgShow.text = '<p><font color="#10C9F5" size=+1>Message:</font></p><p><i>"' +
-                txt + '"</i>&nbsp;&nbsp;&nbsp;<a href="/delete_msg"><font color="#10C9F5">Delete</font></a></p>';
+            tMsgShow.text = '<p><font color="#10C9F5" size=+1>' + dict.getStringByCode("ChatMessageTitle") + '</font></p><p><i>"' +
+                txt + '"</i>&nbsp;&nbsp;&nbsp;<a href="/delete_msg"><font color="#10C9F5">' + dict.getStringByCode("MessageDelete") + '</font></a></p>';
         } else {
             tMsgShow.text = "";
         }

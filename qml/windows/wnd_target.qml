@@ -315,7 +315,7 @@ BaseWindow {
 
                 color: "transparent"
                 text_color: active ? "#A8F4F4" : "#544653"
-                text: "Done"
+                text: dict.getStringByCode("Done")
 
                 onClicked: {
                     console.log("wnd_target.bbDone", JSON.stringify(mainWindow.gBattle.actions), JSON.stringify(target));
@@ -460,9 +460,9 @@ BaseWindow {
         var txt = "";
         if (isSpell && currentSpell.n) {
             if (battle.player_has_bank) {
-                txt = "To bank a " + currentSpell.n + ", click the bank icon and then choose a target";
+                txt = dict.getStringByCode("HintBankSpell").replace("%1", currentSpell.n);
             } else if (battle.player_has_permanency) {
-                txt = "To make " + currentSpell.n + " permanent, click the permanency icon and then choose a target";
+                txt = dict.getStringByCode("HintPermanentSpell").replace("%1", currentSpell.n);
             }
         }
         if (txt !== "") {

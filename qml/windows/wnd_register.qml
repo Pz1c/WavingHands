@@ -75,7 +75,7 @@ BaseWindow {
             icon_width: 0.08 * parent.width
             text_width: 0.1 * parent.width
             text_color: "#FEE2D6"
-            text: "Back"
+            text: dict.getStringByCode("Back")
             transparent: true
 
 
@@ -99,7 +99,7 @@ BaseWindow {
             image_anchors.right: bwiRight.right
             icon_width: 0.08 * parent.width
             text_width: 0.1 * parent.width
-            text: "Next"
+            text: dict.getStringByCode("Next")
             text_color: "#FEE2D6"
             transparent: true
 
@@ -121,7 +121,7 @@ BaseWindow {
                 console.log("svWelcome.onCurrentIndexChanged", new_idx);
                 bwiRight.visible = new_idx < items_count - 2;
                 bwiLeft.visible = bwiRight.visible && (new_idx > 0);
-                bwiRight.text = (new_idx === items_count - 3) ? "Got It!" : "Next";
+                bwiRight.text = dict.getStringByCode((new_idx === items_count - 3) ? "GotIt" : "Next");
                 if (!bwiRight.visible) {
                     //svWelcome.interactive = false;
                 }
@@ -258,7 +258,7 @@ BaseWindow {
                 LargeText {
                     id: svsSingUpLink
                     color: "#E7FFFF"
-                    text: "Already have an account? <u><font color=\"#A8F4F4\">Log In</font></u>"
+                    text: dict.getStringByCode("HaveAccountLogIn")
 
                     //textFormat: Text.RichText
                     height: 0.05 * dMainItem.height
@@ -283,7 +283,7 @@ BaseWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     height: 0.09 * parent.height
                     width: parent.width
-                    title: "Warlock's name"//dict.getStringByCode("WarlockName")
+                    title: dict.getStringByCode("WarlockName")
                     title_color: "#E7FFFF"
                     border_color: "#E7FFFF"
                     text_color: "#FEE2D6"
@@ -379,7 +379,7 @@ BaseWindow {
                     text_width: 0.2 * parent.width
                     text_height: 0.08 * parent.height
 
-                    text: "Submit"
+                    text: dict.getStringByCode("Submit")
                     text_color: cbConfirmation.checked ? "#E7FFFF" : "#5E5C5E"
 
                     onClicked: {
@@ -446,7 +446,7 @@ BaseWindow {
                 LargeText {
                     id: svsLoginLink
                     color: "#E7FFFF"
-                    text: "Don't have an account? <u><font color=\"#A8F4F4\">Sign Up</font></u>"
+                    text: dict.getStringByCode("NoAccountSignUp")
 
                     //textFormat: Text.RichText
                     height: 0.05 * dMainItem.height
@@ -471,7 +471,7 @@ BaseWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     height: 0.09 * parent.height
                     width: parent.width
-                    title: "Warlock's name"//dict.getStringByCode("WarlockName")
+                    title: dict.getStringByCode("WarlockName")
                     title_color: "#E7FFFF"
                     border_color: "#E7FFFF"
                     text_color: "#FEE2D6"
@@ -513,7 +513,7 @@ BaseWindow {
                     text_width: 0.2 * parent.width
                     text_height: 0.08 * parent.height
 
-                    text: "Submit"
+                    text: dict.getStringByCode("Submit")
                     text_color: "#E7FFFF"
                     transparent: true
 

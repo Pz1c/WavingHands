@@ -60,7 +60,7 @@ InfoWindow {
                 anchors.right: parent.right
                 font.pixelSize: 28 * mainWindow.ratioFont
                 color: "#10C9F5"
-                text: "Details"
+                text: dict.getStringByCode("Details")
                 horizontalAlignment: Text.AlignLeft
                 //fontSizeMode: Text.VerticalFit
                 visible: false
@@ -203,7 +203,7 @@ InfoWindow {
             BtnBig {
                 id: bbSkipAction
                 text_color: "#A8F4F4"
-                text: "Skip"
+                text: dict.getStringByCode("Skip")
                 transparent: true
                 font.underline: true
                 border.width: 0
@@ -242,7 +242,7 @@ InfoWindow {
             Text {
                 id: bbBtn3
                 color: "#A8F4F4"
-                text: "Skip"
+                text: dict.getStringByCode("Skip")
                 font.underline: true
                 visible: false
                 horizontalAlignment: Text.AlignLeft

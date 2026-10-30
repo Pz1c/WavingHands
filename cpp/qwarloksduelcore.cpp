@@ -368,7 +368,7 @@ bool QWarloksDuelCore::finishMessageRecipient(QString &Data) {
     QString rcpt = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=rcpt VALUE", "=", ">", pos);
     qDebug() << "QWarloksDuelCore::finishMessageRecipient" << to << login << rcpt;
     if (login.isEmpty() || (rcpt.toInt() <= 0)) {
-        _errorMsg = QString("Warlock %1 not found").arg(to);
+        _errorMsg = GameDictionary->getStringByCode("WarlockNotFound").arg(to);
         emit errorOccurred();
         return false;
     }
@@ -392,7 +392,7 @@ bool QWarloksDuelCore::finishSendMessage(QString &Data, int StatusCode) {
             _isLogined = false;
             loginToSite(true);
         }
-        _errorMsg = "Can't send the message, please try again";
+        _errorMsg = GameDictionary->getStringByCode("ErrSendMessage");
         emit errorOccurred();
         return false;
     }
@@ -540,7 +540,7 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
     if (StatusCode == 200) {
         // perhapse bad login
         if (Data.indexOf("Failed Login</TITLE>") != 0) {
-            _errorMsg = "Wrong login or password";
+            _errorMsg = GameDictionary->getStringByCode("ErrWrongLoginPassword");
             releaseLoading();
             emit needLogin();
             emit errorOccurred();
@@ -1076,7 +1076,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     if (NewUrl.isEmpty()) {
         if (!background) {
             _ordersBattleID = 0;
-            _errorMsg = "Something goes wrong, can't send battle orders";
+            _errorMsg = GameDictionary->getStringByCode("ErrSendOrders");
             emit errorOccurred();
         }
         return false;
@@ -1127,20 +1127,20 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
         QString search3 = "<FORM ACTION=\"newplayer?action=new\" METHOD=POST>";
         int idx1 = Data.indexOf(search1);
         if (idx1 == -1) {
-            _errorMsg = "Unknown error till registration";
+            _errorMsg = GameDictionary->getStringByCode("ErrRegistrationUnknown1");
             emit errorOccurred();
             return false;
         }
         idx1 = Data.indexOf(search2, idx1 + search1.length());
         if (idx1 == -1) {
-            _errorMsg = "Unknown error till registration.";
+            _errorMsg = GameDictionary->getStringByCode("ErrRegistrationUnknown2");
             emit errorOccurred();
             return false;
         }
         idx1 += search2.length();
         int idx2 = Data.indexOf(search3);
         if (idx2 == -1) {
-            _errorMsg = "Unknown error, till registration.";
+            _errorMsg = GameDictionary->getStringByCode("ErrRegistrationUnknown3");
             emit errorOccurred();
             return false;
         }
@@ -1342,7 +1342,7 @@ void QWarloksDuelCore::forceSurrender(int battle_id, int turn, bool Silent) {
 void QWarloksDuelCore::sendOrders(QString orders) {
     qDebug() << "sendOrders " << orders;
     if (orders.isEmpty()) {
-        _errorMsg = "Orders can't be empty";
+        _errorMsg = GameDictionary->getStringByCode("ErrEmptyOrders");
         emit errorOccurred();
         return;
     }
@@ -1550,7 +1550,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
         QBattleInfo *bi = new QBattleInfo(Data);
         if (bi->battleID() != _loadedBattleID) {
             delete bi;
-            _finishedBattle = "Sorry, wrong answer, please contact with viskgameua@gmail.com";
+            _finishedBattle = GameDictionary->getStringByCode("ErrFinishedBattleAnswer");
             if (Announce) {
                 // No apology for a request nobody made; a later scan asks again.
                 return false;
@@ -1579,7 +1579,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
         // There is no result left to announce.
         markResultShown(_loadedBattleID);
         if (!_loadedBattleSilent && !Announce) {
-            _finishedBattle = "Sorry, but you battle already deleted from game server and we not store it on archive server";
+            _finishedBattle = GameDictionary->getStringByCode("ErrFinishedBattleDeleted");
             emit finishedBattleChanged();
         }
         return false;
@@ -1622,7 +1622,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             idx1 = Data.indexOf(point1);
         }
         if (idx1 == -1) {
-            _errorMsg = "Wrong battle answer!";
+            _errorMsg = GameDictionary->getStringByCode("ErrWrongBattleAnswer1");
             // Like the checks below: nothing for a load the player did not ask for.
             if (!_loadedBattleSilent && !Announce) {
                 emit errorOccurred();
@@ -1633,7 +1633,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     idx1 += point1.length();
     int idx2 = Data.indexOf(point2, idx1);
     if (idx2 == -1) {
-        _errorMsg = "Wrong battle answer!!";
+        _errorMsg = GameDictionary->getStringByCode("ErrWrongBattleAnswer2");
         if (!_loadedBattleSilent && !Announce) {
             emit errorOccurred();
         }
@@ -1695,7 +1695,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     int idx3 = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">", idx1);
     if (idx3 == -1) {
         if (!_loadedBattleSilent) {
-            _errorMsg = "Wrong battle answer!!!";
+            _errorMsg = GameDictionary->getStringByCode("ErrWrongBattleAnswer3");
             emit errorOccurred();
         }
         return false;
@@ -1704,7 +1704,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     QString ReadyData = Data.mid(idx3, Data.length() - idx3);
     if (ReadyData.indexOf("<FORM METHOD=POST ACTION=\"warlocksubmit\"") == -1) {
         // mean battle finished just now
-        _errorMsg = "Looks like battle already finished, please wait for refresh";
+        _errorMsg = GameDictionary->getStringByCode("ErrBattleFinished");
         qDebug() << _errorMsg << ReadyData;
         if (!_loadedBattleSilent) {
             emit errorOccurred();
@@ -2094,31 +2094,31 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
 bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
     qDebug() << "QWarloksDuelCore::parseReadyBattle";
     if (!parseTargetList(Data)) {
-        _errorMsg = "Can't parse targets";
+        _errorMsg = GameDictionary->getStringByCode("ErrParseTargets");
         emit errorOccurred();
         return false;
     }
 
     if (!QWarlockUtils::parseGestures(Data, _possibleLeftGestures, _possibleRightGestures, _errorMsg)) {
-        _errorMsg = "Can't parse gestures";
+        _errorMsg = GameDictionary->getStringByCode("ErrParseGestures");
         emit errorOccurred();
         return false;
     }
 
     if (!parseUnits(Data)) {
-        _errorMsg = "Can't parse units";
+        _errorMsg = GameDictionary->getStringByCode("ErrParseUnits");
         emit errorOccurred();
         return false;
     }
 
     if (!parseSpecReadyBattleValues(Data)) {
-        _errorMsg = "Can't found current battle turn";
+        _errorMsg = GameDictionary->getStringByCode("ErrParseTurn");
         emit errorOccurred();
         return false;
     }
 
     if (!parseMonsterCommand(Data)) {
-        _errorMsg = "Can't parse monsters command";
+        _errorMsg = GameDictionary->getStringByCode("ErrParseMonsters");
         emit errorOccurred();
         return false;
     }
@@ -2311,8 +2311,8 @@ void QWarloksDuelCore::generateBattleList() {
                     .replace("ParaFC", "", Qt::CaseInsensitive)
                     .replace("Created with android app Warlock's Duel.", "", Qt::CaseInsensitive)
                     .replace("NO BOT", "", Qt::CaseInsensitive);
-            chalenge_str.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2 challenge by %3\",\"dt\":\"%4\",\"el\":\"%5\"}").
-                               arg(intToStr(bid), battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "Open" : "Practice", battle_info->getEnemy(_login), ddd, battle_info->getEnemy(_login)));
+            chalenge_str.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2\",\"dt\":\"%3\",\"el\":\"%4\"}").
+                               arg(intToStr(bid), GameDictionary->getStringByCode(battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "ChallengeListOpen" : "ChallengeListPractice").arg(battle_info->getEnemy(_login)), ddd, battle_info->getEnemy(_login)));
         }
     }
     if (/*with_any_challenge && */!with_challenge && (active_battle_cnt < 3)) {
@@ -2333,8 +2333,8 @@ void QWarloksDuelCore::generateBattleList() {
                 _battleList.append(",");
             }
             QString enemy = _playerStats[awailable_walocks.at(idx)]->name();
-            _battleList.append(QString("{\"id\":0,\"s\":5,\"d\":\"New Match: %1\",\"dt\":\"Players we match you have played recently and are more or less your level\",\"el\":\"%3\"}").
-                               arg(enemy, enemy));
+            _battleList.append(QString("{\"id\":0,\"s\":5,\"d\":\"%1\",\"dt\":\"%2\",\"el\":\"%3\"}").
+                               arg(GameDictionary->getStringByCode("NewChalengeSDesc") + enemy, GameDictionary->getStringByCode("NewMatchDesc"), enemy));
         }
     }
     if (!chalenge_str.isEmpty()) {
@@ -2360,7 +2360,7 @@ void QWarloksDuelCore::generateBattleList() {
             battle_info->setStatus(BATTLE_INFO_STATUS_FINISHED);
         }
         d = battle_info->getInListDescription(_login);
-        _battleList.append(QString("{\"id\":%1,\"s\":2,\"d\":\"%2\"}").arg(intToStr(bid), d));
+        _battleList.append(QString("{\"id\":%1,\"s\":2,\"d\":\"%2\",\"w\":%3}").arg(intToStr(bid), d, intToStr(boolToInt((battle_info->status() == BATTLE_INFO_STATUS_FINISHED) && battle_info->isWinner(_login)))));
     }
     _battleList.append("]]");
     emit battleListChanged();
@@ -3143,7 +3143,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     if (login.isEmpty()) {
         // Not a profile page (a missing player, or an error page served as 200):
         // an empty name would become a blank roster row that is saved and reloaded.
-        _errorMsg = "Can't load warlock info";
+        _errorMsg = GameDictionary->getStringByCode("ErrLoadWarlockInfo");
         emit errorOccurred();
         return true;
     }
@@ -3264,7 +3264,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
             }
             loginToSite(background);
             if (!background) {
-                _errorMsg = "Can't receive player info, try reconnect";
+                _errorMsg = GameDictionary->getStringByCode("ErrReceivePlayerInfo");
                 emit errorOccurred();
             }
             return false;
@@ -3398,7 +3398,7 @@ void QWarloksDuelCore::slotReadyRead() {
         releaseKeepMeOn(url);
         releasePendingMessage(url);
         if (!isBackground(reply)) {
-            _errorMsg = QString("Server problem (HTTP %1), please try again later").arg(_httpResponceCode);
+            _errorMsg = GameDictionary->getStringByCode("ErrServerHttp").arg(_httpResponceCode);
             emit errorOccurred();
         }
         return;
@@ -3463,7 +3463,7 @@ void QWarloksDuelCore::slotError(QNetworkReply::NetworkError error) {
     if (isBackground(reply) || ((status >= 500) && (status < 600))) {
         return;
     }
-    _errorMsg = "Network problem details: " + reply->errorString();
+    _errorMsg = GameDictionary->getStringByCode("ErrNetworkDetails").arg(reply->errorString());
     emit errorOccurred();
 }
 
@@ -4201,7 +4201,7 @@ QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
     QString res = "[";
     bool first = !warlockName.isEmpty();
     if (warlockName.isEmpty()) {
-        res.append("{\"n\":\"Suggested\",\"e\":0,\"rt\":1}");
+        res.append(QString("{\"n\":\"%1\",\"e\":0,\"rt\":1}").arg(GameDictionary->getStringByCode("SearchSuggested")));
     }
     foreach(QWarlockStat *ws, wsl) {
         QString name;
@@ -4214,7 +4214,7 @@ QString QWarloksDuelCore::findWarlockByName(const QString &warlockName) {
         if (first) {first = false;}
     }
     if (warlockName.isEmpty()) {
-        res.append(",{\"n\":\"View More\",\"e\":0,\"rt\":2}");
+        res.append(QString(",{\"n\":\"%1\",\"e\":0,\"rt\":2}").arg(GameDictionary->getStringByCode("SearchViewMore")));
     }
     res.append("]");
     return res;
