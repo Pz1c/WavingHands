@@ -710,7 +710,7 @@ BaseWindow {
             break;
         default: // spell
             msg_type = 7
-            spell_code = BU.getIconStatusSpell(data.action);
+            spell_code = BU.getIconStatusSpell(data.action, data.value);
             if (spell_code) {
                 msg_title = dict.getStringByCode(spell_code);
                 msg_text  = dict.getStringByCode(spell_code + "_desc");

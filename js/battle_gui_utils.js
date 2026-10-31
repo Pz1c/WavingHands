@@ -1,7 +1,7 @@
 var icon_status_code = ["scared","confused","charmed","paralized","shield","coldproof","fireproof","poison","disease","amnesia","maladroit","mshield","delay",
                         "time_stop","haste","permanency","blindness","invisibility"];
-var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"time_stop"};
-var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paralized":"FFF","shield":"WWP","coldproof":"SSFP","fireproof":"WWFP","poison":"DWWFWD","disease":"DSFFFc",
+var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"time_stop","protection":"shield"};
+var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paralized":"FFF","protection":"WWP","coldproof":"SSFP","fireproof":"WWFP","poison":"DWWFWD","disease":"DSFFFc",
                          "amnesia":"DPP","maladroit":"DSF","mshield":"WWS","delay":"DWSSSP","time_stop":"SPPc","haste":"PWPWWc","permanency":"SPFPSDW","blindness":"DWFFd","invisibility":"PPws"};
 
 var map_spell_to_icon = {"SWD":"scared","DSF":"confused","PSDF":"charmed","FFF":"paralized","WWP":"shield","SSFP":"coldproof","WWFP":"fireproof",
@@ -26,7 +26,7 @@ var arr_distruption_spell = ["Amnesia", "Paralysis", "Confusion", "Fear", "Malad
 // https://github.com/Pz1c/WavingHands/issues/227
 // An enchantment cast at a warlock lights his status icon up in the turn news. The live
 // status list is updated at the row where the spell lands. mirror and dispel are news-only codes.
-var map_spell_name_to_status = {"Shield":"shield","Protection":"shield","Counter Spell":"mshield","Resist Heat":"fireproof","Resist Cold":"coldproof",
+var map_spell_name_to_status = {"Shield":"shield","Protection":"protection","Counter Spell":"mshield","Resist Heat":"fireproof","Resist Cold":"coldproof",
     "Paralysis":"paralized","Amnesia":"amnesia","Fear":"scared","Confusion":"confused","Maladroitness":"maladroit","Charm Person":"charmed",
     "Disease":"disease","Poison":"poison","Blindness":"blindness","Invisibility":"invisibility","Haste":"haste","Time Stop":"time_stop",
     "Delay Effect":"delay","Permanency":"permanency","Magic Mirror":"mirror","Dispel Magic":"dispel"};
@@ -235,7 +235,9 @@ function prepareStatusIcon(w) {
         }
         icon_name = icon_status_code_to_icon[code] ? icon_status_code_to_icon[code] : code;
         val = w[code] === 999 ? "∞" : w[code];
-        a = {action: code, icon: icon_name, value: val, active: true, active_action: (w.control_paralyze && (code === "paralized")) || (w.control_charmed && (code === "charmed"))};
+        // Shield(2) is Protection; Shield(1) is the one-turn Shield.
+        var action_code = ((code === "shield") && (parseInt(w[code], 10) > 1)) ? "protection" : code;
+        a = {action: action_code, icon: icon_name, value: val, active: true, active_action: (w.control_paralyze && (code === "paralized")) || (w.control_charmed && (code === "charmed"))};
         if (a.active && (code === "paralized")) {
             a.lgL = w.lgL;
             a.lgR = w.lgR;
@@ -506,8 +508,10 @@ function noteDefense(target, spell_obj) {
     }
     switch (spell_obj.spell) {
     case "Shield":
-    case "Protection":
         target.defended_by = "shield";
+        break;
+    case "Protection":
+        target.defended_by = "protection";
         break;
     case "Counter Spell":
         target.defended_by = "counter";
@@ -1199,9 +1203,9 @@ function processHintText(obj, dict) {
 //
 // The turn news now mutates the live monster and status lists. The summon rows are still paired
 // here so the event rows can name the owner of a monster that is not on the snapshot board yet.
-var news_status_value = {"shield":2,"blindness":3,"invisibility":3,"poison":6,"disease":6,
+var news_status_value = {"blindness":3,"invisibility":3,"poison":6,"disease":6,
                          "permanency":3,"fireproof":999,"coldproof":999,"haste":3,"time_stop":1,
-                         "delay":3,"mshield":1,"scared":1,"confused":1,"charmed":1,
+                         "delay":3,"protection":2,"scared":1,"confused":1,"charmed":1,
                          "paralized":1,"amnesia":1,"maladroit":1};
 
 function getNewsStatusIcon(code) {
@@ -1212,7 +1216,8 @@ function getNewsStatusIcon(code) {
 }
 
 function getNewsStatusValue(code) {
-    return news_status_value[code] !== undefined ? news_status_value[code] : "";
+    // Every instant status defaults to 0 and is removed when the news closes.
+    return news_status_value[code] !== undefined ? news_status_value[code] : 0;
 }
 
 function findWarlockByName(battle, name) {
@@ -1250,6 +1255,7 @@ function getDefenseStatusCode(target, by_counter) {
     switch (by) {
     case "counter": return "mshield";
     case "dispel":  return "dispel";
+    case "protection": return "protection";
     default:        return "shield";
     }
 }
