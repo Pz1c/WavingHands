@@ -67,6 +67,7 @@ void QBattleInfo::init() {
     _app_version = 0;
     _inviteRejected = false;
     _isOnline = false;
+    _currentPageData.clear();
 }
 
 QBattleInfo::~QBattleInfo() {
@@ -748,6 +749,16 @@ void QBattleInfo::parseUnits(QString &Data, QString &Login) {
 
     setSize(_participant.size());
 
+}
+
+void QBattleInfo::setCurrentPageData(const QString &data)
+{
+    _currentPageData = data;
+}
+
+const QString &QBattleInfo::currentPageData() const
+{
+    return _currentPageData;
 }
 
 void QBattleInfo::parseAllTurns(QString &Data, QString &Login, bool Last) {

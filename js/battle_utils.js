@@ -67,14 +67,7 @@ function prepareWarlock(w) {
     if (!w.id) {
         w.id = battle.targetsMap[w.name];
     }
-    // The unit section is replaced by an older snapshot for turn news, so use
-    // the current page's gesture-relevant status captured before the splice.
-    var gs = battle.gesture_state[w.name];
-    w.gesture_maladroit = gs ? (parseInt(gs[0], 10) || 0) : w.maladroit;
-    w.gesture_paralized = gs ? (parseInt(gs[1], 10) || 0) : w.paralized;
-    w.gesture_charmed = gs ? (parseInt(gs[2], 10) || 0) : w.charmed;
-    w.gesture_confused = gs ? (parseInt(gs[3], 10) || 0) : w.confused;
-    w.changed_mind = (w.gesture_charmed > 0) || (w.gesture_confused > 0) || (w.gesture_paralized > 0) ? 1 : 0;
+    w.changed_mind = (w.charmed > 0) || (w.confused > 0) || (w.paralized > 0) ? 1 : 0;
     w.paralyzed_hand = battle.paralyzed_hand[w.id];
     if (!w.paralyzed_hand) {
         w.paralyzed_hand = "";
@@ -108,7 +101,7 @@ function prepareWarlock(w) {
         battle.ngR = battle.player_gesture_R;
         battle.player_has_bank = w.delay > 0;
         battle.player_has_permanency = w.permanency > 0;
-        battle.player_under_control = (w.gesture_charmed > 0) || (w.gesture_paralized > 0);
+        battle.player_under_control = (w.charmed > 0) || (w.paralized > 0);
         console.log("prepareWarlock", battle.player_under_control, JSON.stringify(w));
     }
 
@@ -1402,7 +1395,6 @@ function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
         battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit,
-        gesture_state: raw_battle.gesture_state || {},
         // https://github.com/Pz1c/WavingHands/issues/315: true while the site offers its SUICIDE checkbox.
         // battleInfo() sends 1/0; a battle prepared once already holds the bool. Note "0" is truthy in JS.
         suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true)};

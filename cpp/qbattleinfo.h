@@ -53,6 +53,12 @@ public:
     // so an empty entry means the turn was never parsed, not a turn without news.
     bool historyComplete() const;
 
+    // The ready page as it was fetched, before the unit section is replaced by
+    // the older snapshot used for the turn news. refreshCurrentTurn() rebuilds
+    // the board from this copy after the news.
+    void setCurrentPageData(const QString &data);
+    const QString &currentPageData() const;
+
     bool active(const QString &login) const;
 
     int size() const;
@@ -136,6 +142,7 @@ private:
     QString _winner;
     QString _sub_title;
     QString _fullJSON;
+    QString _currentPageData;
     int _app_version;
 
     QList<QMonster *> _Monsters;

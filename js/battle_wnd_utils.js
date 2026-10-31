@@ -432,6 +432,12 @@ function closeTutorial() {
     showWarockHands();
     showWarockFinalPlaceholders();
     prepareIconToHint();
+
+    // The board above is the snapshot used for the news. The news is over now:
+    // rebuild from the current page, without replaying hint/last_turn_hist.
+    if (mainWindow.gBattle && mainWindow.gBattle.id) {
+        core.refreshCurrentTurn(mainWindow.gBattle.id);
+    }
 }
 
 function moveToHintStep(diff, skip_restore) {

@@ -222,6 +222,9 @@ public slots:
     QString getSpellBook();
     int getLoadedBattleTurn();
     QString battleInfo();
+    // Called after the turn news: rebuild the board from the saved current
+    // page, but do not replay hint/last_turn_hist.
+    void refreshCurrentTurn(int battle_id);
     QString battleReadOnly(int BattleID);
     QString playerJson();
     // 0 - active in the last 3 days, 1 - all time, 2 - online (QWarlockStat::online;
@@ -305,7 +308,6 @@ protected:
     bool prepareMonsterHtml();
     bool prepareWarlockHtml();
     bool parseSpecReadyBattleValues(QString &Data);
-    void parseCurrentGestureState(QString &Data);
     void setPossibleSpell(const QString &Data);
     void calcBattleDecision();
     QString currentTurnHistory(const QString &Data);
@@ -313,7 +315,10 @@ protected:
     void processRefferer();
     void setCheckUrl(const QString &check_url);
 
-    bool parseReadyBattle(QString &Data);
+    // ParseMonsterCommands is false when rebuilding the current page: its unit
+    // section already contains monsters that were summoned this turn, while
+    // the snapshot did not and needed the form rows to discover them.
+    bool parseReadyBattle(QString &Data, bool ParseMonsterCommands = true);
     void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
     void parseChallendge(QString &Data);
     void parseMessages(QString &Data);
@@ -540,10 +545,9 @@ private:
     QString _paralyzeList;
     QString _extraOrderInfo;
     QString _paralyzedHands;
-    // Current page status per warlock, "maladroit,paralyzed,charmed,confused".
-    // Unit data is replaced by the older snapshot for turn news, so this must
-    // be read before replaceUnitSection().
-    QMap<QString, QString> _currentGestureState;
+    // Suppress hint/last_turn_hist for the readyBattleChanged() emitted after
+    // the turn news, so the current board is rebuilt without replaying it.
+    bool _suppressTurnNews;
     bool _isDelay;
     bool _isPermanent;
     bool _isSuicide;
