@@ -225,6 +225,9 @@ public slots:
     // Called after the turn news: rebuild the board from the saved current
     // page, but do not replay hint/last_turn_hist.
     void refreshCurrentTurn(int battle_id);
+    // The turn news has closed. Show the result if this was the final news,
+    // otherwise rebuild the ordinary ready turn.
+    void turnNewsClosed(int battle_id);
     QString battleReadOnly(int BattleID);
     QString playerJson();
     // 0 - active in the last 3 days, 1 - all time, 2 - online (QWarlockStat::online;
@@ -312,6 +315,9 @@ protected:
     void calcBattleDecision();
     QString currentTurnHistory(const QString &Data);
     void prepareBattleChatAndHistory(QString &Data);
+    // Build the final turn exactly like a ready turn: the finished page gives
+    // the events, while snapshot finalTurn-1 gives the board before them.
+    bool showFinalTurnNews(QBattleInfo *battleInfo);
     void processRefferer();
     void setCheckUrl(const QString &check_url);
 
@@ -548,6 +554,14 @@ private:
     // Suppress hint/last_turn_hist for the readyBattleChanged() emitted after
     // the turn news, so the current board is rebuilt without replaying it.
     bool _suppressTurnNews;
+    // The ready board is loaded for this battle. A result only becomes final
+    // news when it belongs to the board the player is actually looking at.
+    int _boardBattleID;
+    // Result held back while its final turn plays as ordinary turn news.
+    int _finalNewsBattleID;
+    QString _finalNewsResult;
+    // Suppress only the tutorial hint for the final-news readyBattleChanged().
+    bool _finalTurnNews;
     bool _isDelay;
     bool _isPermanent;
     bool _isSuicide;

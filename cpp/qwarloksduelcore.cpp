@@ -147,6 +147,9 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _isPermanent = false;
     _isSuicide = false;
     _suppressTurnNews = false;
+    _boardBattleID = 0;
+    _finalNewsBattleID = 0;
+    _finalTurnNews = false;
 
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
@@ -1416,6 +1419,14 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
         if (bi->fullParsed()) {
             _finishedBattle = bi->getFinishedBattleInfo(_login);
             markResultShown(_loadedBattleID);
+            if (_finalNewsBattleID == _loadedBattleID) {
+                _finalNewsResult = _finishedBattle;
+                if (showFinalTurnNews(bi)) {
+                    return;
+                }
+                _finalNewsBattleID = 0;
+                _finalNewsResult.clear();
+            }
             emit finishedBattleChanged();
             return;
         }
@@ -1681,6 +1692,9 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
         return false;
     }
 
+    const bool final_news_candidate = !_loadedBattleSilent && !_isAI && !_isAsService &&
+            (_boardBattleID == _loadedBattleID);
+
     if ((old_state == 1) && (_loadedBattleType == 2)) {
         qDebug() << "finishGetFinishedBattle" << "check rate us" << _finished_battles.count();
         if (!_loadedBattleSilent && !_rateus && battleInfo->isWinner(_login)) {
@@ -1692,8 +1706,21 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             }
         }
 
+        if (final_news_candidate) {
+            _finalNewsBattleID = _loadedBattleID;
+        }
+
         // to get full history, but not only last turn
         getBattle(_loadedBattleID, 2, _loadedBattleSilent);
+        scanState(true);
+        return false;
+    }
+
+    // The ready load after an opponent's move can land on the finished page
+    // directly. Fetch the full history so the final turn can be played from it.
+    if ((old_state != 2) && (_loadedBattleType == 2) && final_news_candidate) {
+        _finalNewsBattleID = _loadedBattleID;
+        getBattle(_loadedBattleID, 2, false);
         scanState(true);
         return false;
     }
@@ -1775,6 +1802,14 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
         if (!_loadedBattleSilent && (is_result || !Announce)) {
             if (is_result) {
                 markResultShown(_loadedBattleID);
+                if (_finalNewsBattleID == _loadedBattleID) {
+                    _finalNewsResult = _finishedBattle;
+                    if (showFinalTurnNews(battleInfo)) {
+                        return false;
+                    }
+                    _finalNewsBattleID = 0;
+                    _finalNewsResult.clear();
+                }
             }
             emit finishedBattleChanged();
         }
@@ -1846,6 +1881,8 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
         }
         return false;
     }
+    // This ready board belongs to the battle that may finish on the next load.
+    _boardBattleID = _loadedBattleID;
     if (!_loadedBattleSilent && res) {
         qDebug() << "Check spellbook levelup" << _loadedBattleTurn << battleInfo->with_bot();
 
@@ -4294,6 +4331,77 @@ QString QWarloksDuelCore::battleReadOnly(int BattleID) {
     return res;
 }
 
+bool QWarloksDuelCore::showFinalTurnNews(QBattleInfo *battleInfo) {
+    if (!battleInfo || (_loadedBattleID <= 0) ||
+            (_boardBattleID != _loadedBattleID) ||
+            _Warlock.isEmpty() || _WarlockHtml.isEmpty()) {
+        return false;
+    }
+
+    const int final_turn = battleInfo->turn();
+    if ((final_turn <= 0) || (battleInfo->getTurnInfo(final_turn, _login) == "[]")) {
+        return false;
+    }
+
+    // The saved ready page for this turn supplies the order form, targets and
+    // hidden turn value. Its unit section is replaced with the historical
+    // snapshot one turn earlier, exactly as a normal ready turn is prepared.
+    QString page = battleInfo->currentPageData();
+    if (page.isEmpty()) {
+        return false;
+    }
+    QString snapshot;
+    int status = 0;
+    if (requestTurnSnapshot(_loadedBattleID, final_turn - 1, snapshot, status)) {
+        if (!replaceUnitSection(page, snapshot)) {
+            qDebug() << "showFinalTurnNews" << "snapshot replacement failed";
+        }
+    } else {
+        // The ready page already shows the board after final_turn - 1.
+        qDebug() << "showFinalTurnNews" << "snapshot unavailable" << status;
+    }
+
+    _player = nullptr;
+    _enemy = nullptr;
+    if (!parseReadyBattle(page, false)) {
+        return false;
+    }
+    if (_loadedBattleTurn != final_turn) {
+        qDebug() << "showFinalTurnNews" << "saved page turn" << _loadedBattleTurn
+                 << "does not match final turn" << final_turn;
+        return false;
+    }
+
+    setPossibleSpell(page);
+    if (!prepareMonsterHtml() || !prepareWarlockHtml()) {
+        return false;
+    }
+
+    _finalTurnNews = true;
+    emit readyBattleChanged();
+    _finalTurnNews = false;
+    return true;
+}
+
+void QWarloksDuelCore::turnNewsClosed(int battle_id) {
+    if ((battle_id > 0) && (battle_id == _finalNewsBattleID)) {
+        const QString result = _finalNewsResult;
+        _finalNewsBattleID = 0;
+        _finalNewsResult.clear();
+        QTimer::singleShot(0, this, [this, battle_id, result]() {
+            if (battle_id != _loadedBattleID) {
+                return;
+            }
+            if (!result.isEmpty()) {
+                _finishedBattle = result;
+            }
+            emit finishedBattleChanged();
+        });
+        return;
+    }
+    refreshCurrentTurn(battle_id);
+}
+
 void QWarloksDuelCore::refreshCurrentTurn(int battle_id) {
     if ((battle_id <= 0) || (battle_id != _loadedBattleID) ||
             (_loadedBattleType != 1) || _isAsService || _isAI) {
@@ -4340,7 +4448,8 @@ QString QWarloksDuelCore::battleInfo() {
     QBattleInfo *battle_info = getBattleInfo(_loadedBattleID);
     battle_info->setTurn(_loadedBattleTurn);
 
-    QString hint = _suppressTurnNews ? "[]" : getBattleHint(battle_info);
+    QString hint = (_suppressTurnNews || _finalTurnNews)
+            ? "[]" : getBattleHint(battle_info);
     QString msg = "";
     if (_isAI) {
         QString msg_code = QString("BotSay_%1").arg(intToStr(_loadedBattleTurn));
