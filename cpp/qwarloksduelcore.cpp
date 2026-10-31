@@ -731,7 +731,7 @@ void QWarloksDuelCore::generateTopList() {
             _topAll.append(",");
         }
         _topAll.append(ws->toJSON());
-        qDebug() << "QWarloksDuelCore::generateTopList" << ws->name() << curr_time << ws->lastActivity() << curr_time - ws->lastActivity();
+        // qDebug() << "QWarloksDuelCore::generateTopList" << ws->name() << curr_time << ws->lastActivity() << curr_time - ws->lastActivity();
         if (curr_time - ws->lastActivity() < 3 * 24 * 60 * 60) {
             if (!_topActive.isEmpty()) {
                 _topActive.append(",");
