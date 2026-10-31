@@ -151,6 +151,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _boardBattleID = 0;
     _finalNewsBattleID = 0;
     _finalTurnNews = false;
+    _repairingFinishedBattle = false;
 
     _nam.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
 
@@ -1403,6 +1404,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
     _loadedBattleID = battle_id;
     _loadedBattleType = battle_type;
     _loadedBattleSilent = silent;
+    _repairingFinishedBattle = false;
     qDebug() << "getBattle " << _loadedBattleID << " battle_type " << _loadedBattleType << _isLogined << "silent" << _loadedBattleSilent;
     if (!_isLogined) {
         loginToSite(silent);
@@ -1411,6 +1413,17 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
     if (_loadedBattleType == 2) {
         QBattleInfo* bi = getBattleInfo(_loadedBattleID);
         if (bi->fullParsed()) {
+            if (!bi->hasBoard()) {
+                // An old archive may have history but no unit section. Fetch
+                // the live finished page instead of opening a blank board.
+                _repairingFinishedBattle = true;
+                if (!silent) {
+                    setIsLoading(true);
+                }
+                sendGetRequest(QString(GAME_SERVER_URL_GET_BATTLE)
+                               .arg(QString::number(battle_id)) + "&full=1", silent);
+                return;
+            }
             _finishedBattle = bi->getFinishedBattleInfo(_login);
             markResultShown(_loadedBattleID);
             if (_finalNewsBattleID == _loadedBattleID) {
@@ -1639,6 +1652,8 @@ void QWarloksDuelCore::processSpellBookLevelAfterBattle(QBattleInfo *bi) {
 
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType << Announce;
+    const bool repairing = _repairingFinishedBattle;
+    _repairingFinishedBattle = false;
     QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
     if ((_loadedBattleType == 2) && (Data.indexOf("id#=#") == 0)) {
         QBattleInfo *bi = new QBattleInfo(Data);
@@ -1785,12 +1800,16 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             battleInfo->parseAllTurns(Data, _login, true);
             _finishedBattle = battleInfo->getFinishedBattleInfo(_login);
             qDebug() << "after battleInfo->getFullHist" << _login << battleInfo->winner() << battleInfo->isWinner(_login) << battleInfo->with_bot();
-            countFinishedBattle(battleInfo);
+            if (!repairing) {
+                countFinishedBattle(battleInfo);
+                QString params = QString("Id;%1;Players;%2;Winner;%3;").arg(intToStr(_loadedBattleID), battleInfo->getInListParticipant(_login, true), battleInfo->winner());
+                logEvent("Game_End", params);
+            }
 #ifndef _DEBUG
+            // Always refresh the archive: a repairing load replaces the empty
+            // unit section that made the finished battle impossible to open.
             storeFullParsedBattle(battleInfo);
 #endif
-            QString params = QString("Id;%1;Players;%2;Winner;%3;").arg(intToStr(_loadedBattleID), battleInfo->getInListParticipant(_login, true), battleInfo->winner());
-            logEvent("Game_End", params);
             is_result = true;
         }
         if (!_loadedBattleSilent && (is_result || !Announce)) {

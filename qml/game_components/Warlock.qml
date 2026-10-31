@@ -17,8 +17,8 @@ Item {
     property bool gesturesScrollInhibit: false
     property int l_damageSeq: 0
     property int l_hpDisplay: l_warlock.hp
-    property bool l_dead: (parseInt(l_warlock.hp, 10) <= 0) &&
-                          ((l_warlock.status || "").toLowerCase().indexOf("surrender") === -1)
+    property bool l_surrendered: (l_warlock.status || "").toLowerCase().indexOf("surrender") !== -1
+    property bool l_dead: (parseInt(l_warlock.hp, 10) <= 0) && !l_surrendered
 
     signal clicked(var data)
     signal doubleClicked(var data)
@@ -348,7 +348,7 @@ Item {
         // number: original corner geometry (like the built-in btnText)
         Text {
             text: l_hpDisplay
-            visible: !l_dead
+            visible: !l_dead && (l_hpDisplay > 0)
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.rightMargin: 1 * l_ratio

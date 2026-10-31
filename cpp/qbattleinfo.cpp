@@ -761,6 +761,12 @@ const QString &QBattleInfo::currentPageData() const
     return _currentPageData;
 }
 
+bool QBattleInfo::hasBoard() const
+{
+    return _fullJSON.contains("\"warlocks\":[") &&
+            !_fullJSON.contains("\"warlocks\":[]");
+}
+
 void QBattleInfo::parseAllTurns(QString &Data, QString &Login, bool Last) {
     qDebug() << "QBattleInfo::parseAllTurns" << Login << Last;
     parseUnits(Data, Login);
@@ -802,7 +808,7 @@ bool QBattleInfo::parseFullHistory(const QString &Data) {
     return true;
 }
 
-void QBattleInfo::generateJSON(QString &Login) {
+void QBattleInfo::generateJSON(const QString &Login) {
     QString _WarlockHtml, _MonstersHtml;
     foreach(QMonster *m, _Monsters) {
         if (!_MonstersHtml.isEmpty()) {

@@ -568,6 +568,8 @@ private:
     QString _finalNewsResult;
     // Suppress only the tutorial hint for the final-news readyBattleChanged().
     bool _finalTurnNews;
+    // An old archive without a unit section is being replaced by the live page.
+    bool _repairingFinishedBattle;
     bool _isDelay;
     bool _isPermanent;
     bool _isSuicide;
