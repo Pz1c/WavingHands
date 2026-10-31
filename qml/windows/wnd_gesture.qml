@@ -902,7 +902,7 @@ BaseWindow {
         if (spell.n === "Stab") {
             return true;
         }
-        if ((spell.n === "None") || !spell.n) {
+        if ((spell.n === "None") || (spell.n === "Default") || !spell.n) {
             return false;
         }
         if (spell.cast_type === 1) {
