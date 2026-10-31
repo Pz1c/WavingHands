@@ -1267,9 +1267,9 @@ ApplicationWindow {
             gBattle.spellIdx = arr_cast_now.length;
             var def_or_none = is_player && gBattle.player_changed_mind;
             //var def_or_none = (gBattle.spellIdx > 0) || (is_player && (gBattle.player_changed_mind || ((playerSpellbookLevel < 5) && (finished_high_lv_spell > 0))));
-            if (def_or_none) {
-                gBattle.spellIdx = arr_cast_now.length + 1;
-            } else if (arr_cast_now.length === 1) {
+            // A spell completed by this gesture is the useful default even in a
+            // changed-mind battle. Default only stands in when there is none.
+            if (arr_cast_now.length === 1) {
                 arr_cast_now[0].choose = 1;
                 gBattle.spellIdx = 1;
             } else if (arr_cast_now.length > 1) {
@@ -1283,9 +1283,11 @@ ApplicationWindow {
                 }
                 arr_cast_now[spi].choose = 1;
                 gBattle.spellIdx = spi + 1;
+            } else if (def_or_none) {
+                gBattle.spellIdx = 1;
             }
-
-            var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
+            var default_selected = def_or_none && (arr_cast_now.length === 0);
+            var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:(default_selected ? 1 : 0),t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
             res.push({gp:"?",n:warlockDictionary.getStringByCode(warlock_idx === 0 ? "SpellListCompleted" : "SpellListCompletedOpponent"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
             if (def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0) || (other_hand_finish_spell > 0))) {
