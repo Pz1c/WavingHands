@@ -59,6 +59,10 @@ public:
     void setCurrentPageData(const QString &data);
     const QString &currentPageData() const;
 
+    // Old archive entries can contain history without a parsed unit section.
+    // Such a record can show a result, but not the battle board.
+    bool hasBoard() const;
+
     bool active(const QString &login) const;
 
     int size() const;
@@ -113,7 +117,7 @@ protected:
     void init();
     void cleanLists();
     void parseUnits(QString &Data, QString &Login);
-    void generateJSON(QString &Login);
+    void generateJSON(const QString &Login);
 
 private:
     int _battleID;

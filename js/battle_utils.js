@@ -68,6 +68,15 @@ function prepareWarlock(w) {
         w.id = battle.targetsMap[w.name];
     }
     w.changed_mind = (w.charmed > 0) || (w.confused > 0) || (w.paralized > 0) ? 1 : 0;
+    // Old archives stored 0 for a surrender when the status was "Health: 15".
+    // The status still has the number, so recover it without another request.
+    if ((parseInt(w.hp, 10) <= 0) &&
+            ((w.status || "").toLowerCase().indexOf("surrender") !== -1)) {
+        var hp_match = /Health:\s*(\d+)/i.exec(w.status || "");
+        if (hp_match) {
+            w.hp = parseInt(hp_match[1], 10);
+        }
+    }
     w.paralyzed_hand = battle.paralyzed_hand[w.id];
     if (!w.paralyzed_hand) {
         w.paralyzed_hand = "";
