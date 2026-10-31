@@ -21,6 +21,8 @@ var map_spell_name_to_gesture = {"Dispel Magic":["cDPW"],"Counter Spell":["WPP",
     "Blindness":["DWFFd","DFWFd"],"Invisibility":["PPws"],"Permanency":["SPFPSDW"],"Delay Effect":["DWSSSP"],"Remove Enchantment":["PDWP"],
     "Shield":["P"],"Magic Missile":["SD"],"Cause Light Wounds":["WFP"],"Cause Heavy Wounds":["WPFD"],"Lightning Bolt":["DFFDD"],"Clap of Lightning":["WDDc"],
     "Fireball":["FSSDD"],"Finger of Death":["PWPFSSSD"],"Fire Storm":["SWWc"],"Ice Storm":["WSSc"],"Stab":[">"]};
+// Master's summon order; index + 1 is the monster strength.
+var SUMMON_SPELL_TYPES = ["Goblin", "Ogre", "Troll", "Giant"];
 var arr_distruption_spell = ["Amnesia", "Paralysis", "Confusion", "Fear", "Maladroitness", "Charm Monster", "Charm Person", "Anti-spell"];
 
 // https://github.com/Pz1c/WavingHands/issues/227
@@ -187,6 +189,32 @@ function getMonsterIconBySummonHP(HP) {
     case 4: return "giant";
     default: return "summon";
     }
+}
+
+// A summon in progress ends the hand with a prefix of its spell. The
+// placeholder is "RH:<owner>" / "LH:<owner>" and carries no monster name.
+// Prefer the longest match: ...PSF is Ogre, not Goblin.
+function getSummonFromGestures(gestures) {
+    var text = (gestures || "").toUpperCase().replace(/[^A-Z]+$/, "");
+    var best = null;
+    var best_len = 0;
+    for (var i = 0; i < SUMMON_SPELL_TYPES.length; ++i) {
+        var name = SUMMON_SPELL_TYPES[i];
+        var codes = map_spell_name_to_gesture["Summon " + name];
+        if (!codes || !codes.length) {
+            continue;
+        }
+        var code = codes[0].toUpperCase();
+        for (var n = Math.min(code.length, text.length); n >= 2; --n) {
+            if ((text.lastIndexOf(code.substr(0, n)) === text.length - n) &&
+                    (n > best_len)) {
+                best = {name:name, strength:i + 1};
+                best_len = n;
+                break;
+            }
+        }
+    }
+    return best;
 }
 
 function getMonsterDamageByName(name) {
@@ -1381,6 +1409,13 @@ function collectNewsSummons(rows, battle) {
         } else {
             rec.key = rec.name !== "" ? rec.name : ("New " + rec.type + " of " + rec.owner);
         }
+        // Master identifies the summoned monster even when it is not on the
+        // end-of-turn board: strength from the summon type, icon from the name
+        // or the new_<type> placeholder.
+        rec.strength = SUMMON_SPELL_TYPES.indexOf(rec.type) + 1;
+        rec.hp = rec.strength;
+        rec.icon = rec.name !== "" ? getMonsterIconByName(rec.name)
+                                   : "new_" + rec.type.toLowerCase();
     }
     // targets like "the monster X is summoning with his left hand"
     for (i = 0, Ln = rows.length; i < Ln; ++i) {

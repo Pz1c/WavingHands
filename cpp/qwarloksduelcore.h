@@ -321,10 +321,7 @@ protected:
     void processRefferer();
     void setCheckUrl(const QString &check_url);
 
-    // ParseMonsterCommands is false when rebuilding the current page: its unit
-    // section already contains monsters that were summoned this turn, while
-    // the snapshot did not and needed the form rows to discover them.
-    bool parseReadyBattle(QString &Data, bool ParseMonsterCommands = true);
+    bool parseReadyBattle(QString &Data);
     void parsePlayerInfo(QString &Data, bool ForceBattleList = false);
     void parseChallendge(QString &Data);
     void parseMessages(QString &Data);

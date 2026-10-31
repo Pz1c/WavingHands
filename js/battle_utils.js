@@ -380,8 +380,10 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
         for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
             var w = battle.warlocks[i];
             if (w) {
-                // The order-form placeholders are not part of the turn-start board.
-                w.news_placeholders_visible = false;
+                // The order-form placeholders are hidden only while turn events
+                // are playing. A rebuilt board with no news is a normal order
+                // board and must keep its placeholders.
+                w.news_placeholders_visible = (real_actions.length === 0);
             }
         }
     }
@@ -404,20 +406,30 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         row = real_actions[i];
         var arrival = findTurnNewsArrival(news_summons, row);
+        var row_summon = row.summon;
         var summon = arrival
                 ? {name:arrival.name, owner:arrival.owner, rec:arrival.rec}
-                : (news_summons ? null : getTurnNewsSummonInfo(row));
+                : (news_summons
+                   ? ((row_summon && !row_summon.real)
+                      ? {name:row_summon.key, owner:row_summon.owner, rec:row_summon}
+                      : null)
+                   : getTurnNewsSummonInfo(row));
         if (summon) {
             var summon_data = findTurnNewsMonsterData(summon.name);
+            var summon_rec = summon.rec;
             var summon_icon = summon_data
                     ? summon_data.icon
-                    : BGU.getMonsterIconByName(summon.name);
+                    : (summon_rec && summon_rec.icon
+                       ? summon_rec.icon
+                       : BGU.getMonsterIconByName(summon.name));
             if (summon_icon.indexOf("new_") === 0) {
                 summon_icon = summon_icon.substring(4);
             }
             var summon_hp = summon_data
                     ? summon_data.hp
-                    : getSummonedMonsterHp(summon.name);
+                    : (summon_rec && summon_rec.hp
+                       ? summon_rec.hp
+                       : getSummonedMonsterHp(summon.name));
             var transition_idx = i;
             if (summon.rec) {
                 for (var ci = 0, LnC = real_actions.length; ci < LnC; ++ci) {
@@ -430,7 +442,7 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
             addTurnNewsTransitionAction(real_actions, transition_idx,
                     {action:"summon", object_type:"monster",
                      object:summon.name,
-                     warlock_name:getMonsterOwnerName(summon.name) || summon.owner,
+                     warlock_name:summon.owner,
                      icon:summon_icon, hp:summon_hp});
         }
 
@@ -1328,7 +1340,28 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
     battle.hint = new_hint;
 }
 
-function prepareMonster(m) {
+// Resolve a command placeholder from the owner's hand. Prefer the
+// placeholder's own hand, then the other hand if the summon is already there.
+function identifyPlaceholderSummon(m, rawWarlocks) {
+    var hand = (m.name.indexOf("LH:") === 0) ? "L" : "R";
+    if (!rawWarlocks) {
+        return null;
+    }
+    for (var i = 0, Ln = rawWarlocks.length; i < Ln; ++i) {
+        var w = rawWarlocks[i];
+        if (!w || (w.name !== m.owner)) {
+            continue;
+        }
+        var summon = BGU.getSummonFromGestures(w[hand]);
+        if (!summon) {
+            summon = BGU.getSummonFromGestures(w[hand === "L" ? "R" : "L"]);
+        }
+        return summon;
+    }
+    return null;
+}
+
+function prepareMonster(m, rawWarlocks) {
     m.is_elemental = !m.owner || (m.owner === "Nobody");
     m.allow_choose_target = false;
     if (m.is_elemental) {
@@ -1338,7 +1371,17 @@ function prepareMonster(m) {
         return false;
     }
 
-    if ((m.name.indexOf(":") !== -1) && (m.strength > 0)) {
+    var placeholder = (m.name.indexOf("LH:") === 0) || (m.name.indexOf("RH:") === 0);
+    if (placeholder) {
+        var summon = identifyPlaceholderSummon(m, rawWarlocks);
+        if (summon) {
+            m.strength = summon.strength;
+            m.hp = summon.strength;
+            m.icon = "new_" + BGU.getMonsterIconBySummonHP(summon.strength);
+        } else {
+            m.icon = "summon";
+        }
+    } else if ((m.name.indexOf(":") !== -1) && (m.strength > 0)) {
         m.icon = "new_" + BGU.getMonsterIconByName(BGU.getMonsterNameByStrength(m.strength));
         if (m.icon.indexOf("elemental") !== -1) {
             m.icon = "new_summon";
@@ -1355,6 +1398,9 @@ function prepareMonster(m) {
     }
 
     m.damage = BGU.getMonsterDamageByName(m.name);
+    if (placeholder && (m.strength > 0)) {
+        m.damage = m.strength;
+    }
 
     m.enchantment_icon = "";
     if (m.status.indexOf("-") !== -1) {
@@ -1418,7 +1464,7 @@ function prepareBattle(raw_battle) {
         var m = raw_battle.monsters[i];
         m.read_only = battle.read_only;
         console.log("JS.prepareBattle.monsters", JSON.stringify(m));
-        if (prepareMonster(m)) {
+        if (prepareMonster(m, raw_battle.warlocks)) {
             battle.monsters[m.owner].push(m);
             battle.actions.M.push({id:battle.targetsMap[m.name],target:m.new_target,old_target:m.target,
                                    under_control:true,owner:m.owner,name:m.name,
