@@ -1917,7 +1917,16 @@ function getIconByGesture(g) {
     return BGU.getIconByGesture(g);
 }
 
-function getIconStatusSpell(code) {
+function getIconStatusSpell(code, value) {
+    if (code === "shield") {
+        return "P"; // one-turn Shield
+    }
+    if (code === "mirror") {
+        return "cw"; // one-turn Magic Mirror
+    }
+    if (code === "dispel") {
+        return "cDPW"; // one-turn Dispel Magic
+    }
     return BGU.icon_status_spell[code];
 }
 

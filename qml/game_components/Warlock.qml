@@ -910,6 +910,12 @@ Item {
                 continue;
             }
 
+            // A zero counter is a one-turn status that is over after the news.
+            var turns = parseInt(status.value, 10);
+            if (!isNaN(turns) && (turns <= 0)) {
+                continue;
+            }
+
             // A status that landed this turn is already showing its
             // end-of-turn value.
             if (status.fresh) {
@@ -924,7 +930,7 @@ Item {
                 continue;
             }
 
-            var turns = parseInt(status.value, 10);
+            turns = parseInt(status.value, 10);
             if (isNaN(turns)) {
                 updated.push(status);
                 continue;
@@ -1213,6 +1219,8 @@ Item {
             arr_m.is_checkbox = false;
             if (type === "m") {
                 arr_m.text = arr_m.hp;
+            } else if ((type === "s") && (parseInt(arr_m[code_value], 10) === 0)) {
+                arr_m.text = "";
             } else {
                 arr_m.text = arr_m[code_value];
             }
