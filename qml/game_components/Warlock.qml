@@ -30,8 +30,8 @@ Item {
        radius: 10
     }
 
-    // The player's wizard icon in his game color; the life-points number keeps
-    // its original bottom-right corner spot.
+    // The warlock's portrait in his game color (bots get the golem); the life-points
+    // number keeps its original bottom-right corner spot.
     IconInfo {
         id: iiHP
         source: "qrc:/res/wizard_" + (l_warlock.color ? l_warlock.color : "grey") + ".png";
