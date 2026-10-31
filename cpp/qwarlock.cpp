@@ -263,6 +263,16 @@ int QWarlock::maladroit() const
     return _maladroit;
 }
 
+int QWarlock::charmed() const
+{
+    return _charmed;
+}
+
+int QWarlock::confused() const
+{
+    return _confused;
+}
+
 bool QWarlock::isParaFC() const
 {
     return _isParaFC;

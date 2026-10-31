@@ -1322,7 +1322,7 @@ ApplicationWindow {
         // overwrite the other hand while paralysis/charm forces it.
         var is_two_handed = isTwoHandedSpell(spell);
         var is_maladroit = !gBattle.player_under_control &&
-                ((gBattle.warlocks[0].maladroit > 0) || (gesture === "C"));
+                ((gBattle.warlocks[0].gesture_maladroit > 0) || (gesture === "C"));
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
         if (!spell.n) {
             spell.n = "None";
