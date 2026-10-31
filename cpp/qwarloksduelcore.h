@@ -305,6 +305,7 @@ protected:
     bool prepareMonsterHtml();
     bool prepareWarlockHtml();
     bool parseSpecReadyBattleValues(QString &Data);
+    void parseCurrentGestureState(QString &Data);
     void setPossibleSpell(const QString &Data);
     void calcBattleDecision();
     QString currentTurnHistory(const QString &Data);
@@ -539,6 +540,10 @@ private:
     QString _paralyzeList;
     QString _extraOrderInfo;
     QString _paralyzedHands;
+    // Current page status per warlock, "maladroit,paralyzed,charmed,confused".
+    // Unit data is replaced by the older snapshot for turn news, so this must
+    // be read before replaceUnitSection().
+    QMap<QString, QString> _currentGestureState;
     bool _isDelay;
     bool _isPermanent;
     bool _isSuicide;

@@ -89,6 +89,8 @@ public:
     void setIsParaFC(bool newIsParaFC);
 
     int maladroit() const;
+    int charmed() const;
+    int confused() const;
 
     const QList<QSpell *> &possibleSpells() const;
 

@@ -1318,7 +1318,7 @@ ApplicationWindow {
         // While a hand is paralyzed or charmed the other hand is forced by that
         // state. Maladroit/C must not overwrite it with the chosen gesture.
         var is_maladroit = !gBattle.player_under_control &&
-                ((gBattle.warlocks[0].maladroit > 0) || (gesture === "C") || (spell.th > 0));
+                ((gBattle.warlocks[0].gesture_maladroit > 0) || (gesture === "C") || (spell.th > 0));
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
         if (!spell.n) {
             spell.n = "None";

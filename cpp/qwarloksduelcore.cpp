@@ -1799,6 +1799,10 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
         }
         return false;
     }
+    // The unit tables below are replaced by an older snapshot for turn news.
+    // Gesture decisions must use the current page's statuses, not that snapshot.
+    parseCurrentGestureState(Data);
+
     bool snapshot_replaced = false;
     if (!Announce && !_isAsService && !_isAI && !_loadedBattleSilent) {
         int turn_pos = 0;
@@ -2017,6 +2021,40 @@ void QWarloksDuelCore::prepareBattleChatAndHistory(QString &Data) {
     _chat = intToStr(chat_cnt);
 }
 
+void QWarloksDuelCore::parseCurrentGestureState(QString &Data) {
+    _currentGestureState.clear();
+
+    const QString table_start = "<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH=\"100%\">";
+    const QString table_end = "</TABLE>";
+    int idx1 = 0, idx2;
+    while ((idx1 = Data.indexOf(table_start, idx1)) != -1) {
+        idx1 += table_start.length();
+        idx2 = Data.indexOf(table_end, idx1);
+        if (idx2 == -1) {
+            break;
+        }
+        QString unit = Data.mid(idx1, idx2 - idx1);
+        if (unit.indexOf("/player") != -1) {
+            QList<QWarlock *> current;
+            QString error;
+            if (QWarlockUtils::parseWarlock(unit, current, error, _login.toLower())) {
+                foreach (QWarlock *w, current) {
+                    _currentGestureState[w->name()] = QString("%1,%2,%3,%4")
+                            .arg(w->maladroit())
+                            .arg(w->paralized())
+                            .arg(w->charmed())
+                            .arg(w->confused());
+                    delete w;
+                }
+            } else {
+                qDeleteAll(current);
+            }
+        }
+        idx1 = idx2 + table_end.length();
+    }
+    qDebug() << "QWarloksDuelCore::parseCurrentGestureState" << _currentGestureState;
+}
+
 void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
     if (_isAsService) qDebug() << "QWarloksDuelCore::setPossibleSpell";
     QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
@@ -2061,7 +2099,9 @@ void QWarloksDuelCore::setPossibleSpell(const QString &Data) {
         } else if (current_hand.compare("RH", Qt::CaseInsensitive) == 0) {
             w->setParalyzedHand(WARLOCK_HAND_RIGHT, "", w->AI());
             w->setLockedParalyzedHand(WARLOCK_HAND_RIGHT);
-        } else if (w->paralized() > 0) {
+        } else if ((_currentGestureState.contains(w->name())
+                    ? _currentGestureState.value(w->name()).section(',', 1, 1).toInt()
+                    : w->paralized()) > 0) {
             // The victim's page does not carry PARALYZE for an enemy cast.
             // Recover the carried-over hand only when the same caster repeats.
             int inferred_hand = WARLOCK_HAND_NONE;
@@ -4312,16 +4352,28 @@ QString QWarloksDuelCore::battleInfo() {
     // prepareBattleChatAndHistory), that is the turn news to show for this load.
     QString tmpLT = battle_info->getTurnInfo(_loadedBattleTurn > 0 ? _loadedBattleTurn - 1 : 0, _login);
 
+    QString tmpGS = "{";
+    bool first_gs = true;
+    foreach (const QString &name, _currentGestureState.keys()) {
+        if (!first_gs) {
+            tmpGS.append(",");
+        }
+        first_gs = false;
+        tmpGS.append(QString("\"%1\":[%2]").arg(QWarlockUtils::jsonEscape(name), _currentGestureState.value(name)));
+    }
+    tmpGS.append("}");
+
     return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
                    "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25,"
-                   "\"maladroit\":%26,\"suicide\":%27}")
+                   "\"maladroit\":%26,\"suicide\":%27,\"gesture_state\":%28}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
             .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT, boolToStr(_isMaladroit), // 21-26
-                 boolToIntS(_isSuicide)); // 27: 1 while the site offers the SUICIDE checkbox (#315)
+                 boolToIntS(_isSuicide)) // 27: 1 while the site offers the SUICIDE checkbox (#315)
+            .arg(tmpGS);
 }
 
 void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Value) {
