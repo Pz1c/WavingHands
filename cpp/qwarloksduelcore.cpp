@@ -2317,8 +2317,8 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
     return _loadedBattleTurn != 0;
 }
 
-bool QWarloksDuelCore::parseReadyBattle(QString &Data, bool ParseMonsterCommands) {
-    qDebug() << "QWarloksDuelCore::parseReadyBattle" << ParseMonsterCommands;
+bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
+    qDebug() << "QWarloksDuelCore::parseReadyBattle";
     if (!parseTargetList(Data)) {
         _errorMsg = GameDictionary->getStringByCode("ErrParseTargets");
         emit errorOccurred();
@@ -4374,7 +4374,7 @@ bool QWarloksDuelCore::showFinalTurnNews(QBattleInfo *battleInfo) {
 
     _player = nullptr;
     _enemy = nullptr;
-    if (!parseReadyBattle(page, false)) {
+    if (!parseReadyBattle(page)) {
         return false;
     }
     if (_loadedBattleTurn != final_turn) {
@@ -4434,7 +4434,7 @@ void QWarloksDuelCore::refreshCurrentTurn(int battle_id) {
 
         _player = nullptr;
         _enemy = nullptr;
-        if (!parseReadyBattle(current, false)) {
+        if (!parseReadyBattle(current)) {
             return;
         }
 
