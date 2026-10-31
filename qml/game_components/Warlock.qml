@@ -1381,7 +1381,7 @@ Item {
 
         if (l_warlock.fh > 0) {
             var lh = l_warlock.fh === 1 ? "L" : "R";
-            var ng = (l_warlock.gesture_charmed > 0) ? "-" : frozenGesture(lh);
+            var ng = (l_warlock.charmed > 0) ? "-" : frozenGesture(lh);
             // Inside=true for the player: show the frozen gesture without
             // triggering the normal auto-reset/order submission path.
             setGesture(lh, SG.getIconByGesture(ng, true), ng, l_warlock.player);
