@@ -910,7 +910,17 @@ function findTurnNewsSpellName(txt) {
             best = name;
         }
     }
-    return best;
+    if (best !== "") {
+        return best;
+    }
+    // The server names the effect, not the spell, in these hit lines.
+    if (/bolt of lightning/i.test(txt)) {
+        return "Lightning Bolt";
+    }
+    if (/clap of lightning/i.test(txt)) {
+        return "Clap of Lightning";
+    }
+    return "";
 }
 
 function getTurnNewsReflection(row) {
