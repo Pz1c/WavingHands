@@ -375,9 +375,41 @@ function findTurnNewsArrival(news_summons, row) {
     return null;
 }
 
+// Effect rows whose meaning is not carried by obj.spell.
+function getTurnNewsEffectSpells(row) {
+    var res = [];
+    if (row.obj && row.obj.spell) {
+        res.push(row.obj.spell);
+        // Poison-looking lines are currently parsed as Disease.
+        if (row.obj.spell === "Disease") {
+            res.push("Poison");
+        }
+    }
+    var txt = row.txt || "";
+    if (/flickers out of time/i.test(txt)) {
+        res.push("Time Stop");
+    }
+    if (/speeds up/i.test(txt)) {
+        res.push("Haste");
+    }
+    if (/All magical effects are erased/i.test(txt)) {
+        res.push("Dispel Magic");
+        res.push("Remove Enchantment");
+    }
+    return res;
+}
+
 function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons) {
     var previous_valid = isPreviousTurnBattle(previous_battle);
     var elemental_summoned = false, i, Ln, row;
+    var mergeable = {}, active_casts = {}, active_casts_by_spell = {};
+    var reflected_spells = {};
+    for (var merge_name in BGU.map_spell_name_to_status) {
+        mergeable[merge_name] = true;
+    }
+    mergeable["Charm Monster"] = true;
+    mergeable["Remove Enchantment"] = true;
+
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         if (getTurnNewsElementalAppearance(real_actions[i])) {
             elemental_summoned = true;
@@ -414,6 +446,18 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         row = real_actions[i];
+        if ((row.row_type === "spell") && row.obj && !row.obj.fail &&
+                (row.type < 2) && !row.turn_news_hidden) {
+            var cast_target = normalizeTurnNewsName(row.obj.target || "");
+            var cast_ref = {row:row, index:i};
+            active_casts[row.obj.spell + "|" + cast_target] = cast_ref;
+            active_casts_by_spell[row.obj.spell] = cast_ref;
+        }
+        var reflection = getTurnNewsReflection(row);
+        if (reflection) {
+            reflected_spells[reflection.spell] = true;
+        }
+
         var arrival = findTurnNewsArrival(news_summons, row);
         var row_summon = row.summon;
         var summon = arrival
@@ -471,16 +515,42 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
         if ((row.row_type === "other") && row.obj &&
                 (row.obj.spell === "Charm Monster") && row.obj.target) {
             var monster = normalizeTurnNewsName(row.obj.target);
-            var cast_idx = findTurnNewsCharmCast(real_actions, i, monster);
-            if (cast_idx !== -1) {
-                // Merge the successful result into the cast event.
-                row.turn_news_hidden = true;
-                var cast_owner = real_actions[cast_idx].obj.warlock;
+            var charm_cast = active_casts["Charm Monster|" + monster];
+            if (charm_cast) {
+                var cast_owner = charm_cast.row.obj.warlock;
                 if (cast_owner) {
-                    addTurnNewsTransitionAction(real_actions, cast_idx,
+                    addTurnNewsTransitionAction(real_actions, charm_cast.index,
                             {action:"charm_monster", object_type:"monster",
                              object:monster, warlock_name:cast_owner});
                 }
+            }
+        }
+
+        // Hide a spell's separate result row; the cast row already carries the
+        // icon/status action. Reflected effects keep their row so the status
+        // lands on the reflected target.
+        if ((row.row_type === "other") && (row.type < 2) &&
+                !row.turn_news_hidden && !(getTurnNewsDamage(row) > 0) &&
+                !isTurnNewsHeal(row)) {
+            var effect_spells = getTurnNewsEffectSpells(row);
+            var effect_target = normalizeTurnNewsName(row.obj ? row.obj.target : "");
+            var effect_cast = null;
+            for (var es = 0, LnES = effect_spells.length; es < LnES; ++es) {
+                var effect_spell = effect_spells[es];
+                if (!mergeable[effect_spell] || reflected_spells[effect_spell]) {
+                    continue;
+                }
+                var candidate = active_casts[effect_spell + "|" + effect_target];
+                if (!candidate && !effect_target) {
+                    candidate = active_casts_by_spell[effect_spell];
+                }
+                if (candidate &&
+                        (!effect_cast || (candidate.index > effect_cast.index))) {
+                    effect_cast = candidate;
+                }
+            }
+            if (effect_cast) {
+                row.turn_news_hidden = true;
             }
         }
 
@@ -719,26 +789,6 @@ function getMonsterOwnerName(name) {
         }
     }
     return "";
-}
-
-// The visible cast row, or the original cast row when the visible copy is
-// hidden by the row-sorting step. The caller adds the transition there.
-function findTurnNewsCharmCast(real_actions, idx, monster) {
-    var fallback = -1;
-    for (var i = idx - 1; i >= 0; --i) {
-        var row = real_actions[i];
-        if ((row.row_type === "spell") && row.obj &&
-                (row.obj.spell === "Charm Monster") &&
-                (normalizeTurnNewsName(row.obj.target) === monster)) {
-            if (row.type < 2) {
-                return i;
-            }
-            if (fallback === -1) {
-                fallback = i;
-            }
-        }
-    }
-    return fallback;
 }
 
 // Change only the owner. The monster's attack target stays exactly as the
