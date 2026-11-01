@@ -301,11 +301,28 @@ function playNextHintFrame() {
     scheduleNextHintFrame();
 }
 
-function playHintActions(actions) {
-    var letters = [], actors = [], targets = [], icon = null, a, lf, i, j, Ln, frame_actions;
+function isDeferredHintAction(row_type, action) {
+    if (row_type === "spell") {
+        return (action === "damage") ||
+                (action === "heal") ||
+                (action === "hp") ||
+                (action === "summon") ||
+                (action === "charm_monster");
+    }
+    return (row_type === "attack") && (action === "damage");
+}
+
+function playHintActions(actions, row_type) {
+    var letters = [], actors = [], targets = [], apply_actions = [], icon = null, a, lf, i, j, Ln, frame_actions;
     stopHintAnimation();
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
         a = actions[i];
+        if (isDeferredHintAction(row_type, a.action)) {
+            // Apply spell/attack results after the gesture and icon frames,
+            // before the final target highlight.
+            apply_actions.push(a);
+            continue;
+        }
         if ((a.action === "damage") || (a.action === "heal") || (a.action === "hp") ||
                 (a.action === "summon") || (a.action === "death") ||
                 (a.action === "elemental")) {
@@ -384,6 +401,11 @@ function playHintActions(actions) {
         delay = HINT_TARGET_DELAY;
     }
 
+    if (apply_actions.length > 0) {
+        hint_frames.push({delay:delay,actions:apply_actions});
+        delay = 0;
+    }
+
     if (targets.length > 0) {
         hint_frames.push({delay:delay,actions:targets});
     }
@@ -391,11 +413,11 @@ function playHintActions(actions) {
     scheduleNextHintFrame();
 }
 
-function processAllHintAction(actions, restore) {
+function processAllHintAction(actions, restore, row_type) {
     var i, Ln = actions.length, shown = Ln;
     rTutOverlay.opacity = (((shown === 0) && !restore) || ((shown !== 0) && restore)) ? 0.5 : 0.3;
     if (!restore) {
-        playHintActions(actions);
+        playHintActions(actions, row_type);
         return;
     }
     for (i = 0; i < Ln; ++i) {
@@ -504,6 +526,6 @@ function moveToHintStep(diff, skip_restore) {
     prepareWarockToHint(false);
     prepareIconToHint();
 
-    processAllHintAction(ltTutorial.tutorialData[ltTutorial.tutorialDataIdx].actions, false);
+    processAllHintAction(hint.actions, false, hint.row_type);
     return hint;
 }

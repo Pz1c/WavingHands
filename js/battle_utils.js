@@ -1438,6 +1438,7 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
             row_actions = row_actions.concat([status_remove]);
         }
         new_hint.push({color_bg:real_actions[i].color,font_size:real_actions[i].font_size,txt:real_actions[i].txt,
+                       row_type:real_actions[i].row_type,
                        turn_news_silent:silent_death,
                        actions:row_actions});
     }
