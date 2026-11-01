@@ -171,6 +171,11 @@ function parseParalyzedHands(arr) {
     }
 }
 
+function isTurnNewsFizzle(row) {
+    return (row.txt || "").indexOf(
+            "The haze of an enchantment spell drifts aimlessly") !== -1;
+}
+
 // Turn news for a beginner (below the Master Warlock Spellbook, level 5) is limited to the three
 // things they can act on: somebody cast a spell, somebody took damage, a poison/disease counter
 // changed. Gestures, deaths, shields, counters, mirrors, charms etc. stay in the battle history.
@@ -1503,7 +1508,7 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         //new_action = BGU.getMessageActionByRow(real_actions[i], battle); // before change color
-        if (real_actions[i].turn_news_hidden) {
+        if (real_actions[i].turn_news_hidden || isTurnNewsFizzle(real_actions[i])) {
             continue;
         }
         if (real_actions[i].type >= 2) {
