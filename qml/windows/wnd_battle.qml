@@ -554,8 +554,12 @@ BaseWindow {
     // Blocks a second submit while the board waits for TURNREADY.
     property bool waitingForTurn: false
     function prepareHintWithCheck() {
-        console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
-        if (++readyWarlocks >= mainWindow.gBattle.size) {
+        var shownWarlocks = mainWindow.gBattle.shown_warlocks;
+        if (shownWarlocks === undefined) {
+            shownWarlocks = mainWindow.gBattle.size;
+        }
+        console.log("battle.prepareHintWithCheck", readyWarlocks, shownWarlocks);
+        if (++readyWarlocks >= shownWarlocks) {
             readyWarlocks = 0;
             if (mainWindow.gBattle.read_only || !mainWindow.gBattle.hint ||
                     mainWindow.gBattle.hint.length === 0) {

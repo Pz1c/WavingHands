@@ -1792,32 +1792,48 @@ function finishPrepareWarlockList() {
     }
     var curr_y = 0;
     var total_height = 0;
+    var show_warlocks = [];
     map_warlock_name_to_idx = {};
     map_monster_name_to_idx = {};
+    var active_warlocks = 0;
+    for (var aw = 0, LnA = battle.warlocks.length; aw < LnA; ++aw) {
+        if (battle.warlocks[aw] && battle.warlocks[aw].active) {
+            ++active_warlocks;
+        }
+    }
+    // Hide inactive cards only while at least two active Warlocks remain.
+    var can_hide_inactive = !battle.read_only && (active_warlocks >= 2);
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         // The snapshot unit section is the turn-start board, so a Warlock who
         // dies during the news is still present here and can show his RIP card.
-        // A surrender is inactivity, not a death: remove that card unless it
-        // still owns monsters that need a row.
+        // A surrender is inactivity, not a death: remove that card too, and
+        // its monsters become irrelevant with it.
         var surrendered = !!battle.warlocks[i] &&
                 ((battle.warlocks[i].status || "").toLowerCase()
                     .indexOf("surrender") !== -1);
         var start_hp = battle.warlocks[i] ? parseInt(battle.warlocks[i].hp, 10) : 0;
         var turn_news_keep_card = (start_hp > 0) && !surrendered;
-        if (!battle.warlocks[i] || (!battle.read_only && !battle.warlocks[i].active &&
-                (battle.monsters[battle.warlocks[i].name].length === 0) && !turn_news_keep_card)) {
+        if (!battle.warlocks[i] ||
+                (can_hide_inactive && !battle.warlocks[i].active &&
+                 !turn_news_keep_card)) {
             continue;
         }
-        var arr_m = battle.warlocks[i];
-        arr_m.warlock_idx = i;
-        map_warlock_name_to_idx[arr_m.name] = i;
+        show_warlocks.push(i);
+    }
+    battle.shown_warlocks = show_warlocks.length;
+    for (var wi = 0, LnW = show_warlocks.length; wi < LnW; ++wi) {
+        var idx = show_warlocks[wi];
+        var arr_m = battle.warlocks[idx];
+        arr_m.warlock_idx = idx;
+        map_warlock_name_to_idx[arr_m.name] = idx;
         for (var j = 0, LnJ = arr_m.monsters.length; j < LnJ; ++j) {
-            map_monster_name_to_idx[arr_m.monsters[j].name] = i;
+            map_monster_name_to_idx[arr_m.monsters[j].name] = idx;
         }
         //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
         if (sprite === null) {
             console.log("Error creating object");
+            --battle.shown_warlocks;
             continue;
         }
         sprite.clicked.connect(iconClick);
