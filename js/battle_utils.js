@@ -465,6 +465,25 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                     {action:"elemental", visible:false, type:""});
         }
 
+        // Charm Monster succeeds only when the turn log has both the cast row
+        // and the "looks, glassy-eyed" result row. Put one ownership change on
+        // the cast row so it happens before the success text and the attack.
+        if ((row.row_type === "other") && row.obj &&
+                (row.obj.spell === "Charm Monster") && row.obj.target) {
+            var monster = normalizeTurnNewsName(row.obj.target);
+            var cast_idx = findTurnNewsCharmCast(real_actions, i, monster);
+            if (cast_idx !== -1) {
+                // Merge the successful result into the cast event.
+                row.turn_news_hidden = true;
+                var cast_owner = real_actions[cast_idx].obj.warlock;
+                if (cast_owner) {
+                    addTurnNewsTransitionAction(real_actions, cast_idx,
+                            {action:"charm_monster", object_type:"monster",
+                             object:monster, warlock_name:cast_owner});
+                }
+            }
+        }
+
         if (row.row_type === "death") {
             var target = normalizeTurnNewsName(row.obj ? row.obj.target : "");
             // "Azi surrenders." is colored like a death row but nobody dies.
@@ -700,6 +719,73 @@ function getMonsterOwnerName(name) {
         }
     }
     return "";
+}
+
+// The visible cast row, or the original cast row when the visible copy is
+// hidden by the row-sorting step. The caller adds the transition there.
+function findTurnNewsCharmCast(real_actions, idx, monster) {
+    var fallback = -1;
+    for (var i = idx - 1; i >= 0; --i) {
+        var row = real_actions[i];
+        if ((row.row_type === "spell") && row.obj &&
+                (row.obj.spell === "Charm Monster") &&
+                (normalizeTurnNewsName(row.obj.target) === monster)) {
+            if (row.type < 2) {
+                return i;
+            }
+            if (fallback === -1) {
+                fallback = i;
+            }
+        }
+    }
+    return fallback;
+}
+
+// Change only the owner. The monster's attack target stays exactly as the
+// event sentence and the existing parser set it.
+function moveMonsterToOwner(name, new_owner) {
+    if (!name || !new_owner || !battle.monsters) {
+        return false;
+    }
+    var old_owner = getMonsterOwnerName(name);
+    if (!old_owner || (old_owner === new_owner)) {
+        return false;
+    }
+    var monsters = battle.monsters[old_owner] || [], monster = null;
+    for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+        if (monsters[i] && (monsters[i].name === name)) {
+            monster = monsters.splice(i, 1)[0];
+            break;
+        }
+    }
+    if (!monster) {
+        return false;
+    }
+    if (!battle.monsters[new_owner]) {
+        battle.monsters[new_owner] = [];
+    }
+    battle.monsters[new_owner].push(monster);
+    monster.owner = new_owner;
+
+    for (var wi = 0, LnW = battle.warlocks.length; wi < LnW; ++wi) {
+        var w = battle.warlocks[wi];
+        if (w && ((w.name === old_owner) || (w.name === new_owner))) {
+            w.monsters = battle.monsters[w.name];
+        }
+    }
+    if (battle.actions && battle.actions.M) {
+        for (var k = 0, LnK = battle.actions.M.length; k < LnK; ++k) {
+            var action = battle.actions.M[k];
+            if (action && (action.name === name)) {
+                action.owner = new_owner;
+                action.under_control = (new_owner === battle.player_name);
+            }
+        }
+    }
+    if (map_warlock_name_to_idx[new_owner] !== undefined) {
+        map_monster_name_to_idx[name] = map_warlock_name_to_idx[new_owner];
+    }
+    return true;
 }
 
 // A death removes the monster from every roster and index.
