@@ -1797,9 +1797,15 @@ function finishPrepareWarlockList() {
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         // The snapshot unit section is the turn-start board, so a Warlock who
         // dies during the news is still present here and can show his RIP card.
+        // A surrender is inactivity, not a death: remove that card unless it
+        // still owns monsters that need a row.
+        var surrendered = !!battle.warlocks[i] &&
+                ((battle.warlocks[i].status || "").toLowerCase()
+                    .indexOf("surrender") !== -1);
         var start_hp = battle.warlocks[i] ? parseInt(battle.warlocks[i].hp, 10) : 0;
+        var turn_news_keep_card = (start_hp > 0) && !surrendered;
         if (!battle.warlocks[i] || (!battle.read_only && !battle.warlocks[i].active &&
-                (battle.monsters[battle.warlocks[i].name].length === 0) && !(start_hp > 0))) {
+                (battle.monsters[battle.warlocks[i].name].length === 0) && !turn_news_keep_card)) {
             continue;
         }
         var arr_m = battle.warlocks[i];
