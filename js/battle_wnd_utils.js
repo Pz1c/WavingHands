@@ -163,6 +163,28 @@ function processSummonHintAction(a, restore) {
     }
 }
 
+function processCharmMonsterHintAction(a, restore) {
+    // Like damage, summons and deaths, ownership is not undone when the next
+    // news step restores the previous step's highlights.
+    if (restore) {
+        return;
+    }
+    if (!a.warlock_name || !BU.moveMonsterToOwner ||
+            !BU.moveMonsterToOwner(a.object, a.warlock_name)) {
+        return;
+    }
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        var live = ww && ww.l_warlock;
+        if (live && BU.battle && BU.battle.monsters[live.name]) {
+            live.monsters = BU.battle.monsters[live.name];
+        }
+        if (ww && ww.refreshMonsters) {
+            ww.refreshMonsters();
+        }
+    }
+}
+
 function processDeathHintAction(a, restore) {
     if (restore) {
         return;
@@ -212,6 +234,7 @@ function processHintAction(a, restore) {
     case "heal": return processHealHintAction(a, restore);
     case "hp": return processHealthHintAction(a, restore);
     case "summon": return processSummonHintAction(a, restore);
+    case "charm_monster": return processCharmMonsterHintAction(a, restore);
     case "death": return processDeathHintAction(a, restore);
     case "elemental": return processElementalHintAction(a, restore);
     }
