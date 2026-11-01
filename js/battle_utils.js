@@ -399,13 +399,22 @@ function getTurnNewsEffectSpells(row) {
     return res;
 }
 
-function retargetTurnNewsStatus(cast_row, target) {
+function moveTurnNewsStatusToReflection(cast_row, reflection_row, target) {
     var actions = cast_row.new_action || [];
-    for (var i = 0, Ln = actions.length; i < Ln; ++i) {
+    var moved = [];
+    for (var i = actions.length - 1; i >= 0; --i) {
         if ((actions[i].action === "highlight") &&
                 (actions[i].object_type === "status")) {
-            actions[i].warlock_name = target;
+            var action = actions.splice(i, 1)[0];
+            action.warlock_name = target;
+            moved.push(action);
         }
+    }
+    if (moved.length > 0) {
+        if (!reflection_row.new_action) {
+            reflection_row.new_action = [];
+        }
+        reflection_row.new_action = reflection_row.new_action.concat(moved);
     }
 }
 
@@ -470,10 +479,12 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                     active_casts[reflection.spell + "|" + reflection_target] ||
                     active_casts_by_spell[reflection.spell];
             if (reflection_cast) {
+                var reflected_target = reflection_cast.row.obj.warlock;
                 reflected_casts[reflection.spell] = {
                     cast: reflection_cast,
-                    target: reflection_cast.row.obj.warlock
+                    target: reflected_target
                 };
+                moveTurnNewsStatusToReflection(reflection_cast.row, row, reflected_target);
             }
         }
 
@@ -546,10 +557,11 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
         }
 
         // Hide a spell's separate result row; the cast row already carries the
-        // icon/status action. Reflected effects keep their row so the status
-        // lands on the reflected target.
+        // icon/status action. Reflection rows stay visible and carry the moved
+        // status action; the effect row that follows them is still merged.
         if ((row.row_type === "other") && (row.type < 2) &&
-                !row.turn_news_hidden && !(getTurnNewsDamage(row) > 0) &&
+                !row.turn_news_hidden && !(row.obj && row.obj.mirror) &&
+                !(getTurnNewsDamage(row) > 0) &&
                 !isTurnNewsHeal(row)) {
             var effect_spells = getTurnNewsEffectSpells(row);
             var effect_target = normalizeTurnNewsName(row.obj ? row.obj.target : "");
@@ -581,7 +593,6 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
             }
             if (effect_cast) {
                 if (effect_reflection) {
-                    retargetTurnNewsStatus(effect_cast.row, effect_reflection.target);
                     delete reflected_casts[effect_reflection_spell];
                 }
                 row.turn_news_hidden = true;
