@@ -399,11 +399,21 @@ function getTurnNewsEffectSpells(row) {
     return res;
 }
 
+function retargetTurnNewsStatus(cast_row, target) {
+    var actions = cast_row.new_action || [];
+    for (var i = 0, Ln = actions.length; i < Ln; ++i) {
+        if ((actions[i].action === "highlight") &&
+                (actions[i].object_type === "status")) {
+            actions[i].warlock_name = target;
+        }
+    }
+}
+
 function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons) {
     var previous_valid = isPreviousTurnBattle(previous_battle);
     var elemental_summoned = false, i, Ln, row;
     var mergeable = {}, active_casts = {}, active_casts_by_spell = {};
-    var reflected_spells = {};
+    var reflected_casts = {};
     for (var merge_name in BGU.map_spell_name_to_status) {
         mergeable[merge_name] = true;
     }
@@ -455,7 +465,16 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
         }
         var reflection = getTurnNewsReflection(row);
         if (reflection) {
-            reflected_spells[reflection.spell] = true;
+            var reflection_target = normalizeTurnNewsName(reflection.target || "");
+            var reflection_cast =
+                    active_casts[reflection.spell + "|" + reflection_target] ||
+                    active_casts_by_spell[reflection.spell];
+            if (reflection_cast) {
+                reflected_casts[reflection.spell] = {
+                    cast: reflection_cast,
+                    target: reflection_cast.row.obj.warlock
+                };
+            }
         }
 
         var arrival = findTurnNewsArrival(news_summons, row);
@@ -534,10 +553,21 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                 !isTurnNewsHeal(row)) {
             var effect_spells = getTurnNewsEffectSpells(row);
             var effect_target = normalizeTurnNewsName(row.obj ? row.obj.target : "");
-            var effect_cast = null;
+            var effect_cast = null, effect_reflection = null;
+            var effect_reflection_spell = "";
             for (var es = 0, LnES = effect_spells.length; es < LnES; ++es) {
                 var effect_spell = effect_spells[es];
-                if (!mergeable[effect_spell] || reflected_spells[effect_spell]) {
+                if (!mergeable[effect_spell]) {
+                    continue;
+                }
+                var reflected = reflected_casts[effect_spell];
+                if (reflected) {
+                    if (!effect_cast ||
+                            (reflected.cast.index > effect_cast.index)) {
+                        effect_cast = reflected.cast;
+                        effect_reflection = reflected;
+                        effect_reflection_spell = effect_spell;
+                    }
                     continue;
                 }
                 var candidate = active_casts[effect_spell + "|" + effect_target];
@@ -550,6 +580,10 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                 }
             }
             if (effect_cast) {
+                if (effect_reflection) {
+                    retargetTurnNewsStatus(effect_cast.row, effect_reflection.target);
+                    delete reflected_casts[effect_reflection_spell];
+                }
                 row.turn_news_hidden = true;
             }
         }
