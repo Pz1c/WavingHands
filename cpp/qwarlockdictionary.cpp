@@ -417,7 +417,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("BattleListWaitingOpponent", "Waiting opponent #%1", "Warten auf Gegner #%1", "Esperando rival #%1");
     fillDictionary("BattleListWaitingFor", "Waiting for %1", "Warten auf %1", "Esperando a %1");
     fillDictionary("BattleListReady", "Ready #%1", "Bereit #%1", "Lista #%1");
-    fillDictionary("BattleListReadyVs", "Ready vs. %1", "Bereit gegen %1", "Lista contra %1");
+    fillDictionary("BattleListReadyVs", "Your turn vs. %1", "Bereit gegen %1", "Lista contra %1");
     fillDictionary("BattleListFinished", "Finished #%1", "Beendet #%1", "Terminada #%1");
     fillDictionary("BattleListDraw", "Draw #%1", "Unentschieden #%1", "Empate #%1");
     fillDictionary("BattleListWon", "Won #%1", "Gewonnen #%1", "Victoria #%1");
