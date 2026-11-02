@@ -33,7 +33,14 @@ ApplicationWindow {
     property var gERROR: ({})
     property var gBattle: ({})
     property int playerSpellbookLevel: 6
-    property var warlockDictionary: WarlockDictionary
+    // Not the WarlockDictionary object itself: the lang read below makes every binding that
+    // calls getStringByCode() depend on the language, so a switch re-translates the shown UI
+    // (BaseWindow and InfoWindow use this object too).
+    property var warlockDictionary: ({
+        getStringByCode: function(code) {
+            return WarlockDictionary.lang ? WarlockDictionary.getStringByCode(code) : code;
+        }
+    })
     //property var googleAnalytic: GoogleAnalytics
     property real height_koeff: 1
     property bool exit_on_back_button: true
@@ -243,8 +250,10 @@ ApplicationWindow {
             anchors.leftMargin: 48 * ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 48 * ratioObject
-            anchors.bottom: bbNewGameWithFriend.top
+            anchors.bottom: rmLang.top
             anchors.bottomMargin: 24 * ratioObject
+            // on a short screen the items scroll here instead of running over the buttons below
+            clip: true
             contentWidth: -1
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -326,6 +335,38 @@ ApplicationWindow {
             }
 
 
+        }
+
+        // Interface language: WarlockDictionary stores the choice, and the shown texts follow it
+        Row {
+            id: rmLang
+            anchors.bottom: bbNewGameWithFriend.top
+            anchors.bottomMargin: 24 * ratioObject
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 18 * ratioObject
+
+            Repeater {
+                model: GUI.getLangMenuList()
+
+                BtnBig {
+                    readonly property bool selected: WarlockDictionary.lang === modelData.c
+
+                    width: 128 * ratioObject
+                    height: 52 * ratioObject
+                    radius: height / 2
+                    border.width: 2 * ratioObject
+                    text_color: "#ABF4F4"
+                    font.pixelSize: 24 * ratioFont
+                    text: warlockDictionary.getStringByCode(modelData.t)
+                    bg_color_active: selected ? "#551470" : "transparent"
+                    border_color_active: selected ? "#ABF4F4" : "#905B93"
+
+                    onClicked: {
+                        logEvent("menu_action", {action:"lang_" + modelData.c});
+                        WarlockDictionary.setCurrentLang(modelData.c);
+                    }
+                }
+            }
         }
 
         BtnBig {
@@ -413,7 +454,7 @@ ApplicationWindow {
 
             LargeText {
                 id: lPlayerTitle
-                text: "Hi " + core.login
+                text: warlockDictionary.getStringByCode("HiLogin").replace("%1", core.login)
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
                 fontSizeMode: Text.VerticalFit

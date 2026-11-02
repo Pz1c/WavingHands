@@ -99,7 +99,6 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
         _login = "";
         _password = "xsw2#EDC";
     }
-    GameDictionary->setCurrentLang("en");
     SpellChecker = QWarlockSpellChecker::getInstance();
     _timerCount = 0;
     _timerInterval = 0;
@@ -108,6 +107,12 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
         connect(&_serviceTimer, SIGNAL(timeout()), this, SLOT(processServiceTimer()));
         _serviceTimer.setInterval(10000);
         _serviceTimer.start();
+        // the battle list rows are translated when built: rebuild them in the chosen language
+        connect(GameDictionary, &QGameDictionary::langChanged, this, [this]() {
+            if (!_battleList.isEmpty()) {
+                generateBattleList();
+            }
+        });
     }
     _isLogined = false;
     _isAI = false;

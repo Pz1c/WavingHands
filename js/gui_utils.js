@@ -15,11 +15,17 @@ var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, {c:"top",t:"TopLi
                      {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"}, {c:"settings",t:"Settings"},
                      {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/ ,{c:"enable_notif", t:"Notification"}
         ];
+// language buttons under the main menu, c = WarlockDictionary.lang
+var ARR_LANG_MENU = [{c:"en",t:"LangEN"}, {c:"de",t:"LangDE"}, {c:"es",t:"LangES"}];
 
 const SPELL_CHARM_MONSTER = 23;
 
 function getMainMenuList() {
     return ARR_MAIN_MENU;
+}
+
+function getLangMenuList() {
+    return ARR_LANG_MENU;
 }
 
 function mainMenuActionEx(code) {
@@ -55,7 +61,6 @@ function mainMenuAction(code) {
 function newUserRegistered() {
     var l_login = core.login;
     closeChild();
-    lPlayerTitle.text = warlockDictionary.getStringByCode("HiLogin").replace("%1", l_login);
     //showTipMessage(warlockDictionary.getStringByCode("JustRegistered").replace("#login#", l_login), true);
     showAfterRegWnd();
     logEvent("registration_finished", {login: l_login});

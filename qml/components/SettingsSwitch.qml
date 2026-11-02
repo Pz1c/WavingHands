@@ -4,7 +4,6 @@
 // window asks the core to change the setting.
 
 import QtQuick 2.15
-import ua.sp.warloksduel 2.0
 
 Item {
     id: iRoot
@@ -60,7 +59,7 @@ Item {
             x: iRoot.checked ? 14 * iRoot.ratioObject : rSwitch.width - width - 14 * iRoot.ratioObject
             font.pixelSize: 21 * iRoot.ratioFont
             color: "#E7FFFF"
-            text: WarlockDictionary.getStringByCode(iRoot.checked ? "SwitchOn" : "SwitchOff")
+            text: mainWindow.warlockDictionary.getStringByCode(iRoot.checked ? "SwitchOn" : "SwitchOff")
         }
 
         MouseArea {

@@ -61,10 +61,10 @@ void QGameDictionary::fillDictionary(const QString& Code, const QString& en, con
 QString QGameDictionary::getStringByCode(const QString &Code) {
     // value(), not operator[]: the non-const operator inserts every missing code, and
     // this singleton is read by the UI thread and the bot service thread at once.
-    QString result;
-    if (lang.compare("de") == 0) {
+    QString result, curr_lang = getCurrentLang();
+    if (curr_lang.compare("de") == 0) {
         result = dictionary_de.value(Code);
-    } else if (lang.compare("es") == 0) {
+    } else if (curr_lang.compare("es") == 0) {
         result = dictionary_es.value(Code);
     }
     // English is the default, and stands in for a code added with an empty de/es text
@@ -72,24 +72,29 @@ QString QGameDictionary::getStringByCode(const QString &Code) {
         result = dictionary_en.value(Code);
     }
     if (result.isNull()) {
-        qDebug() << "getStringByCode" << lang << Code;
+        qDebug() << "getStringByCode" << curr_lang << Code;
         return Code;
     }
     return result;
 }
 
 QString QGameDictionary::getCurrentLang() {
+    QMutexLocker locker(&langMutex);
     return lang;
 }
 
 void QGameDictionary::setCurrentLang(QString Lang) {
-    if ((Lang.compare("en") != 0 && Lang.compare("de") != 0 && Lang.compare("es") != 0) || (Lang.compare(lang) == 0)) {
+    if ((Lang.compare("en") != 0 && Lang.compare("de") != 0 && Lang.compare("es") != 0) || (Lang.compare(getCurrentLang()) == 0)) {
         return;
     }
 
-    lang = Lang;
+    {
+        QMutexLocker locker(&langMutex);
+        lang = Lang;
+    }
 
     storeLang();
+    emit langChanged();
 }
 
 void QGameDictionary::storeLang() {

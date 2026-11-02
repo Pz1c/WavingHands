@@ -190,6 +190,7 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("RateUs_short_desc", "This is an open source project, and we're doing our best to bring this old (1977) favorite game back to life.<br><br>Would you help us with a 5 star rating?", "Dies ist ein Open-Source-Projekt, und wir geben unser Bestes, um dieses alte Lieblingsspiel (1977) wieder zum Leben zu erwecken.<br><br>Hilfst du uns mit einer 5-Sterne-Bewertung?", "Este es un proyecto de código abierto, y hacemos todo lo posible por devolver la vida a este viejo juego favorito (1977).<br><br>¿Nos ayudas con una valoración de 5 estrellas?");
     fillDictionary("miRulesTitle", "Advanced Rules", "Erweiterte Regeln", "Reglas avanzadas");
     fillDictionary("miLogoutTitle", "Sign Out", "Abmelden", "Cerrar sesión");
+    fillDictionary("Notification", "Notification", "Benachrichtigung", "Notificación");
     // https://github.com/Pz1c/WavingHands/issues/149
     fillDictionary("Skip", "Skip", "Überspringen", "Omitir");
     fillDictionary("SwitchOn", "ON", "AN", "SÍ");
@@ -842,6 +843,10 @@ QString QWarlockDictionary::getLang() {
     settings.beginGroup("Locale");
     lang = settings.value("language", "en").toString();
     settings.endGroup();
+    // older versions could store "ua" or "ru"
+    if ((lang.compare("de") != 0) && (lang.compare("es") != 0)) {
+        lang = "en";
+    }
 
     return lang;
 }

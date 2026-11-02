@@ -5,7 +5,6 @@
 // that is the dialog itself. For demo purposes no fancy stuff in the popup
 
 import QtQuick 2.12
-import ua.sp.warloksduel 2.0
 
 Item {
     id: iRoot
@@ -14,7 +13,8 @@ Item {
 
     signal cancel;
 
-    property var dict: WarlockDictionary
+    // main.qml's wrapper, so a language switch re-translates a cached window too
+    property var dict: mainWindow.warlockDictionary
     property var l_data: ({})
     property string code: "info_wnd"
     property string title_text: ""
