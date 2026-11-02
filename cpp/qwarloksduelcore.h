@@ -141,6 +141,7 @@ signals:
     void loadedBattleIDChanged();
     void registerNewUserChanged();
     void orderSubmitedChanged();
+    void battleOrdersWaiting(int battle_id);
     void timerStateChanged();
     void challengeSubmitedChanged();
     void challengeListChanged();

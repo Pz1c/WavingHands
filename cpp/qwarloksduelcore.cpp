@@ -1113,6 +1113,7 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
         }
     }
 
+    const int orders_battle_id = (_ordersBattleID > 0) ? _ordersBattleID : _loadedBattleID;
     if (!background) {
         // The site took the orders: tell the opponents over the caster link, so
         // their apps refresh the battle list now rather than on their next poll.
@@ -1121,6 +1122,13 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
         setIsLoading(true);
     }
     sendGetRequest(url, background);
+
+    // The player redirect means the opponent has not submitted yet. The
+    // player page has no battle board, so load the waiting battle page too.
+    if (!background &&
+            (url.indexOf("player?mess=orders+accepted") != -1)) {
+        emit battleOrdersWaiting(orders_battle_id);
+    }
 
     return true;
 }
