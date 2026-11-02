@@ -150,7 +150,11 @@ function prepareMonsterDetails(l_data, dict) {
     icon.visible = true;
     icon.text = l_data.hp;
     var details = dict.getStringByCode("StatLife") + l_data.hp + "<br>" + dict.getStringByCode("StatPower") + l_data.strength;
-    if (l_data.name.indexOf("RH:") === 0) {
+    var elemental_summon = (l_data.is_elemental_summon === true);
+    if (elemental_summon) {
+        ltTitle.text = l_data.summon_name || l_data.name;
+        ltShortDesc.text = dict.getStringByCode("WH_summon");
+    } else if (l_data.name.indexOf("RH:") === 0) {
         ltTitle.text = dict.getStringByCode("RH_summon");
         ltShortDesc.text = dict.getStringByCode("WH_summon");
         if (l_data.hp === "R") {
@@ -193,7 +197,7 @@ function prepareMonsterDetails(l_data, dict) {
 
     ltError.text = details;
     bbAction.text = dict.getStringByCode("MonsterSetTarget");
-    bbAction.visible = l_data.under_control && !l_data.read_only;// || l_data.allow_choose_target;
+    bbAction.visible = !elemental_summon && l_data.under_control && !l_data.read_only;
 }
 
 function prepareHPDetails(l_data, dict) {

@@ -457,6 +457,7 @@ Item {
                 iconInfoVisible: iMonsters.model[index].enchantment_icon !== ""
                 checkbox: false
                 radius: 20
+                opacity: l_data.placeholder ? 0.3 : 1
 
                 ParallelAnimation {
                     id: paMonsterHighlight

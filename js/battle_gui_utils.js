@@ -23,6 +23,7 @@ var map_spell_name_to_gesture = {"Dispel Magic":["cDPW"],"Counter Spell":["WPP",
     "Fireball":["FSSDD"],"Finger of Death":["PWPFSSSD"],"Fire Storm":["SWWc"],"Ice Storm":["WSSc"],"Stab":[">"]};
 // Master's summon order; index + 1 is the monster strength.
 var SUMMON_SPELL_TYPES = ["Goblin", "Ogre", "Troll", "Giant"];
+var SUMMON_GESTURE_TYPES = SUMMON_SPELL_TYPES.concat(["Fire Elemental", "Ice Elemental"]);
 var arr_distruption_spell = ["Amnesia", "Paralysis", "Confusion", "Fear", "Maladroitness", "Charm Monster", "Charm Person", "Anti-spell"];
 
 // https://github.com/Pz1c/WavingHands/issues/227
@@ -198,17 +199,23 @@ function getSummonFromGestures(gestures) {
     var text = (gestures || "").toUpperCase().replace(/[^A-Z]+$/, "");
     var best = null;
     var best_len = 0;
-    for (var i = 0; i < SUMMON_SPELL_TYPES.length; ++i) {
-        var name = SUMMON_SPELL_TYPES[i];
+    for (var i = 0; i < SUMMON_GESTURE_TYPES.length; ++i) {
+        var name = SUMMON_GESTURE_TYPES[i];
         var codes = map_spell_name_to_gesture["Summon " + name];
         if (!codes || !codes.length) {
             continue;
         }
+        var elemental = (name.indexOf("Elemental") !== -1);
         var code = codes[0].toUpperCase();
         for (var n = Math.min(code.length, text.length); n >= 2; --n) {
             if ((text.lastIndexOf(code.substr(0, n)) === text.length - n) &&
                     (n > best_len)) {
-                best = {name:name, strength:i + 1};
+                best = {
+                    name:name,
+                    strength:getMonsterDamageByName(name),
+                    elemental:elemental,
+                    icon:elemental ? getMonsterIconByNameEx(name) : ""
+                };
                 best_len = n;
                 break;
             }
