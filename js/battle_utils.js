@@ -2151,7 +2151,7 @@ function getIconByGesture(g) {
 
 function getIconStatusSpell(code, value) {
     if (code === "shield") {
-        return "P"; // one-turn Shield
+        return "WWP"; // the dedicated shield status always opens Protection
     }
     if (code === "mirror") {
         return "cw"; // one-turn Magic Mirror
