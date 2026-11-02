@@ -94,6 +94,7 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _keepMeOnOfferSkip = false;
     _pushNotifications = true;
     _pushForceSend = false;
+    _fastGesture = false;
     init();
     if (_isAsService) {
         _login = "";
@@ -2708,6 +2709,22 @@ void QWarloksDuelCore::setPushNotifications(bool On) {
     syncPushRegistration();
 }
 
+// https://github.com/Pz1c/WavingHands/issues/366
+bool QWarloksDuelCore::fastGesture() {
+    return _fastGesture;
+}
+
+void QWarloksDuelCore::setFastGesture(bool On) {
+    if (_fastGesture == On) {
+        return;
+    }
+    _fastGesture = On;
+    // Saved at once, like keep_me_on: the destructor is not guaranteed to run on Android.
+    saveParameters(false, false, true);
+    logEvent("FastGesture_Changed", QString("On;%1;").arg(On ? "1" : "0"));
+    emit fastGestureChanged();
+}
+
 bool QWarloksDuelCore::isNotificationGranted() {
 #ifdef Q_OS_ANDROID
     return checkIsNotificationGranted();
@@ -3659,6 +3676,7 @@ void QWarloksDuelCore::saveGameParameters() {
     settings->setValue("event_submit_turn5", _event_submit_turn5);
     settings->setValue("keep_me_on", _keepMeOn);
     settings->setValue("push_notifications", _pushNotifications);
+    settings->setValue("fast_gesture", _fastGesture);
 
     settings->beginWriteArray("battle_info");
     QMap<int, QBattleInfo *>::iterator bii;
@@ -3703,6 +3721,7 @@ void QWarloksDuelCore::loadGameParameters() {
     // choice must survive an app update (https://github.com/Pz1c/WavingHands/issues/149).
     _keepMeOn = settings->value("keep_me_on", "false").toBool();
     _pushNotifications = settings->value("push_notifications", "true").toBool();
+    _fastGesture = settings->value("fast_gesture", "false").toBool();
     _exp_lv = settings->value("exp_lv", "1").toInt();
     if (_exp_lv < 1) {
         _exp_lv = 1;
@@ -4339,6 +4358,9 @@ void QWarloksDuelCore::logout() {
     _pushForceSend = false;
     _pushForceTimer.stop();
     setServerPushActive(false);
+    // And Fast gesture selection (issue #366): on again when the next account reaches Master.
+    _fastGesture = false;
+    emit fastGestureChanged();
 
     settings->beginGroup("Game");
     settings->remove("");
@@ -4540,8 +4562,14 @@ int QWarloksDuelCore::getBotBattle() {
 
 void QWarloksDuelCore::setSBL(int NewLevel) {
     if (_exp_lv < NewLevel) {
+        bool first_master = (_exp_lv < 5) && (NewLevel >= 5);
         _exp_lv = NewLevel;
         logEvent("level_up", QString("level;%1;").arg(intToStr(_exp_lv)));
+        if (first_master && !_isAI && !_isAsService) {
+            // https://github.com/Pz1c/WavingHands/issues/366: a Master Warlock gets the
+            // Fast gesture selection, once; switching it off later is the player's choice.
+            setFastGesture(true);
+        }
         emit playerInfoChanged();
     }
 }

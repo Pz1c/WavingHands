@@ -1,9 +1,11 @@
-// https://github.com/Pz1c/WavingHands/issues/149, /issues/216, /issues/336
-// Settings, from the main menu. Two entries, each a SettingsSwitch bound to a core property:
+// https://github.com/Pz1c/WavingHands/issues/149, /issues/216, /issues/336, /issues/366
+// Settings, from the main menu. Three entries, each a SettingsSwitch bound to a core property:
 // "Auto start matches" (Keep me On in #149, the auto matching of #216) is keepMeOn
-// (QWarloksDuelCore::setKeepMeOn); "Game notifications" (#336) is pushNotifications
-// (QWarloksDuelCore::setPushNotifications), which registers this phone's push token with the
-// caster server - after the system's notification permission dialog when that is still open.
+// (QWarloksDuelCore::setKeepMeOn); "Fast gesture selection" (#366) is fastGesture
+// (QWarloksDuelCore::setFastGesture), read by wnd_gesture.qml; "Game notifications" (#336)
+// is pushNotifications (QWarloksDuelCore::setPushNotifications), which registers this
+// phone's push token with the caster server - after the system's notification permission
+// dialog when that is still open.
 // Under it, "Send notification token" registers the token again on demand
 // (QWarloksDuelCore::sendPushTokenNow) and shows the server's answer (pushTokenStatus).
 
@@ -66,8 +68,32 @@ InfoWindow {
             }
 
             SettingsSwitch {
-                id: ssPushNotifications
+                id: ssFastGesture
                 anchors.top: ltKeepMeOnDesc.bottom
+                anchors.topMargin: 48 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.right: parent.right
+                text: dict.getStringByCode("FastGesture")
+                checked: mainWindow.gameCore.fastGesture
+                onToggled: function (on) { dMainItem.setFastGesture(on); }
+            }
+
+            Text {
+                id: ltFastGestureDesc
+                anchors.top: ssFastGesture.bottom
+                anchors.topMargin: 12 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.right: parent.right
+                font.pixelSize: 24 * mainWindow.ratioFont
+                color: "#A8F4F4"
+                horizontalAlignment: Text.AlignLeft
+                wrapMode: Text.WordWrap
+                text: dict.getStringByCode("FastGestureSettingDesc")
+            }
+
+            SettingsSwitch {
+                id: ssPushNotifications
+                anchors.top: ltFastGestureDesc.bottom
                 anchors.topMargin: 48 * mainWindow.ratioObject
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -134,6 +160,13 @@ InfoWindow {
         console.log("wnd_settings.setKeepMeOn", on);
         mainWindow.logEvent("Settings_KeepMeOn", {On: on ? 1 : 0});
         mainWindow.gameCore.setKeepMeOn(on);
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/366
+    function setFastGesture(on) {
+        console.log("wnd_settings.setFastGesture", on);
+        mainWindow.logEvent("Settings_FastGesture", {On: on ? 1 : 0});
+        mainWindow.gameCore.setFastGesture(on);
     }
 
     // https://github.com/Pz1c/WavingHands/issues/336

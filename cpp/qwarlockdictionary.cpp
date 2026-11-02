@@ -219,6 +219,9 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("PushNotLoggedIn", "Not logged in", "Nicht angemeldet", "Sesión no iniciada");
     fillDictionary("PushSettingOff", "Turn Game notifications on first", "Schalte zuerst die Spielbenachrichtigungen ein", "Activa primero las notificaciones del juego");
     fillDictionary("PushTokenUnavailable", "Notification token unavailable", "Benachrichtigungs-Token nicht verfügbar", "Token de notificaciones no disponible");
+    // https://github.com/Pz1c/WavingHands/issues/366
+    fillDictionary("FastGesture", "Fast gesture selection", "Schnelle Gestenauswahl", "Gestos rápidos");
+    fillDictionary("FastGestureSettingDesc", "After selecting a gesture, skip the approval step, in case no spell was completed.", "Nach der Wahl einer Geste wird der Bestätigungsschritt übersprungen, wenn kein Zauber vollendet wurde.", "Tras elegir un gesto, se omite el paso de confirmación si no se ha completado ningún hechizo.");
     fillDictionary("BattleHistoryTitle", "Battle History", "Kampfverlauf", "Historial de la batalla");
     fillDictionary("Say", "Add a message", "Nachricht hinzufügen", "Añadir un mensaje");
     fillDictionary("PersonalChalengeTitle", "Private Duel Invite", "Einladung zum privaten Duell", "Invitación a duelo privado");
