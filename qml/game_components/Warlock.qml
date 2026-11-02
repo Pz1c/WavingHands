@@ -12,9 +12,21 @@ Item {
     property var l_charmActionData: ({})
     property string l_control_icon: ""
     property real l_ratio: 1
+    // Set while this row is being moved by mainWindow.gesturesScrollX, so the move is not
+    // reported back as a user scroll (which would echo between the rows forever).
+    property bool gesturesScrollInhibit: false
 
     signal clicked(var data)
     signal doubleClicked(var data)
+    signal gestureClicked(var data)
+
+    // Mirror the shared gesture-strip offset owned by the battle window.
+    Connections {
+        target: mainWindow
+        function onGesturesScrollXChanged() {
+            applyGesturesScroll(mainWindow.gesturesScrollX);
+        }
+    }
 
     LargeText {
        id: ltName
@@ -269,6 +281,18 @@ Item {
             anchors.fill: parent
             orientation: ListView.Horizontal
             model: l_warlock.print_g
+            // Publish a user scroll so every other warlock's strip follows.
+            onContentXChanged: {
+                if (gesturesScrollInhibit) {
+                    return;
+                }
+                if (Math.abs(mainWindow.gesturesScrollX - contentX) > 1) {
+                    mainWindow.gesturesScrollX = contentX;
+                }
+            }
+            // Re-align as soon as this strip finishes measuring: a row created later must
+            // not stay behind the shared offset the other rows already scrolled to.
+            onContentWidthChanged: applyGesturesScroll(mainWindow.gesturesScrollX)
             delegate: Item {
                 id: lwiGesture
                 height: svGestures.height
@@ -278,6 +302,10 @@ Item {
                     id: iiHL
                     source: "qrc:/res/"+lwGestures.model[index].l+".png"
                     iconVisible: lwGestures.model[index].lv
+                    // A turn this hand has no gesture for is not drawn at all. The cell still
+                    // takes its width (the delegate keeps 90 * l_ratio), so the strips stay on
+                    // the same turn grid and scroll together; only the empty card is dropped.
+                    visible: lwGestures.model[index].lv
                     textVisible: false
                     height: 108 * l_ratio
                     width: 78 * l_ratio
@@ -286,7 +314,8 @@ Item {
                     anchors.bottom: iiHR.top
                     anchors.bottomMargin: 18 * l_ratio
                     anchors.left: parent.left
-                    active: false
+                    l_data: lwGestures.model[index]
+                    active: true
                     radius: 20
                     gradient: Gradient {
                             GradientStop { position: 0.0;  color: lwGestures.model[index].la ? "#E7FFFF" : "#756F79" }
@@ -300,12 +329,21 @@ Item {
                         NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
                         NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
                     }
+
+                    // Open the battle history at this turn; empty cells are not clickable.
+                    onClicked: {
+                        if (l_data.lv) {
+                            rWarlock.gestureClicked(l_data);
+                        }
+                    }
                 }
 
                 IconInfo {
                     id: iiHR
                     source: "qrc:/res/"+lwGestures.model[index].r+".png"
                     iconVisible: lwGestures.model[index].rv
+                    // Same as the left card: an empty turn is not painted, but its width is kept.
+                    visible: lwGestures.model[index].rv
                     textVisible: false
                     height: 108 * l_ratio
                     width: 78 * l_ratio
@@ -314,7 +352,8 @@ Item {
                     anchors.bottom: parent.bottom
                     //anchors.bottomMargin: 0.05 * rWarlock.height
                     anchors.left: parent.left
-                    active: false
+                    l_data: lwGestures.model[index]
+                    active: true
                     radius: 20
                     gradient: Gradient {
                         GradientStop { position: 0.0;  color: lwGestures.model[index].ra ? "#E7FFFF" : "#756F79" }
@@ -326,6 +365,13 @@ Item {
                         running: lwGestures.model[index].rp === true
                         NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
                         NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
+                    }
+
+                    // Open the battle history at this turn; empty cells are not clickable.
+                    onClicked: {
+                        if (l_data.rv) {
+                            rWarlock.gestureClicked(l_data);
+                        }
                     }
                 }
             }
@@ -723,21 +769,30 @@ Item {
         doubleClicked(data);
     }
 
-    function scrollGestures() {
-        if (!svGestures.ScrollBar || !svGestures.ScrollBar.horizontal) {
+    // Move this strip to the shared offset. Padded strips have the same width, so this only
+    // clamps while a strip is shorter than the others (a row still measuring, a turn-news slice).
+    function applyGesturesScroll(x) {
+        if (!lwGestures) {
             return;
         }
-
-        console.log("Warlock.qml.finishWarlockCreation", svGestures.ScrollBar.horizontal.position, svGestures.ScrollBar.horizontal.stepSize);
-        var cnt = 0;
-        svGestures.ScrollBar.horizontal.stepSize = 0.1;
-        while(svGestures.ScrollBar.horizontal.position < 1) {
-            svGestures.ScrollBar.horizontal.increase();
-            if (++cnt >= 10) {
-                break;
-            }
+        var max_x = Math.max(0, lwGestures.contentWidth - lwGestures.width);
+        var clamped = Math.max(0, Math.min(x, max_x));
+        if (Math.abs(lwGestures.contentX - clamped) <= 1) {
+            return;
         }
-        console.log("Warlock.qml.finishWarlockCreation", svGestures.ScrollBar.horizontal.position, cnt);
+        gesturesScrollInhibit = true;
+        lwGestures.contentX = clamped;
+        gesturesScrollInhibit = false;
+    }
+
+    // Show the newest turn: the longest strip sets the shared offset, every other row follows it.
+    function scrollGestures() {
+        var max_x = Math.max(0, lwGestures.contentWidth - lwGestures.width);
+        if (max_x > mainWindow.gesturesScrollX) {
+            mainWindow.gesturesScrollX = max_x;
+        } else {
+            applyGesturesScroll(mainWindow.gesturesScrollX);
+        }
     }
 
     function prepareDynamic(type, arr, parent, code_value, start_x, incerment) {

@@ -609,6 +609,13 @@ BaseWindow {
         }
     }
 
+    function iconGestureClick(data) {
+        console.log("wnd_battle.iconGestureClick", JSON.stringify(data));
+        if (data && data.t !== undefined) {
+            mainWindow.showBattleHistory(mainWindow.gBattle.battle_hist, data.t);
+        }
+    }
+
     function iconDoubleClick(data) {
         console.log("wnd_battle.iconDoubleClick", JSON.stringify(data));
         var msg_text, msg_title, spell_code, msg_type = 1, target_name;
