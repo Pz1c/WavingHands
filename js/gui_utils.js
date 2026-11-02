@@ -126,7 +126,8 @@ function loadBattleList(filter) {
 
 function isBattleReady(id) {
     for (var i = 0, Ln = G_BATTLE_LIST[0].length; i < Ln; ++i) {
-        if (G_BATTLE_LIST[0][i].id === id) {
+        if ((G_BATTLE_LIST[0][i].id === id) &&
+                (G_BATTLE_LIST[0][i].s === 1)) {
             return true;
         }
     }
