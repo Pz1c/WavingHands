@@ -134,6 +134,15 @@ function isBattleReady(id) {
     return false;
 }
 
+function isBattleFinished(id) {
+    for (var i = 0, Ln = G_BATTLE_LIST[1].length; i < Ln; ++i) {
+        if (G_BATTLE_LIST[1][i].id === id) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function loadChallengeList() {
     var str = core.challengeList, i, Ln;
     console.log("loadChallengeList", core.isAI, str);
