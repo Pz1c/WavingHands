@@ -1246,7 +1246,7 @@ function removeTurnNewsHitIcon(row) {
     row.new_action = res;
 }
 
-function addTurnNewsDamage(cause, damage_row, target, amount) {
+function addTurnNewsDamage(cause, damage_row, target, amount, defer_to_target) {
     if (!cause || !target || !(amount > 0)) {
         return false;
     }
@@ -1254,8 +1254,14 @@ function addTurnNewsDamage(cause, damage_row, target, amount) {
         cause.new_action = [];
     }
 
-    cause.new_action.push({action:"damage", warlock_name:target.owner,
-                           object_type:target.type, object:target.name, amount:amount});
+    var damage_action = {action:"damage", warlock_name:target.owner,
+                         object_type:target.type, object:target.name, amount:amount};
+    if (defer_to_target) {
+        // Play the number with the target highlight instead of before the
+        // elemental actor pulse.
+        damage_action.defer_to_target = true;
+    }
+    cause.new_action.push(damage_action);
 
     // Move the victim's highlight from the effect row to the cause row. This is
     // what lights up every target of Fire Storm or a running elemental.
@@ -1522,7 +1528,7 @@ function prepareTurnNewsDamage(real_actions, previous_battle) {
 
         var elemental_action = getTurnNewsElementalAction(row);
         if (elemental_action && (elemental_action.kind === "damage")) {
-            addTurnNewsDamage(row, row, target, damage);
+            addTurnNewsDamage(row, row, target, damage, true);
             row.turn_news_force_show = true;
             continue;
         }
