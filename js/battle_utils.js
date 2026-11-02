@@ -53,7 +53,7 @@ function padDisplayString(s, len) {
 
 function prepareWarlock(w) {
     w.color = assignWizardColor(w);
-    if (isBotWarlock(w)) {
+    if (w.is_bot) {
         // The wizard color is still reserved above, so the human player keeps the
         // color he would get in a human-vs-human battle.
         w.color = "golem";
