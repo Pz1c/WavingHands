@@ -1045,9 +1045,10 @@ ApplicationWindow {
             if (!err.type) {
                 err.type = 7;
             }
-            if (((err.type === 8) || (err.type === "8")) &&
-                    WNDU.isWndVisible(WNDU.wnd_battle)) {
-                // Orders accepted; keep the open board and wait for TURNREADY.
+            if (((err.type === 8) || (err.type === "8")) && (err.id > 0)) {
+                // Open the same read-only battle window as the Orders Submitted
+                // window's View action.
+                showBattleReadOnly(err.id);
                 core.scanState(1);
                 return;
             }
@@ -1614,6 +1615,7 @@ ApplicationWindow {
 
         gBattle = JSON.parse(battle_str);
         gBattle.read_only = true;
+        gBattle.waiting_for_turn = !GUI.isBattleFinished(BattleID);
         WNDU.showBattle();
     }
 

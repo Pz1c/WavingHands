@@ -182,11 +182,11 @@ BaseWindow {
 
                 onClicked: {
                     console.log("wnd_battle.bbSendOrders", mainWindow.gBattle.read_only, JSON.stringify(mainWindow.gBattle.actions));
-                    if (waitingForTurn) {
-                        return;
-                    }
                     if (mainWindow.gBattle.read_only) {
                         mainWindow.processEscape();
+                        return;
+                    }
+                    if (waitingForTurn) {
                         return;
                     }
 
@@ -905,7 +905,7 @@ BaseWindow {
         if (!mainWindow.gBattle || !mainWindow.gBattle.id) {
             return;
         }
-        waitingForTurn = false;
+        waitingForTurn = mainWindow.gBattle.waiting_for_turn === true;
         readyWarlocks = 0;
         // frames left over from the last battle must not touch the new warlocks
         BWU.stopHintAnimation();
