@@ -100,6 +100,13 @@ ApplicationWindow {
         }
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
+        onBattleOrdersWaiting: function(battle_id) {
+            if (!WNDU.isWndVisible(WNDU.wnd_battle) || !gBattle ||
+                    (gBattle.id !== battle_id)) {
+                return;
+            }
+            core.getBattle(battle_id, 0, false);
+        }
         onOpponentTurnReady: function(by) { refreshAfterOpponentTurn(by); }
         onBattleHistoryReady: function(battle_id, history) { applyBattleHistory(battle_id, history); }
         onRegisterNewUserChanged: GUI.newUserRegistered()
