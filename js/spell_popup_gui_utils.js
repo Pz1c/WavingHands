@@ -23,8 +23,8 @@ function prepareDataTypeFinishedGame(l_data, dict) {
     ltGesture.text = l_data.t;
     ltTitle.text = dict.getStringByCode("FinishedGameResultTitle" + l_data.sc);
     ltShortDesc.text = l_data.st ? replaceAll(l_data.st, "<br>", " ") : "";
-    ltError.text = "<font color=\"#0654C0\">Last turn's chat</font><br />" + replaceAll(replaceAll(l_data.lc, "''", '"'), '&quot;', '"');
-    bbSkipAction.text = "Rematch " + l_data.enemy;
+    ltError.text = "<font color=\"#0654C0\">" + dict.getStringByCode("LastTurnChat") + "</font><br />" + replaceAll(replaceAll(l_data.lc, "''", '"'), '&quot;', '"');
+    bbSkipAction.text = dict.getStringByCode("RematchWith").replace("%1", l_data.enemy);
     bbSkipAction.visible = !l_data.with_bot;
 }
 

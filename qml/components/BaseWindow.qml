@@ -5,7 +5,6 @@
 // that is the dialog itself. For demo purposes no fancy stuff in the popup
 
 import QtQuick 2.12
-import ua.sp.warloksduel 2.0
 
 Item {
     id: iRoot
@@ -13,7 +12,8 @@ Item {
     z: 0
 
     property double height_koeff: iRoot.height / 800
-    property var dict: WarlockDictionary
+    // main.qml's wrapper, so a language switch re-translates a cached window too
+    property var dict: mainWindow.warlockDictionary
     //property alias gameCore: mainWindow.gameCore
     property alias title_text: ltTitle.text
     property alias title_color: ltTitle.color

@@ -33,7 +33,14 @@ ApplicationWindow {
     property var gERROR: ({})
     property var gBattle: ({})
     property int playerSpellbookLevel: 6
-    property var warlockDictionary: WarlockDictionary
+    // Not the WarlockDictionary object itself: the lang read below makes every binding that
+    // calls getStringByCode() depend on the language, so a switch re-translates the shown UI
+    // (BaseWindow and InfoWindow use this object too).
+    property var warlockDictionary: ({
+        getStringByCode: function(code) {
+            return WarlockDictionary.lang ? WarlockDictionary.getStringByCode(code) : code;
+        }
+    })
     //property var googleAnalytic: GoogleAnalytics
     property real height_koeff: 1
     property bool exit_on_back_button: true
@@ -222,7 +229,7 @@ ApplicationWindow {
                 anchors.right: parent.right
                 font.pixelSize: 42 * ratioFont
                 color: "#E7FFFF"
-                text: "Hi, " + core.login
+                text: warlockDictionary.getStringByCode("HiLogin").replace("%1", core.login)
             }
 
             Rectangle {
@@ -243,8 +250,10 @@ ApplicationWindow {
             anchors.leftMargin: 48 * ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 48 * ratioObject
-            anchors.bottom: bbNewGameWithFriend.top
+            anchors.bottom: rmLang.top
             anchors.bottomMargin: 24 * ratioObject
+            // on a short screen the items scroll here instead of running over the buttons below
+            clip: true
             contentWidth: -1
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -326,6 +335,38 @@ ApplicationWindow {
             }
 
 
+        }
+
+        // Interface language: WarlockDictionary stores the choice, and the shown texts follow it
+        Row {
+            id: rmLang
+            anchors.bottom: bbNewGameWithFriend.top
+            anchors.bottomMargin: 24 * ratioObject
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 18 * ratioObject
+
+            Repeater {
+                model: GUI.getLangMenuList()
+
+                BtnBig {
+                    readonly property bool selected: WarlockDictionary.lang === modelData.c
+
+                    width: 128 * ratioObject
+                    height: 52 * ratioObject
+                    radius: height / 2
+                    border.width: 2 * ratioObject
+                    text_color: "#ABF4F4"
+                    font.pixelSize: 24 * ratioFont
+                    text: warlockDictionary.getStringByCode(modelData.t)
+                    bg_color_active: selected ? "#551470" : "transparent"
+                    border_color_active: selected ? "#ABF4F4" : "#905B93"
+
+                    onClicked: {
+                        logEvent("menu_action", {action:"lang_" + modelData.c});
+                        WarlockDictionary.setCurrentLang(modelData.c);
+                    }
+                }
+            }
         }
 
         BtnBig {
@@ -413,7 +454,7 @@ ApplicationWindow {
 
             LargeText {
                 id: lPlayerTitle
-                text: "Hi " + core.login
+                text: warlockDictionary.getStringByCode("HiLogin").replace("%1", core.login)
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
                 fontSizeMode: Text.VerticalFit
@@ -852,7 +893,7 @@ ApplicationWindow {
 
                             Image {
                                 id: rdbiIcon
-                                source: lvFinishedBattle.model[index].d.indexOf("Won ") !== 0 ? "res/RIP2.png" : "res/stars.png"
+                                source: lvFinishedBattle.model[index].w !== 1 ? "res/RIP2.png" : "res/stars.png"
                                 width: 24 * ratioObject
                                 height: 24 * ratioObject
                                 anchors.verticalCenter: parent.verticalCenter
@@ -973,7 +1014,7 @@ ApplicationWindow {
 
     function showBattleChat(chat_history) {
         console.log("showBattleChat");
-        showErrorWnd({type:3,text:chat_history, title: "Battle #" + gBattle.id + " chat", msg: gBattle.actions.C, read_only: gBattle.read_only});
+        showErrorWnd({type:3,text:chat_history, title: warlockDictionary.getStringByCode("BattleChatTitle").replace("%1", gBattle.id), msg: gBattle.actions.C, read_only: gBattle.read_only});
     }
 
     function storeBattleChatMsg(msg) {
@@ -1003,7 +1044,7 @@ ApplicationWindow {
             }
             showErrorWnd(err);
         } else {
-            showErrorWnd({text:txt,type:2,title:"Battle #" + bit});
+            showErrorWnd({text:txt,type:2,title:warlockDictionary.getStringByCode("BattleTitle").replace("%1", bit)});
         }
         core.scanState(1);
     }
@@ -1117,7 +1158,7 @@ ApplicationWindow {
             gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
             gBattle.otherHandIdx = isLeft ? GC.WARLOCK_HAND_RIGHT : GC.WARLOCK_HAND_LEFT;
         }
-        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","),
+        gERROR = {title: warlockDictionary.getStringByCode(isLeft ? "ChooseGestureLeft" : "ChooseGestureRight"), is_left: isLeft, pga: possible_gestures.split(","),
             g:gBattle["ng" + gBattle.currentHand], at: action_type, widx: warlock_idx, lg: last_gesture};
         if (close_current) {
             closeChild();
@@ -1232,17 +1273,17 @@ ApplicationWindow {
             }
 
             var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
-            res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
+            res.push({gp:"?",n:warlockDictionary.getStringByCode(warlock_idx === 0 ? "SpellListCompleted" : "SpellListCompletedOpponent"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
             if (def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0) || (other_hand_finish_spell > 0))) {
                 res.push(def_spell);
             }
         } else {
-            res.push({gp:"?",n:(warlock_idx === 0 ? warlockDictionary.getStringByCode("SpellbookName" + playerSpellbookLevel) : "Spells opponent may cast"),choose:0,t:0,cast_type:100,row_type:3});
+            res.push({gp:"?",n:(warlock_idx === 0 ? warlockDictionary.getStringByCode("SpellbookName" + playerSpellbookLevel) : warlockDictionary.getStringByCode("SpellListOpponentMayCast")),choose:0,t:0,cast_type:100,row_type:3});
         }
         if (uncompleted_cnt > 0) {
             if (new_gesture !== '') {
-                res.push({gp:"?",n:(warlock_idx === 0 ? "Incomplete Spells" : "Incomplete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:4});
+                res.push({gp:"?",n:warlockDictionary.getStringByCode(warlock_idx === 0 ? "SpellListIncomplete" : "SpellListIncompleteOpponent"),choose:0,t:0,cast_type:100,row_type:4});
             }
             res = res.concat(arr_cast_later);
         }
@@ -1531,7 +1572,7 @@ ApplicationWindow {
         var battle_str = core.battleReadOnly(BattleID);
         console.log("showBattleReadOnly", battle_str);
         if (!battle_str) {
-            showErrorWnd({text:"Some problem with this battle, please contact viskgameua@gmail.com"});
+            showErrorWnd({text:warlockDictionary.getStringByCode("BattleProblemContact")});
             return;
         }
 

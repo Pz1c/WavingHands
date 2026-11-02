@@ -53,13 +53,15 @@ InfoWindow {
             }
 
             width: 258 * mainWindow.ratioObject
-            height: 78 * mainWindow.ratioObject
+            height: 100 * mainWindow.ratioObject
             anchors.top: iSword.bottom
             anchors.topMargin: 42 * mainWindow.ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 30 * mainWindow.ratioObject
 
             font.pixelSize: 42 * mainWindow.ratioFont
+            subtitle: warlockDictionary.getStringByCode("NewVFGameBtn1Desc")
+            subtitleObj.font.pixelSize: 21 * mainWindow.ratioFont
 
             onClicked: {
                 console.log("start game btn 1");
@@ -78,12 +80,15 @@ InfoWindow {
             visible: true
 
             width: 0.5 * parent.width
-            height: 60 * mainWindow.ratioObject
+            height: 90 * mainWindow.ratioObject
             font.pixelSize: 28 * mainWindow.ratioFont
             fontSizeMode: Text.VerticalFit
+            subtitle: warlockDictionary.getStringByCode("NewVFGameBtn2Desc")
+            subtitleObj.font.pixelSize: 21 * mainWindow.ratioFont
+            subtitleObj.opacity: 0.75
 
             anchors.top: bbTb.bottom
-            anchors.topMargin: 42 * mainWindow.ratioObject
+            anchors.topMargin: 18 * mainWindow.ratioObject
             anchors.horizontalCenter: bbTb.horizontalCenter
 
             onClicked: {
@@ -96,8 +101,8 @@ InfoWindow {
 
         Image {
             id: iStab
-            anchors.top: iSword.bottom
-            anchors.topMargin: 372 * mainWindow.ratioObject
+            anchors.top: bbMo.bottom
+            anchors.topMargin: 42 * mainWindow.ratioObject
             anchors.left: parent.left
             anchors.leftMargin: 24 * mainWindow.ratioObject
             width: 96 * mainWindow.ratioObject
@@ -130,13 +135,15 @@ InfoWindow {
             }
 
             width: 258 * mainWindow.ratioObject
-            height: 78 * mainWindow.ratioObject
+            height: 100 * mainWindow.ratioObject
             anchors.top: iStab.bottom
             anchors.topMargin: 42 * mainWindow.ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 30 * mainWindow.ratioObject
 
             font.pixelSize: 42 * mainWindow.ratioFont
+            subtitle: warlockDictionary.getStringByCode("NewFGameBtn1Desc")
+            subtitleObj.font.pixelSize: 21 * mainWindow.ratioFont
             visible: !mainWindow.gameCore.keepMeOn
 
             onClicked: {
@@ -165,14 +172,16 @@ InfoWindow {
             }
 
             width: 258 * mainWindow.ratioObject
-            height: 78 * mainWindow.ratioObject
+            height: 100 * mainWindow.ratioObject
             // takes Smart Match's place while that is hidden
             anchors.top: bbAm.visible ? bbAm.bottom : iStab.bottom
-            anchors.topMargin: 42 * mainWindow.ratioObject
+            anchors.topMargin: (bbAm.visible ? 30 : 42) * mainWindow.ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 30 * mainWindow.ratioObject
 
             font.pixelSize: 42 * mainWindow.ratioFont
+            subtitle: warlockDictionary.getStringByCode("NewFGameBtn2Desc")
+            subtitleObj.font.pixelSize: 21 * mainWindow.ratioFont
 
             onClicked: {
                 console.log("start game btn 1");
@@ -191,12 +200,15 @@ InfoWindow {
             visible: true
 
             width: 0.5 * parent.width
-            height: 60 * mainWindow.ratioObject
+            height: 90 * mainWindow.ratioObject
             font.pixelSize: 28 * mainWindow.ratioFont
             fontSizeMode: Text.VerticalFit
+            subtitle: warlockDictionary.getStringByCode("NewFGameBtn3Desc")
+            subtitleObj.font.pixelSize: 21 * mainWindow.ratioFont
+            subtitleObj.opacity: 0.75
 
             anchors.top: bbIf.bottom
-            anchors.topMargin: 42 * mainWindow.ratioObject
+            anchors.topMargin: 18 * mainWindow.ratioObject
             anchors.horizontalCenter: bbTb.horizontalCenter
 
             onClicked: {

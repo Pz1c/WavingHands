@@ -66,7 +66,7 @@ InfoWindow {
                 font.pixelSize: 42 * mainWindow.ratioFont
                 color: "#0654C0"
                 horizontalAlignment: Text.AlignHCenter
-                text: "Unlocked a new spellbook"
+                text: dict.getStringByCode("SpellbookUnlocked")
             }
 
             Text {
@@ -94,7 +94,7 @@ InfoWindow {
             BtnBig {
                 id: bbAction
                 text_color: "#ABF4F4"
-                text: "View Spellbook"//dict.getStringByCode("MonsterSetTarget")
+                text: dict.getStringByCode("ViewSpellbook")
                 border.width: 0
                 radius: 30
                 visible: true
@@ -118,7 +118,7 @@ InfoWindow {
             BtnBig {
                 id: bbSkipAction
                 text_color: "#A8F4F4"
-                text: "Skip"
+                text: dict.getStringByCode("Skip")
                 transparent: true
                 font.underline: true
                 border.width: 0
@@ -145,7 +145,7 @@ InfoWindow {
             Text {
                 id: bbBtn3
                 color: "#A8F4F4"
-                text: "Skip"
+                text: dict.getStringByCode("Skip")
                 font.underline: true
                 visible: false
                 horizontalAlignment: Text.AlignLeft

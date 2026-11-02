@@ -105,7 +105,7 @@ BaseWindow {
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: 49 * ratioFont
                 color: "#10C9F5"
-                text: "Surrendering!"
+                text: dict.getStringByCode("SurrenderingTitle")
             }
 
             Text {
@@ -115,7 +115,7 @@ BaseWindow {
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: 28 * ratioFont
                 color: "#10C9F5"
-                text: "('P' with both hands)"
+                text: dict.getStringByCode("SurrenderingHint")
             }
         }
 
@@ -605,7 +605,7 @@ BaseWindow {
                     id: iiSend
                     source: "qrc:/res/send_"+(active ? "1" : "0")+".png"
                     //textVisible: false
-                    text: "Go"
+                    text: dict.getStringByCode("Go")
                     textVisible: active
                     textAnchors.top:  iiSend.bottom
                     textAnchors.horizontalCenter: iiSend.horizontalCenter
@@ -633,25 +633,7 @@ BaseWindow {
                             // paralyzed or charmed
                             mainWindow.setCharm(handIdx === 1 ? "LH" : "RH", currGesture);
                         } else {
-                            var spell = arrSpell[mainWindow.gBattle.spellIdx], s;
-                            console.log("choose spell", mainWindow.gBattle.spellIdx, JSON.stringify(spell));
-
-                            var need_targeting = (spell.gp !== "None");
-                            if (need_targeting) {
-                                need_targeting = ((spell.n === "Stab") || (mainWindow.gBattle.spellIdx !== 0));
-                                if (!need_targeting) {
-                                    for(var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
-                                        s = arrSpell[i];
-                                        console.log("choose spell nn", JSON.stringify(s));
-                                        if ((s.ng === currGesture) && (s.t === 1) && (s.dt !== 0)) {
-                                            need_targeting = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                            mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], need_targeting);
+                            sendGesture();
                         }
                     }
 
@@ -844,7 +826,7 @@ BaseWindow {
             if (actionType === 0) {
                 mainWindow.gBattle.spellIdx = 0;
             }
-            arrSpell = [{gp:"?",n:"Completed spells",choose:0,t:0,cast_type:100,row_type:2},
+            arrSpell = [{gp:"?",n:dict.getStringByCode("SpellListCompleted"),choose:0,t:0,cast_type:100,row_type:2},
                         {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1}];
             //arrSpellLater = [];
         } else if (new_gesture === ">") {
@@ -860,12 +842,54 @@ BaseWindow {
         console.log(JSON.stringify(arrSpell));
         console.log("FINAL ARRAY END");
         lvSpellList.model = arrSpell;
+        // https://github.com/Pz1c/WavingHands/issues/366: an own gesture the player picked that
+        // completes no spell leaves Go nothing to approve, so it goes at once
+        var fast = from_gui && (actionType === 0) && (new_gesture !== "") && mainWindow.gameCore.fastGesture
+                && !rpAlert.visible && !hasSpellToCastNow();
         if (from_gui) {
             logEvent("Play_Gesture_Click", {Letter:new_gesture});
-            if (new_gesture !== "") {
+            if (fast) {
+                logEvent("Play_Gesture_Fast", {Letter:new_gesture});
+            } else if (new_gesture !== "") {
                 logEvent("Play_CompletedSpells_View", {Letter:new_gesture,Warning:rpAlert.visible ? "surrendering" : "none"});
             }
         }
+        if (fast) {
+            sendGesture();
+        }
+    }
+
+    // a completed spell, Default or Stab in the list: something to choose, or to target
+    function hasSpellToCastNow() {
+        for (var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
+            if ((arrSpell[i].cast_type === 1) || (arrSpell[i].n === "Stab")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Go for the player's own gesture: the chosen spell, through the target window when it needs one
+    function sendGesture() {
+        var spell = arrSpell[mainWindow.gBattle.spellIdx], s;
+        console.log("choose spell", mainWindow.gBattle.spellIdx, JSON.stringify(spell));
+
+        var need_targeting = (spell.gp !== "None");
+        if (need_targeting) {
+            need_targeting = ((spell.n === "Stab") || (mainWindow.gBattle.spellIdx !== 0));
+            if (!need_targeting) {
+                for(var i = 0, Ln = arrSpell.length; i < Ln; ++i) {
+                    s = arrSpell[i];
+                    console.log("choose spell nn", JSON.stringify(s));
+                    if ((s.ng === currGesture) && (s.t === 1) && (s.dt !== 0)) {
+                        need_targeting = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], need_targeting);
     }
 
     function initGFields() {
@@ -888,11 +912,11 @@ BaseWindow {
             case "paralized":
                 actionType = 2;
                 lastGesture = mainWindow.gERROR.lg;
-                tCharmTitle.text = "Paralyze " + (mainWindow.gERROR.is_left ? "Left" : "Right") + " hand?"
+                tCharmTitle.text = dict.getStringByCode(mainWindow.gERROR.is_left ? "ParalyzeLeftHand" : "ParalyzeRightHand")
                 break;
             case "charmed":
                 actionType = 3;
-                tCharmTitle.text = "Charm " + (mainWindow.gERROR.is_left ? "Left" : "Right") + " hand?"
+                tCharmTitle.text = dict.getStringByCode(mainWindow.gERROR.is_left ? "CharmLeftHand" : "CharmRightHand")
                 break;
             default:
                 actionType = 0;

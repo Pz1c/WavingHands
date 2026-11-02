@@ -75,6 +75,10 @@ class QWarloksDuelCore : public QGameCore
     // What the Settings window's "Send notification token" (sendPushTokenNow) came to, for
     // the user: "Token sent", "Server has no push support", "Not connected", ...
     Q_PROPERTY(QString pushTokenStatus READ pushTokenStatus NOTIFY pushTokenStatusChanged)
+    // Fast gesture selection (https://github.com/Pz1c/WavingHands/issues/366): a gesture that
+    // completes no spell goes to the battle at once, without the spell list and its Go.
+    // Off by default, switched on when the player first reaches the Master Warlock Spellbook.
+    Q_PROPERTY(bool fastGesture READ fastGesture WRITE setFastGesture NOTIFY fastGestureChanged)
     // Messages between players (https://github.com/Pz1c/WavingHands/issues/320): the inbox
     // of the site's player page as a JSON list of {from, id, text} in the site's order, and
     // its length, for the unread mark of the main menu and the banner of the game list.
@@ -114,6 +118,7 @@ public:
     bool keepMeOn();
     bool pushNotifications();
     QString pushTokenStatus();
+    bool fastGesture();
     QString messages();
     int messageCount();
 
@@ -146,6 +151,7 @@ signals:
     void keepMeOnChanged();
     void pushNotificationsChanged();
     void pushTokenStatusChanged();
+    void fastGestureChanged();
     void messagesChanged();
     // A message went out to the warlock named (issue #320).
     void messageSent(QString to);
@@ -242,6 +248,8 @@ public slots:
     // permission dialog (askPermissions) first when that is still needed.
     void setPushNotifications(bool On);
     bool isNotificationGranted();
+    // https://github.com/Pz1c/WavingHands/issues/366
+    void setFastGesture(bool On);
     // "Send notification token" in Settings: registers this install's FCM token with the
     // caster server now, confirmed or not, connecting and logging the link in first when it
     // is down, and reports through pushTokenStatus.
@@ -435,6 +443,8 @@ private:
     bool _pushForceSend;
     QTimer _pushForceTimer;
     QString _pushTokenStatus;
+    // The Fast gesture selection setting (issue #366).
+    bool _fastGesture;
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
