@@ -326,6 +326,12 @@ function playHintActions(actions, row_type) {
     stopHintAnimation();
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
         a = actions[i];
+        if ((a.action === "damage") && a.defer_to_target) {
+            // Elemental damage appears together with the target highlight,
+            // after the elemental actor pulse and the event banner icon.
+            targets.push(a);
+            continue;
+        }
         if (isDeferredHintAction(row_type, a.action)) {
             // Apply spell/attack results after the gesture and icon frames,
             // before the final target highlight.
