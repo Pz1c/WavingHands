@@ -1821,14 +1821,10 @@ function finishPrepareWarlockList() {
         show_warlocks.push(i);
     }
     battle.shown_warlocks = show_warlocks.length;
+    var card_idx = 0;
     for (var wi = 0, LnW = show_warlocks.length; wi < LnW; ++wi) {
         var idx = show_warlocks[wi];
         var arr_m = battle.warlocks[idx];
-        arr_m.warlock_idx = idx;
-        map_warlock_name_to_idx[arr_m.name] = idx;
-        for (var j = 0, LnJ = arr_m.monsters.length; j < LnJ; ++j) {
-            map_monster_name_to_idx[arr_m.monsters[j].name] = idx;
-        }
         //arr_m.turn_num = battle.turn_num;
         var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
         if (sprite === null) {
@@ -1836,6 +1832,15 @@ function finishPrepareWarlockList() {
             --battle.shown_warlocks;
             continue;
         }
+        // Map by creation order, not the current children length: cards from
+        // the previous open may still be waiting for deleteLater(). They are
+        // gone before the news starts, leaving the new cards at 0..N-1.
+        arr_m.warlock_idx = card_idx;
+        map_warlock_name_to_idx[arr_m.name] = card_idx;
+        for (var j = 0, LnJ = arr_m.monsters.length; j < LnJ; ++j) {
+            map_monster_name_to_idx[arr_m.monsters[j].name] = card_idx;
+        }
+        ++card_idx;
         sprite.clicked.connect(iconClick);
         sprite.doubleClicked.connect(iconDoubleClick);
         sprite.gestureClicked.connect(iconGestureClick);
