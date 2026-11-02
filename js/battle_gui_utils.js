@@ -466,7 +466,15 @@ function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
         console.log("checkIsSpellPossibeForWarlock", g, need_both, L, R, Lg, Rg, i, JSON.stringify(res));
         if (need_both) {
             if ((Lg === gU) && (Rg === gU)) {
-                res = [gl - i, gl - i];
+                // A shared gesture (the clap) must match on both hands, but
+                // only extend a hand that has the rest of the spell as its
+                // contiguous suffix.
+                if (res[0] === gl - i - 1) {
+                    res[0] = gl - i;
+                }
+                if (res[1] === gl - i - 1) {
+                    res[1] = gl - i;
+                }
                 not_found = false;
             } else {
                 return [0, 0];
