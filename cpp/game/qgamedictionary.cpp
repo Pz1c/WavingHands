@@ -21,11 +21,11 @@ QGameDictionary::QGameDictionary(QObject *parent) :
 
     // fill dictionary
     fillDictionary("AreYouSure", "Are you sure?", "Bist du sicher?", "¿Estás seguro?");
-    fillDictionary("SurrenderForTurn", "Are you really want to surrender? Are you sure?", "Willst du wirklich aufgeben? Bist du sicher?", "¿De verdad quieres rendirte? ¿Estás seguro?");
+    fillDictionary("SurrenderForTurn", "Do you really want to surrender? Are you sure?", "Willst du wirklich aufgeben? Bist du sicher?", "¿De verdad quieres rendirte? ¿Estás seguro?");
     fillDictionary("EnterLoginPass", "Please enter Login and Password", "Bitte gib Login und Passwort ein", "Introduce tu usuario y contraseña");
     fillDictionary("OK", "OK", "OK", "OK");
     fillDictionary("Cancel", "Cancel", "Abbrechen", "Cancelar");
-    fillDictionary("EnterProxy", "Enter proxy settigns", "Proxy-Einstellungen eingeben", "Introduce la configuración del proxy");
+    fillDictionary("EnterProxy", "Enter proxy settings", "Proxy-Einstellungen eingeben", "Introduce la configuración del proxy");
     fillDictionary("ProxyHost", "Proxy host", "Proxy-Host", "Host del proxy");
     fillDictionary("ProxyPort", "Proxy port", "Proxy-Port", "Puerto del proxy");
     fillDictionary("ProxyUser", "Proxy user", "Proxy-Benutzer", "Usuario del proxy");
@@ -34,13 +34,13 @@ QGameDictionary::QGameDictionary(QObject *parent) :
     fillDictionary("LoginSett", "Login settings", "Anmeldeeinstellungen", "Ajustes de inicio de sesión");
     fillDictionary("NetworkSett", "Network settings", "Netzwerkeinstellungen", "Ajustes de red");
     fillDictionary("LangSett", "Language settings", "Spracheinstellungen", "Ajustes de idioma");
-    fillDictionary("EnterNewUser", "Enter new gamer data", "Daten des neuen Spielers eingeben", "Introduce los datos del nuevo jugador");
+    fillDictionary("EnterNewUser", "Enter new player data", "Daten des neuen Spielers eingeben", "Introduce los datos del nuevo jugador");
     fillDictionary("Login", "Login", "Login", "Usuario");
     fillDictionary("Password", "Password", "Passwort", "Contraseña");
     fillDictionary("Email", "Email", "E-Mail", "Correo electrónico");
-    fillDictionary("Im13", "I am a least 13 years old", "Ich bin mindestens 13 Jahre alt", "Tengo al menos 13 años");
+    fillDictionary("Im13", "I am at least 13 years old", "Ich bin mindestens 13 Jahre alt", "Tengo al menos 13 años");
     fillDictionary("Register", "Register", "Registrieren", "Registrarse");
-    fillDictionary("LoginIn", "Login in", "Anmelden", "Iniciar sesión");
+    fillDictionary("LoginIn", "Log in", "Anmelden", "Iniciar sesión");
     fillDictionary("LangDE", "Deutsch", "Deutsch", "Deutsch");
     fillDictionary("LangEN", "English", "English", "English");
     fillDictionary("LangES", "Español", "Español", "Español");
