@@ -138,7 +138,7 @@ InfoWindow {
                         font.pixelSize: 28 * mainWindow.ratioFont
                         color: "#FEE2D6"
                         horizontalAlignment: Text.AlignJustify
-                        text: "<p><font color=\"#10C9F5\" size=+1>Turn " + modelData.turn + "</font></p>" + (modelData.html || "")
+                        text: "<p><font color=\"#10C9F5\" size=+1>" + dict.getStringByCode("TurnN").replace("%1", modelData.turn) + "</font></p>" + (modelData.html || "")
                     }
                 }
             }
