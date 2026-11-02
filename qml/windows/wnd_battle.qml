@@ -553,6 +553,21 @@ BaseWindow {
     property int readyWindow: 0
     // Blocks a second submit while the board waits for TURNREADY.
     property bool waitingForTurn: false
+
+    // While the board waits for the opponent, refresh only the game list.
+    // The battle page is fetched by main.qml when this battle appears ready.
+    Timer {
+        id: tWaitBattle
+        interval: 2000
+        repeat: true
+        running: visible && waitingForTurn
+        onTriggered: {
+            if (!mainWindow.gameCore.isLoading) {
+                mainWindow.gameCore.scanState(true);
+            }
+        }
+    }
+
     function prepareHintWithCheck() {
         var shownWarlocks = mainWindow.gBattle.shown_warlocks;
         if (shownWarlocks === undefined) {

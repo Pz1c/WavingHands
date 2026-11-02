@@ -94,7 +94,10 @@ ApplicationWindow {
         onNeedLogin: getLoginFromUser()
         onErrorOccurred: showErrorMessage()
         onIsLoadingChanged: GUI.isLoadingChanged()
-        onBattleListChanged: GUI.newBattleList()
+        onBattleListChanged: {
+            GUI.newBattleList();
+            checkWaitingBattleReady();
+        }
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onOpponentTurnReady: function(by) { refreshAfterOpponentTurn(by); }
@@ -1521,11 +1524,26 @@ ApplicationWindow {
         }
     }
 
+    function checkWaitingBattleReady() {
+        if (!WNDU.isWndVisible(WNDU.wnd_battle) || !gBattle || core.isLoading) {
+            return;
+        }
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (!wnd || !wnd.waitingForTurn) {
+            return;
+        }
+        if (!GUI.isBattleReady(gBattle.id)) {
+            return;
+        }
+        core.getBattle(gBattle.id, 0, false);
+    }
+
     function confirmOrdersEx() {
         turnRefreshPending = false;
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
-        // Close only the review window. The battle stays open.
         WNDU.closeChild();
+        // The board stays open. Close the review window first, so it does not
+        // wait for the network reply.
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
     }
 
     function callInviteFriends() {
