@@ -1580,10 +1580,15 @@ function prepareMonster(m, rawWarlocks) {
     var placeholder = (m.name.indexOf("LH:") === 0) || (m.name.indexOf("RH:") === 0);
     if (placeholder) {
         var summon = identifyPlaceholderSummon(m, rawWarlocks);
+        m.placeholder = true;
         if (summon) {
             m.strength = summon.strength;
             m.hp = summon.strength;
-            m.icon = "new_" + BGU.getMonsterIconBySummonHP(summon.strength);
+            m.summon_name = summon.name;
+            m.is_elemental_summon = !!summon.elemental;
+            m.icon = summon.elemental
+                    ? summon.icon
+                    : "new_" + BGU.getMonsterIconBySummonHP(summon.strength);
         } else {
             m.icon = "summon";
         }

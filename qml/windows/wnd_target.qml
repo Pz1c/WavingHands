@@ -132,6 +132,7 @@ BaseWindow {
                                                 borderOnPress: false
                                                 border.color: "#A8F4F4"
                                                 border.width: (targetItem.targetName === tile.key ? 3 : 0) * mainWindow.ratioObject
+                                                opacity: tile.placeholder ? 0.3 : 1
 
                                                 onClicked: {
                                                     targetItem.chooseTarget(l_data);
@@ -424,7 +425,8 @@ BaseWindow {
                     continue;
                 }
                 tiles.push({key:m.name,text:placeholder ? "?" : "" + m.hp,icon:"qrc:/res/" + m.icon + ".png",
-                            info:m.enchantment_icon ? m.enchantment_icon : "",data:m});
+                            info:m.enchantment_icon ? m.enchantment_icon : "",
+                            placeholder:placeholder,data:m});
             }
             res.push({name:w.name,player:w.player ? true : false,tiles:tiles});
         }
