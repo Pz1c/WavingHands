@@ -438,11 +438,130 @@ BaseWindow {
         } else {
             mainWindow.logEvent("Play_Monster_Click", {Click:data.name});
         }
+        applyTarget(data);
+    }
+
+    // Select a target without treating it as a click; used for the per-spell default.
+    function applyTarget(data) {
+        if (!data) {
+            return;
+        }
         data.target_name = data.action === "hp" ? data.warlock_name : data.name;
         target = data;
         targetName = data.target_name;
         bbDone.active = true;
         updateTitle();
+    }
+
+    // Find the tile/special target with this name. Used to keep the target when the
+    // user reopens the window for a spell that already has one.
+    function selectTargetByName(name) {
+        if (!name) {
+            return false;
+        }
+        if (name === "Nobody") {
+            applyTarget(iiNobody.l_data);
+            return true;
+        }
+        if ((name === "Default") && iiDefault.visible) {
+            applyTarget(iiDefault.l_data);
+            return true;
+        }
+        if (iiElemental.visible && iiElemental.l_data && (iiElemental.l_data.name === name)) {
+            applyTarget(iiElemental.l_data);
+            return true;
+        }
+        for (var i = 0; i < warlocks.length; ++i) {
+            var tiles = warlocks[i].tiles;
+            for (var j = 0; j < tiles.length; ++j) {
+                var tile = tiles[j];
+                if ((tile.key === name) ||
+                    (tile.data && ((tile.data.name === name) || (tile.data.warlock_name === name)))) {
+                    applyTarget(tile.data);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // The first warlock tile for this role. SELF is always the player. ENEMY uses
+    // the first listed enemy that the server offers as a target; multiple enemies
+    // no longer leave the window without a selection.
+    function warlockTargetData(player) {
+        var battle = mainWindow.gBattle;
+        var haveTargets = battle && battle.targetsList && (battle.targetsList.length > 0);
+        for (var i = 0; i < warlocks.length; ++i) {
+            if ((warlocks[i].player !== player) || (warlocks[i].tiles.length === 0)) {
+                continue;
+            }
+            if (!player && haveTargets &&
+                    (battle.targetsList.indexOf(warlocks[i].name) === -1)) {
+                continue;
+            }
+            return warlocks[i].tiles[0].data;
+        }
+        return null;
+    }
+
+    // The first real enemy monster in target-window order. Placeholders (a summon
+    // still in progress) are not real targets.
+    function enemyMonsterData() {
+        for (var i = 0; i < warlocks.length; ++i) {
+            if (warlocks[i].player) {
+                continue;
+            }
+            for (var j = 1; j < warlocks[i].tiles.length; ++j) {
+                var data = warlocks[i].tiles[j].data;
+                if (!data || !data.name || (data.name.indexOf(":") !== -1)) {
+                    continue;
+                }
+                return data;
+            }
+        }
+        return null;
+    }
+
+    // Preselect what the spell naturally targets: SELF -> the player, ENEMY -> the
+    // first targetable enemy, ENEMY_MONSTER -> the first enemy monster. An existing
+    // target (reopening the target window from a hand) and the server's Default
+    // while under control win.
+    function selectDefaultTarget() {
+        if (!isSpell) {
+            return; // directing a monster stays manual
+        }
+        var battle = mainWindow.gBattle;
+        if (!battle) {
+            return;
+        }
+        var hand = battle.currentHand;
+        var existing = (hand && battle.actions && battle.actions[hand]) ? battle.actions[hand].target : "";
+        if (existing && selectTargetByName(existing)) {
+            return;
+        }
+        if (battle.player_under_control && iiDefault.visible) {
+            applyTarget(iiDefault.l_data);
+            return;
+        }
+
+        var dt = (currentSpell.dt === undefined || currentSpell.dt === null) ? -1 : Number(currentSpell.dt);
+        if ((dt === -1) && (currentSpell.n === "Stab")) {
+            dt = 2;
+        }
+        var data = null;
+        if (dt === 1) {
+            data = warlockTargetData(true);
+        } else if (dt === 2) {
+            data = warlockTargetData(false);
+        } else if (dt === 3) {
+            data = enemyMonsterData();
+        } else if (dt === 0) {
+            applyTarget(iiNobody.l_data);
+            return;
+        }
+        if (data) {
+            applyTarget(data);
+        }
     }
 
     function updateTitle() {
@@ -517,6 +636,7 @@ BaseWindow {
 
         warlocks = buildWarlocks();
         fWarlocks.contentY = 0;
+        selectDefaultTarget();
         updateTitle();
         showTargetHint();
     }

@@ -1336,7 +1336,7 @@ ApplicationWindow {
         WNDU.arr_wnd_instance[WNDU.wnd_battle].finishTargeting(target, spell);
     }
 
-    // long press on one of the player's hands: choose the target of its spell again
+    // Double-tap one of the player's hands: choose the target of its spell again.
     function chooseTargetForSpell(isLeft) {
         gBattle.currentHand = isLeft ? "L" : "R";
         gBattle.otherHand   = isLeft ? "R" : "L";
