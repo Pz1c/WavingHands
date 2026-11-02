@@ -200,8 +200,8 @@ function isBeginnerTurnNews(row) {
 //
 // Turn news shows a hit as a banner icon today. Instead, the damage number is
 // attached to the row that caused it (the spell cast, the stab, the monster
-// attack, the elemental's "runs amok" row, or the magic mirror reflection).
-// The damage row itself is consumed and only the cause row is shown. Cure
+// attack, the individual elemental hit row, or the magic mirror reflection).
+// A spell's damage row is consumed; elemental hit rows stay visible. Cure
 // spells work the same way, with a green +number on the casting row.
 // ---------------------------------------------------------------------------
 
@@ -536,9 +536,39 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
 
         var appearance = getTurnNewsElementalAppearance(row);
         if (appearance) {
-            addTurnNewsTransitionAction(real_actions, i,
+            var summon_spell = (appearance === "ice") ? "Summon Ice Elemental" : "Summon Fire Elemental";
+            var summon_cast = active_casts_by_spell[summon_spell];
+            addTurnNewsTransitionAction(real_actions, summon_cast ? summon_cast.index : i,
                     {action:"elemental", visible:true, type:appearance, hp:3});
+            if (summon_cast) {
+                row.turn_news_hidden = true;
+            }
         }
+
+        var elemental = getTurnNewsElementalAction(row);
+        if (elemental) {
+            if ((elemental.kind === "resist") || (elemental.kind === "defense")) {
+                var elemental_target = findTurnNewsWarlockTarget(row);
+                if (elemental_target) {
+                    removeTurnNewsHpHighlight(row, elemental_target.name);
+                    if (elemental.kind === "resist") {
+                        addTurnNewsStatusHighlight(row, elemental_target,
+                                elemental.type === "ice" ? "coldproof" : "fireproof", "#10C9F5");
+                    } else {
+                        addTurnNewsStatusHighlight(row, elemental_target,
+                                BGU.getDefenseStatusCode(elemental_target, false), "#FEE2D6");
+                    }
+                    row.turn_news_force_show = true;
+                }
+            }
+            if (!row.new_action) {
+                row.new_action = [];
+            }
+            row.new_action.push({action:"highlight", object_type:"elemental",
+                                 object:elemental.type, role:"actor", color:"#10C9F5"});
+            setTurnNewsElementalIcon(row, elemental.type);
+        }
+
         if (isTurnNewsElementalDestroyed(row)) {
             addTurnNewsTransitionAction(real_actions, i,
                     {action:"elemental", visible:false, type:""});
@@ -982,20 +1012,91 @@ function getTurnNewsTarget(row) {
     return null;
 }
 
-function getTurnNewsElementalCause(row) {
-    var match = /(Fire|Ice)\s+Elemental\s+runs\s+amok/i.exec(row.txt || "");
-    return match ? match[1].toLowerCase() : "";
+// "The Fire Elemental runs amok!" is only the summary row of an elemental
+// attack. The actual effects are separate resistance, defense and damage rows.
+function isTurnNewsElementalSummary(row) {
+    return /\bruns\s+amok\b/i.test(row.txt || "");
 }
 
-function getTurnNewsElementalDamage(row) {
-    var txt = (row.txt || "").toLowerCase();
-    if ((txt.indexOf("burnt") !== -1) || (txt.indexOf("burned") !== -1)) {
-        return "fire";
+// A row produced by an elemental attack. The summary row is deliberately not
+// included: it is skipped, while these rows stay visible.
+function getTurnNewsElementalAction(row) {
+    var txt = row.txt || "";
+    var match = /(Fire|Ice)\s+Elemental/i.exec(txt);
+    var type = match ? match[1].toLowerCase() : "";
+
+    if (/keeps\b.*\bat\s+bay/i.test(txt)) {
+        return {kind:"defense", type:type};
     }
-    if ((txt.indexOf("frozen") !== -1) || (txt.indexOf("chilled") !== -1)) {
-        return "ice";
+
+    if (/\bbasks in the fiery heat\b/i.test(txt)) {
+        return {kind:"resist", type:"fire"};
     }
-    return "";
+    if (/\bbasks in the (?:freezing|bitter|icy) cold\b/i.test(txt)) {
+        return {kind:"resist", type:"ice"};
+    }
+
+    if (/\bis (?:burnt|burned) for \d+ damage\b/i.test(txt)) {
+        return {kind:"damage", type:"fire"};
+    }
+    if (/\bis (?:frozen|chilled) for \d+ damage\b/i.test(txt)) {
+        return {kind:"damage", type:"ice"};
+    }
+
+    return null;
+}
+
+function findTurnNewsWarlockTarget(row) {
+    var target = normalizeTurnNewsName(row.obj ? row.obj.target : "");
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        if (battle.warlocks[i] && (battle.warlocks[i].name === target)) {
+            return battle.warlocks[i];
+        }
+    }
+    return null;
+}
+
+function removeTurnNewsHpHighlight(row, target_name) {
+    var actions = row.new_action || [], res = [];
+    for (var i = 0, Ln = actions.length; i < Ln; ++i) {
+        var a = actions[i];
+        if ((a.action === "highlight") && (a.object_type === "warlock") &&
+                (a.object === "hp") && (a.warlock_name === target_name)) {
+            continue;
+        }
+        res.push(a);
+    }
+    row.new_action = res;
+}
+
+function addTurnNewsStatusHighlight(row, target, code, color) {
+    if (!row || !target || !code) {
+        return;
+    }
+    if (!row.new_action) {
+        row.new_action = [];
+    }
+    row.new_action.push({action:"highlight", warlock_name:target.name,
+                         object_type:"status", object:code,
+                         icon:BGU.getNewsStatusIcon(code), data:[],
+                         role:"target", color:color});
+}
+
+function setTurnNewsElementalIcon(row, type) {
+    var icon = type === "ice" ? "elemental_ice" : "elemental_fire";
+    if (!row.new_action) {
+        row.new_action = [];
+    }
+    var actions = row.new_action;
+    for (var i = 0, Ln = actions.length; i < Ln; ++i) {
+        if (actions[i].action === "icon") {
+            actions[i].large_icon = icon;
+            actions[i].text = "";
+            return;
+        }
+    }
+    actions.push({action:"icon", large_icon:icon, small_icon:"", title:"", text:"",
+                  background_color:"#210430", border_color:"#FEE2D6"});
 }
 
 // The server's reflection row has the spell name in the text. parseStrangeAttack
@@ -1265,17 +1366,8 @@ function findTurnNewsAttackCause(target, causes) {
     return null;
 }
 
-function findTurnNewsElementalCause(element, causes) {
-    for (var i = 0, Ln = causes.length; i < Ln; ++i) {
-        if (causes[i].type === element) {
-            return causes[i];
-        }
-    }
-    return null;
-}
-
 function prepareTurnNewsDamage(real_actions, previous_battle) {
-    var spell_causes = [], attack_causes = [], reflection_causes = [], elemental_causes = [];
+    var spell_causes = [], attack_causes = [], reflection_causes = [];
     var heal_causes = [], heal_pairings = [], damage_totals = {};
     var reflection_rows = [];
     var i, Ln, row, cause;
@@ -1288,9 +1380,8 @@ function prepareTurnNewsDamage(real_actions, previous_battle) {
             continue;
         }
 
-        var element = getTurnNewsElementalCause(row);
-        if (element) {
-            elemental_causes.push({row:row, type:element});
+        if (isTurnNewsElementalSummary(row)) {
+            row.turn_news_hidden = true;
         }
 
         var reflection = getTurnNewsReflection(row);
@@ -1429,13 +1520,11 @@ function prepareTurnNewsDamage(real_actions, previous_battle) {
             }
         }
 
-        var element_damage = getTurnNewsElementalDamage(row);
-        if (element_damage) {
-            cause = findTurnNewsElementalCause(element_damage, elemental_causes);
-            if (cause) {
-                addTurnNewsDamage(cause.row, row, target, damage);
-                continue;
-            }
+        var elemental_action = getTurnNewsElementalAction(row);
+        if (elemental_action && (elemental_action.kind === "damage")) {
+            addTurnNewsDamage(row, row, target, damage);
+            row.turn_news_force_show = true;
+            continue;
         }
 
         // A monster attack without a separate attack row ("Bob is hit by a Goblin").

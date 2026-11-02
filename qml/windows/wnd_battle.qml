@@ -40,9 +40,72 @@ BaseWindow {
         anchors.fill: content_item
         //color: "transparent"
 
+        Item {
+            id: iElementalBar
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: iiElemental.visible ? 84 * mainWindow.ratioObject : 0
+            z: 1001
+
+            IconInfo {
+                id: iiElemental
+                source: "qrc:/res/elemental_fire.png";
+                text: "3"
+                height: 78 * mainWindow.ratioObject
+                width: height
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                anchors.leftMargin: 6 * mainWindow.ratioObject
+                radius: 10
+                visible: false
+
+                function highlightNews(news_color) {
+                    border.color = news_color;
+                    border.width = 3 * mainWindow.ratioObject;
+                    paElementalHighlight.restart();
+                }
+
+                function restoreNews() {
+                    paElementalHighlight.stop();
+                    scale = 1;
+                    border.width = 0;
+                }
+
+                SequentialAnimation {
+                    id: paElementalHighlight
+
+                    PropertyAnimation {
+                        target: iiElemental
+                        property: "scale"
+                        from: 1
+                        to: 1.12
+                        duration: 160
+                        easing.type: Easing.OutQuad
+                    }
+                    PropertyAnimation {
+                        target: iiElemental
+                        property: "scale"
+                        from: 1.12
+                        to: 1
+                        duration: 160
+                        easing.type: Easing.InQuad
+                    }
+                }
+
+                onClicked: {
+                    iconClick(iiElemental.l_data)
+                }
+
+                onDoubleClicked: {
+                    iconDoubleClick(iiElemental.l_data)
+                }
+            }
+        }
+
         ScrollView {
             id: bfWarlocks
-            anchors.top: parent.top
+            anchors.top: iElementalBar.bottom
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: bfAll.top
@@ -234,27 +297,6 @@ BaseWindow {
                 }
             }
 
-            IconInfo {
-                id: iiElemental
-                source: "qrc:/res/elemental_fire.png";
-                text: "3"
-                height: 78 * mainWindow.ratioObject
-                width: height
-                anchors.bottom: rTT.top
-                anchors.bottomMargin: 6 * mainWindow.ratioObject
-                anchors.left: parent.left
-                anchors.leftMargin: 6 * mainWindow.ratioObject
-                radius: 10
-
-                onClicked: {
-                    iconClick(iiElemental.l_data)
-                }
-
-                onDoubleClicked: {
-                    iconDoubleClick(iiElemental.l_data)
-                }
-            }
-
             Rectangle {
                 id: rTT
                 color: "#544653"
@@ -290,7 +332,7 @@ BaseWindow {
                 anchors.bottom: rTT.top
                 anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.left: parent.left
-                anchors.leftMargin: ((iiElemental.visible ? 84: 0) + 6) * mainWindow.ratioObject
+                anchors.leftMargin: 6 * mainWindow.ratioObject
                 visible: false
                 radius: 10
                 l_data: ({action:"hp",warlock_name:"Nobody"})
@@ -313,7 +355,7 @@ BaseWindow {
                 anchors.bottom: rTT.top
                 anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.left: parent.left
-                anchors.leftMargin: ((iiElemental.visible ? 84 : 0) + 6 + 84) * mainWindow.ratioObject
+                anchors.leftMargin: 90 * mainWindow.ratioObject
                 visible: false
                 radius: 10
                 l_data: ({action:"hp",warlock_name:"Default"})
@@ -329,7 +371,8 @@ BaseWindow {
                 id: ltHint
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                anchors.left: iiElemental.right
+                anchors.left: parent.left
+                anchors.leftMargin: 6 * mainWindow.ratioObject
                 anchors.right: bbChooseTarget.horizontalCenter
                 visible: false
                 text: "test hint 01"
