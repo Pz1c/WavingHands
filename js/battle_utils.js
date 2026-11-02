@@ -53,6 +53,11 @@ function padDisplayString(s, len) {
 
 function prepareWarlock(w) {
     w.color = assignWizardColor(w);
+    if (isBotWarlock(w)) {
+        // The wizard color is still reserved above, so the human player keeps the
+        // color he would get in a human-vs-human battle.
+        w.color = "golem";
+    }
     w.monsters = battle.monsters[w.name];
     w.read_only = battle.read_only;
     // pL/pR are aligned by turn for every warlock; the spell-letter highlight flags (la/ra)
