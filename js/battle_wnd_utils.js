@@ -17,6 +17,15 @@ function getHintWarlockIdx(a) {
 }
 
 function processHighlightHintAction(a, restore) {
+    if (a.object_type === "elemental") {
+        if (restore) {
+            iiElemental.restoreNews();
+        } else {
+            iiElemental.highlightNews(a.color ? a.color : "#10C9F5");
+        }
+        return;
+    }
+
     // a monster is shown inside the Warlock.qml item of its owner, a.object is the monster name
     // https://github.com/Pz1c/WavingHands/issues/227
     var warlock_idx = getHintWarlockIdx(a);
@@ -343,7 +352,8 @@ function playHintActions(actions, row_type) {
         // https://github.com/Pz1c/WavingHands/issues/227
         // a monster that acts lights up before the icon pops, one that is hit after it, with the hearts;
         // a status icon (the shield that took the blow, the enchantment that landed) after it too
-        if ((a.action === "highlight") && ((a.object_type === "monster") || (a.object_type === "status"))) {
+        if ((a.action === "highlight") && ((a.object_type === "monster") ||
+                (a.object_type === "status") || (a.object_type === "elemental"))) {
             if (a.role === "actor") {
                 actors.push(a);
             } else {
@@ -427,6 +437,9 @@ function processAllHintAction(actions, restore, row_type) {
 
 
 function prepareWarockToHint(restore) {
+    if (iiElemental && iiElemental.restoreNews) {
+        iiElemental.restoreNews();
+    }
     for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
         var ww = iWarlocks.children[i];
         if (ww.clearDamageNumbers) {
