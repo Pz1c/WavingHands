@@ -1946,6 +1946,9 @@ function finishPrepareWarlockList() {
             --battle.shown_warlocks;
             continue;
         }
+        // createObject() converts initial JS object properties through QVariantMap,
+        // so the card would otherwise hold a copy of this warlock.
+        sprite.l_warlock = arr_m;
         // Map by creation order, not the current children length: cards from
         // the previous open may still be waiting for deleteLater(). They are
         // gone before the news starts, leaving the new cards at 0..N-1.
