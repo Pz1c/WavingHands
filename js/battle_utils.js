@@ -428,6 +428,7 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
     var elemental_summoned = false, i, Ln, row;
     var mergeable = {}, active_casts = {}, active_casts_by_spell = {};
     var reflected_casts = {};
+    var handled_summons = {};
     for (var merge_name in BGU.map_spell_name_to_status) {
         mergeable[merge_name] = true;
     }
@@ -502,7 +503,7 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                       ? {name:row_summon.key, owner:row_summon.owner, rec:row_summon}
                       : null)
                    : getTurnNewsSummonInfo(row));
-        if (summon) {
+        if (summon && (!summon.rec || !handled_summons[summon.rec.id])) {
             var summon_data = findTurnNewsMonsterData(summon.name);
             var summon_rec = summon.rec;
             var summon_icon = summon_data
@@ -518,20 +519,33 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
                     : (summon_rec && summon_rec.hp
                        ? summon_rec.hp
                        : getSummonedMonsterHp(summon.name));
-            var transition_idx = i;
-            if (summon.rec) {
+            var summon_action = {action:"summon", object_type:"monster",
+                                 object:summon.name,
+                                 warlock_name:summon.owner,
+                                 icon:summon_icon, hp:summon_hp};
+
+            // Attach the summon to the visible cast row. The arrival row is
+            // hidden, and the cast may already have been moved next to it.
+            var transition_idx = -1;
+            if ((row.type < 2) && !row.turn_news_hidden) {
+                transition_idx = i;
+            } else if (summon.rec) {
                 for (var ci = 0, LnC = real_actions.length; ci < LnC; ++ci) {
-                    if (real_actions[ci].summon === summon.rec) {
+                    if (real_actions[ci].summon === summon.rec &&
+                            (real_actions[ci].type < 2) &&
+                            !real_actions[ci].turn_news_hidden) {
                         transition_idx = ci;
                         break;
                     }
                 }
             }
-            addTurnNewsTransitionAction(real_actions, transition_idx,
-                    {action:"summon", object_type:"monster",
-                     object:summon.name,
-                     warlock_name:summon.owner,
-                     icon:summon_icon, hp:summon_hp});
+
+            if (transition_idx !== -1) {
+                addTurnNewsTransitionAction(real_actions, transition_idx, summon_action);
+                if (summon.rec) {
+                    handled_summons[summon.rec.id] = true;
+                }
+            }
         }
 
         var appearance = getTurnNewsElementalAppearance(row);

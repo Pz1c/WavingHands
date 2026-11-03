@@ -119,6 +119,7 @@ Item {
             if (mi && monster) {
                 mi.l_hpOverride = monster.hp;
             }
+            refreshMonsters();
             var b = mainWindow.gBattle;
             if (monster && b && b.actions && b.actions.M) {
                 for (var k = 0, LnK = b.actions.M.length; k < LnK; ++k) {

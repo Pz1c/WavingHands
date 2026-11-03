@@ -1203,10 +1203,13 @@ function prepareAndSortRealAction(actions, battle) {
                     actions[j].checked = true;
                     console.log("sortRealAction", i, j, "FOUND");
                     if (i !== j - 1) {
-                        actions.splice(j, 0, JSON.parse(JSON.stringify(actions[i])));
-                        actions[i].type = 3;
-                        ++Ln;
-                        /*console.log("sortRealAction", "AFTER SPLICE", i, Ln);
+                        // Move the cast row next to its result instead of keeping a hidden
+                        // original and inserting a visible copy. Both rows stay checked so
+                        // the outer loop does not process them again.
+                        var moved = actions.splice(i, 1)[0];
+                        actions.splice(j - 1, 0, moved);
+                        --i;
+                        /*console.log("sortRealAction", "AFTER MOVE", i, Ln);
                         for (var k = 0, LnK = actions.length; k < LnK; ++k) {
                             console.log("sortRealAction", k, LnK, actions[k].txt, actions[k].type);
                         }*/
