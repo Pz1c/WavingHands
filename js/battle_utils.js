@@ -195,6 +195,14 @@ function isBeginnerTurnNews(row) {
     }
 }
 
+// Monster command rows are instructions, not turn events. The following
+// attack/damage row already carries the visible result.
+function isMonsterDirectMessage(row) {
+    var txt = row.txt || "";
+    return /\bdirects\b.*\bto attack\b/i.test(txt) ||
+           /\bis directed\b.*\bto attack\b/i.test(txt);
+}
+
 // ---------------------------------------------------------------------------
 // Last-turn damage and healing animations
 //
@@ -1617,7 +1625,8 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         //new_action = BGU.getMessageActionByRow(real_actions[i], battle); // before change color
-        if (real_actions[i].turn_news_hidden || isTurnNewsFizzle(real_actions[i])) {
+        if (real_actions[i].turn_news_hidden || isTurnNewsFizzle(real_actions[i]) ||
+                isMonsterDirectMessage(real_actions[i])) {
             continue;
         }
         if (real_actions[i].type >= 2) {
