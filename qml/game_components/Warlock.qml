@@ -911,6 +911,34 @@ Item {
         }
     }
 
+    function clearEnchantments(name) {
+        var i, Ln;
+        if (!name || (name === l_warlock.name)) {
+            var statuses = l_warlock.statusIcons || [];
+            var kept = [];
+            for (i = 0, Ln = statuses.length; i < Ln; ++i) {
+                var status = statuses[i];
+                if (!status) {
+                    continue;
+                }
+                if ((status.action === "dispel") || (status.action === "mirror")) {
+                    kept.push(status);
+                }
+            }
+            l_warlock.statusIcons = kept;
+            refreshStatuses();
+        }
+
+        var monsters = l_warlock.monsters || [];
+        for (i = 0, Ln = monsters.length; i < Ln; ++i) {
+            if (monsters[i] && (!name || (monsters[i].name === name))) {
+                monsters[i].enchantment = "";
+                monsters[i].enchantment_icon = "";
+            }
+        }
+        refreshMonsters();
+    }
+
     function tickAllStatuses() {
         var current = l_warlock.statusIcons || [];
         var updated = [];

@@ -38,6 +38,12 @@ function processHighlightHintAction(a, restore) {
     if (!ww) {
         return;
     }
+    if (!restore && (a.object_type === "status") && BU.battle) {
+        var removed_targets = BU.battle.remove_enchantment_targets || {};
+        if (BU.battle.dispel_magic_turn || removed_targets[a.warlock_name]) {
+            return;
+        }
+    }
     if (restore) {
         ww.highlightActionRestore(a);
     }else {
@@ -121,6 +127,37 @@ function processStatusRemoveHintAction(a, restore) {
     var ww = iWarlocks.children[getHintWarlockIdx(a)];
     if (ww && ww.removeStatus) {
         ww.removeStatus(a.object);
+    }
+}
+
+function processDispelMagicHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    if (BU.battle) {
+        BU.battle.dispel_magic_turn = true;
+    }
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        if (ww && ww.clearEnchantments) {
+            ww.clearEnchantments("");
+        }
+    }
+}
+
+function processRemoveEnchantmentsHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    if (BU.battle) {
+        if (!BU.battle.remove_enchantment_targets) {
+            BU.battle.remove_enchantment_targets = {};
+        }
+        BU.battle.remove_enchantment_targets[a.object] = true;
+    }
+    var ww = iWarlocks.children[getHintWarlockIdx(a)];
+    if (ww && ww.clearEnchantments) {
+        ww.clearEnchantments(a.object);
     }
 }
 
@@ -239,6 +276,8 @@ function processHintAction(a, restore) {
     case "icon": return processHighlightIconAction(a, restore);
     case "pop": return processPopHintAction(a);
     case "status_remove": return processStatusRemoveHintAction(a, restore);
+    case "dispel_magic": return processDispelMagicHintAction(a, restore);
+    case "remove_enchantments": return processRemoveEnchantmentsHintAction(a, restore);
     case "damage": return processDamageHintAction(a, restore);
     case "heal": return processHealHintAction(a, restore);
     case "hp": return processHealthHintAction(a, restore);
@@ -322,10 +361,17 @@ function isDeferredHintAction(row_type, action) {
 }
 
 function playHintActions(actions, row_type) {
-    var letters = [], actors = [], targets = [], apply_actions = [], icon = null, a, lf, i, j, Ln, frame_actions;
+    var letters = [], actors = [], targets = [], apply_actions = [], finish_actions = [];
+    var icon = null, a, lf, i, j, Ln, frame_actions;
     stopHintAnimation();
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
         a = actions[i];
+        if ((a.action === "dispel_magic") ||
+                (a.action === "remove_enchantments") ||
+                ((a.action === "status_remove") && a.defer_to_end)) {
+            finish_actions.push(a);
+            continue;
+        }
         if ((a.action === "damage") && a.defer_to_target) {
             // Elemental damage appears together with the target highlight,
             // after the elemental actor pulse and the event banner icon.
@@ -424,6 +470,11 @@ function playHintActions(actions, row_type) {
 
     if (targets.length > 0) {
         hint_frames.push({delay:delay,actions:targets});
+        delay = 0;
+    }
+
+    if (finish_actions.length > 0) {
+        hint_frames.push({delay:delay,actions:finish_actions});
     }
     console.log("BWU.playHintActions", JSON.stringify(hint_frames));
     scheduleNextHintFrame();
