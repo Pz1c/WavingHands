@@ -7,6 +7,9 @@
 // where spell is the hand's spell object (spell mode) or {n: <monster popup title>} (monster
 // mode). Done hands the choice to mainWindow.setSpellTarget() and the battle window's
 // finishTargeting(); Back keeps the spell and leaves the order's target alone.
+//
+// Fast target selection (gameCore.fastTarget): a spell whose hand has no target yet opens with
+// its default target (the spell's "dt") already chosen, so Done is all the player has to click.
 
 import QtQuick 2.15
 
@@ -426,7 +429,7 @@ BaseWindow {
                 tiles.push({key:m.name,text:placeholder ? "?" : "" + m.hp,icon:"qrc:/res/" + m.icon + ".png",
                             info:m.enchantment_icon ? m.enchantment_icon : "",data:m});
             }
-            res.push({name:w.name,player:w.player ? true : false,tiles:tiles});
+            res.push({name:w.name,player:w.player ? true : false,active:w.active ? true : false,tiles:tiles});
         }
         return res;
     }
@@ -438,11 +441,45 @@ BaseWindow {
         } else {
             mainWindow.logEvent("Play_Monster_Click", {Click:data.name});
         }
+        selectTarget(data);
+    }
+
+    function selectTarget(data) {
         data.target_name = data.action === "hp" ? data.warlock_name : data.name;
         target = data;
         targetName = data.target_name;
         bbDone.active = true;
         updateTitle();
+    }
+
+    // Fast target selection: the tile data of the spell's default target (QSpell defaultTarget,
+    // "dt": 0 Nobody, 1 the player, 2 the enemy), or null when the setting is off, the hand
+    // already has a target, the spell has no default, or there is no single enemy to pick
+    function getDefaultTarget() {
+        var battle = mainWindow.gBattle;
+        if (!isSpell || !mainWindow.gameCore.fastTarget || !battle) {
+            return null;
+        }
+        var action = battle.actions ? battle.actions[battle.currentHand] : null;
+        if (action && action.target) {
+            return null;
+        }
+        var dt = currentSpell.dt;
+        if (dt === 0) {
+            return iiNobody.l_data;
+        }
+        if ((dt !== 1) && (dt !== 2)) {
+            return null;
+        }
+        var res = null, cnt = 0;
+        for (var i = 0, Ln = warlocks.length; i < Ln; ++i) {
+            var w = warlocks[i];
+            if ((dt === 1) ? w.player : (!w.player && w.active)) {
+                res = w.tiles[0].data;
+                ++cnt;
+            }
+        }
+        return cnt === 1 ? res : null;
     }
 
     function updateTitle() {
@@ -517,6 +554,11 @@ BaseWindow {
 
         warlocks = buildWarlocks();
         fWarlocks.contentY = 0;
+        var def_target = getDefaultTarget();
+        if (def_target) {
+            selectTarget(def_target);
+            mainWindow.logEvent("Play_Target_Default", {Spell:currentSpell.n,Target:targetName});
+        }
         updateTitle();
         showTargetHint();
     }

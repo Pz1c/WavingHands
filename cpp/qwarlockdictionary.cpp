@@ -222,6 +222,8 @@ void QWarlockDictionary::fillGameDictionary() {
     // https://github.com/Pz1c/WavingHands/issues/366
     fillDictionary("FastGesture", "Fast gesture selection", "Schnelle Gestenauswahl", "Gestos rápidos");
     fillDictionary("FastGestureSettingDesc", "After selecting a gesture, skip the approval step, in case no spell was completed.", "Nach der Wahl einer Geste wird der Bestätigungsschritt übersprungen, wenn kein Zauber vollendet wurde.", "Tras elegir un gesto, se omite el paso de confirmación si no se ha completado ningún hechizo.");
+    fillDictionary("FastTarget", "Fast target selection", "Schnelle Zielauswahl", "Objetivo rápido");
+    fillDictionary("FastTargetSettingDesc", "Automatically suggest the default target for spells.", "Schlägt für Zauber automatisch das Standardziel vor.", "Sugiere automáticamente el objetivo por defecto de los hechizos.");
     fillDictionary("BattleHistoryTitle", "Battle History", "Kampfverlauf", "Historial de la batalla");
     fillDictionary("Say", "Add a message", "Nachricht hinzufügen", "Añadir un mensaje");
     fillDictionary("PersonalChalengeTitle", "Private Duel Invite", "Einladung zum privaten Duell", "Invitación a duelo privado");
