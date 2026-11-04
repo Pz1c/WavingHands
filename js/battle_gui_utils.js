@@ -771,6 +771,11 @@ function parseStrangeAttack(txt, battle) {
         txt = txt.replace("Holes open up in ", "").replace("shield, but then close up again.", "is hit by a Cause Light Wounds for 2 damage");
     } else if (txt.indexOf("Wounds appear") !== -1) {
         txt = txt.replace("Wounds appear all over ", "").replace("body!", "is hit by a Cause Light Wounds for 2 damage");
+    } else if (txt.indexOf(" disappears!") !== -1) {
+        var disappeared = /and (.+?) disappears!$/.exec(txt);
+        if (disappeared) {
+            txt = disappeared[1] + " is hit by a Invisibility";
+        }
     } else if (txt.indexOf("reflected") !== -1) {
         var idx1 = txt.indexOf(" spell");
         res.spell = txt.substr(4, idx1 - 4).trim();
