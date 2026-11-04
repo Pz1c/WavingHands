@@ -251,35 +251,6 @@ function findTurnNewsTargetObject(target) {
     return null;
 }
 
-function isPreviousTurnBattle(previous_battle) {
-    return !!previous_battle && (previous_battle.id === battle.id) &&
-            ((parseInt(previous_battle.turn_num, 10) + 1) === parseInt(battle.turn_num, 10));
-}
-
-function getPreviousTurnTargetHp(previous_battle, target) {
-    if (!isPreviousTurnBattle(previous_battle)) {
-        return null;
-    }
-    for (var i = 0, Ln = previous_battle.warlocks.length; i < Ln; ++i) {
-        var w = previous_battle.warlocks[i];
-        if (!w) {
-            continue;
-        }
-        if ((target.type === "warlock") && (w.name === target.name)) {
-            var hp = parseInt(w.hp, 10);
-            return isNaN(hp) ? null : hp;
-        }
-        var monsters = w.monsters || [];
-        for (var j = 0, LnJ = monsters.length; j < LnJ; ++j) {
-            if (monsters[j].name === target.name) {
-                var mhp = parseInt(monsters[j].hp, 10);
-                return isNaN(mhp) ? null : mhp;
-            }
-        }
-    }
-    return null;
-}
-
 function cloneTurnNewsElemental(el) {
     var hp = el ? parseInt(el.hp, 10) : 0;
     if (isNaN(hp) || (hp < 0)) {
@@ -431,8 +402,7 @@ function moveTurnNewsStatusToReflection(cast_row, reflection_row, target) {
     }
 }
 
-function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons) {
-    var previous_valid = isPreviousTurnBattle(previous_battle);
+function prepareTurnNewsTransitions(real_actions, news_summons) {
     var elemental_summoned = false, i, Ln, row;
     var mergeable = {}, active_casts = {}, active_casts_by_spell = {};
     var reflected_casts = {};
@@ -466,11 +436,7 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
         battle.turn_news_elemental = undefined;
         return;
     }
-    if (previous_valid) {
-        var pe = previous_battle.elemental;
-        battle.turn_news_elemental = (pe && (parseInt(pe.hp, 10) > 0))
-                ? cloneTurnNewsElemental(pe) : null;
-    } else if (elemental_summoned) {
+    if (elemental_summoned) {
         battle.turn_news_elemental = null;
     } else {
         battle.turn_news_elemental = (battle.elemental && (parseInt(battle.elemental.hp, 10) > 0))
@@ -680,14 +646,6 @@ function prepareTurnNewsTransitions(real_actions, previous_battle, news_summons)
     }
 }
 
-function addTurnNewsDamageTotal(totals, target, damage) {
-    if (!target || !(damage > 0)) {
-        return;
-    }
-    var key = target.type + ":" + target.name;
-    totals[key] = (totals[key] || 0) + damage;
-}
-
 function addTurnNewsHpAction(row, target, amount) {
     if (!row || !target || !amount) {
         return;
@@ -744,122 +702,6 @@ function findTurnNewsHealCause(target, causes) {
         }
     }
     return null;
-}
-
-// Distribute the healed points over this turn's cure spells. Without the
-// previous battle (opening an old game) fall back to the spell's nominal value.
-// The distribution lets a cure at full health show no +number and still starts
-// the life-point card at the value the previous turn ended with.
-function prepareTurnNewsHp(previous_battle, damage_totals, heal_pairings) {
-    var i, Ln;
-
-    // A read-only battle has no turn news. A snapshot replay already shows the
-    // board at the start of the turn, so its cards start from the live units.
-    // The old reconstruction is only for a live board that already shows the
-    // resolved turn.
-    if (battle.read_only || !isPreviousTurnBattle(previous_battle)) {
-        return;
-    }
-
-    var by_target = {}, pairing, target, key;
-
-    for (i = 0, Ln = heal_pairings.length; i < Ln; ++i) {
-        pairing = heal_pairings[i];
-        key = pairing.target.type + ":" + pairing.target.name;
-        if (!by_target[key]) {
-            by_target[key] = {target:pairing.target, entries:[]};
-        }
-        by_target[key].entries.push(pairing);
-    }
-
-    for (key in by_target) {
-        var group = by_target[key];
-        target = group.target;
-        var hp_object = findTurnNewsTargetObject(target);
-        if (!hp_object) {
-            continue;
-        }
-        var final_hp = parseInt(hp_object.hp, 10);
-        if (isNaN(final_hp)) {
-            final_hp = 0;
-        }
-        var previous_hp = getPreviousTurnTargetHp(previous_battle, target);
-        var damage_total = damage_totals[key] || 0;
-        var nominal = 0, entries = group.entries;
-        for (i = 0, Ln = entries.length; i < Ln; ++i) {
-            nominal += entries[i].nominal;
-        }
-
-        var actual = nominal;
-        if (previous_hp !== null) {
-            actual = final_hp - previous_hp + damage_total;
-            if (actual < 0) {
-                actual = 0;
-            }
-        }
-
-        var remaining = actual;
-        for (i = 0, Ln = entries.length; i < Ln; ++i) {
-            var healed = Math.min(entries[i].nominal, remaining);
-            entries[i].action.amount = healed;
-            remaining -= healed;
-        }
-        // Anything left over belongs to the last cure of this target.
-        if (remaining > 0) {
-            entries[entries.length - 1].action.amount += remaining;
-        }
-    }
-
-    // Set every life-point card's first value. Warlocks and monsters that had no
-    // damage or healing this turn simply keep the value from the previous turn.
-    for (i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
-        var w = battle.warlocks[i];
-        if (!w) {
-            continue;
-        }
-        target = {type:"warlock", name:w.name};
-        var w_start = getPreviousTurnTargetHp(previous_battle, target);
-        if (w_start === null) {
-            key = "warlock:" + w.name;
-            w_start = parseInt(w.hp, 10) + (damage_totals[key] || 0);
-            var w_group = by_target[key];
-            if (w_group) {
-                var w_healed = 0;
-                for (var j = 0, LnJ = w_group.entries.length; j < LnJ; ++j) {
-                    w_healed += w_group.entries[j].action.amount || 0;
-                }
-                w_start -= w_healed;
-            }
-        }
-        if (isNaN(w_start) || (w_start < 0)) {
-            w_start = 0;
-        }
-        w.hp = w_start;
-
-        var monsters = w.monsters || [];
-        for (var k = 0, LnK = monsters.length; k < LnK; ++k) {
-            var m = monsters[k];
-            target = {type:"monster", name:m.name};
-            var m_start = getPreviousTurnTargetHp(previous_battle, target);
-            if (m_start === null) {
-                key = "monster:" + m.name;
-                m_start = parseInt(m.hp, 10) + (damage_totals[key] || 0);
-                var m_group = by_target[key];
-                if (m_group) {
-                    var m_healed = 0;
-                    for (var q = 0, LnQ = m_group.entries.length; q < LnQ; ++q) {
-                        m_healed += m_group.entries[q].action.amount || 0;
-                    }
-                    m_start -= m_healed;
-                }
-            }
-            if (isNaN(m_start) || (m_start < 0)) {
-                m_start = 0;
-            }
-            m.hp = m_start;
-            m.text = m.hp;
-        }
-    }
 }
 
 function normalizeTurnNewsName(name) {
@@ -1394,9 +1236,9 @@ function findTurnNewsAttackCause(target, causes) {
     return null;
 }
 
-function prepareTurnNewsDamage(real_actions, previous_battle) {
+function prepareTurnNewsDamage(real_actions) {
     var spell_causes = [], attack_causes = [], reflection_causes = [];
-    var heal_causes = [], heal_pairings = [], damage_totals = {};
+    var heal_causes = [];
     var reflection_rows = [];
     var i, Ln, row, cause;
 
@@ -1427,12 +1269,6 @@ function prepareTurnNewsDamage(real_actions, previous_battle) {
         if (row.row_type === "attack") {
             attack_causes.push({row:row, claimed:false});
             addTurnNewsMonsterAttackIcon(row);
-        }
-
-        var row_damage = getTurnNewsDamage(row);
-        if (row_damage > 0) {
-            var row_target = getTurnNewsTarget(row);
-            addTurnNewsDamageTotal(damage_totals, row_target, row_damage);
         }
     }
 
@@ -1472,10 +1308,7 @@ function prepareTurnNewsDamage(real_actions, previous_battle) {
             cause = findTurnNewsHealCause(target.name, heal_causes);
             if (cause) {
                 var heal_amount = getTurnNewsHealAmount(cause.spell);
-                var heal_action = addTurnNewsHeal(cause.row, row, target, heal_amount);
-                if (heal_action) {
-                    heal_pairings.push({target:target, nominal:heal_amount, action:heal_action});
-                }
+                addTurnNewsHeal(cause.row, row, target, heal_amount);
                 continue;
             }
             console.log("prepareTurnNewsHeal: no cause for", row.txt, JSON.stringify(row.obj));
@@ -1566,11 +1399,9 @@ function prepareTurnNewsDamage(real_actions, previous_battle) {
         console.log("prepareTurnNewsDamage: no cause for", row.txt, JSON.stringify(row.obj));
         addTurnNewsHpAction(row, target, -damage);
     }
-
-    prepareTurnNewsHp(previous_battle, damage_totals, heal_pairings);
 }
 
-function prepareTurnActionInfo(last_turn_hist, previous_battle) {
+function prepareTurnActionInfo(last_turn_hist) {
     // A finished battle is a static record: opening it must not pop the turn news of its last
     // turn again. Only a battle in progress has something new to announce.
     if (battle.read_only) {
@@ -1619,8 +1450,8 @@ function prepareTurnActionInfo(last_turn_hist, previous_battle) {
     // Pair the summon rows once; the event playback mutates the live board.
     var news_summons = BGU.prepareNewsMonsters(real_actions, battle);
     BGU.prepareAndSortRealAction(real_actions, battle);
-    prepareTurnNewsDamage(real_actions, previous_battle);
-    prepareTurnNewsTransitions(real_actions, previous_battle, news_summons);
+    prepareTurnNewsDamage(real_actions);
+    prepareTurnNewsTransitions(real_actions, news_summons);
     var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
@@ -1845,7 +1676,7 @@ function prepareBattle(raw_battle) {
     }
     //delete battle.monsters;
 
-    prepareTurnActionInfo(raw_battle.last_turn_hist, null);
+    prepareTurnActionInfo(raw_battle.last_turn_hist);
 
     console.log("prepared battle", JSON.stringify(battle));
 }
