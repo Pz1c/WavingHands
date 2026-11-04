@@ -748,17 +748,10 @@ void QWarloksDuelCore::generateTopList() {
         }
     }
     // https://github.com/Pz1c/WavingHands/issues/291
-    // Bots are always online: they fill the Online tab while nobody but the
-    // player is there to be challenged.
-    bool others_online = false;
+    // No bots, as on the other tabs. The player's own row always stays, so the
+    // list is not empty while the player is the only one online.
     foreach(QWarlockStat *ws, wsl) {
-        if (!ws->ai() && ws->online() && (ws->name().compare(_login, Qt::CaseInsensitive) != 0)) {
-            others_online = true;
-            break;
-        }
-    }
-    foreach(QWarlockStat *ws, wsl) {
-        if (!ws->online() || (ws->ai() && others_online)) {
+        if (ws->ai() || (!ws->online() && (ws->name().compare(_login, Qt::CaseInsensitive) != 0))) {
             continue;
         }
         if (!_topOnline.isEmpty()) {

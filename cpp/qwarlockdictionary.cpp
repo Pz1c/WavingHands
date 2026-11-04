@@ -316,7 +316,6 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TopTabAllTime", "All time", "Alle Zeiten", "Histórico");
     fillDictionary("TopTabOnline", "Online", "Online", "En línea");
     fillDictionary("TopTabOnlineHint", "Players active in the last 3 minutes:", "In den letzten 3 Minuten aktive Spieler:", "Jugadores activos en los últimos 3 minutos:");
-    fillDictionary("TopBotsOnlyHint", "No players online. Bots are always ready:", "Keine Spieler online. Bots sind immer bereit:", "No hay jugadores en línea. Los bots siempre están listos:");
     fillDictionary("TopNobodyOnline", "Nobody is online right now", "Gerade ist niemand online", "Ahora mismo no hay nadie en línea");
     fillDictionary("WarlockStats", "Warlock stats", "Hexer-Statistik", "Estadísticas del brujo");
     fillDictionary("PracticeTogether", "Practice together", "Zusammen üben", "Practicar juntos");
