@@ -1240,7 +1240,7 @@ function prepareTurnNewsDamage(real_actions) {
     var spell_causes = [], attack_causes = [], reflection_causes = [];
     var heal_causes = [];
     var reflection_rows = [];
-    var i, Ln, row, cause;
+    var i, Ln, row, cause, target;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         row = real_actions[i];
@@ -1319,7 +1319,7 @@ function prepareTurnNewsDamage(real_actions) {
         if (!(damage > 0)) {
             continue;
         }
-        var target = getTurnNewsTarget(row);
+        target = getTurnNewsTarget(row);
         if (!target) {
             console.log("prepareTurnNewsDamage: no target for", row.txt, JSON.stringify(row.obj));
             continue;
