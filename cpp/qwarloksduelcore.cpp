@@ -1487,7 +1487,7 @@ bool QWarloksDuelCore::requestTurnSnapshot(int battle_id, int turn, QString &dat
     QNetworkRequest request(QUrl(QString(GAME_SERVER_URL_GET_BATTLE_TURN)
                                  .arg(QString::number(battle_id), QString::number(turn))));
     request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
-    request.setTransferTimeout(8000);
+    request.setTransferTimeout(3000);
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                          QNetworkRequest::NoLessSafeRedirectPolicy);
 
@@ -1497,7 +1497,7 @@ bool QWarloksDuelCore::requestTurnSnapshot(int battle_id, int turn, QString &dat
     QEventLoop loop;
     QTimer timeout;
     timeout.setSingleShot(true);
-    timeout.setInterval(8000);
+    timeout.setInterval(3000);
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     connect(&timeout, &QTimer::timeout, &loop, [&]() {
         reply->abort();
@@ -4367,6 +4367,37 @@ QString QWarloksDuelCore::battleReadOnly(int BattleID) {
     QBattleInfo *battle_info = getBattleInfo(BattleID);
     QString res = battle_info->fullJSON();
     return res;
+}
+
+int QWarloksDuelCore::battleReplayMaxTurn(int battle_id) {
+    QBattleInfo *battle_info = getBattleInfo(battle_id);
+    return battle_info ? battle_info->turn() : 0;
+}
+
+QString QWarloksDuelCore::battleReplayTurn(int battle_id, int turn) {
+    QBattleInfo *battle_info = getBattleInfo(battle_id);
+    return battle_info ? battle_info->getTurnInfo(turn, _login) : "[]";
+}
+
+QString QWarloksDuelCore::battleReplayState(int battle_id, int selected_turn) {
+    if ((battle_id <= 0) || (selected_turn < 1)) {
+        return QString();
+    }
+
+    QString snapshot;
+    int status = 0;
+    if (!requestTurnSnapshot(battle_id, selected_turn - 1, snapshot, status)) {
+        return QString();
+    }
+
+    QBattleInfo *info = getBattleInfo(battle_id);
+    if (!info || !info->loadBoardSnapshot(snapshot, _login)) {
+        return QString();
+    }
+
+    // The final board is just another state. This does not overwrite the
+    // stored full JSON.
+    return info->buildBoardJSON(_login, selected_turn);
 }
 
 bool QWarloksDuelCore::showFinalTurnNews(QBattleInfo *battleInfo) {

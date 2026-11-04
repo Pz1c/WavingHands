@@ -550,13 +550,15 @@ function closeTutorial() {
 
     // The board above is the snapshot used for the news. The news is over now:
     // rebuild from the current page, without replaying hint/last_turn_hist.
-    if (mainWindow.gBattle && mainWindow.gBattle.id) {
+    if (mainWindow.gBattle && mainWindow.gBattle.replay) {
+        mainWindow.replayTurnClosed(true);
+    } else if (mainWindow.gBattle && mainWindow.gBattle.id) {
         core.turnNewsClosed(mainWindow.gBattle.id);
     }
 }
 
 function moveToHintStep(diff, skip_restore) {
-    var log_msg = mainWindow.gBattle.turn_num === 1;
+    var log_msg = !mainWindow.gBattle.replay && (mainWindow.gBattle.turn_num === 1);
     var code = log_msg ? "Play_Tutorial_Click_" : "Play_Turn_Message_Click_";
     if ((diff !== 0) && !skip_restore) {
         // restore prev changed

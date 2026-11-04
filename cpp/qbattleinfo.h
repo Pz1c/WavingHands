@@ -108,6 +108,15 @@ public:
 
     QString fullJSON() const;
 
+    // Parse the board section of a historical turn page into this record.
+    // The stored full JSON is left untouched.
+    bool loadBoardSnapshot(const QString &Data, const QString &Login);
+
+    // Serialize the current board for replay. WithHistory=false leaves the
+    // stored history and turn rows out of the result.
+    QString buildBoardJSON(const QString &Login, int Turn,
+                           bool WithHistory = false);
+
     bool isInviteRejected();
     void checkRejection();
 

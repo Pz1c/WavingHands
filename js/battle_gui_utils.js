@@ -502,16 +502,29 @@ function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
     return res;
 }
 
-function higlightWarlockGestureBySpell(warlock, spell_obj) {
+function higlightWarlockGestureBySpell(warlock, spell_obj, battle) {
     var arr_g = map_spell_name_to_gesture[spell_obj.spell];
     console.log("higlightWarlockGestureBySpell", spell_obj.spell, JSON.stringify(arr_g));
     if (!arr_g) {
         return {action:"none"};
     }
+
+    var L = warlock.L, R = warlock.R;
+    var pL = warlock.pL, pR = warlock.pR;
+    // Replay shows the full history; match the spell against the history
+    // only up to the turn being played.
+    if (battle && battle.replay && (warlock.replay_pL !== undefined)) {
+        var end = battle.turn_num + 1;
+        L = warlock.replay_pL.substr(0, end);
+        R = warlock.replay_pR.substr(0, end);
+        pL = L;
+        pR = R;
+    }
+
     for (var i = 0, Ln = arr_g.length; i < Ln; ++i) {
-        var lrsl = checkIsSpellPossibeForWarlock(arr_g[i], warlock.L, warlock.R);
+        var lrsl = checkIsSpellPossibeForWarlock(arr_g[i], L, R);
         if ((lrsl[0] !== 0) || (lrsl[1] !== 0)) {
-            return {action:"highlight",warlock_name:warlock.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(warlock.pL, warlock.pR, lrsl[0], lrsl[1], 5)}
+            return {action:"highlight",warlock_name:warlock.name,object_type:"warlock",object:"gestures",data:preparePrintGestures(pL, pR, lrsl[0], lrsl[1], 5)}
         }
     }
 
@@ -633,7 +646,7 @@ function getMessageActionBySpell(obj, battle) {
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].name === spell_obj.warlock) {
             // hightlight spell gestures
-            var hga = higlightWarlockGestureBySpell(battle.warlocks[i], spell_obj);
+            var hga = higlightWarlockGestureBySpell(battle.warlocks[i], spell_obj, battle);
             if (hga.action !== "none") {
                 res.push(hga);
             } else {
@@ -929,7 +942,9 @@ function getMessageActionByAttack(attack_obj, battle) {
 
             if (!aggressor_found) {
                 if (battle.warlocks[i].name === attack_obj.aggressor) {
-                    res.push(higlightWarlockGestureBySpell(battle.warlocks[i], {warlock:attack_obj.aggressor,spell:"Stab",target:attack_obj.target}));
+                    res.push(higlightWarlockGestureBySpell(battle.warlocks[i],
+                                                           {warlock:attack_obj.aggressor,spell:"Stab",target:attack_obj.target},
+                                                           battle));
                     aggressor_found = true;
                 } else {
                     var aggressor_owner = findMonsterOwner(battle, attack_obj.aggressor);
@@ -1188,12 +1203,30 @@ function prepareAndSortRealAction(actions, battle) {
 
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
         console.log("sortRealAction", i, actions[i].txt, JSON.stringify(actions[i].obj));
-        if (actions[i].checked) {
-            continue;
-        }
-        if ((actions[i].type === 2) && (actions[i].txt.indexOf("shakes his head") !== -1)) {
+        if (actions[i].txt.indexOf("shakes his head") !== -1) {
             actions[i].type = 1;
             actions[i].checked = true;
+            actions[i].turn_news_force_show = true;
+
+            // Both disruption enchantments cancel out, so remove every
+            // disruption status the target could have.
+            var target = actions[i].obj ? actions[i].obj.target : "";
+            var codes = ["paralized", "confused", "charmed",
+                         "scared", "amnesia", "maladroit"];
+            if (target && actions[i].new_action) {
+                for (var c = 0; c < codes.length; ++c) {
+                    actions[i].new_action.push({
+                        action:"status_remove",
+                        warlock_name:target,
+                        object_type:"status",
+                        object:codes[c],
+                        defer_to_end:true
+                    });
+                }
+            }
+            continue;
+        }
+        if (actions[i].checked) {
             continue;
         }
 

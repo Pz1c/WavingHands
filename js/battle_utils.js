@@ -64,6 +64,10 @@ function prepareWarlock(w) {
     // are counted from the end of his own history, so shift them by the same padding.
     var pad = w.pL.length - (w.L || "").length;
     w.print_g = BGU.preparePrintGestures(w.pL, w.pR, (w.smcL || 0) + pad, (w.smcR || 0) + pad);
+    if (battle.replay && (w.replay_pL === undefined)) {
+        w.replay_pL = w.pL;
+        w.replay_pR = w.pR;
+    }
     if (!w.id) {
         w.id = battle.targetsMap[w.name];
     }
@@ -449,7 +453,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
         }
     }
 
-    if (battle.read_only) {
+    if (battle.read_only && !battle.replay) {
         battle.turn_news_elemental = undefined;
         return;
     }
@@ -1453,7 +1457,7 @@ function prepareTurnNewsDamage(real_actions) {
 function prepareTurnActionInfo(last_turn_hist) {
     // A finished battle is a static record: opening it must not pop the turn news of its last
     // turn again. Only a battle in progress has something new to announce.
-    if (battle.read_only) {
+    if (battle.read_only && !battle.replay) {
         battle.hint = [];
         return;
     }
@@ -1651,7 +1655,8 @@ function prepareBattle(raw_battle) {
     // The live board is the snapshot. The current page supplies history/order state.
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
-        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit,
+        battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only,
+        replay: raw_battle.replay, maladroit: raw_battle.maladroit,
         // https://github.com/Pz1c/WavingHands/issues/315: true while the site offers its SUICIDE checkbox.
         // battleInfo() sends 1/0; a battle prepared once already holds the bool. Note "0" is truthy in JS.
         suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true)};
@@ -1730,6 +1735,77 @@ function prepareBattle(raw_battle) {
     prepareTurnActionInfo(raw_battle.last_turn_hist);
 
     console.log("prepared battle", JSON.stringify(battle));
+}
+
+// Starter replay: participant cards only, with no turn history yet. The first
+// real board state is built by applying the cached turn-news rows.
+function resetReplayBoard(raw_battle) {
+    raw_battle.replay = true;
+    raw_battle.read_only = true;
+    raw_battle.turn_num = 1;
+    raw_battle.last_turn_hist = [];
+    raw_battle.chat = 0;
+    raw_battle.hint = [];
+    raw_battle.monsters = [];
+    raw_battle.paralyze = "";
+    raw_battle.charm = "";
+    raw_battle.paralyzed_hand = [];
+    raw_battle.elemental = {hp:0, type:"fire"};
+
+    for (var i = 0, Ln = raw_battle.warlocks.length; i < Ln; ++i) {
+        var w = raw_battle.warlocks[i];
+        w.replay_L = w.L || "";
+        w.replay_R = w.R || "";
+        w.hp = 15;
+        w.status = "Health:15";
+        w.active = 1;
+        w.monsters = [];
+        w.changed_mind = 0;
+        w.defended_by = "";
+        w.arr_distruption = [];
+        w.scared = 0;
+        w.confused = 0;
+        w.charmed = 0;
+        w.paralized = 0;
+        w.shield = 0;
+        w.coldproof = 0;
+        w.fireproof = 0;
+        w.poison = 0;
+        w.disease = 0;
+        w.amnesia = 0;
+        w.maladroit = 0;
+        w.mshield = 0;
+        w.delay = 0;
+        w.time_stop = 0;
+        w.haste = 0;
+        w.permanency = 0;
+        w.blindness = 0;
+        w.invisibility = 0;
+    }
+}
+
+// Replay keeps the complete gesture history visible. The current turn is
+// indicated by the tile highlight and the shared scroll position.
+function setReplayTurn(turn) {
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        var w = battle.warlocks[i];
+        if (!w) {
+            continue;
+        }
+        if (w.replay_L === undefined) {
+            w.replay_L = w.L || "";
+            w.replay_R = w.R || "";
+        }
+        if (w.replay_pL === undefined) {
+            w.replay_pL = w.pL;
+            w.replay_pR = w.pR;
+        }
+        w.L = w.replay_L;
+        w.R = w.replay_R;
+        w.pL = w.replay_pL;
+        w.pR = w.replay_pR;
+        w.print_g = BGU.preparePrintGestures(w.pL, w.pR, 0, 0);
+    }
 }
 
 function prepareElemental() {
@@ -1831,7 +1907,7 @@ function finishPrepareWarlockList() {
         var idx = show_warlocks[wi];
         var arr_m = battle.warlocks[idx];
         //arr_m.turn_num = battle.turn_num;
-        var sprite = cWarlockObject.createObject(iWarlocks, {l_warlock: arr_m, l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
+        var sprite = cWarlockObject.createObject(iWarlocks, {l_ratio: mainWindow.ratioObject, l_IconInfoObj: cIconObject, x: 0, y: curr_y, height: G_WARLOCK_HEIGHT * mainWindow.ratioObject, width: battleWindow.width});
         if (sprite === null) {
             console.log("Error creating object");
             --battle.shown_warlocks;
@@ -1852,6 +1928,10 @@ function finishPrepareWarlockList() {
         sprite.clicked.connect(iconClick);
         sprite.doubleClicked.connect(iconDoubleClick);
         sprite.gestureClicked.connect(iconGestureClick);
+        // createObject() copies initial JS object properties on Qt 6. Bind the
+        // card to the live battle object before running its initialization.
+        sprite.l_warlock = arr_m;
+        sprite.finishWarlockCreation();
         console.log("looks like created x: " + sprite.x + " y: " + sprite.y + " h: " + sprite.height+ " w: " + sprite.width);
         console.log("svWarlocks.w: " + iWarlocks.width);
         console.log("svWarlocks.h: " + iWarlocks.height);
@@ -1871,7 +1951,7 @@ function prepareChat() {
 
 function prepareHint() {
     // A finished battle opened for viewing has nothing to click through: no turn news.
-    if (battle.read_only) {
+    if (battle.read_only && !battle.replay) {
         return;
     }
     if (battle.hint && battle.hint.length > 0) {

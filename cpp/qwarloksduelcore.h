@@ -236,6 +236,12 @@ public slots:
     // otherwise rebuild the ordinary ready turn.
     void turnNewsClosed(int battle_id);
     QString battleReadOnly(int BattleID);
+    // Cached replay metadata and event rows. No network requests.
+    int battleReplayMaxTurn(int battle_id);
+    QString battleReplayTurn(int battle_id, int turn);
+    // Blocking snapshot fetch for replay. The board is the state after
+    // selected_turn - 1; the request is capped at 3 seconds.
+    QString battleReplayState(int battle_id, int selected_turn);
     QString playerJson();
     // 0 - active in the last 3 days, 1 - all time, 2 - online (QWarlockStat::online;
     // bots only while no other player is)
