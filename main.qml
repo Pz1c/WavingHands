@@ -513,17 +513,14 @@ ApplicationWindow {
 
     // https://github.com/Pz1c/WavingHands/issues/320: the first message of the inbox, with
     // the way to the Messages window; gone (and 0 high) while the inbox is empty.
-    Rectangle {
+    // No fill of its own (issue #374): the text sits on the blue top of the background.
+    Item {
         id: rMsgBanner
         anchors.top: tbTop.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         height: visible ? 72 * ratioObject : 0
         visible: tbTop.visible && (core.messageCount > 0)
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#0654C0" }
-            GradientStop { position: 1.0; color: "#210430" }
-        }
 
         property var first: core.messageCount > 0 ? JSON.parse(core.messages)[0] : ({from: "", text: ""})
 
