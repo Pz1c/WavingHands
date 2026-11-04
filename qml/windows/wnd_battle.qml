@@ -40,97 +40,109 @@ BaseWindow {
         anchors.fill: content_item
         //color: "transparent"
 
-        Item {
-            id: iElementalBar
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: iiElemental.visible ? 84 * mainWindow.ratioObject : 0
-            z: 1001
-
-            IconInfo {
-                id: iiElemental
-                source: "qrc:/res/elemental_fire.png";
-                text: "3"
-                height: 78 * mainWindow.ratioObject
-                width: height
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: 6 * mainWindow.ratioObject
-                radius: 10
-                visible: false
-
-                function highlightNews(news_color) {
-                    border.color = news_color;
-                    border.width = 3 * mainWindow.ratioObject;
-                    paElementalHighlight.restart();
-                }
-
-                function restoreNews() {
-                    paElementalHighlight.stop();
-                    scale = 1;
-                    border.width = 0;
-                }
-
-                SequentialAnimation {
-                    id: paElementalHighlight
-
-                    PropertyAnimation {
-                        target: iiElemental
-                        property: "scale"
-                        from: 1
-                        to: 1.12
-                        duration: 160
-                        easing.type: Easing.OutQuad
-                    }
-                    PropertyAnimation {
-                        target: iiElemental
-                        property: "scale"
-                        from: 1.12
-                        to: 1
-                        duration: 160
-                        easing.type: Easing.InQuad
-                    }
-                }
-
-                onClicked: {
-                    iconClick(iiElemental.l_data)
-                }
-
-                onDoubleClicked: {
-                    iconDoubleClick(iiElemental.l_data)
-                }
-            }
-        }
-
         ScrollView {
             id: bfWarlocks
-            anchors.top: iElementalBar.bottom
+            anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: bfAll.top
             contentWidth: -1
-            contentHeight: iWarlocks.height
-
-            Rectangle {
-                id: rTutOverlay
-                anchors.fill: parent
-                color: "black"
-                opacity: 0.5
-                visible: ltTutorial.visible
-                z:1000
-
-                MouseArea {
-                    id: maTutOver
-                    anchors.fill: parent
-                }
-            }
+            contentHeight: iBoardContent.height
 
             Item {
-                id: iWarlocks
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
+                id: iBoardContent
+                width: bfWarlocks.width
+                height: iElementalHeader.height + iWarlocks.height
+
+                Item {
+                    id: iElementalHeader
+                    width: parent.width
+                    height: iiElemental.visible ? 84 * mainWindow.ratioObject : 0
+
+                    IconInfo {
+                        id: iiElemental
+                        source: "qrc:/res/elemental_fire.png";
+                        text: "3"
+                        height: 78 * mainWindow.ratioObject
+                        width: height
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 6 * mainWindow.ratioObject
+                        radius: 10
+                        visible: false
+
+                        function highlightNews(news_color) {
+                            border.color = news_color;
+                            border.width = 3 * mainWindow.ratioObject;
+                            paElementalHighlight.restart();
+                        }
+
+                        function restoreNews() {
+                            paElementalHighlight.stop();
+                            scale = 1;
+                            border.width = 0;
+                        }
+
+                        SequentialAnimation {
+                            id: paElementalHighlight
+
+                            PropertyAnimation {
+                                target: iiElemental
+                                property: "scale"
+                                from: 1
+                                to: 1.12
+                                duration: 160
+                                easing.type: Easing.OutQuad
+                            }
+                            PropertyAnimation {
+                                target: iiElemental
+                                property: "scale"
+                                from: 1.12
+                                to: 1
+                                duration: 160
+                                easing.type: Easing.InQuad
+                            }
+                        }
+
+                        onClicked: {
+                            iconClick(iiElemental.l_data)
+                        }
+
+                        onDoubleClicked: {
+                            iconDoubleClick(iiElemental.l_data)
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 2 * mainWindow.ratioObject
+                        color: "#FEE2D6"
+                        visible: iiElemental.visible
+                    }
+                }
+
+                Item {
+                    id: iWarlocks
+                    anchors.top: iElementalHeader.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                }
+            }
+        }
+
+        Rectangle {
+            id: rTutOverlay
+            anchors.fill: bfWarlocks
+            color: "black"
+            opacity: 0.5
+            visible: ltTutorial.visible
+            z: 1000
+
+            MouseArea {
+                id: maTutOver
+                anchors.fill: parent
             }
         }
 
