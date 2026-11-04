@@ -107,7 +107,7 @@ InfoWindow {
                 color: "#E7FFFF"
                 horizontalAlignment: Text.AlignLeft
                 visible: text !== ""
-                text: dMainItem.botsOnly ? dict.getStringByCode("TopBotsOnlyHint") : dMainItem.tabs[dMainItem.switchStateValue].hint
+                text: dMainItem.tabs[dMainItem.switchStateValue].hint
             }
         }
 
@@ -410,9 +410,6 @@ InfoWindow {
     }
 
     function showRows(rows) {
-        // The core lists bots only on the Online tab, and only while no other
-        // player is online.
-        botsOnly = rows.some(function (r) { return r.ai; });
         lvSpellList.model = rows;
     }
 
@@ -425,8 +422,6 @@ InfoWindow {
     ]
     // https://github.com/Pz1c/WavingHands/issues/291
     readonly property int tabOnline: 2
-    // The shown list is the bots standing in for absent players.
-    property bool botsOnly: false
     property int switchStateValue: 0
     // A roster change arrived while the list was moving or a row was pressed;
     // applied once that ends.

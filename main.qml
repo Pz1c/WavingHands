@@ -218,6 +218,40 @@ ApplicationWindow {
             height: 188 * ratioObject
             z: 10
 
+            // Interface language: WarlockDictionary stores the choice, and the shown texts follow it.
+            // Same top offset as the windows' "Back" item, same left margin as the menu texts.
+            Row {
+                id: rmLang
+                anchors.top: parent.top
+                anchors.topMargin: 24 * ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: 48 * ratioObject
+                spacing: 18 * ratioObject
+
+                Repeater {
+                    model: GUI.getLangMenuList()
+
+                    BtnBig {
+                        readonly property bool selected: WarlockDictionary.lang === modelData.c
+
+                        width: 128 * ratioObject
+                        height: 52 * ratioObject
+                        radius: height / 2
+                        border.width: 2 * ratioObject
+                        text_color: "#ABF4F4"
+                        font.pixelSize: 24 * ratioFont
+                        text: warlockDictionary.getStringByCode(modelData.t)
+                        bg_color_active: selected ? "#551470" : "transparent"
+                        border_color_active: selected ? "#ABF4F4" : "#905B93"
+
+                        onClicked: {
+                            logEvent("menu_action", {action:"lang_" + modelData.c});
+                            WarlockDictionary.setCurrentLang(modelData.c);
+                        }
+                    }
+                }
+            }
+
             LargeText {
                 id: dmIHi
                 anchors.top: parent.top
@@ -250,7 +284,7 @@ ApplicationWindow {
             anchors.leftMargin: 48 * ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 48 * ratioObject
-            anchors.bottom: rmLang.top
+            anchors.bottom: bbNewGameWithFriend.top
             anchors.bottomMargin: 24 * ratioObject
             // on a short screen the items scroll here instead of running over the buttons below
             clip: true
@@ -335,38 +369,6 @@ ApplicationWindow {
             }
 
 
-        }
-
-        // Interface language: WarlockDictionary stores the choice, and the shown texts follow it
-        Row {
-            id: rmLang
-            anchors.bottom: bbNewGameWithFriend.top
-            anchors.bottomMargin: 24 * ratioObject
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 18 * ratioObject
-
-            Repeater {
-                model: GUI.getLangMenuList()
-
-                BtnBig {
-                    readonly property bool selected: WarlockDictionary.lang === modelData.c
-
-                    width: 128 * ratioObject
-                    height: 52 * ratioObject
-                    radius: height / 2
-                    border.width: 2 * ratioObject
-                    text_color: "#ABF4F4"
-                    font.pixelSize: 24 * ratioFont
-                    text: warlockDictionary.getStringByCode(modelData.t)
-                    bg_color_active: selected ? "#551470" : "transparent"
-                    border_color_active: selected ? "#ABF4F4" : "#905B93"
-
-                    onClicked: {
-                        logEvent("menu_action", {action:"lang_" + modelData.c});
-                        WarlockDictionary.setCurrentLang(modelData.c);
-                    }
-                }
-            }
         }
 
         BtnBig {
@@ -511,17 +513,14 @@ ApplicationWindow {
 
     // https://github.com/Pz1c/WavingHands/issues/320: the first message of the inbox, with
     // the way to the Messages window; gone (and 0 high) while the inbox is empty.
-    Rectangle {
+    // No fill of its own (issue #374): the text sits on the blue top of the background.
+    Item {
         id: rMsgBanner
         anchors.top: tbTop.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         height: visible ? 72 * ratioObject : 0
         visible: tbTop.visible && (core.messageCount > 0)
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#0654C0" }
-            GradientStop { position: 1.0; color: "#210430" }
-        }
 
         property var first: core.messageCount > 0 ? JSON.parse(core.messages)[0] : ({from: "", text: ""})
 

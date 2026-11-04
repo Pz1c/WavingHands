@@ -222,6 +222,8 @@ void QWarlockDictionary::fillGameDictionary() {
     // https://github.com/Pz1c/WavingHands/issues/366
     fillDictionary("FastGesture", "Fast gesture selection", "Schnelle Gestenauswahl", "Gestos rápidos");
     fillDictionary("FastGestureSettingDesc", "After selecting a gesture, skip the approval step, in case no spell was completed.", "Nach der Wahl einer Geste wird der Bestätigungsschritt übersprungen, wenn kein Zauber vollendet wurde.", "Tras elegir un gesto, se omite el paso de confirmación si no se ha completado ningún hechizo.");
+    fillDictionary("FastTarget", "Fast target selection", "Schnelle Zielauswahl", "Objetivo rápido");
+    fillDictionary("FastTargetSettingDesc", "Automatically suggest the default target for spells.", "Schlägt für Zauber automatisch das Standardziel vor.", "Sugiere automáticamente el objetivo por defecto de los hechizos.");
     fillDictionary("BattleHistoryTitle", "Battle History", "Kampfverlauf", "Historial de la batalla");
     fillDictionary("Say", "Add a message", "Nachricht hinzufügen", "Añadir un mensaje");
     fillDictionary("PersonalChalengeTitle", "Private Duel Invite", "Einladung zum privaten Duell", "Invitación a duelo privado");
@@ -314,7 +316,6 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("TopTabAllTime", "All time", "Alle Zeiten", "Histórico");
     fillDictionary("TopTabOnline", "Online", "Online", "En línea");
     fillDictionary("TopTabOnlineHint", "Players active in the last 3 minutes:", "In den letzten 3 Minuten aktive Spieler:", "Jugadores activos en los últimos 3 minutos:");
-    fillDictionary("TopBotsOnlyHint", "No players online. Bots are always ready:", "Keine Spieler online. Bots sind immer bereit:", "No hay jugadores en línea. Los bots siempre están listos:");
     fillDictionary("TopNobodyOnline", "Nobody is online right now", "Gerade ist niemand online", "Ahora mismo no hay nadie en línea");
     fillDictionary("WarlockStats", "Warlock stats", "Hexer-Statistik", "Estadísticas del brujo");
     fillDictionary("PracticeTogether", "Practice together", "Zusammen üben", "Practicar juntos");
