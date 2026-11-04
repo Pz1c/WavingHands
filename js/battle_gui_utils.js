@@ -813,7 +813,8 @@ function parseStrangeAttack(txt, battle) {
             res.damage = arr[i - 1];
         }
 
-        if (!spell_started && ((arr[i] === "coordination") || (arr[i] === "maladroit") || (arr[i] === "trips"))) {
+        if (!spell_started && ((arr[i] === "coordination") || (arr[i] === "maladroit") ||
+                               (arr[i] === "trips") || (arr[i] === "confused"))) {
             res.spell = battle.maladroit ? "Maladroitness" : "Confusion";
         }
 
