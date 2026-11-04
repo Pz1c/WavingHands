@@ -32,6 +32,16 @@ ApplicationWindow {
     property alias mainHeader: tbTop
     property var gERROR: ({})
     property var gBattle: ({})
+    property var battleReplay: ({
+        active: false,
+        battle_id: 0,
+        turn: 0,
+        max_turn: 0,
+        playing: false,
+        base_battle: null,
+        needs_snapshot: false,
+        loading: false
+    })
     property int playerSpellbookLevel: 6
     // Not the WarlockDictionary object itself: the lang read below makes every binding that
     // calls getStringByCode() depend on the language, so a switch re-translates the shown UI
@@ -1077,6 +1087,7 @@ ApplicationWindow {
     }
 
     function showReadyBattle() {
+        clearBattleReplay();
         var battle_open = WNDU.isWndVisible(WNDU.wnd_battle);
         if (WNDU.isSomeWndOpenned() && !battle_open) {
             return;
@@ -1610,9 +1621,27 @@ ApplicationWindow {
         }
     }
 
+    function clearBattleReplay() {
+        var replay_wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (replay_wnd && replay_wnd.stopReplay) {
+            replay_wnd.stopReplay();
+        }
+        battleReplay = {
+            active: false,
+            battle_id: 0,
+            turn: 0,
+            max_turn: 0,
+            playing: false,
+            base_battle: null,
+            needs_snapshot: false,
+            loading: false
+        };
+    }
+
     function showBattleReadOnly(BattleID) {
         console.log("main.qml.showBattleReadOnly", BattleID);
         //GUI.mainMenuAction("show_read_only_battle", BattleID);
+        clearBattleReplay();
         var battle_str = core.battleReadOnly(BattleID);
         console.log("showBattleReadOnly", battle_str);
         if (!battle_str) {
@@ -1623,7 +1652,186 @@ ApplicationWindow {
         gBattle = JSON.parse(battle_str);
         gBattle.read_only = true;
         gBattle.waiting_for_turn = !GUI.isBattleFinished(BattleID);
+        if (GUI.isBattleFinished(BattleID)) {
+            startBattleReplay(BattleID);
+        }
         WNDU.showBattle();
+    }
+
+    function startBattleReplay(BattleID) {
+        battleReplay = {
+            active: false,
+            battle_id: 0,
+            turn: 0,
+            max_turn: 0,
+            playing: false,
+            base_battle: null,
+            needs_snapshot: false,
+            loading: false
+        };
+        var max_turn = core.battleReplayMaxTurn(BattleID);
+        if (!max_turn || (core.battleReplayTurn(BattleID, 1) === "[]")) {
+            return false;
+        }
+        battleReplay = {
+            active: true,
+            battle_id: BattleID,
+            turn: 0,
+            max_turn: max_turn,
+            playing: false,
+            base_battle: JSON.parse(JSON.stringify(gBattle)),
+            needs_snapshot: false,
+            loading: false
+        };
+        gBattle.replay = true;
+        gBattle.last_turn_hist = [];
+        return true;
+    }
+
+    function setBattleReplayState(playing, turn) {
+        battleReplay = {
+            active: battleReplay.active,
+            battle_id: battleReplay.battle_id,
+            turn: turn,
+            max_turn: battleReplay.max_turn,
+            playing: playing,
+            base_battle: battleReplay.base_battle,
+            needs_snapshot: battleReplay.needs_snapshot,
+            loading: battleReplay.loading
+        };
+    }
+
+    function updateBattleReplay(fields) {
+        var next = {};
+        for (var key in battleReplay) {
+            next[key] = battleReplay[key];
+        }
+        for (var field in fields) {
+            next[field] = fields[field];
+        }
+        battleReplay = next;
+    }
+
+    function stepBattleReplay(delta) {
+        if (!battleReplay.active || battleReplay.loading || !battleReplay.base_battle) {
+            return;
+        }
+        var next = Math.max(0, Math.min(battleReplay.max_turn,
+                                        battleReplay.turn + delta));
+        if (next === battleReplay.turn) {
+            return;
+        }
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (wnd) {
+            wnd.cancelReplayPlayback();
+        }
+        gBattle = JSON.parse(JSON.stringify(battleReplay.base_battle));
+        gBattle.replay = true;
+        gBattle.read_only = true;
+        updateBattleReplay({
+            turn: next,
+            playing: false,
+            needs_snapshot: next > 0,
+            loading: false
+        });
+        if (wnd) {
+            wnd.resetReplayBoardView();
+        }
+    }
+
+    function mergeReplayGestures(state) {
+        var base = battleReplay.base_battle;
+        if (!base || !base.warlocks || !state.warlocks) {
+            return;
+        }
+        for (var i = 0; i < state.warlocks.length; ++i) {
+            for (var j = 0; j < base.warlocks.length; ++j) {
+                if (state.warlocks[i].name === base.warlocks[j].name) {
+                    state.warlocks[i].L = base.warlocks[j].L;
+                    state.warlocks[i].R = base.warlocks[j].R;
+                    break;
+                }
+            }
+        }
+    }
+
+    function applyBattleReplayState(selected_turn, json) {
+        if (!battleReplay.active || (selected_turn !== battleReplay.turn)) {
+            return;
+        }
+        updateBattleReplay({ loading: false });
+        if (!json) {
+            updateBattleReplay({ needs_snapshot: true });
+            showErrorWnd({text:warlockDictionary.getStringByCode("BattleProblemContact")});
+            return;
+        }
+
+        var state = JSON.parse(json);
+        mergeReplayGestures(state);
+        if (battleReplay.base_battle) {
+            state.battle_hist = battleReplay.base_battle.battle_hist || "";
+            state.battle_chat = battleReplay.base_battle.battle_chat || "";
+        }
+        state.replay = true;
+        state.read_only = true;
+        state.hint = [];
+        state.last_turn_hist = [];
+        gBattle = state;
+        updateBattleReplay({ needs_snapshot: false });
+
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (wnd) {
+            wnd.reloadReplayBoard();
+            wnd.playReplayTurn(selected_turn);
+        }
+    }
+
+    function toggleBattleReplay() {
+        if (!battleReplay.active || battleReplay.loading) {
+            return;
+        }
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (battleReplay.playing) {
+            setBattleReplayState(false, battleReplay.turn);
+            if (wnd) {
+                wnd.stopReplay();
+            }
+            return;
+        }
+        // Play always restarts the current turn from its first event.
+        if (battleReplay.turn > 0) {
+            if (wnd) {
+                wnd.cancelReplayPlayback();
+            }
+            updateBattleReplay({ loading: true, needs_snapshot: true });
+            var json = core.battleReplayState(battleReplay.battle_id,
+                                              battleReplay.turn);
+            applyBattleReplayState(battleReplay.turn, json);
+            return;
+        }
+
+        var start = 1;
+        if (start > battleReplay.max_turn) {
+            return;
+        }
+        if (wnd) {
+            wnd.playReplayTurn(start);
+        }
+    }
+
+    function replayTurnClosed(had_events) {
+        if (!battleReplay.active || !battleReplay.playing) {
+            return;
+        }
+        var next = battleReplay.turn + 1;
+        if (next > battleReplay.max_turn) {
+            setBattleReplayState(false, battleReplay.turn);
+            return;
+        }
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (wnd) {
+            wnd.scheduleReplayTurn(had_events ? 0 : 2000);
+        }
     }
 
     property int needTopList: 0;

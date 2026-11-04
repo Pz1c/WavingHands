@@ -15,8 +15,9 @@ Item {
     // Set while this row is being moved by mainWindow.gesturesScrollX, so the move is not
     // reported back as a user scroll (which would echo between the rows forever).
     property bool gesturesScrollInhibit: false
+    property var replayGestureHighlights: ({})
     property int l_damageSeq: 0
-    property int l_hpDisplay: l_warlock.hp
+    property int l_hpDisplay: parseInt(l_warlock.hp, 10) || 0
     property bool l_surrendered: (l_warlock.status || "").toLowerCase().indexOf("surrender") !== -1
     property bool l_dead: (parseInt(l_warlock.hp, 10) <= 0) && !l_surrendered
 
@@ -319,7 +320,7 @@ Item {
 
     LargeText {
        id: ltName
-       text: l_warlock.name
+       text: l_warlock.name || ""
        anchors.top: parent.top
        anchors.horizontalCenter: parent.horizontalCenter
        height: 36 * l_ratio
@@ -402,7 +403,7 @@ Item {
         anchors.right: parent.right
         anchors.rightMargin: 6 * l_ratio
         visible: l_warlock.banked_spell !== ""
-        checkbox: l_warlock.player
+        checkbox: l_warlock.player === true
         checked: false
         l_data: ({action:"banked",value:l_warlock.banked_spell,checked:false})
 
@@ -624,6 +625,9 @@ Item {
                 id: lwiGesture
                 height: svGestures.height
                 width: 90 * l_ratio
+                property bool replayTurn: mainWindow.battleReplay.active &&
+                        (lwGestures.model[index] &&
+                         (lwGestures.model[index].t === mainWindow.battleReplay.turn))
 
                 IconInfo {
                     id: iiHL
@@ -645,14 +649,14 @@ Item {
                     active: true
                     radius: 20
                     gradient: Gradient {
-                            GradientStop { position: 0.0;  color: lwGestures.model[index].la ? "#E7FFFF" : "#756F79" }
-                            GradientStop { position: lwGestures.model[index].la ? 0.25 : 0.15; color: lwGestures.model[index].la ? "#E7FFFF" : "#544653" }
-                            GradientStop { position: 1.0;  color: lwGestures.model[index].la ? "#FEE2D6" : "#544653" }
+                            GradientStop { position: 0.0;  color: (replayFlag(lwGestures.model[index], "la") || lwiGesture.replayTurn) ? "#E7FFFF" : "#756F79" }
+                            GradientStop { position: (replayFlag(lwGestures.model[index], "la") || lwiGesture.replayTurn) ? 0.25 : 0.15; color: (replayFlag(lwGestures.model[index], "la") || lwiGesture.replayTurn) ? "#E7FFFF" : "#544653" }
+                            GradientStop { position: 1.0;  color: (replayFlag(lwGestures.model[index], "la") || lwiGesture.replayTurn) ? "#FEE2D6" : "#544653" }
                         }
 
                     // the turn news lights the spell's letters up one by one, each one pops
                     SequentialAnimation on scale {
-                        running: lwGestures.model[index].lp === true
+                        running: replayFlag(lwGestures.model[index], "lp") === true
                         NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
                         NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
                     }
@@ -683,13 +687,13 @@ Item {
                     active: true
                     radius: 20
                     gradient: Gradient {
-                        GradientStop { position: 0.0;  color: lwGestures.model[index].ra ? "#E7FFFF" : "#756F79" }
-                        GradientStop { position: lwGestures.model[index].ra ? 0.25 : 0.15; color: lwGestures.model[index].ra ? "#E7FFFF" : "#544653" }
-                        GradientStop { position: 1.0;  color: lwGestures.model[index].ra ? "#FEE2D6" : "#544653" }
+                        GradientStop { position: 0.0;  color: (replayFlag(lwGestures.model[index], "ra") || lwiGesture.replayTurn) ? "#E7FFFF" : "#756F79" }
+                        GradientStop { position: (replayFlag(lwGestures.model[index], "ra") || lwiGesture.replayTurn) ? 0.25 : 0.15; color: (replayFlag(lwGestures.model[index], "ra") || lwiGesture.replayTurn) ? "#E7FFFF" : "#544653" }
+                        GradientStop { position: 1.0;  color: (replayFlag(lwGestures.model[index], "ra") || lwiGesture.replayTurn) ? "#FEE2D6" : "#544653" }
                     }
 
                     SequentialAnimation on scale {
-                        running: lwGestures.model[index].rp === true
+                        running: replayFlag(lwGestures.model[index], "rp") === true
                         NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
                         NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
                     }
@@ -701,6 +705,7 @@ Item {
                         }
                     }
                 }
+
             }
         }
     }
@@ -818,8 +823,6 @@ Item {
         anchors.left: parent.left
         color: "#FEE2D6"
     }
-
-    Component.onCompleted: finishWarlockCreation();
 
     function showHideSummonIcon(spell) {
         if (!l_warlock.player || !spell) {
@@ -1048,6 +1051,23 @@ Item {
         }
     }
 
+    // Replay keeps the full strip; turn-news frames only override the cell
+    // flags through replayGestureHighlights.
+    function replayHighlightsByTurn(data) {
+        var res = {};
+        if (data) {
+            for (var i = 0; i < data.length; ++i) {
+                res[data[i].t] = data[i];
+            }
+        }
+        return res;
+    }
+
+    function replayFlag(cell, name) {
+        var hi = replayGestureHighlights[cell.t];
+        return hi ? hi[name] : cell[name];
+    }
+
     function highlightAction(a) {
         console.log("Warlock.highlightAction", a.object_type, a.object);
         if (a.object_type === "warlock") {
@@ -1057,6 +1077,10 @@ Item {
                 paHPHighlight.restart();
                 break;
             case "gestures":
+                if (mainWindow.battleReplay.active) {
+                    replayGestureHighlights = replayHighlightsByTurn(a.data);
+                    break;
+                }
                 lwGestures.model = a.data;
                 scrollGestures();
                 break;
@@ -1084,6 +1108,10 @@ Item {
                 iiHP.color = iiHP.bg_color;
                 break;
             case "gestures":
+                if (mainWindow.battleReplay.active) {
+                    replayGestureHighlights = ({});
+                    break;
+                }
                 lwGestures.model = l_warlock.print_g;
                 scrollGestures();
                 break;
@@ -1235,12 +1263,49 @@ Item {
 
     // Show the newest turn: the longest strip sets the shared offset, every other row follows it.
     function scrollGestures() {
+        if (mainWindow.battleReplay.active) {
+            applyGesturesScroll(mainWindow.gesturesScrollX);
+            return;
+        }
         var max_x = Math.max(0, lwGestures.contentWidth - lwGestures.width);
         if (max_x > mainWindow.gesturesScrollX) {
             mainWindow.gesturesScrollX = max_x;
         } else {
             applyGesturesScroll(mainWindow.gesturesScrollX);
         }
+    }
+
+    function setReplayGestures() {
+        lwGestures.model = l_warlock.print_g;
+        replayGestureHighlights = ({});
+        applyGesturesScroll(mainWindow.gesturesScrollX);
+    }
+
+    // Keep the replay cursor inside this strip. The offset is shared, so
+    // adjusting it on one row moves every row to the same turn.
+    function ensureReplayCursorVisible() {
+        if (!mainWindow.battleReplay.active || !lwGestures) {
+            return;
+        }
+        var turn = mainWindow.battleReplay.turn;
+        if (turn < 1) {
+            return;
+        }
+        var cell = 90 * l_ratio;
+        var cursor_x = (turn - 1) * cell;
+        var view = lwGestures.width;
+        if (view <= 0) {
+            return;
+        }
+        var offset = mainWindow.gesturesScrollX;
+        if (offset > cursor_x) {
+            offset = cursor_x;
+        }
+        if ((offset + view) < (cursor_x + cell)) {
+            offset = cursor_x + cell - view;
+        }
+        offset = Math.max(0, Math.min(offset, Math.max(0, lwGestures.contentWidth - view)));
+        mainWindow.gesturesScrollX = offset;
     }
 
     function prepareDynamic(type, arr, parent, code_value, start_x, incerment) {
@@ -1392,6 +1457,7 @@ Item {
 
     function finishWarlockCreation() {
         console.log("finishWarlockCreation", JSON.stringify(l_warlock));
+        lwGestures.model = l_warlock.print_g;
         l_hpDisplay = l_warlock.hp;
         l_dead = finalWarlockDead();
         scrollGestures();

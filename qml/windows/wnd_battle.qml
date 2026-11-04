@@ -33,12 +33,107 @@ BaseWindow {
     //property int delayR: 0
     property var target: ({target_name:""})
 
+    Shortcut {
+        sequence: "Space"
+        enabled: mainWindow.battleReplay.active
+        onActivated: mainWindow.toggleBattleReplay()
+    }
+
     // This rectangle is the actual popup
     Item {
         id: battleWindow
         z: 11
         anchors.fill: content_item
         //color: "transparent"
+
+        Item {
+            id: iReplayPanel
+            visible: mainWindow.battleReplay.active
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: 12 * mainWindow.ratioObject
+            anchors.rightMargin: 12 * mainWindow.ratioObject
+            width: iReplayControls.width + 24 * mainWindow.ratioObject
+            height: iReplayControls.height + 24 * mainWindow.ratioObject
+            z: 1002
+
+            Row {
+                id: iReplayControls
+                anchors.centerIn: parent
+                spacing: 12 * mainWindow.ratioObject
+
+                Rectangle {
+                    id: bbReplayPrev
+                    width: 64 * mainWindow.ratioObject
+                    height: 64 * mainWindow.ratioObject
+                    radius: 10 * mainWindow.ratioObject
+                    color: "transparent"
+                    opacity: (mainWindow.battleReplay.turn > 0 &&
+                              !mainWindow.battleReplay.loading) ? 1 : 0.35
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "\u23EE"
+                        color: "#A8F4F4"
+                        font.pixelSize: 28 * mainWindow.ratioFont
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: mainWindow.battleReplay.turn > 0 &&
+                                 !mainWindow.battleReplay.loading
+                        onClicked: mainWindow.stepBattleReplay(-1)
+                    }
+                }
+
+                Rectangle {
+                    id: bbReplayMedia
+                    width: 64 * mainWindow.ratioObject
+                    height: 64 * mainWindow.ratioObject
+                    radius: width / 2
+                    color: "transparent"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: mainWindow.battleReplay.playing ? "\u25A0" : "\u25B6"
+                        color: "#A8F4F4"
+                        font.pixelSize: 32 * mainWindow.ratioFont
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: !mainWindow.battleReplay.loading
+                        onClicked: mainWindow.toggleBattleReplay()
+                    }
+                }
+
+                Rectangle {
+                    id: bbReplayNext
+                    width: 64 * mainWindow.ratioObject
+                    height: 64 * mainWindow.ratioObject
+                    radius: 10 * mainWindow.ratioObject
+                    color: "transparent"
+                    opacity: (mainWindow.battleReplay.turn <
+                              mainWindow.battleReplay.max_turn &&
+                              !mainWindow.battleReplay.loading) ? 1 : 0.35
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "\u23ED"
+                        color: "#A8F4F4"
+                        font.pixelSize: 28 * mainWindow.ratioFont
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: mainWindow.battleReplay.turn <
+                                 mainWindow.battleReplay.max_turn &&
+                                 !mainWindow.battleReplay.loading
+                        onClicked: mainWindow.stepBattleReplay(1)
+                    }
+                }
+            }
+        }
 
         ScrollView {
             id: bfWarlocks
@@ -424,7 +519,8 @@ BaseWindow {
                 property var tutorialData: ([])
                 property int tutorialDataIdx: 0
                 property alias text: ltTTT.text
-                property bool tutorialMode: mainWindow.gBattle ? mainWindow.gBattle.turn_num === 1 : false
+                property bool tutorialMode: mainWindow.gBattle ?
+                        (mainWindow.gBattle.turn_num === 1 && !mainWindow.gBattle.replay) : false
                 // never let the auto-play fire into a closed banner
                 onVisibleChanged: {
                     if (!visible) {
@@ -604,6 +700,26 @@ BaseWindow {
         }
     }
 
+    // Empty replay turns stay on screen for two seconds; turns with events
+    // advance as soon as their news finishes.
+    Timer {
+        id: tReplayDelay
+        interval: 2000
+        repeat: false
+        running: false
+        onTriggered: {
+            if (!mainWindow.battleReplay.active || !mainWindow.battleReplay.playing) {
+                return;
+            }
+            var next = mainWindow.battleReplay.turn + 1;
+            if (next > mainWindow.battleReplay.max_turn) {
+                mainWindow.setBattleReplayState(false, mainWindow.battleReplay.turn);
+                return;
+            }
+            playReplayTurn(next);
+        }
+    }
+
     property int readyWarlocks: 0
     property int readyWindow: 0
     // Blocks a second submit while the board waits for TURNREADY.
@@ -669,7 +785,7 @@ BaseWindow {
     // arm/stop the turn-news auto-play after every step: keep playing while the banner is
     // open; the turn-1 tutorial (play instructions) stays click-driven, never auto-plays
     function armHintAuto() {
-        if (mainWindow.gBattle.turn_num === 1) {
+        if (!mainWindow.gBattle.replay && (mainWindow.gBattle.turn_num === 1)) {
             tHintAuto.stop();
             return;
         }
@@ -682,6 +798,7 @@ BaseWindow {
 
     onCancel: {
         tHintAuto.stop();
+        tReplayDelay.stop();
         mainWindow.processEscape();
     }
 
@@ -942,6 +1059,87 @@ BaseWindow {
         BU.prepareOrder();
     }
 
+    function playReplayTurn(turn) {
+        if (!mainWindow.battleReplay.active || !BU.battle) {
+            return;
+        }
+        tReplayDelay.stop();
+        if ((turn < 1) || (turn > mainWindow.battleReplay.max_turn)) {
+            mainWindow.setBattleReplayState(false, mainWindow.battleReplay.turn);
+            return;
+        }
+
+        var turn_rows = mainWindow.gameCore.battleReplayTurn(mainWindow.battleReplay.battle_id, turn);
+        var turn_history = JSON.parse(turn_rows || "[]");
+
+        mainWindow.setBattleReplayState(true, turn);
+        BU.battle.replay = true;
+        BU.battle.read_only = true;
+        BU.battle.turn_num = turn;
+        BU.battle.last_turn_hist = turn_history;
+        BU.battle.hint = [];
+        BU.setReplayTurn(turn);
+        refreshReplayGestures();
+        scrollReplayCursor();
+
+        BU.prepareTurnActionInfo(BU.battle.last_turn_hist);
+        if (!BU.battle.hint || (BU.battle.hint.length === 0)) {
+            mainWindow.replayTurnClosed(false);
+            return;
+        }
+        BU.prepareHint();
+    }
+
+    function refreshReplayGestures() {
+        for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+            var ww = iWarlocks.children[i];
+            if (ww && ww.setReplayGestures) {
+                ww.setReplayGestures();
+            }
+        }
+    }
+
+    function scrollReplayCursor() {
+        if (iWarlocks.children.length > 0) {
+            var ww = iWarlocks.children[0];
+            if (ww && ww.ensureReplayCursorVisible) {
+                ww.ensureReplayCursorVisible();
+            }
+        }
+    }
+
+    function scheduleReplayTurn(delay) {
+        tReplayDelay.interval = delay;
+        tReplayDelay.restart();
+    }
+
+    function stopReplay() {
+        // Stop now; Play reloads the current turn from its snapshot.
+        cancelReplayPlayback();
+    }
+
+    function cancelReplayPlayback() {
+        tHintAuto.stop();
+        tReplayDelay.stop();
+        BWU.stopHintAnimation();
+        ltTutorial.visible = false;
+    }
+
+    function resetReplayBoardView() {
+        BU.resetReplayBoard(mainWindow.gBattle);
+        BU.applyBattle();
+        BU.setReplayTurn(mainWindow.battleReplay.turn);
+        refreshReplayGestures();
+        scrollReplayCursor();
+    }
+
+    function reloadReplayBoard() {
+        BU.applyBattle();
+        BU.setReplayTurn(mainWindow.battleReplay.turn);
+        refreshReplayGestures();
+        scrollReplayCursor();
+    }
+
     function showWnd() {
         initBattleFields();
         visible = true;
@@ -949,6 +1147,8 @@ BaseWindow {
 
     function hideWnd() {
         waitingForTurn = false;
+        tHintAuto.stop();
+        tReplayDelay.stop();
         visible = false;
         mainWindow.battleWindowHidden();
     }
@@ -966,15 +1166,24 @@ BaseWindow {
         BWU.stopHintAnimation();
         title_text = dict.getStringByCode("BattleTitle").replace("%1", mainWindow.gBattle.id);
         rTT.visible = false;
+        if (mainWindow.gBattle.replay && (mainWindow.battleReplay.turn === 0)) {
+            BU.resetReplayBoard(mainWindow.gBattle);
+        }
         BU.applyBattle();
+        if (mainWindow.gBattle.replay) {
+            BU.setReplayTurn(mainWindow.battleReplay.turn);
+            refreshReplayGestures();
+        }
         battleChanged();
-        if (/*true || */!mainWindow.gBattle.with_bot) {
+        if (!mainWindow.gBattle.with_bot) {
             iiChat.visible = true;
             iiSpellbook.anchors.rightMargin = (32 + 78 + 32) * mainWindow.ratioObject;
         } else {
             iiChat.visible = false;
             iiSpellbook.anchors.rightMargin = 32 * mainWindow.ratioObject;
         }
+        iiSpellbook.visible = true;
+        iiScroll.visible = true;
 
         if (mainWindow.gameCore.isAI) {
             sendOrders();
