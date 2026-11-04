@@ -251,6 +251,23 @@ function findTurnNewsTargetObject(target) {
     return null;
 }
 
+function getTurnNewsTargetInfo(name) {
+    if (!name) {
+        return null;
+    }
+    for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
+        var w = battle.warlocks[i];
+        if (w && (w.name === name)) {
+            return {type:"warlock", owner:w.name, name:w.name};
+        }
+    }
+    var owner = getMonsterOwnerName(name);
+    if (owner) {
+        return {type:"monster", owner:owner, name:name};
+    }
+    return {type:"warlock", owner:name, name:name};
+}
+
 function cloneTurnNewsElemental(el) {
     var hp = el ? parseInt(el.hp, 10) : 0;
     if (isNaN(hp) || (hp < 0)) {
@@ -606,7 +623,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                     continue;
                 }
                 var candidate = active_casts[effect_spell + "|" + effect_target];
-                if (!candidate && !effect_target) {
+                if (!candidate && (!effect_target || (effect_spell === "Dispel Magic"))) {
                     candidate = active_casts_by_spell[effect_spell];
                 }
                 if (candidate &&
@@ -617,6 +634,27 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             if (effect_cast) {
                 if (effect_reflection) {
                     delete reflected_casts[effect_reflection_spell];
+                }
+                if (effect_spells.indexOf("Dispel Magic") !== -1) {
+                    if (!effect_cast.row.new_action) {
+                        effect_cast.row.new_action = [];
+                    }
+                    effect_cast.row.new_action.push({action:"dispel_magic"});
+                } else if (effect_spells.indexOf("Remove Enchantment") !== -1) {
+                    var remove_target = effect_target ||
+                            (effect_cast.row.obj ? normalizeTurnNewsName(effect_cast.row.obj.target) : "");
+                    var remove_info = getTurnNewsTargetInfo(remove_target);
+                    if (remove_info) {
+                        if (!effect_cast.row.new_action) {
+                            effect_cast.row.new_action = [];
+                        }
+                        effect_cast.row.new_action.push({
+                            action:"remove_enchantments",
+                            object_type:remove_info.type,
+                            object:remove_info.name,
+                            warlock_name:remove_info.owner
+                        });
+                    }
                 }
                 row.turn_news_hidden = true;
             }
@@ -667,6 +705,17 @@ function addTurnNewsHeal(cause_row, heal_row, target, amount) {
     var action = {action:"heal", warlock_name:target.owner,
                   object_type:target.type, object:target.name, amount:amount};
     cause_row.new_action.push(action);
+
+    if ((target.type === "warlock") && cause_row.obj &&
+            (cause_row.obj.spell === "Cure Heavy Wounds")) {
+        cause_row.new_action.push({
+            action:"status_remove",
+            warlock_name:target.name,
+            object_type:"status",
+            object:"disease",
+            defer_to_end:true
+        });
+    }
 
     if (heal_row !== cause_row) {
         var actions = heal_row.new_action || [];
@@ -1408,6 +1457,8 @@ function prepareTurnActionInfo(last_turn_hist) {
         battle.hint = [];
         return;
     }
+    battle.dispel_magic_turn = false;
+    battle.remove_enchantment_targets = {};
     console.log("battle_utils.prepareTurnActionInfo", JSON.stringify(last_turn_hist), JSON.stringify(battle.hint));
     var new_hint = [], i, Ln;
     for(i = 0, Ln = battle.hint.length; i < Ln; ++i) {
