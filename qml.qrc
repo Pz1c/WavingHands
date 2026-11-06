@@ -100,6 +100,7 @@
         <file>res/wizard_green.png</file>
         <file>res/wizard_grey.png</file>
         <file>res/wizard_brown.png</file>
+        <file>res/wizard_golem.png</file>
         <file>res/glow.png</file>
         <file>qml/components/InfoWindow.qml</file>
         <file>qml/windows/wnd_spell.qml</file>

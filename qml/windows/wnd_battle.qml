@@ -18,7 +18,7 @@ BaseWindow {
     title_height_prc: 0
     control_height_prc: 0
     with_action1: false
-    action1_text: "Chat"
+    action1_text: dict.getStringByCode("Chat")
     bg_source: "qrc:/res/background_battle.png"
 
     property int operationMode: 0
@@ -33,12 +33,107 @@ BaseWindow {
     //property int delayR: 0
     property var target: ({target_name:""})
 
+    Shortcut {
+        sequence: "Space"
+        enabled: mainWindow.battleReplay.active
+        onActivated: mainWindow.toggleBattleReplay()
+    }
+
     // This rectangle is the actual popup
     Item {
         id: battleWindow
         z: 11
         anchors.fill: content_item
         //color: "transparent"
+
+        Item {
+            id: iReplayPanel
+            visible: mainWindow.battleReplay.active
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: 12 * mainWindow.ratioObject
+            anchors.rightMargin: 12 * mainWindow.ratioObject
+            width: iReplayControls.width + 24 * mainWindow.ratioObject
+            height: iReplayControls.height + 24 * mainWindow.ratioObject
+            z: 1002
+
+            Row {
+                id: iReplayControls
+                anchors.centerIn: parent
+                spacing: 12 * mainWindow.ratioObject
+
+                Rectangle {
+                    id: bbReplayPrev
+                    width: 64 * mainWindow.ratioObject
+                    height: 64 * mainWindow.ratioObject
+                    radius: 10 * mainWindow.ratioObject
+                    color: "transparent"
+                    opacity: (mainWindow.battleReplay.turn > 0 &&
+                              !mainWindow.battleReplay.loading) ? 1 : 0.35
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "\u23EE"
+                        color: "#A8F4F4"
+                        font.pixelSize: 28 * mainWindow.ratioFont
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: mainWindow.battleReplay.turn > 0 &&
+                                 !mainWindow.battleReplay.loading
+                        onClicked: mainWindow.stepBattleReplay(-1)
+                    }
+                }
+
+                Rectangle {
+                    id: bbReplayMedia
+                    width: 64 * mainWindow.ratioObject
+                    height: 64 * mainWindow.ratioObject
+                    radius: width / 2
+                    color: "transparent"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: mainWindow.battleReplay.playing ? "\u25A0" : "\u25B6"
+                        color: "#A8F4F4"
+                        font.pixelSize: 32 * mainWindow.ratioFont
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: !mainWindow.battleReplay.loading
+                        onClicked: mainWindow.toggleBattleReplay()
+                    }
+                }
+
+                Rectangle {
+                    id: bbReplayNext
+                    width: 64 * mainWindow.ratioObject
+                    height: 64 * mainWindow.ratioObject
+                    radius: 10 * mainWindow.ratioObject
+                    color: "transparent"
+                    opacity: (mainWindow.battleReplay.turn <
+                              mainWindow.battleReplay.max_turn &&
+                              !mainWindow.battleReplay.loading) ? 1 : 0.35
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "\u23ED"
+                        color: "#A8F4F4"
+                        font.pixelSize: 28 * mainWindow.ratioFont
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: mainWindow.battleReplay.turn <
+                                 mainWindow.battleReplay.max_turn &&
+                                 !mainWindow.battleReplay.loading
+                        onClicked: mainWindow.stepBattleReplay(1)
+                    }
+                }
+            }
+        }
 
         ScrollView {
             id: bfWarlocks
@@ -47,27 +142,102 @@ BaseWindow {
             anchors.right: parent.right
             anchors.bottom: bfAll.top
             contentWidth: -1
-            contentHeight: iWarlocks.height
-
-            Rectangle {
-                id: rTutOverlay
-                anchors.fill: parent
-                color: "black"
-                opacity: 0.5
-                visible: ltTutorial.visible
-                z:1000
-
-                MouseArea {
-                    id: maTutOver
-                    anchors.fill: parent
-                }
-            }
+            contentHeight: iBoardContent.height
 
             Item {
-                id: iWarlocks
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
+                id: iBoardContent
+                width: bfWarlocks.width
+                height: iElementalHeader.height + iWarlocks.height
+
+                Item {
+                    id: iElementalHeader
+                    width: parent.width
+                    height: iiElemental.visible ? 84 * mainWindow.ratioObject : 0
+
+                    IconInfo {
+                        id: iiElemental
+                        source: "qrc:/res/elemental_fire.png";
+                        text: "3"
+                        height: 78 * mainWindow.ratioObject
+                        width: height
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 6 * mainWindow.ratioObject
+                        radius: 10
+                        visible: false
+
+                        function highlightNews(news_color) {
+                            border.color = news_color;
+                            border.width = 3 * mainWindow.ratioObject;
+                            paElementalHighlight.restart();
+                        }
+
+                        function restoreNews() {
+                            paElementalHighlight.stop();
+                            scale = 1;
+                            border.width = 0;
+                        }
+
+                        SequentialAnimation {
+                            id: paElementalHighlight
+
+                            PropertyAnimation {
+                                target: iiElemental
+                                property: "scale"
+                                from: 1
+                                to: 1.12
+                                duration: 160
+                                easing.type: Easing.OutQuad
+                            }
+                            PropertyAnimation {
+                                target: iiElemental
+                                property: "scale"
+                                from: 1.12
+                                to: 1
+                                duration: 160
+                                easing.type: Easing.InQuad
+                            }
+                        }
+
+                        onClicked: {
+                            iconClick(iiElemental.l_data)
+                        }
+
+                        onDoubleClicked: {
+                            iconDoubleClick(iiElemental.l_data)
+                        }
+                    }
+
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 2 * mainWindow.ratioObject
+                        color: "#FEE2D6"
+                        visible: iiElemental.visible
+                    }
+                }
+
+                Item {
+                    id: iWarlocks
+                    anchors.top: iElementalHeader.bottom
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                }
+            }
+        }
+
+        Rectangle {
+            id: rTutOverlay
+            anchors.fill: bfWarlocks
+            color: "black"
+            opacity: 0.5
+            visible: ltTutorial.visible
+            z: 1000
+
+            MouseArea {
+                id: maTutOver
+                anchors.fill: parent
             }
         }
 
@@ -178,12 +348,15 @@ BaseWindow {
 
                 color: "transparent"
                 text_color: active ? "#A8F4F4" : "#544653"
-                text: "Submit"
+                text: dict.getStringByCode("Submit")
 
                 onClicked: {
                     console.log("wnd_battle.bbSendOrders", mainWindow.gBattle.read_only, JSON.stringify(mainWindow.gBattle.actions));
                     if (mainWindow.gBattle.read_only) {
                         mainWindow.processEscape();
+                        return;
+                    }
+                    if (waitingForTurn) {
                         return;
                     }
 
@@ -216,7 +389,7 @@ BaseWindow {
 
                 color: "transparent"
                 text_color: active ? "#A8F4F4" : "#544653"
-                text: "Done"
+                text: dict.getStringByCode("Done")
 
                 onClicked: {
                     console.log("bbChooseTarget.Clicked", JSON.stringify(mainWindow.gBattle.actions), JSON.stringify(target));
@@ -228,27 +401,6 @@ BaseWindow {
                     if ((target.action === "m") && BU.checkIsMonsterCharmed(target)) {
                         target.under_control = true;
                     }
-                }
-            }
-
-            IconInfo {
-                id: iiElemental
-                source: "qrc:/res/elemental_fire.png";
-                text: "3"
-                height: 78 * mainWindow.ratioObject
-                width: height
-                anchors.bottom: rTT.top
-                anchors.bottomMargin: 6 * mainWindow.ratioObject
-                anchors.left: parent.left
-                anchors.leftMargin: 6 * mainWindow.ratioObject
-                radius: 10
-
-                onClicked: {
-                    iconClick(iiElemental.l_data)
-                }
-
-                onDoubleClicked: {
-                    iconDoubleClick(iiElemental.l_data)
                 }
             }
 
@@ -287,7 +439,7 @@ BaseWindow {
                 anchors.bottom: rTT.top
                 anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.left: parent.left
-                anchors.leftMargin: ((iiElemental.visible ? 84: 0) + 6) * mainWindow.ratioObject
+                anchors.leftMargin: 6 * mainWindow.ratioObject
                 visible: false
                 radius: 10
                 l_data: ({action:"hp",warlock_name:"Nobody"})
@@ -310,7 +462,7 @@ BaseWindow {
                 anchors.bottom: rTT.top
                 anchors.bottomMargin: 6 * mainWindow.ratioObject
                 anchors.left: parent.left
-                anchors.leftMargin: ((iiElemental.visible ? 84 : 0) + 6 + 84) * mainWindow.ratioObject
+                anchors.leftMargin: 90 * mainWindow.ratioObject
                 visible: false
                 radius: 10
                 l_data: ({action:"hp",warlock_name:"Default"})
@@ -326,7 +478,8 @@ BaseWindow {
                 id: ltHint
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                anchors.left: iiElemental.right
+                anchors.left: parent.left
+                anchors.leftMargin: 6 * mainWindow.ratioObject
                 anchors.right: bbChooseTarget.horizontalCenter
                 visible: false
                 text: "test hint 01"
@@ -366,29 +519,22 @@ BaseWindow {
                 property var tutorialData: ([])
                 property int tutorialDataIdx: 0
                 property alias text: ltTTT.text
+                property bool tutorialMode: mainWindow.gBattle ?
+                        (mainWindow.gBattle.turn_num === 1 && !mainWindow.gBattle.replay) : false
+                // never let the auto-play fire into a closed banner
+                onVisibleChanged: {
+                    if (!visible) {
+                        tHintAuto.stop();
+                    }
+                }
 
                 MouseArea {
                     id: maTutAll
                     anchors.fill: parent
                     onClicked: {
-                        ltTTT.clicked();
-                    }
-                }
-
-                LargeText {
-                    id: ltTTTPrev
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    anchors.leftMargin: 24 * mainWindow.ratioObject
-                    width: 30 * mainWindow.ratioObject
-                    height: 0.80 * parent.height
-                    fontSizeMode: Text.VerticalFit
-                    text: "<"
-                    color: "#210430"
-                    visible: ltTutorial.tutorialDataIdx > 0
-                    font.pixelSize: 48 * mainWindow.ratioFont
-                    onClicked: {
-                        showTutorialData(-1);
+                        if (ltTutorial.tutorialMode) {
+                            ltTTT.clicked();
+                        }
                     }
                 }
 
@@ -396,9 +542,9 @@ BaseWindow {
                     id: ltTTT
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
-                    anchors.left: ltTTTPrev.right
-                    anchors.leftMargin: 6 * mainWindow.ratioObject
-                    anchors.right: ltTTTNext.left
+                    anchors.left: parent.left
+                    anchors.leftMargin: 24 * mainWindow.ratioObject
+                    anchors.right: ltTTTDone.left
                     anchors.rightMargin: 6 * mainWindow.ratioObject
                     font.pixelSize: 21 * mainWindow.ratioFont
                     text: "test hint 01"
@@ -406,22 +552,27 @@ BaseWindow {
                     wrapMode: Text.Wrap
 
                     onClicked: {
-                        showTutorialData(1);
+                        if (ltTutorial.tutorialMode) {
+                            playNextTurnNewsStep(1);
+                        }
                     }
                 }
 
                 LargeText {
-                    id: ltTTTNext
+                    id: ltTTTDone
+                    property bool lastHint: ltTutorial.tutorialDataIdx >= ltTutorial.tutorialData.length - 1
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: iTTIcons.left
                     anchors.rightMargin: 42 * mainWindow.ratioObject
                     width: 30 * mainWindow.ratioObject
-                    height: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 0.80 * parent.height : 0.50 * parent.height
+                    height: 0.50 * parent.height
                     fontSizeMode: Text.VerticalFit
-                    font.underline: !(ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1)
-                    text: ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? ">" : "got it!"
+                    // The auto-played turn news closes itself; only the turn-1 tutorial needs a label.
+                    visible: lastHint && ltTutorial.tutorialMode
+                    font.underline: true
+                    text: dict.getStringByCode("TutorialGotIt")
                     color: "#210430"
-                    font.pixelSize: (ltTutorial.tutorialDataIdx < ltTutorial.tutorialData.length - 1 ? 48 : 21) * mainWindow.ratioFont
+                    font.pixelSize: 21 * mainWindow.ratioFont
                     onClicked: {
                         ltTTT.clicked();
                     }
@@ -522,6 +673,8 @@ BaseWindow {
         onTriggered: {
             console.log("battle.prepareHintWithCheck", "run prepareHint");
             BU.prepareHint();
+            // arm the auto-play right after the banner was shown (if it was shown at all)
+            armHintAuto();
         }
     }
 
@@ -535,21 +688,117 @@ BaseWindow {
         }
     }
 
+    // Auto-play the turn news: one event every two seconds, no clicking needed.
+    // The turn-1 tutorial stays manual (see playNextTurnNewsStep).
+    Timer {
+        id: tHintAuto
+        interval: 2000
+        repeat: false
+        running: false
+        onTriggered: {
+            playNextTurnNewsStep(1);
+        }
+    }
+
+    // Empty replay turns stay on screen for two seconds; turns with events
+    // advance as soon as their news finishes.
+    Timer {
+        id: tReplayDelay
+        interval: 2000
+        repeat: false
+        running: false
+        onTriggered: {
+            if (!mainWindow.battleReplay.active || !mainWindow.battleReplay.playing) {
+                return;
+            }
+            var next = mainWindow.battleReplay.turn + 1;
+            if (next > mainWindow.battleReplay.max_turn) {
+                mainWindow.setBattleReplayState(false, mainWindow.battleReplay.turn);
+                return;
+            }
+            playReplayTurn(next);
+        }
+    }
+
     property int readyWarlocks: 0
     property int readyWindow: 0
+    // Blocks a second submit while the board waits for TURNREADY.
+    property bool waitingForTurn: false
+
+    // While the board waits for the opponent, refresh only the game list.
+    // The battle page is fetched by main.qml when this battle appears ready.
+    Timer {
+        id: tWaitBattle
+        interval: 2000
+        repeat: true
+        running: visible && waitingForTurn
+        onTriggered: {
+            if (!mainWindow.gameCore.isLoading) {
+                mainWindow.gameCore.scanState(true);
+            }
+        }
+    }
+
     function prepareHintWithCheck() {
-        console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
-        if (++readyWarlocks >= mainWindow.gBattle.size) {
+        var shownWarlocks = mainWindow.gBattle.shown_warlocks;
+        if (shownWarlocks === undefined) {
+            shownWarlocks = mainWindow.gBattle.size;
+        }
+        console.log("battle.prepareHintWithCheck", readyWarlocks, shownWarlocks);
+        if (++readyWarlocks >= shownWarlocks) {
             readyWarlocks = 0;
+            if (mainWindow.gBattle.read_only || !mainWindow.gBattle.hint ||
+                    mainWindow.gBattle.hint.length === 0) {
+                BWU.showWarockFinalPlaceholders();
+            }
             tHintDelay.start();
         }
     }
 
-    function showTutorialData(diff, skip_restore) {
-        BWU.showTutorialData(diff, skip_restore);
+    function playNextTurnNewsStep(diff, skip_restore) {
+        // Hide the banner before the silent step is processed, so the death
+        // message never flashes.
+        var nextHint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx + diff];
+        if (nextHint && nextHint.turn_news_silent) {
+            ltTutorial.visible = false;
+        }
+
+        var hint = BWU.moveToHintStep(diff, skip_restore);
+        if (!hint) {
+            return;
+        }
+
+        if (hint.turn_news_silent) {
+            // Death actions are already applied. Advance immediately instead
+            // of waiting for the two-second auto-play timer.
+            ltTutorial.visible = false;
+            Qt.callLater(function() {
+                playNextTurnNewsStep(1, true);
+            });
+            return;
+        }
+
+        ltTutorial.visible = true;
+        armHintAuto();
+    }
+
+    // arm/stop the turn-news auto-play after every step: keep playing while the banner is
+    // open; the turn-1 tutorial (play instructions) stays click-driven, never auto-plays
+    function armHintAuto() {
+        if (!mainWindow.gBattle.replay && (mainWindow.gBattle.turn_num === 1)) {
+            tHintAuto.stop();
+            return;
+        }
+        if (ltTutorial.visible) {
+            tHintAuto.restart();
+        } else {
+            tHintAuto.stop();
+        }
     }
 
     onCancel: {
+        tHintAuto.stop();
+        tReplayDelay.stop();
         mainWindow.processEscape();
     }
 
@@ -577,7 +826,7 @@ BaseWindow {
                 target.target_name = data.action === "hp" ? data.warlock_name : data.name;
                 tTargetTitle.text = getTargetTitle(operationMode === 1, currentSpell.n);
             } else {
-                mainWindow.showErrorWnd({type:0,text:"Please choose Warlock or Monster as Spell target",title:"Wrong target"});
+                mainWindow.showErrorWnd({type:0,text:dict.getStringByCode("WrongTargetText"),title:dict.getStringByCode("WrongTargetTitle")});
             }
         } else /*if (data.action === "m") {
             data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
@@ -586,12 +835,12 @@ BaseWindow {
         } else */if (data.action === "banked") {
             mainWindow.gBattle.actions.F = data.checked ? 1 : 0;
             if (data.checked) {
-                showShortHint("Banked "+data.value+" will be fired");
+                showShortHint(dict.getStringByCode("BankedWillFire").replace("%1", data.value));
             } else {
-                showShortHint("Do not fire banked spell: " + data.value);
+                showShortHint(dict.getStringByCode("BankedNotFire").replace("%1", data.value));
             }
         } else if (data.action === "banked_info") {
-            showShortHint(data.warlock_name + " banked a " + data.value);
+            showShortHint(dict.getStringByCode("BankedBy").replace("%1", data.warlock_name).replace("%2", data.value));
         } else if (delay && (data.action === "delay")) {
             mainWindow.cleanDelay();
         } else if (permanency && (data.action === "permanency")) {
@@ -623,15 +872,15 @@ BaseWindow {
         switch(data.action) {
         case "hp":
             msg_type = 4;
-            msg_title = "Warlock's hit point"
-            msg_text = data.value + " damage to death";
+            msg_title = dict.getStringByCode("WarlockHPTitle")
+            msg_text = dict.getStringByCode("WarlockHPText").replace("%1", data.value);
             break;
         case "m":
             msg_type = 4;
-            msg_title = "Monster"
+            msg_title = dict.getStringByCode("Monster")
             msg_text = data.name;
             if (data.owner !== "Nobody") {
-                msg_text += " (owner by "+data.owner+")";
+                msg_text += dict.getStringByCode("MonsterOwnedBy").replace("%1", data.owner);
                 console.log("get target", JSON.stringify(mainWindow.gBattle.actions), mainWindow.gBattle.actions.M[data.action_idx].target);
                 data.target = mainWindow.gBattle.actions.M[data.action_idx].target;
                 //data.allow_choose_target = mainWindow.gBattle.actions.M[data.action_idx].allow_choose_target;
@@ -643,22 +892,22 @@ BaseWindow {
                 msg_text += " " + data.status;
             }
             if (data.target) {
-                msg_text += " attack " + data.target;
+                msg_text += dict.getStringByCode("MonsterAttack").replace("%1", data.target);
             }
             break;
         case "banked":
-            msg_title = "Banked spell";
-            msg_text = data.value + "<br>To get delayed spell cast Delay Effect DWSSSP<br>" + dict.getStringByCode("DWSSSP_desc");
+            msg_title = dict.getStringByCode("BankedSpellTitle");
+            msg_text = dict.getStringByCode("BankedSpellText").replace("%1", data.value) + dict.getStringByCode("DWSSSP_desc");
             break;
         default: // spell
             msg_type = 7
-            spell_code = BU.getIconStatusSpell(data.action);
+            spell_code = BU.getIconStatusSpell(data.action, data.value);
             if (spell_code) {
                 msg_title = dict.getStringByCode(spell_code);
                 msg_text  = dict.getStringByCode(spell_code + "_desc");
             } else {
                 spell_code = "PSDF";
-                msg_title  = "Charm";
+                msg_title  = dict.getStringByCode("Charm");
                 msg_text   = data.action;
             }
             break;
@@ -687,9 +936,9 @@ BaseWindow {
                 var txt = "";//"Select target for " + Title;
                 if (IsSpell) {
                     if (mainWindow.gBattle.player_has_bank) {
-                        txt = "To bank a "+Title+", click the bank icon and then choose a target";
+                        txt = dict.getStringByCode("HintBankSpell").replace("%1", Title);
                     } else if (mainWindow.gBattle.player_has_permanency) {
-                        txt = "To make "+Title+" permanent, click the permanency icon and then choose a target";
+                        txt = dict.getStringByCode("HintPermanentSpell").replace("%1", Title);
                     } else if (Title !== "Counter Spell") {
                         //txt += " spell";
                     }
@@ -753,18 +1002,23 @@ BaseWindow {
     }
 
     function setGesture(gesture, is_maladroit) {
-        iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture), gesture);
-        if (is_maladroit || (gesture === "C")) {
-            iWarlocks.children[0].setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture), gesture);
+        var ww = iWarlocks.children[0];
+        ww.setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture), gesture);
+        if ((is_maladroit || (gesture === "C")) && !ww.l_warlock.control_paralyze && !ww.l_warlock.control_charmed) {
+            ww.setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture), gesture, true);
         }
     }
 
     function setCharm(hand, gesture) {
+        if (!BU.battle.currentCharm) {
+            console.log("setCharm: currentCharm is missing", hand, gesture);
+            return;
+        }
         if (BU.battle.currentCharm.warlock_idx > 0) {
             console.log(BU.battle.currentCharm.warlock_idx, "try to find", JSON.stringify(BU.battle.currentCharm));
             var ww = iWarlocks.children[BU.battle.currentCharm.warlock_idx];
             if (ww && ww.l_warlock) {
-                ww.setGesture(hand.substr(0, 1), "g_" + BU.getIconByGesture(gesture));
+                ww.setGesture(hand.substr(0, 1), "g_" + BU.getIconByGesture(gesture), gesture, true);
             } else {
                 console.log(BU.battle.currentCharm.warlock_idx, "now found warlock");
             }
@@ -799,7 +1053,91 @@ BaseWindow {
     }
 
     function sendOrders() {
+        if (!mainWindow.gameCore.isAI) {
+            waitingForTurn = true;
+        }
         BU.prepareOrder();
+    }
+
+    function playReplayTurn(turn) {
+        if (!mainWindow.battleReplay.active || !BU.battle) {
+            return;
+        }
+        tReplayDelay.stop();
+        if ((turn < 1) || (turn > mainWindow.battleReplay.max_turn)) {
+            mainWindow.setBattleReplayState(false, mainWindow.battleReplay.turn);
+            return;
+        }
+
+        var turn_rows = mainWindow.gameCore.battleReplayTurn(mainWindow.battleReplay.battle_id, turn);
+        var turn_history = JSON.parse(turn_rows || "[]");
+
+        mainWindow.setBattleReplayState(true, turn);
+        BU.battle.replay = true;
+        BU.battle.read_only = true;
+        BU.battle.turn_num = turn;
+        BU.battle.last_turn_hist = turn_history;
+        BU.battle.hint = [];
+        BU.setReplayTurn(turn);
+        refreshReplayGestures();
+        scrollReplayCursor();
+
+        BU.prepareTurnActionInfo(BU.battle.last_turn_hist);
+        if (!BU.battle.hint || (BU.battle.hint.length === 0)) {
+            mainWindow.replayTurnClosed(false);
+            return;
+        }
+        BU.prepareHint();
+    }
+
+    function refreshReplayGestures() {
+        for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+            var ww = iWarlocks.children[i];
+            if (ww && ww.setReplayGestures) {
+                ww.setReplayGestures();
+            }
+        }
+    }
+
+    function scrollReplayCursor() {
+        if (iWarlocks.children.length > 0) {
+            var ww = iWarlocks.children[0];
+            if (ww && ww.ensureReplayCursorVisible) {
+                ww.ensureReplayCursorVisible();
+            }
+        }
+    }
+
+    function scheduleReplayTurn(delay) {
+        tReplayDelay.interval = delay;
+        tReplayDelay.restart();
+    }
+
+    function stopReplay() {
+        // Stop now; Play reloads the current turn from its snapshot.
+        cancelReplayPlayback();
+    }
+
+    function cancelReplayPlayback() {
+        tHintAuto.stop();
+        tReplayDelay.stop();
+        BWU.stopHintAnimation();
+        ltTutorial.visible = false;
+    }
+
+    function resetReplayBoardView() {
+        BU.resetReplayBoard(mainWindow.gBattle);
+        BU.applyBattle();
+        BU.setReplayTurn(mainWindow.battleReplay.turn);
+        refreshReplayGestures();
+        scrollReplayCursor();
+    }
+
+    function reloadReplayBoard() {
+        BU.applyBattle();
+        BU.setReplayTurn(mainWindow.battleReplay.turn);
+        refreshReplayGestures();
+        scrollReplayCursor();
     }
 
     function showWnd() {
@@ -808,6 +1146,9 @@ BaseWindow {
     }
 
     function hideWnd() {
+        waitingForTurn = false;
+        tHintAuto.stop();
+        tReplayDelay.stop();
         visible = false;
         mainWindow.battleWindowHidden();
     }
@@ -819,20 +1160,30 @@ BaseWindow {
         if (!mainWindow.gBattle || !mainWindow.gBattle.id) {
             return;
         }
+        waitingForTurn = mainWindow.gBattle.waiting_for_turn === true;
         readyWarlocks = 0;
         // frames left over from the last battle must not touch the new warlocks
         BWU.stopHintAnimation();
-        title_text = "Battle #" + mainWindow.gBattle.id;
+        title_text = dict.getStringByCode("BattleTitle").replace("%1", mainWindow.gBattle.id);
         rTT.visible = false;
+        if (mainWindow.gBattle.replay && (mainWindow.battleReplay.turn === 0)) {
+            BU.resetReplayBoard(mainWindow.gBattle);
+        }
         BU.applyBattle();
+        if (mainWindow.gBattle.replay) {
+            BU.setReplayTurn(mainWindow.battleReplay.turn);
+            refreshReplayGestures();
+        }
         battleChanged();
-        if (/*true || */!mainWindow.gBattle.with_bot) {
+        if (!mainWindow.gBattle.with_bot) {
             iiChat.visible = true;
             iiSpellbook.anchors.rightMargin = (32 + 78 + 32) * mainWindow.ratioObject;
         } else {
             iiChat.visible = false;
             iiSpellbook.anchors.rightMargin = 32 * mainWindow.ratioObject;
         }
+        iiSpellbook.visible = true;
+        iiScroll.visible = true;
 
         if (mainWindow.gameCore.isAI) {
             sendOrders();

@@ -1,5 +1,6 @@
 #include "qbattleinfo.h"
 #include "qwarlockutils.h"
+#include "qwarlockdictionary.h"
 
 #include <QRegularExpression>
 
@@ -66,6 +67,7 @@ void QBattleInfo::init() {
     _app_version = 0;
     _inviteRejected = false;
     _isOnline = false;
+    _currentPageData.clear();
 }
 
 QBattleInfo::~QBattleInfo() {
@@ -380,62 +382,63 @@ void QBattleInfo::checkRejection() {
 }
 
 QString QBattleInfo::getInListDescription(const QString &Login) const  {
+    QGameDictionary *dict = QWarlockDictionary::getInstance();
     if (_inviteRejected) {
-        return QString("Invite rejected");
+        return dict->getStringByCode("BattleListInviteRejected");
     } else if (_status == -3) {
-        return QString("Battle #%1 no info").arg(intToStr(_battleID));
+        return dict->getStringByCode("BattleListNoInfo").arg(intToStr(_battleID));
     } else if (_status == -2) {
-        return QString("Battle #%1 deleted").arg(intToStr(_battleID));
+        return dict->getStringByCode("BattleListDeleted").arg(intToStr(_battleID));
     } else if (_status == -1) {
-        return "Waiting to start...";
+        return dict->getStringByCode("BattleListWaitingStart");
         //return QString("Waiting to start...").arg(intToStr(_battleID));
     } else if (_status == 0) {
         if (_size == _participant.size()) {
             // looks like already started
             QString enemy = getEnemy(Login, true);
             if (enemy.isEmpty()) {
-                return QString("Waiting opponent #%1").arg(intToStr(_battleID));
+                return dict->getStringByCode("BattleListWaitingOpponent").arg(intToStr(_battleID));
             } else {
-                return QString("Waiting for %1").arg(enemy);
+                return dict->getStringByCode("BattleListWaitingFor").arg(enemy);
             }
         } else {
             // not started perhaps
-            return "Waiting to start...";
+            return dict->getStringByCode("BattleListWaitingStart");
             //return QString("Waiting opponent #%1").arg(intToStr(_battleID));
         }
     } else if (_status == 1) {
         QString enemy = getEnemy(Login, true);
         if (enemy.isEmpty()) {
-            return QString("Ready #%1").arg(intToStr(_battleID));
+            return dict->getStringByCode("BattleListReady").arg(intToStr(_battleID));
         } else {
-            return QString("Ready vs. %1").arg(enemy);
+            return dict->getStringByCode("BattleListReadyVs").arg(enemy);
         }
     } else if (_status == 2) {
         QString enemy = getEnemy(Login.toLower(), true);
         if (enemy.isEmpty()) {
             if (_winner.isEmpty()) {
-                return QString("Finished #%1").arg(intToStr(_battleID));
+                return dict->getStringByCode("BattleListFinished").arg(intToStr(_battleID));
             } else if (_winner.compare(" ") == 0) {
-                return QString("Draw #%1").arg(intToStr(_battleID));
+                return dict->getStringByCode("BattleListDraw").arg(intToStr(_battleID));
             } else if (_winner.compare(Login.toLower()) == 0) {
-                return QString("Won #%1").arg(intToStr(_battleID));
+                return dict->getStringByCode("BattleListWon").arg(intToStr(_battleID));
             } else {
-                return QString("Lost #%1").arg(intToStr(_battleID));
+                return dict->getStringByCode("BattleListLost").arg(intToStr(_battleID));
             }
         } else {
             if (_winner.isEmpty()) {
-                return QString("Finished vs. %1").arg(enemy);
+                return dict->getStringByCode("BattleListFinishedVs").arg(enemy);
             } else if (_winner.compare(" ") == 0) {
-                return QString("Draw vs. %1").arg(enemy);
+                return dict->getStringByCode("BattleListDrawVs").arg(enemy);
             } else if (_winner.compare(Login.toLower()) == 0) {
-                return QString("Won vs. %1").arg(enemy);
+                return dict->getStringByCode("BattleListWonVs").arg(enemy);
             } else {
-                return QString("Lost vs. %1").arg(enemy);
+                return dict->getStringByCode("BattleListLostVs").arg(enemy);
             }
         }
     }
 
-    return QString("Battle #%1").arg(intToStr(_battleID));
+    return dict->getStringByCode("BattleTitle").arg(intToStr(_battleID));
 }
 
 bool QBattleInfo::active(const QString &login) const {
@@ -474,7 +477,7 @@ QString QBattleInfo::getChat() const {
             continue;
         }
         tmpBC.prepend(prepareToPrint(repairMalformedColors(s)));
-        tmpBC.prepend(QString("<p><font color=&quot;#10C9F5&quot; >Turn %1</font></p>").arg(intToStr(turn_idx)));
+        tmpBC.prepend(QString("<p><font color=&quot;#10C9F5&quot; >%1</font></p>").arg(QWarlockDictionary::getInstance()->getStringByCode("TurnN").arg(intToStr(turn_idx))));
     }
     return tmpBC;
 }
@@ -501,7 +504,7 @@ QString QBattleInfo::getHistory() const {
             shown = withoutGestures(shown);
         }
         tmpBH.prepend(prepareToPrint(shown));
-        tmpBH.prepend(QString("<p><font color=&quot;#10C9F5&quot; size=+1>Turn %1</font></p>").arg(intToStr(turn_idx)));
+        tmpBH.prepend(QString("<p><font color=&quot;#10C9F5&quot; size=+1>%1</font></p>").arg(QWarlockDictionary::getInstance()->getStringByCode("TurnN").arg(intToStr(turn_idx))));
     }
     return tmpBH;
 }
@@ -748,6 +751,22 @@ void QBattleInfo::parseUnits(QString &Data, QString &Login) {
 
 }
 
+void QBattleInfo::setCurrentPageData(const QString &data)
+{
+    _currentPageData = data;
+}
+
+const QString &QBattleInfo::currentPageData() const
+{
+    return _currentPageData;
+}
+
+bool QBattleInfo::hasBoard() const
+{
+    return _fullJSON.contains("\"warlocks\":[") &&
+            !_fullJSON.contains("\"warlocks\":[]");
+}
+
 void QBattleInfo::parseAllTurns(QString &Data, QString &Login, bool Last) {
     qDebug() << "QBattleInfo::parseAllTurns" << Login << Last;
     parseUnits(Data, Login);
@@ -789,7 +808,15 @@ bool QBattleInfo::parseFullHistory(const QString &Data) {
     return true;
 }
 
-void QBattleInfo::generateJSON(QString &Login) {
+bool QBattleInfo::loadBoardSnapshot(const QString &Data, const QString &Login) {
+    QString data = Data;
+    QString login = Login;
+    parseUnits(data, login);
+    return !_Warlock.isEmpty();
+}
+
+QString QBattleInfo::buildBoardJSON(const QString &Login, int Turn,
+                                    bool WithHistory) {
     QString _WarlockHtml, _MonstersHtml;
     foreach(QMonster *m, _Monsters) {
         if (!_MonstersHtml.isEmpty()) {
@@ -808,14 +835,23 @@ void QBattleInfo::generateJSON(QString &Login) {
     }
     _WarlockHtml.prepend("[").append("]");
 
-    _fullJSON =  QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
-                        "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
-                        "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
-                        "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25}")
-                     .arg(intToStr(_battleID), boolToStr(_parafdf), "", "0", "0") // 1-5
-        .arg("", "", "", "", "", "") // 6-11
-        .arg("", _MonstersHtml, _WarlockHtml, "", "0",  boolToStr(_parafc), "[]", "[]", "") // 12 - 20
-                     .arg(getHistory(), getChat(), intToStr(_turn), boolToStr(_with_bot), getTurnInfo(_turn, Login)); // 21-25
+    QString history = WithHistory ? getHistory() : QString();
+    QString chat = WithHistory ? getChat() : QString();
+    QString last = WithHistory ? getTurnInfo(Turn, Login) : QStringLiteral("[]");
+
+    return QString("{\"id\":%1,\"is_fdf\":%2,\"fire\":\"%3\",\"permanent\":%4,\"delay\":%5,\"paralyze\":\"%6\",\"charm\":\"%7\","
+                   "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
+                   "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
+                   "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25}")
+            .arg(intToStr(_battleID), boolToStr(_parafdf), "", "0", "0")
+            .arg("", "", "", "", "", "")
+            .arg("", _MonstersHtml, _WarlockHtml, "", "0",
+                 boolToStr(_parafc), "[]", "[]", "")
+            .arg(history, chat, intToStr(Turn), boolToStr(_with_bot), last);
+}
+
+void QBattleInfo::generateJSON(const QString &Login) {
+    _fullJSON = buildBoardJSON(Login, _turn, true);
 }
 
 QString QBattleInfo::fullJSON() const

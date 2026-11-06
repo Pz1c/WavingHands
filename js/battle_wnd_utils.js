@@ -1,10 +1,34 @@
-function processHighlightHintAction(a, restore) {
-    // a monster is shown inside the Warlock.qml item of its owner, a.object is the monster name
-    // https://github.com/Pz1c/WavingHands/issues/227
-    var warlock_idx = a.object_type === "monster" ? BU.map_monster_name_to_idx[a.object] : BU.map_warlock_name_to_idx[a.warlock_name];
-    if ((warlock_idx === undefined) && a.warlock_name) {
+function getHintWarlockIdx(a) {
+    var warlock_idx;
+    if (a.object_type === "monster") {
+        warlock_idx = BU.map_monster_name_to_idx[a.object];
+        if ((warlock_idx === undefined) && BU.getMonsterOwnerName) {
+            // The monster may already have died and be absent from the final
+            // roster, but its card is still on screen while the news plays.
+            warlock_idx = BU.map_warlock_name_to_idx[BU.getMonsterOwnerName(a.object)];
+        }
+    } else {
+        warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name || a.object];
+    }
+    if (warlock_idx === undefined) {
         warlock_idx = BU.map_warlock_name_to_idx[a.warlock_name];
     }
+    return warlock_idx;
+}
+
+function processHighlightHintAction(a, restore) {
+    if (a.object_type === "elemental") {
+        if (restore) {
+            iiElemental.restoreNews();
+        } else {
+            iiElemental.highlightNews(a.color ? a.color : "#10C9F5");
+        }
+        return;
+    }
+
+    // a monster is shown inside the Warlock.qml item of its owner, a.object is the monster name
+    // https://github.com/Pz1c/WavingHands/issues/227
+    var warlock_idx = getHintWarlockIdx(a);
     console.log("processHighlightHintAction", a.object_type, a.warlock_name, a.object, warlock_idx);
     if (!a.warlock_name) {
         return;
@@ -14,9 +38,19 @@ function processHighlightHintAction(a, restore) {
     if (!ww) {
         return;
     }
+    if (!restore && (a.object_type === "status") && BU.battle) {
+        var removed_targets = BU.battle.remove_enchantment_targets || {};
+        if (BU.battle.dispel_magic_turn || removed_targets[a.warlock_name]) {
+            return;
+        }
+    }
     if (restore) {
         ww.highlightActionRestore(a);
     }else {
+        if ((a.object_type === "status") && ww.ensureStatus &&
+                (a.value !== undefined) && (a.value !== "")) {
+            ww.ensureStatus(a.object, a.icon, a.value);
+        }
         ww.highlightAction(a);
     }
 }
@@ -84,15 +118,154 @@ function processPopHintAction(a) {
 }
 
 // https://github.com/Pz1c/WavingHands/issues/227
-// The temporary status icons and monster tiles a turn news step shows. Nothing to restore when the
-// step is left: the next step brings its own set and closeTutorial clears them (Warlock.hintOnOff).
-function processTempIconsAction(a, restore) {
+// The live status list is mutated at the event row: an enchantment is added
+// when it lands and removed when a Counter Spell stops it.
+function processStatusRemoveHintAction(a, restore) {
     if (restore) {
         return;
     }
-    var ww = iWarlocks.children[BU.map_warlock_name_to_idx[a.warlock_name]];
-    if (ww) {
-        ww.setTempIcons(a.statuses, a.monsters);
+    var ww = iWarlocks.children[getHintWarlockIdx(a)];
+    if (ww && ww.removeStatus) {
+        ww.removeStatus(a.object);
+    }
+}
+
+function processDispelMagicHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    if (BU.battle) {
+        BU.battle.dispel_magic_turn = true;
+    }
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        if (ww && ww.clearEnchantments) {
+            ww.clearEnchantments("");
+        }
+    }
+}
+
+function processRemoveEnchantmentsHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    if (BU.battle) {
+        if (!BU.battle.remove_enchantment_targets) {
+            BU.battle.remove_enchantment_targets = {};
+        }
+        BU.battle.remove_enchantment_targets[a.object] = true;
+    }
+    var ww = iWarlocks.children[getHintWarlockIdx(a)];
+    if (ww && ww.clearEnchantments) {
+        ww.clearEnchantments(a.object);
+    }
+}
+
+function processDamageHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = getHintWarlockIdx(a);
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processDamageHintAction", a.object_type, a.warlock_name, a.object, a.amount, warlock_idx);
+    if (ww && ww.showDamage) {
+        ww.showDamage(a.amount, a.object_type, a.object);
+    }
+}
+
+function processHealHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = getHintWarlockIdx(a);
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processHealHintAction", a.object_type, a.warlock_name, a.object, a.amount, warlock_idx);
+    if (ww && ww.showHeal) {
+        ww.showHeal(a.amount, a.object_type, a.object);
+    }
+}
+
+function processHealthHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = getHintWarlockIdx(a);
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processHealthHintAction", a.object_type, a.warlock_name, a.object, a.amount, warlock_idx);
+    if (ww && ww.changeHealth) {
+        ww.changeHealth(a.amount, a.object_type, a.object);
+    }
+}
+
+function processSummonHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = getHintWarlockIdx(a);
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processSummonHintAction", a.object, a.warlock_name, warlock_idx);
+    if (ww && ww.showSummonedMonster) {
+        ww.showSummonedMonster(a.object, a.icon, a.hp);
+    }
+}
+
+function processCharmMonsterHintAction(a, restore) {
+    // Like damage, summons and deaths, ownership is not undone when the next
+    // news step restores the previous step's highlights.
+    if (restore) {
+        return;
+    }
+    if (!a.warlock_name || !BU.moveMonsterToOwner ||
+            !BU.moveMonsterToOwner(a.object, a.warlock_name)) {
+        return;
+    }
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        var live = ww && ww.l_warlock;
+        if (live && BU.battle && BU.battle.monsters[live.name]) {
+            live.monsters = BU.battle.monsters[live.name];
+        }
+        if (ww && ww.refreshMonsters) {
+            ww.refreshMonsters();
+        }
+    }
+}
+
+function processDeathHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var warlock_idx = getHintWarlockIdx(a);
+    var ww = iWarlocks.children[warlock_idx];
+    console.log("processDeathHintAction", a.object_type, a.object, a.warlock_name, warlock_idx);
+    // Remove the dead monster before refreshing the board.
+    if ((a.object_type === "monster") && BU.removeDeadMonsterTarget) {
+        BU.removeDeadMonsterTarget(a.object);
+    }
+    if (ww && ww.showDeath) {
+        ww.showDeath(a.object_type, a.object);
+    }
+    if (a.object_type === "monster") {
+        // The owner may be missing from the hint index; refresh every board so
+        // no ListView keeps a delegate whose source was just removed.
+        for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+            var item = iWarlocks.children[i];
+            if (item && item.refreshMonsters) {
+                item.refreshMonsters();
+            }
+        }
+    }
+}
+
+function processElementalHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    console.log("processElementalHintAction", a.visible, a.type, a.hp);
+    if (a.visible) {
+        BU.showTurnNewsElemental(a.type, a.hp);
+    } else {
+        BU.hideTurnNewsElemental();
     }
 }
 
@@ -102,7 +275,16 @@ function processHintAction(a, restore) {
     case "highlight": return processHighlightHintAction(a, restore);
     case "icon": return processHighlightIconAction(a, restore);
     case "pop": return processPopHintAction(a);
-    case "temp_icons": return processTempIconsAction(a, restore);
+    case "status_remove": return processStatusRemoveHintAction(a, restore);
+    case "dispel_magic": return processDispelMagicHintAction(a, restore);
+    case "remove_enchantments": return processRemoveEnchantmentsHintAction(a, restore);
+    case "damage": return processDamageHintAction(a, restore);
+    case "heal": return processHealHintAction(a, restore);
+    case "hp": return processHealthHintAction(a, restore);
+    case "summon": return processSummonHintAction(a, restore);
+    case "charm_monster": return processCharmMonsterHintAction(a, restore);
+    case "death": return processDeathHintAction(a, restore);
+    case "elemental": return processElementalHintAction(a, restore);
     }
 }
 
@@ -167,19 +349,63 @@ function playNextHintFrame() {
     scheduleNextHintFrame();
 }
 
-function playHintActions(actions) {
-    var letters = [], actors = [], targets = [], icon = null, a, lf, i, j, Ln, frame_actions;
+function isDeferredHintAction(row_type, action) {
+    if (row_type === "spell") {
+        return (action === "damage") ||
+                (action === "heal") ||
+                (action === "hp") ||
+                (action === "summon") ||
+                (action === "charm_monster");
+    }
+    return (row_type === "attack") && (action === "damage");
+}
+
+function playHintActions(actions, row_type) {
+    var letters = [], actors = [], targets = [], apply_actions = [], finish_actions = [];
+    var icon = null, a, lf, i, j, Ln, frame_actions;
     stopHintAnimation();
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
         a = actions[i];
+        if ((a.action === "dispel_magic") ||
+                (a.action === "remove_enchantments") ||
+                ((a.action === "status_remove") && a.defer_to_end)) {
+            finish_actions.push(a);
+            continue;
+        }
+        if ((a.action === "damage") && a.defer_to_target) {
+            // Elemental damage appears together with the target highlight,
+            // after the elemental actor pulse and the event banner icon.
+            targets.push(a);
+            continue;
+        }
+        if (isDeferredHintAction(row_type, a.action)) {
+            // Apply spell/attack results after the gesture and icon frames,
+            // before the final target highlight.
+            apply_actions.push(a);
+            continue;
+        }
+        if ((a.action === "damage") || (a.action === "heal") || (a.action === "hp") ||
+                (a.action === "summon") || (a.action === "death") ||
+                (a.action === "elemental")) {
+            // Show the number / change the life points / change the board as
+            // soon as the event row appears; the target highlight still follows
+            // the normal frames.
+            processHintAction(a, false);
+            continue;
+        }
         if ((a.action === "highlight") && (a.object_type === "warlock") && (a.object === "hp")) {
+            targets.push(a);
+            continue;
+        }
+        if (a.action === "status_remove") {
             targets.push(a);
             continue;
         }
         // https://github.com/Pz1c/WavingHands/issues/227
         // a monster that acts lights up before the icon pops, one that is hit after it, with the hearts;
         // a status icon (the shield that took the blow, the enchantment that landed) after it too
-        if ((a.action === "highlight") && ((a.object_type === "monster") || (a.object_type === "status"))) {
+        if ((a.action === "highlight") && ((a.object_type === "monster") ||
+                (a.object_type === "status") || (a.object_type === "elemental"))) {
             if (a.role === "actor") {
                 actors.push(a);
             } else {
@@ -197,6 +423,14 @@ function playHintActions(actions) {
             icon = a;
         }
         processHintAction(a, false);
+    }
+
+    // A summon rebuilds the monster model before this step's HP actions run.
+    for (var wi = 0; wi < iWarlocks.children.length; ++wi) {
+        var ww = iWarlocks.children[wi];
+        if (ww && ww.refreshMonsters) {
+            ww.refreshMonsters();
+        }
     }
 
     var delay = HINT_FIRST_FRAME_DELAY;
@@ -229,24 +463,28 @@ function playHintActions(actions) {
         delay = HINT_TARGET_DELAY;
     }
 
+    if (apply_actions.length > 0) {
+        hint_frames.push({delay:delay,actions:apply_actions});
+        delay = 0;
+    }
+
     if (targets.length > 0) {
         hint_frames.push({delay:delay,actions:targets});
+        delay = 0;
+    }
+
+    if (finish_actions.length > 0) {
+        hint_frames.push({delay:delay,actions:finish_actions});
     }
     console.log("BWU.playHintActions", JSON.stringify(hint_frames));
     scheduleNextHintFrame();
 }
 
-function processAllHintAction(actions, restore) {
-    var i, Ln = actions.length, shown = 0;
-    for (i = 0; i < Ln; ++i) {
-        // the temporary icons come with every step, they do not make it a step that shows something
-        if (actions[i].action !== "temp_icons") {
-            ++shown;
-        }
-    }
+function processAllHintAction(actions, restore, row_type) {
+    var i, Ln = actions.length, shown = Ln;
     rTutOverlay.opacity = (((shown === 0) && !restore) || ((shown !== 0) && restore)) ? 0.5 : 0.3;
     if (!restore) {
-        playHintActions(actions);
+        playHintActions(actions, row_type);
         return;
     }
     for (i = 0; i < Ln; ++i) {
@@ -256,20 +494,71 @@ function processAllHintAction(actions, restore) {
 
 
 function prepareWarockToHint(restore) {
+    if (iiElemental && iiElemental.restoreNews) {
+        iiElemental.restoreNews();
+    }
     for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
-        iWarlocks.children[i].hintOnOff(restore);
+        var ww = iWarlocks.children[i];
+        if (ww.clearDamageNumbers) {
+            ww.clearDamageNumbers();
+        }
+        if (ww.restoreAllNews) {
+            ww.restoreAllNews();
+        }
+        ww.hintOnOff(restore);
+    }
+    if (restore) {
+        BU.resetTurnNewsElemental();
+    }
+}
+
+function showWarockHands() {
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        if (ww.showHandsAfterNews) {
+            ww.showHandsAfterNews();
+        }
+    }
+}
+
+function showWarockFinalPlaceholders() {
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        if (ww.showFinalPlaceholders) {
+            ww.showFinalPlaceholders();
+        }
     }
 }
 
 function closeTutorial() {
     stopHintAnimation();
     ltTutorial.visible = false;
-    prepareWarockToHint(true);
+
+    // All events are done: apply one countdown to every enchantment.
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        if (ww.tickAllStatuses) {
+            ww.tickAllStatuses();
+        }
+    }
+
+    // Keep the event-end board. Only restore the controls needed to order.
+    prepareWarockToHint(false);
+    showWarockHands();
+    showWarockFinalPlaceholders();
     prepareIconToHint();
+
+    // The board above is the snapshot used for the news. The news is over now:
+    // rebuild from the current page, without replaying hint/last_turn_hist.
+    if (mainWindow.gBattle && mainWindow.gBattle.replay) {
+        mainWindow.replayTurnClosed(true);
+    } else if (mainWindow.gBattle && mainWindow.gBattle.id) {
+        core.turnNewsClosed(mainWindow.gBattle.id);
+    }
 }
 
-function showTutorialData(diff, skip_restore) {
-    var log_msg = mainWindow.gBattle.turn_num === 1;
+function moveToHintStep(diff, skip_restore) {
+    var log_msg = !mainWindow.gBattle.replay && (mainWindow.gBattle.turn_num === 1);
     var code = log_msg ? "Play_Tutorial_Click_" : "Play_Turn_Message_Click_";
     if ((diff !== 0) && !skip_restore) {
         // restore prev changed
@@ -290,7 +579,7 @@ function showTutorialData(diff, skip_restore) {
 
     if (ltTutorial.tutorialDataIdx >= ltTutorial.tutorialData.length) {
         closeTutorial();
-        return;
+        return null;
     }
     var hint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx];
     if (!hint) {
@@ -298,9 +587,9 @@ function showTutorialData(diff, skip_restore) {
             mainWindow.logEvent(code + "Gotit");
         }
         closeTutorial();
-        return;
+        return null;
     }
-    console.log("showTutorialData", diff, JSON.stringify(hint));
+    console.log("moveToHintStep", diff, JSON.stringify(hint));
     ltTutorial.color = hint.color_bg;
     ltTTT.text = hint.txt;
     if (hint.font_size && (hint.font_size >= 21) && (hint.font_size <= 48)) {
@@ -309,5 +598,6 @@ function showTutorialData(diff, skip_restore) {
     prepareWarockToHint(false);
     prepareIconToHint();
 
-    processAllHintAction(ltTutorial.tutorialData[ltTutorial.tutorialDataIdx].actions, false);
+    processAllHintAction(hint.actions, false, hint.row_type);
+    return hint;
 }

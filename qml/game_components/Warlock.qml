@@ -15,6 +15,11 @@ Item {
     // Set while this row is being moved by mainWindow.gesturesScrollX, so the move is not
     // reported back as a user scroll (which would echo between the rows forever).
     property bool gesturesScrollInhibit: false
+    property var replayGestureHighlights: ({})
+    property int l_damageSeq: 0
+    property int l_hpDisplay: parseInt(l_warlock.hp, 10) || 0
+    property bool l_surrendered: (l_warlock.status || "").toLowerCase().indexOf("surrender") !== -1
+    property bool l_dead: (parseInt(l_warlock.hp, 10) <= 0) && !l_surrendered
 
     signal clicked(var data)
     signal doubleClicked(var data)
@@ -28,9 +33,294 @@ Item {
         }
     }
 
+    ListModel {
+        id: lmDamageNumbers
+    }
+
+    // Red damage and green healing numbers are created here and float away from
+    // the right side of the target icon.
+    Repeater {
+        model: lmDamageNumbers
+        delegate: Text {
+            id: tDamageNumber
+            property int numberId: model.number_id
+            property real startY: model.start_y
+            x: model.start_x
+            y: startY
+            text: model.text
+            color: model.color
+            font.pixelSize: 32 * mainWindow.ratioFont
+            font.bold: true
+            style: Text.Outline
+            styleColor: "#210430"
+            opacity: 1
+            scale: 0.8
+            z: 2000
+
+            ParallelAnimation {
+                running: true
+                NumberAnimation {
+                    target: tDamageNumber
+                    property: "y"
+                    to: tDamageNumber.startY - 40 * mainWindow.ratioObject
+                    duration: 900
+                    easing.type: Easing.OutCubic
+                }
+                NumberAnimation {
+                    target: tDamageNumber
+                    property: "opacity"
+                    to: 0
+                    duration: 900
+                    easing.type: Easing.InQuad
+                }
+                NumberAnimation {
+                    target: tDamageNumber
+                    property: "scale"
+                    from: 0.8
+                    to: 1.15
+                    duration: 220
+                    easing.type: Easing.OutBack
+                }
+            }
+
+            Timer {
+                interval: 950
+                running: true
+                onTriggered: rWarlock.removeDamageNumber(tDamageNumber.numberId)
+            }
+        }
+    }
+
+    function findMonster(name) {
+        var monsters = l_warlock.monsters || [];
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+            if (monsters[i] && (monsters[i].name === name)) {
+                return monsters[i];
+            }
+        }
+        return null;
+    }
+
+    function changeHealth(amount, object_type, object_name) {
+        var delta = parseInt(amount, 10);
+        if (!delta) {
+            return;
+        }
+        if (object_type === "monster") {
+            var monster = findMonster(object_name);
+            if (monster) {
+                var shown = parseInt(monster.hp, 10);
+                if (isNaN(shown)) {
+                    shown = 0;
+                }
+                monster.hp = Math.max(0, shown + delta);
+                monster.text = monster.hp;
+            }
+            var mi = findMonsterItem(object_name);
+            if (mi && monster) {
+                mi.l_hpOverride = monster.hp;
+            }
+            refreshMonsters();
+            var b = mainWindow.gBattle;
+            if (monster && b && b.actions && b.actions.M) {
+                for (var k = 0, LnK = b.actions.M.length; k < LnK; ++k) {
+                    if (b.actions.M[k] && (b.actions.M[k].name === object_name)) {
+                        b.actions.M[k].hp = monster.hp;
+                    }
+                }
+            }
+            return;
+        }
+        l_hpDisplay = Math.max(0, l_hpDisplay + delta);
+        l_warlock.hp = l_hpDisplay;
+    }
+
+    function registerSummonedMonsterAction(monster) {
+        var b = mainWindow.gBattle;
+        if (!b || !b.actions || !b.actions.M) {
+            return;
+        }
+        for (var i = 0, Ln = b.actions.M.length; i < Ln; ++i) {
+            if (b.actions.M[i] && (b.actions.M[i].name === monster.name)) {
+                monster.action_idx = i;
+                return;
+            }
+        }
+        var id = (b.targetsMap && b.targetsMap[monster.name]) ? b.targetsMap[monster.name] : "";
+        if (!id) {
+            return;
+        }
+        var target = b.enemy_name || "Nobody";
+        monster.id = id;
+        monster.target = target;
+        monster.old_target = target;
+        monster.under_control = l_warlock.player ? true : false;
+        monster.action = "m";
+        monster.action_idx = b.actions.M.length;
+        b.actions.M.push(monster);
+    }
+
+    function isPlaceholderMonster(m) {
+        return m && ((m.name.indexOf("LH:") === 0) || (m.name.indexOf("RH:") === 0));
+    }
+
+    function showFinalPlaceholders() {
+        l_warlock.news_placeholders_visible = true;
+        refreshMonsters();
+    }
+
+    function showHandsAfterNews() {
+        iiLeft.visible = !l_dead && (isHandsVisible === 1);
+        iiRight.visible = !l_dead && (isHandsVisible === 1);
+    }
+
+    function showSummonedMonster(name, icon, hp) {
+        var monsters = l_warlock.monsters;
+        if (!monsters) {
+            return;
+        }
+
+        var monster = findMonster(name);
+        if (monster) {
+            return;
+        }
+
+        var shown = parseInt(hp, 10);
+        if (isNaN(shown) || (shown < 0)) {
+            shown = 0;
+        }
+        monster = {name:name, owner:l_warlock.name, hp:shown,
+                   icon:(icon && (icon !== "")) ? icon : "summon",
+                   enchantment_icon:"", status:"", action:"m",
+                   allow_choose_target:false, is_elemental:false, text:shown};
+        monsters.push(monster);
+
+        registerSummonedMonsterAction(monster);
+        refreshMonsters();
+    }
+
+    function showMonsterDeath(name) {
+        // Remove from this owner's live array as well. The JS death handler
+        // already scans battle.monsters; this guarantees the visible roster is
+        // updated even if the arrays ever diverge.
+        var monsters = l_warlock.monsters || [];
+        for (var i = monsters.length - 1; i >= 0; --i) {
+            if (monsters[i] && (monsters[i].name === name)) {
+                monsters.splice(i, 1);
+            }
+        }
+        refreshMonsters();
+    }
+
+    function showDeath(object_type, object_name) {
+        if (object_type === "monster") {
+            showMonsterDeath(object_name);
+            return;
+        }
+        paHPHighlight.stop();
+        iiHP.scale = 1;
+        iiHP.color = iiHP.bg_color;
+        l_dead = true;
+        l_hpDisplay = 0;
+        l_warlock.hp = 0;
+    }
+
+    function showDamage(amount, object_type, object_name) {
+        var damage = parseInt(amount, 10);
+        if (!(damage > 0)) {
+            return;
+        }
+        changeHealth(-damage, object_type, object_name);
+        showFloatingNumber("-" + damage, "#FF3B30", object_type, object_name);
+    }
+
+    function showHeal(amount, object_type, object_name) {
+        var heal = parseInt(amount, 10);
+        if (!(heal > 0)) {
+            return;
+        }
+        changeHealth(heal, object_type, object_name);
+        showFloatingNumber("+" + heal, "#4CD964", object_type, object_name);
+    }
+
+    function showFloatingNumber(text, color, object_type, object_name) {
+        var pos = getDamagePosition(object_type, object_name);
+        if (!pos) {
+            return;
+        }
+        var seq = l_damageSeq++;
+        // Separate simultaneous hits on the same target by a few pixels, always
+        // further to the right so the number never covers the icon.
+        var jitter = (seq % 5) * 12 * mainWindow.ratioFont;
+        lmDamageNumbers.append({number_id: seq, text: text, color: color,
+                                start_x: pos.x + jitter, start_y: pos.y - 18 * mainWindow.ratioFont});
+    }
+
+    // Start the number at the right edge of the target icon, so it reads as
+    // coming off the card instead of covering the icon itself.
+    function getDamagePosition(object_type, object_name) {
+        if (object_type === "monster") {
+            var mi = findMonsterItem(object_name);
+            if (!mi) {
+                return null;
+            }
+            var mp = mapFromItem(mi, mi.width + 6 * l_ratio, mi.height * 0.55);
+            return {x: mp.x, y: mp.y};
+        }
+        var hp = mapFromItem(iiHP, iiHP.width + 14 * l_ratio, iiHP.height * 0.65);
+        return {x: hp.x, y: hp.y};
+    }
+
+    function removeDamageNumber(number_id) {
+        for (var i = 0; i < lmDamageNumbers.count; ++i) {
+            if (lmDamageNumbers.get(i).number_id === number_id) {
+                lmDamageNumbers.remove(i);
+                return;
+            }
+        }
+    }
+
+    function clearDamageNumbers() {
+        lmDamageNumbers.clear();
+        l_damageSeq = 0;
+    }
+
+    function finalWarlockDead() {
+        return (parseInt(l_warlock.hp, 10) <= 0) &&
+                ((l_warlock.status || "").toLowerCase().indexOf("surrender") === -1);
+    }
+
+    function resetHealthDisplay() {
+        l_hpDisplay = l_warlock.hp;
+        l_dead = finalWarlockDead();
+        for (var k = 0, LnK = iMonsters.count; k < LnK; ++k) {
+            var item = iMonsters.itemAtIndex(k);
+            if (item) {
+                item.l_hpOverride = -1;
+            }
+        }
+        refreshStatuses();
+        var monsters = l_warlock.monsters || [];
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+            monsters[i].text = monsters[i].hp;
+        }
+        prepareMonsters();
+    }
+
+    // The auto-play can be closed between two highlight frames; make sure the
+    // little attack marker does not outlive the turn news.
+    function restoreAllNews() {
+        for (var i = 0, Ln = iMonsters.count; i < Ln; ++i) {
+            var item = iMonsters.itemAtIndex(i);
+            if (item && item.restoreNews) {
+                item.restoreNews();
+            }
+        }
+    }
+
     LargeText {
        id: ltName
-       text: l_warlock.name
+       text: l_warlock.name || ""
        anchors.top: parent.top
        anchors.horizontalCenter: parent.horizontalCenter
        height: 36 * l_ratio
@@ -42,12 +332,13 @@ Item {
        radius: 10
     }
 
-    // The player's wizard icon in his game color; the life-points number keeps
-    // its original bottom-right corner spot.
+    // The warlock's portrait in his game color (bots get the golem); the life-points
+    // number keeps its original bottom-right corner spot.
     IconInfo {
         id: iiHP
-        source: "qrc:/res/wizard_" + (l_warlock.color ? l_warlock.color : "grey") + ".png";
-        text: l_warlock.hp
+        source: l_dead ? "qrc:/res/RIP2.png"
+                       : "qrc:/res/wizard_" + (l_warlock.color ? l_warlock.color : "grey") + ".png";
+        text: l_hpDisplay
         textVisible: false
         height: 78 * l_ratio
         width: height
@@ -58,7 +349,8 @@ Item {
 
         // number: original corner geometry (like the built-in btnText)
         Text {
-            text: l_warlock.hp
+            text: l_hpDisplay
+            visible: !l_dead && (l_hpDisplay > 0)
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.rightMargin: 1 * l_ratio
@@ -111,7 +403,7 @@ Item {
         anchors.right: parent.right
         anchors.rightMargin: 6 * l_ratio
         visible: l_warlock.banked_spell !== ""
-        checkbox: l_warlock.player
+        checkbox: l_warlock.player === true
         checked: false
         l_data: ({action:"banked",value:l_warlock.banked_spell,checked:false})
 
@@ -140,52 +432,75 @@ Item {
         height: 78 * l_ratio
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
-        //contentWidth: iMonsters.width
-        //contentHeight: iMonsters.height
+
+        // Explicitly binding the contentWidth ensures the ScrollView handles layout overflow
+        // without hijacking the ListView's internal animation rendering tree.
+        contentWidth: iMonsters.contentWidth
 
         ListView {
             id: iMonsters
+            anchors.fill: parent
             orientation: ListView.Horizontal
+            spacing: 6 * l_ratio // Adding layout spacing directly to the view properties
             model: []
+
             delegate: IconInfo {
                 id: iiDM
+                property int l_hpOverride: -1
+                property int l_hpDisplay: (l_hpOverride >= 0) ? l_hpOverride
+                                           : iMonsters.model[index].hp
                 l_data: iMonsters.model[index]
                 height: 78 * l_ratio
                 width: 78 * l_ratio
-                text: iMonsters.model[index].text
+                text: l_hpDisplay
+                textVisible: true
                 source: "qrc:/res/"+iMonsters.model[index].icon+".png"
                 iconInfoSource: iMonsters.model[index].enchantment_icon
                 iconInfoVisible: iMonsters.model[index].enchantment_icon !== ""
-                checkbox: false//iMonsters.model[index].is_checkbox
+                checkbox: false
                 radius: 20
+                opacity: l_data.placeholder ? 0.3 : 1
 
-                // the turn news lights the monster up when it attacks or when a spell or an attack gets to it
-                // https://github.com/Pz1c/WavingHands/issues/227
                 ParallelAnimation {
                     id: paMonsterHighlight
-
                     ColorAnimation {
                         id: caMonsterHighlight
                         target: iiDM
                         property: "color"
                         duration: 350
                     }
-
                     SequentialAnimation {
                         NumberAnimation { target: iiDM; property: "scale"; to: 1.15; duration: 150; easing.type: Easing.OutQuad }
                         NumberAnimation { target: iiDM; property: "scale"; to: 1; duration: 200; easing.type: Easing.InOutQuad }
                     }
                 }
 
-                function highlightNews(news_color) {
+                function highlightNews(news_color, news_icon) {
                     caMonsterHighlight.to = news_color;
                     paMonsterHighlight.restart();
+                    if (news_icon) {
+                        iMonsterNewsIcon.source = "qrc:/res/" + news_icon + ".png";
+                        iMonsterNewsIcon.visible = true;
+                    }
                 }
 
                 function restoreNews() {
                     paMonsterHighlight.stop();
                     scale = 1;
                     color = bg_color;
+                    iMonsterNewsIcon.visible = false;
+                }
+
+                Image {
+                    id: iMonsterNewsIcon
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.rightMargin: 3 * l_ratio
+                    anchors.bottomMargin: 3 * l_ratio
+                    width: 28 * l_ratio
+                    height: width
+                    visible: false
+                    z: 10
                 }
 
                 onClicked: {
@@ -194,6 +509,19 @@ Item {
                 onDoubleClicked: {
                     rWarlock.iconDoubleClick(l_data);
                 }
+            }
+
+            // 1. Smoothly scale/fade out items when they are dropped from your array model
+            remove: Transition {
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; to: 0; duration: 300 }
+                    NumberAnimation { property: "scale"; to: 0; duration: 300 }
+                }
+            }
+
+            // 2. Animate items sliding over to capture empty layout spaces cleanly
+            displaced: Transition {
+                NumberAnimation { properties: "x,y"; duration: 300; easing.type: Easing.OutQuad }
             }
         }
     }
@@ -297,6 +625,9 @@ Item {
                 id: lwiGesture
                 height: svGestures.height
                 width: 90 * l_ratio
+                property bool replayTurn: mainWindow.battleReplay.active &&
+                        (lwGestures.model[index] &&
+                         (lwGestures.model[index].t === mainWindow.battleReplay.turn))
 
                 IconInfo {
                     id: iiHL
@@ -318,14 +649,14 @@ Item {
                     active: true
                     radius: 20
                     gradient: Gradient {
-                            GradientStop { position: 0.0;  color: lwGestures.model[index].la ? "#E7FFFF" : "#756F79" }
-                            GradientStop { position: lwGestures.model[index].la ? 0.25 : 0.15; color: lwGestures.model[index].la ? "#E7FFFF" : "#544653" }
-                            GradientStop { position: 1.0;  color: lwGestures.model[index].la ? "#FEE2D6" : "#544653" }
+                            GradientStop { position: 0.0;  color: (replayFlag(lwGestures.model[index], "la") || lwiGesture.replayTurn) ? "#E7FFFF" : "#756F79" }
+                            GradientStop { position: (replayFlag(lwGestures.model[index], "la") || lwiGesture.replayTurn) ? 0.25 : 0.15; color: (replayFlag(lwGestures.model[index], "la") || lwiGesture.replayTurn) ? "#E7FFFF" : "#544653" }
+                            GradientStop { position: 1.0;  color: (replayFlag(lwGestures.model[index], "la") || lwiGesture.replayTurn) ? "#FEE2D6" : "#544653" }
                         }
 
                     // the turn news lights the spell's letters up one by one, each one pops
                     SequentialAnimation on scale {
-                        running: lwGestures.model[index].lp === true
+                        running: replayFlag(lwGestures.model[index], "lp") === true
                         NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
                         NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
                     }
@@ -356,13 +687,13 @@ Item {
                     active: true
                     radius: 20
                     gradient: Gradient {
-                        GradientStop { position: 0.0;  color: lwGestures.model[index].ra ? "#E7FFFF" : "#756F79" }
-                        GradientStop { position: lwGestures.model[index].ra ? 0.25 : 0.15; color: lwGestures.model[index].ra ? "#E7FFFF" : "#544653" }
-                        GradientStop { position: 1.0;  color: lwGestures.model[index].ra ? "#FEE2D6" : "#544653" }
+                        GradientStop { position: 0.0;  color: (replayFlag(lwGestures.model[index], "ra") || lwiGesture.replayTurn) ? "#E7FFFF" : "#756F79" }
+                        GradientStop { position: (replayFlag(lwGestures.model[index], "ra") || lwiGesture.replayTurn) ? 0.25 : 0.15; color: (replayFlag(lwGestures.model[index], "ra") || lwiGesture.replayTurn) ? "#E7FFFF" : "#544653" }
+                        GradientStop { position: 1.0;  color: (replayFlag(lwGestures.model[index], "ra") || lwiGesture.replayTurn) ? "#FEE2D6" : "#544653" }
                     }
 
                     SequentialAnimation on scale {
-                        running: lwGestures.model[index].rp === true
+                        running: replayFlag(lwGestures.model[index], "rp") === true
                         NumberAnimation { to: 1.15; duration: 100; easing.type: Easing.OutQuad }
                         NumberAnimation { to: 1; duration: 150; easing.type: Easing.InOutQuad }
                     }
@@ -374,6 +705,7 @@ Item {
                         }
                     }
                 }
+
             }
         }
     }
@@ -399,6 +731,9 @@ Item {
 
         onClicked: {
             if (l_warlock.player) {
+                if (l_warlock.paralyzed_hand === "LH") {
+                    return;
+                }
                 mainWindow.showGesture(true, l_warlock.plg, "normal", l_warlock.warlock_idx);
                 mainWindow.logEvent("Play_Left_Click");
             } else if (l_warlock.control_paralyze) {
@@ -448,6 +783,9 @@ Item {
 
         onClicked: {
             if (l_warlock.player) {
+                if (l_warlock.paralyzed_hand === "RH") {
+                    return;
+                }
                 mainWindow.showGesture(false, l_warlock.prg, "normal", l_warlock.warlock_idx);
                 mainWindow.logEvent("Play_Right_Click");
             } else if (l_warlock.control_paralyze) {
@@ -486,8 +824,6 @@ Item {
         color: "#FEE2D6"
     }
 
-    Component.onCompleted: finishWarlockCreation();
-
     function showHideSummonIcon(spell) {
         if (!l_warlock.player || !spell) {
             return;
@@ -524,31 +860,134 @@ Item {
     }
 
     function hintOnOff(Restore) {
-        iiLeft.visible = Restore && (isHandsVisible === 1);
-        iiRight.visible = Restore && (isHandsVisible === 1);
         if (Restore) {
-            setTempIcons([], []);
+            resetHealthDisplay();
+        }
+        iiLeft.visible = Restore && !l_dead && (isHandsVisible === 1);
+        iiRight.visible = Restore && !l_dead && (isHandsVisible === 1);
+    }
+
+    function refreshStatuses() {
+        prepareDynamic("s", (l_warlock.statusIcons || []).slice(), iCharm, "value", svCharm.width - svCharm.height, -1);
+    }
+
+    function ensureStatus(code, icon, value) {
+        if (!code || (value === undefined) || (value === "")) {
+            return;
+        }
+        var shown = (value === 999) ? "∞" : value;
+        var statuses = l_warlock.statusIcons || [];
+        var status = null;
+        for (var i = 0, Ln = statuses.length; i < Ln; ++i) {
+            if (statuses[i] && (statuses[i].action === code)) {
+                status = statuses[i];
+                break;
+            }
+        }
+        if (!status) {
+            status = {action:code, icon:icon, value:shown, text:shown, active:true,
+                      active_action:false, is_checkbox:false};
+            statuses.push(status);
+        } else {
+            status.value = shown;
+            status.text = shown;
+            if (icon) {
+                status.icon = icon;
+            }
+        }
+        status.active_action = (l_warlock.control_paralyze && (code === "paralized")) ||
+                               (l_warlock.control_charmed && (code === "charmed"));
+        status.fresh = true;
+        l_warlock.statusIcons = statuses;
+        refreshStatuses();
+    }
+
+    function removeStatus(code) {
+        var statuses = l_warlock.statusIcons || [];
+        for (var i = 0, Ln = statuses.length; i < Ln; ++i) {
+            if (statuses[i] && (statuses[i].action === code)) {
+                statuses.splice(i, 1);
+                l_warlock.statusIcons = statuses;
+                refreshStatuses();
+                return;
+            }
         }
     }
 
-    // https://github.com/Pz1c/WavingHands/issues/227
-    // Temporary icons of the turn news: a status the warlock had during the turn but not at its end
-    // (a one-turn shield, a countered enchantment) and monsters that are gone (died, summon absorbed).
-    // They sit in the real lists while the news plays: statuses first (at the right edge), monsters last.
-    // The lists are only rebuilt when the set changes, so a step keeps the tiles of the step before.
-    property string tempStatusKey: "[]"
-    property string tempMonsterKey: "[]"
+    function clearEnchantments(name) {
+        var i, Ln;
+        if (!name || (name === l_warlock.name)) {
+            var statuses = l_warlock.statusIcons || [];
+            var kept = [];
+            for (i = 0, Ln = statuses.length; i < Ln; ++i) {
+                var status = statuses[i];
+                if (!status) {
+                    continue;
+                }
+                if ((status.action === "dispel") || (status.action === "mirror")) {
+                    kept.push(status);
+                }
+            }
+            l_warlock.statusIcons = kept;
+            refreshStatuses();
+        }
 
-    function setTempIcons(statuses, monsters) {
-        var sk = JSON.stringify(statuses), mk = JSON.stringify(monsters);
-        if (sk !== tempStatusKey) {
-            tempStatusKey = sk;
-            iCharm.model = statuses.length > 0 ? statuses.concat(l_warlock.statusIcons) : l_warlock.statusIcons;
+        var monsters = l_warlock.monsters || [];
+        for (i = 0, Ln = monsters.length; i < Ln; ++i) {
+            if (monsters[i] && (!name || (monsters[i].name === name))) {
+                monsters[i].enchantment = "";
+                monsters[i].enchantment_icon = "";
+            }
         }
-        if (mk !== tempMonsterKey) {
-            tempMonsterKey = mk;
-            iMonsters.model = monsters.length > 0 ? l_warlock.monsters.concat(monsters) : l_warlock.monsters;
+        refreshMonsters();
+    }
+
+    function tickAllStatuses() {
+        var current = l_warlock.statusIcons || [];
+        var updated = [];
+
+        for (var i = 0, Ln = current.length; i < Ln; ++i) {
+            var status = current[i];
+            if (!status) {
+                continue;
+            }
+
+            // A zero counter is a one-turn status that is over after the news.
+            var turns = parseInt(status.value, 10);
+            if (!isNaN(turns) && (turns <= 0)) {
+                continue;
+            }
+
+            // A status that landed this turn is already showing its
+            // end-of-turn value.
+            if (status.fresh) {
+                delete status.fresh;
+                updated.push(status);
+                continue;
+            }
+
+            // Permanent status.
+            if ((status.value === "∞") || (parseInt(status.value, 10) === 999)) {
+                updated.push(status);
+                continue;
+            }
+
+            turns = parseInt(status.value, 10);
+            if (isNaN(turns)) {
+                updated.push(status);
+                continue;
+            }
+
+            --turns;
+            if (turns > 0) {
+                status.value = turns;
+                status.text = turns;
+                updated.push(status);
+            }
         }
+
+        l_warlock.statusIcons = updated;
+        refreshStatuses();
     }
 
     function targetingOnOff(Enable, IsSpell, Permanency, Delay) {
@@ -612,6 +1051,23 @@ Item {
         }
     }
 
+    // Replay keeps the full strip; turn-news frames only override the cell
+    // flags through replayGestureHighlights.
+    function replayHighlightsByTurn(data) {
+        var res = {};
+        if (data) {
+            for (var i = 0; i < data.length; ++i) {
+                res[data[i].t] = data[i];
+            }
+        }
+        return res;
+    }
+
+    function replayFlag(cell, name) {
+        var hi = replayGestureHighlights[cell.t];
+        return hi ? hi[name] : cell[name];
+    }
+
     function highlightAction(a) {
         console.log("Warlock.highlightAction", a.object_type, a.object);
         if (a.object_type === "warlock") {
@@ -621,6 +1077,10 @@ Item {
                 paHPHighlight.restart();
                 break;
             case "gestures":
+                if (mainWindow.battleReplay.active) {
+                    replayGestureHighlights = replayHighlightsByTurn(a.data);
+                    break;
+                }
                 lwGestures.model = a.data;
                 scrollGestures();
                 break;
@@ -628,7 +1088,7 @@ Item {
         } else if (a.object_type === "monster") {
             var mi = findMonsterItem(a.object);
             if (mi) {
-                mi.highlightNews(a.color ? a.color : "#FEE2D6");
+                mi.highlightNews(a.color ? a.color : "#FEE2D6", a.news_icon);
             }
         } else if (a.object_type === "status") {
             var si = findStatusItem(a.object);
@@ -648,6 +1108,10 @@ Item {
                 iiHP.color = iiHP.bg_color;
                 break;
             case "gestures":
+                if (mainWindow.battleReplay.active) {
+                    replayGestureHighlights = ({});
+                    break;
+                }
                 lwGestures.model = l_warlock.print_g;
                 scrollGestures();
                 break;
@@ -706,6 +1170,9 @@ Item {
                 iiRight.color = "transparent";
             } else if (!Inside) {
                 if (l_warlock.control_paralyze) {
+                    l_paralyzeActionData.action = "paralized";
+                    l_paralyzeActionData.active_action = true;
+                    l_paralyzeActionData.warlock_name = l_warlock.name;
                     l_paralyzeActionData.hand = "RH";
                     l_paralyzeActionData.plg = l_warlock.prg;
                     l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
@@ -715,6 +1182,9 @@ Item {
                     mainWindow.setCharm("RH", par_g, true);
                     setGesture("R", SG.getIconByGesture(par_g, true), par_g, true);
                 } else if (l_warlock.control_charmed) {
+                    l_charmActionData.action = "charmed";
+                    l_charmActionData.active_action = true;
+                    l_charmActionData.warlock_name = l_warlock.name;
                     l_charmActionData.hand = "LH";
                     l_charmActionData.plg = l_warlock.plg;
                     l_charmActionData.warlock_idx = l_warlock.warlock_idx;
@@ -731,6 +1201,9 @@ Item {
                 iiLeft.color = "transparent";
             } else if (!Inside) {
                 if (l_warlock.control_paralyze) {
+                    l_paralyzeActionData.action = "paralized";
+                    l_paralyzeActionData.active_action = true;
+                    l_paralyzeActionData.warlock_name = l_warlock.name;
                     l_paralyzeActionData.hand = "LH";
                     l_paralyzeActionData.plg = l_warlock.plg;
                     l_paralyzeActionData.warlock_idx = l_warlock.warlock_idx;
@@ -740,6 +1213,9 @@ Item {
                     mainWindow.setCharm("LH", par_gr, true);
                     setGesture("L", SG.getIconByGesture(par_gr, true), par_gr, true);
                 } else if (l_warlock.control_charmed) {
+                    l_charmActionData.action = "charmed";
+                    l_charmActionData.active_action = true;
+                    l_charmActionData.warlock_name = l_warlock.name;
                     l_charmActionData.hand = "RH";
                     l_charmActionData.plg = l_warlock.prg;
                     l_charmActionData.warlock_idx = l_warlock.warlock_idx;
@@ -787,12 +1263,49 @@ Item {
 
     // Show the newest turn: the longest strip sets the shared offset, every other row follows it.
     function scrollGestures() {
+        if (mainWindow.battleReplay.active) {
+            applyGesturesScroll(mainWindow.gesturesScrollX);
+            return;
+        }
         var max_x = Math.max(0, lwGestures.contentWidth - lwGestures.width);
         if (max_x > mainWindow.gesturesScrollX) {
             mainWindow.gesturesScrollX = max_x;
         } else {
             applyGesturesScroll(mainWindow.gesturesScrollX);
         }
+    }
+
+    function setReplayGestures() {
+        lwGestures.model = l_warlock.print_g;
+        replayGestureHighlights = ({});
+        applyGesturesScroll(mainWindow.gesturesScrollX);
+    }
+
+    // Keep the replay cursor inside this strip. The offset is shared, so
+    // adjusting it on one row moves every row to the same turn.
+    function ensureReplayCursorVisible() {
+        if (!mainWindow.battleReplay.active || !lwGestures) {
+            return;
+        }
+        var turn = mainWindow.battleReplay.turn;
+        if (turn < 1) {
+            return;
+        }
+        var cell = 90 * l_ratio;
+        var cursor_x = (turn - 1) * cell;
+        var view = lwGestures.width;
+        if (view <= 0) {
+            return;
+        }
+        var offset = mainWindow.gesturesScrollX;
+        if (offset > cursor_x) {
+            offset = cursor_x;
+        }
+        if ((offset + view) < (cursor_x + cell)) {
+            offset = cursor_x + cell - view;
+        }
+        offset = Math.max(0, Math.min(offset, Math.max(0, lwGestures.contentWidth - view)));
+        mainWindow.gesturesScrollX = offset;
     }
 
     function prepareDynamic(type, arr, parent, code_value, start_x, incerment) {
@@ -808,7 +1321,13 @@ Item {
             }
             var arr_m = arr[i];
             arr_m.is_checkbox = false;
-            arr_m.text = arr_m[code_value];
+            if (type === "m") {
+                arr_m.text = arr_m.hp;
+            } else if ((type === "s") && (parseInt(arr_m[code_value], 10) === 0)) {
+                arr_m.text = "";
+            } else {
+                arr_m.text = arr_m[code_value];
+            }
             if (type === "s") {
                 arr_m.is_checkbox = (arr_m.action === "permanency") || (arr_m.action === "delay");
                 if (arr_m.is_checkbox) {
@@ -828,12 +1347,29 @@ Item {
 
     }
 
+    // The monster tiles are the live battle.monsters roster. The static summon
+    // placeholders stay in that roster but are hidden until the news ends.
+    function refreshMonsters() {
+        var monsters = l_warlock.monsters || [];
+        var shown = [];
+        var showPlaceholders = l_warlock.news_placeholders_visible !== false;
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
+            if (!monsters[i]) {
+                continue;
+            }
+            if (showPlaceholders || !isPlaceholderMonster(monsters[i])) {
+                shown.push(monsters[i]);
+            }
+        }
+        prepareDynamic("m", shown, iMonsters, "hp", 0, 1);
+    }
+
     function prepareMonsters() {
-        prepareDynamic("m", l_warlock.monsters, iMonsters, "hp", 0, 1);
+        refreshMonsters();
     }
 
     function prepareState() {
-        prepareDynamic("s", l_warlock.statusIcons, iCharm, "value", svCharm.width - svCharm.height, -1);
+        refreshStatuses();
     }
 
     property int isHandsVisible: 0
@@ -857,12 +1393,12 @@ Item {
             }
 
             if (l_warlock.pgL) {
-                setGesture("L", SG.getIconByGesture(l_warlock.pgL, true));
+                setGesture("L", SG.getIconByGesture(l_warlock.pgL, true), l_warlock.pgL, true);
                 mainWindow.gBattle.actions["L"].g = l_warlock.pgL;
             }
 
             if (l_warlock.pgR) {
-                setGesture("R", SG.getIconByGesture(l_warlock.pgR, true));
+                setGesture("R", SG.getIconByGesture(l_warlock.pgR, true), l_warlock.pgR, true);
                 mainWindow.gBattle.actions["R"].g = l_warlock.pgR;
             }
         } else {
@@ -906,8 +1442,24 @@ Item {
         }
     }
 
+    // The gesture of a paralysed hand is forced by the server. The order form
+    // still lists every gesture, so derive the frozen one from the last real
+    // gesture the same way the order generator does.
+    function frozenGesture(Hand) {
+        var fg = l_warlock.fg || "";
+        if (fg !== "") {
+            return fg;
+        }
+        var last = (Hand === "L") ? l_warlock.lgL : l_warlock.lgR;
+        var gesture = SG.getNextParalyzedGesture(last || "", mainWindow.gBattle.is_fc);
+        return gesture || "-";
+    }
+
     function finishWarlockCreation() {
         console.log("finishWarlockCreation", JSON.stringify(l_warlock));
+        lwGestures.model = l_warlock.print_g;
+        l_hpDisplay = l_warlock.hp;
+        l_dead = finalWarlockDead();
         scrollGestures();
         prepareMonsters();
         prepareState();
@@ -923,10 +1475,15 @@ Item {
 
         prepareHands();
 
-        if (!l_warlock.player && (l_warlock.fh > 0)) {
+        if (l_warlock.fh > 0) {
             var lh = l_warlock.fh === 1 ? "L" : "R";
-            var ng = (l_warlock.charmed > 0) ? "-" : SG.getNextParalyzedGesture(l_warlock["lg"+lh], mainWindow.gBattle.is_fc);
-            setGesture(lh, SG.getIconByGesture(ng, true), ng);
+            var ng = (l_warlock.charmed > 0) ? "-" : frozenGesture(lh);
+            // Inside=true for the player: show the frozen gesture without
+            // triggering the normal auto-reset/order submission path.
+            setGesture(lh, SG.getIconByGesture(ng, true), ng, l_warlock.player);
+            if (l_warlock.player && mainWindow.gBattle.actions[lh]) {
+                mainWindow.gBattle.actions[lh].g = ng;
+            }
         }
 
         iiBanked.visible = (l_warlock.banked_spell !== "");

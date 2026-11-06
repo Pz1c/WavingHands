@@ -10,6 +10,8 @@
 #include <QFontDatabase>
 #include <QLoggingCategory>
 #include <QScreen>
+#include <QSettings>
+#include <QStandardPaths>
 #ifdef Q_OS_ANDROID
 #include <QtCore/private/qandroidextras_p.h>
 #endif
@@ -98,6 +100,9 @@ int main(int argc, char *argv[])
         // Created before QML loads: the WarlockDictionary singleton (QWarlockDictionary::create)
         // hands out this instance. WarlocksDuelCore and WarlockDictionary are registered
         // automatically in module ua.sp.warloksduel 2.0 (QML_NAMED_ELEMENT, CONFIG += qmltypes).
+        // The ini path the core sets too: the dictionary reads the stored language here, before
+        // the core exists, and would otherwise read another file than the one it stores to.
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
         QWarlockDictionary::getInstance();
         //QGoogleAnalytics::getInstance();
         //qmlRegisterSingletonType<QGoogleAnalytics>("ua.sp.GoogleAnalytics", 1, 0, "GoogleAnalytics", googleanalytics_qobject_singletontype_provider);

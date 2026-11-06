@@ -32,8 +32,25 @@ ApplicationWindow {
     property alias mainHeader: tbTop
     property var gERROR: ({})
     property var gBattle: ({})
+    property var battleReplay: ({
+        active: false,
+        battle_id: 0,
+        turn: 0,
+        max_turn: 0,
+        playing: false,
+        base_battle: null,
+        needs_snapshot: false,
+        loading: false
+    })
     property int playerSpellbookLevel: 6
-    property var warlockDictionary: WarlockDictionary
+    // Not the WarlockDictionary object itself: the lang read below makes every binding that
+    // calls getStringByCode() depend on the language, so a switch re-translates the shown UI
+    // (BaseWindow and InfoWindow use this object too).
+    property var warlockDictionary: ({
+        getStringByCode: function(code) {
+            return WarlockDictionary.lang ? WarlockDictionary.getStringByCode(code) : code;
+        }
+    })
     //property var googleAnalytic: GoogleAnalytics
     property real height_koeff: 1
     property bool exit_on_back_button: true
@@ -87,9 +104,19 @@ ApplicationWindow {
         onNeedLogin: getLoginFromUser()
         onErrorOccurred: showErrorMessage()
         onIsLoadingChanged: GUI.isLoadingChanged()
-        onBattleListChanged: GUI.newBattleList()
+        onBattleListChanged: {
+            GUI.newBattleList();
+            checkWaitingBattleReady();
+        }
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
+        onBattleOrdersWaiting: function(battle_id) {
+            if (!WNDU.isWndVisible(WNDU.wnd_battle) || !gBattle ||
+                    (gBattle.id !== battle_id)) {
+                return;
+            }
+            core.getBattle(battle_id, 0, false);
+        }
         onOpponentTurnReady: function(by) { refreshAfterOpponentTurn(by); }
         onBattleHistoryReady: function(battle_id, history) { applyBattleHistory(battle_id, history); }
         onRegisterNewUserChanged: GUI.newUserRegistered()
@@ -222,7 +249,7 @@ ApplicationWindow {
                 anchors.right: parent.right
                 font.pixelSize: 42 * ratioFont
                 color: "#E7FFFF"
-                text: "Hi, " + core.login
+                text: warlockDictionary.getStringByCode("HiLogin").replace("%1", core.login)
             }
 
             Rectangle {
@@ -243,8 +270,10 @@ ApplicationWindow {
             anchors.leftMargin: 48 * ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 48 * ratioObject
-            anchors.bottom: bbNewGameWithFriend.top
+            anchors.bottom: rmLang.top
             anchors.bottomMargin: 24 * ratioObject
+            // on a short screen the items scroll here instead of running over the buttons below
+            clip: true
             contentWidth: -1
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -326,6 +355,38 @@ ApplicationWindow {
             }
 
 
+        }
+
+        // Interface language: WarlockDictionary stores the choice, and the shown texts follow it
+        Row {
+            id: rmLang
+            anchors.bottom: bbNewGameWithFriend.top
+            anchors.bottomMargin: 24 * ratioObject
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 18 * ratioObject
+
+            Repeater {
+                model: GUI.getLangMenuList()
+
+                BtnBig {
+                    readonly property bool selected: WarlockDictionary.lang === modelData.c
+
+                    width: 128 * ratioObject
+                    height: 52 * ratioObject
+                    radius: height / 2
+                    border.width: 2 * ratioObject
+                    text_color: "#ABF4F4"
+                    font.pixelSize: 24 * ratioFont
+                    text: warlockDictionary.getStringByCode(modelData.t)
+                    bg_color_active: selected ? "#551470" : "transparent"
+                    border_color_active: selected ? "#ABF4F4" : "#905B93"
+
+                    onClicked: {
+                        logEvent("menu_action", {action:"lang_" + modelData.c});
+                        WarlockDictionary.setCurrentLang(modelData.c);
+                    }
+                }
+            }
         }
 
         BtnBig {
@@ -413,7 +474,7 @@ ApplicationWindow {
 
             LargeText {
                 id: lPlayerTitle
-                text: "Hi " + core.login
+                text: warlockDictionary.getStringByCode("HiLogin").replace("%1", core.login)
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
                 fontSizeMode: Text.VerticalFit
@@ -852,7 +913,7 @@ ApplicationWindow {
 
                             Image {
                                 id: rdbiIcon
-                                source: lvFinishedBattle.model[index].d.indexOf("Won ") !== 0 ? "res/RIP2.png" : "res/stars.png"
+                                source: lvFinishedBattle.model[index].w !== 1 ? "res/RIP2.png" : "res/stars.png"
                                 width: 24 * ratioObject
                                 height: 24 * ratioObject
                                 anchors.verticalCenter: parent.verticalCenter
@@ -973,7 +1034,7 @@ ApplicationWindow {
 
     function showBattleChat(chat_history) {
         console.log("showBattleChat");
-        showErrorWnd({type:3,text:chat_history, title: "Battle #" + gBattle.id + " chat", msg: gBattle.actions.C, read_only: gBattle.read_only});
+        showErrorWnd({type:3,text:chat_history, title: warlockDictionary.getStringByCode("BattleChatTitle").replace("%1", gBattle.id), msg: gBattle.actions.C, read_only: gBattle.read_only});
     }
 
     function storeBattleChatMsg(msg) {
@@ -1001,9 +1062,16 @@ ApplicationWindow {
             if (!err.type) {
                 err.type = 7;
             }
+            if (((err.type === 8) || (err.type === "8")) && (err.id > 0)) {
+                // Open the same read-only battle window as the Orders Submitted
+                // window's View action.
+                showBattleReadOnly(err.id);
+                core.scanState(1);
+                return;
+            }
             showErrorWnd(err);
         } else {
-            showErrorWnd({text:txt,type:2,title:"Battle #" + bit});
+            showErrorWnd({text:txt,type:2,title:warlockDictionary.getStringByCode("BattleTitle").replace("%1", bit)});
         }
         core.scanState(1);
     }
@@ -1019,7 +1087,9 @@ ApplicationWindow {
     }
 
     function showReadyBattle() {
-        if (WNDU.isSomeWndOpenned()) {
+        clearBattleReplay();
+        var battle_open = WNDU.isWndVisible(WNDU.wnd_battle);
+        if (WNDU.isSomeWndOpenned() && !battle_open) {
             return;
         }
 
@@ -1027,7 +1097,11 @@ ApplicationWindow {
         console.log("showReadyBattle", battle_str);
         gBattle = JSON.parse(battle_str);
         gBattle.read_only = false;
-        WNDU.showBattle();
+        if (battle_open) {
+            WNDU.arr_wnd_instance[WNDU.wnd_battle].showWnd();
+        } else {
+            WNDU.showBattle();
+        }
     }
 
     // An opponent moved (TURNREADY from the caster link). The battle window is
@@ -1035,10 +1109,12 @@ ApplicationWindow {
     property bool turnRefreshPending: false
     function refreshAfterOpponentTurn(by) {
         if (WNDU.isWndVisible(WNDU.wnd_battle)) {
-            // Replayed by battleWindowHidden(): the scan timer is stopped while a
-            // battle is ready, so nothing else would refresh the list afterwards.
-            console.log("refreshAfterOpponentTurn deferred, battle window open", by);
-            turnRefreshPending = true;
+            // TURNREADY while the board is open: load the new ready page and
+            // let showReadyBattle() rebuild the open board.
+            turnRefreshPending = false;
+            if (gBattle && gBattle.id) {
+                core.getBattle(gBattle.id, 0, false);
+            }
             return;
         }
         turnRefreshPending = false;
@@ -1117,7 +1193,7 @@ ApplicationWindow {
             gBattle.currentHandIdx = isLeft ? GC.WARLOCK_HAND_LEFT : GC.WARLOCK_HAND_RIGHT;
             gBattle.otherHandIdx = isLeft ? GC.WARLOCK_HAND_RIGHT : GC.WARLOCK_HAND_LEFT;
         }
-        gERROR = {title: "Choose gesture for "+(isLeft ? "left" : "right") + " hand", is_left: isLeft, pga: possible_gestures.split(","),
+        gERROR = {title: warlockDictionary.getStringByCode(isLeft ? "ChooseGestureLeft" : "ChooseGestureRight"), is_left: isLeft, pga: possible_gestures.split(","),
             g:gBattle["ng" + gBattle.currentHand], at: action_type, widx: warlock_idx, lg: last_gesture};
         if (close_current) {
             closeChild();
@@ -1213,9 +1289,9 @@ ApplicationWindow {
             gBattle.spellIdx = arr_cast_now.length;
             var def_or_none = is_player && gBattle.player_changed_mind;
             //var def_or_none = (gBattle.spellIdx > 0) || (is_player && (gBattle.player_changed_mind || ((playerSpellbookLevel < 5) && (finished_high_lv_spell > 0))));
-            if (def_or_none) {
-                gBattle.spellIdx = arr_cast_now.length + 1;
-            } else if (arr_cast_now.length === 1) {
+            // A spell completed by this gesture is the useful default even in a
+            // changed-mind battle. Default only stands in when there is none.
+            if (arr_cast_now.length === 1) {
                 arr_cast_now[0].choose = 1;
                 gBattle.spellIdx = 1;
             } else if (arr_cast_now.length > 1) {
@@ -1229,20 +1305,24 @@ ApplicationWindow {
                 }
                 arr_cast_now[spi].choose = 1;
                 gBattle.spellIdx = spi + 1;
+            } else if (def_or_none) {
+                gBattle.spellIdx = 1;
             }
-
-            var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:1,t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
-            res.push({gp:"?",n:(warlock_idx === 0 ? "Completed spells" : "Complete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:2});
+            var default_selected = def_or_none && (arr_cast_now.length === 0);
+            var def_spell = def_or_none ? {id:-1,gp:"?",n:"Default",choose:(default_selected ? 1 : 0),t:1,cast_type:1,row_type:1,is_charm_monster:charm_monster} : {gp:"None",n:"",choose:0,t:1,cast_type:0,row_type:1};
+            res.push({gp:"?",n:warlockDictionary.getStringByCode(warlock_idx === 0 ? "SpellListCompleted" : "SpellListCompletedOpponent"),choose:0,t:0,cast_type:100,row_type:2});
             res = res.concat(arr_cast_now);
             if (def_or_none || (arr_cast_now.length === 0) || ((curr_hand_finish_two_hand_spell > 0) || (other_hand_finish_spell > 0))) {
                 res.push(def_spell);
             }
         } else {
-            res.push({gp:"?",n:(warlock_idx === 0 ? warlockDictionary.getStringByCode("SpellbookName" + playerSpellbookLevel) : "Spells opponent may cast"),choose:0,t:0,cast_type:100,row_type:3});
+            // No gesture selected: the header is the selected row, not a stale spell.
+            gBattle.spellIdx = 0;
+            res.push({gp:"?",n:(warlock_idx === 0 ? warlockDictionary.getStringByCode("SpellbookName" + playerSpellbookLevel) : warlockDictionary.getStringByCode("SpellListOpponentMayCast")),choose:0,t:0,cast_type:100,row_type:3});
         }
         if (uncompleted_cnt > 0) {
             if (new_gesture !== '') {
-                res.push({gp:"?",n:(warlock_idx === 0 ? "Incomplete Spells" : "Incomplete Opponent Spells"),choose:0,t:0,cast_type:100,row_type:4});
+                res.push({gp:"?",n:warlockDictionary.getStringByCode(warlock_idx === 0 ? "SpellListIncomplete" : "SpellListIncompleteOpponent"),choose:0,t:0,cast_type:100,row_type:4});
             }
             res = res.concat(arr_cast_later);
         }
@@ -1257,7 +1337,10 @@ ApplicationWindow {
     }
 
     function setGesture(gesture, spell, need_target) {
-        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) || (((gesture === "C") || (spell.th> 0)) && !gBattle.player_under_control);
+        // While a hand is paralyzed or charmed the other hand is forced by that
+        // state. Maladroit/C must not overwrite it with the chosen gesture.
+        var is_maladroit = !gBattle.player_under_control &&
+                ((gBattle.warlocks[0].maladroit > 0) || (gesture === "C") || (spell.th > 0));
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
         if (!spell.n) {
             spell.n = "None";
@@ -1460,13 +1543,26 @@ ApplicationWindow {
         }
     }
 
+    function checkWaitingBattleReady() {
+        if (!WNDU.isWndVisible(WNDU.wnd_battle) || !gBattle || core.isLoading) {
+            return;
+        }
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (!wnd || !wnd.waitingForTurn) {
+            return;
+        }
+        if (!GUI.isBattleReady(gBattle.id)) {
+            return;
+        }
+        core.getBattle(gBattle.id, 0, false);
+    }
+
     function confirmOrdersEx() {
-        // The order submit rescans the player page itself: that is the refresh a
-        // deferred TURNREADY was waiting for.
         turnRefreshPending = false;
+        WNDU.closeChild();
+        // The board stays open. Close the review window first, so it does not
+        // wait for the network reply.
         WNDU.arr_wnd_instance[WNDU.wnd_battle].sendOrders();
-        WNDU.closeChilds();
-        processAfterClose();
     }
 
     function callInviteFriends() {
@@ -1525,19 +1621,217 @@ ApplicationWindow {
         }
     }
 
+    function clearBattleReplay() {
+        var replay_wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (replay_wnd && replay_wnd.stopReplay) {
+            replay_wnd.stopReplay();
+        }
+        battleReplay = {
+            active: false,
+            battle_id: 0,
+            turn: 0,
+            max_turn: 0,
+            playing: false,
+            base_battle: null,
+            needs_snapshot: false,
+            loading: false
+        };
+    }
+
     function showBattleReadOnly(BattleID) {
         console.log("main.qml.showBattleReadOnly", BattleID);
         //GUI.mainMenuAction("show_read_only_battle", BattleID);
+        clearBattleReplay();
         var battle_str = core.battleReadOnly(BattleID);
         console.log("showBattleReadOnly", battle_str);
         if (!battle_str) {
-            showErrorWnd({text:"Some problem with this battle, please contact viskgameua@gmail.com"});
+            showErrorWnd({text:warlockDictionary.getStringByCode("BattleProblemContact")});
             return;
         }
 
         gBattle = JSON.parse(battle_str);
         gBattle.read_only = true;
+        gBattle.waiting_for_turn = !GUI.isBattleFinished(BattleID);
+        if (GUI.isBattleFinished(BattleID)) {
+            startBattleReplay(BattleID);
+        }
         WNDU.showBattle();
+    }
+
+    function startBattleReplay(BattleID) {
+        battleReplay = {
+            active: false,
+            battle_id: 0,
+            turn: 0,
+            max_turn: 0,
+            playing: false,
+            base_battle: null,
+            needs_snapshot: false,
+            loading: false
+        };
+        var max_turn = core.battleReplayMaxTurn(BattleID);
+        if (!max_turn || (core.battleReplayTurn(BattleID, 1) === "[]")) {
+            return false;
+        }
+        battleReplay = {
+            active: true,
+            battle_id: BattleID,
+            turn: 0,
+            max_turn: max_turn,
+            playing: false,
+            base_battle: JSON.parse(JSON.stringify(gBattle)),
+            needs_snapshot: false,
+            loading: false
+        };
+        gBattle.replay = true;
+        gBattle.last_turn_hist = [];
+        return true;
+    }
+
+    function setBattleReplayState(playing, turn) {
+        battleReplay = {
+            active: battleReplay.active,
+            battle_id: battleReplay.battle_id,
+            turn: turn,
+            max_turn: battleReplay.max_turn,
+            playing: playing,
+            base_battle: battleReplay.base_battle,
+            needs_snapshot: battleReplay.needs_snapshot,
+            loading: battleReplay.loading
+        };
+    }
+
+    function updateBattleReplay(fields) {
+        var next = {};
+        for (var key in battleReplay) {
+            next[key] = battleReplay[key];
+        }
+        for (var field in fields) {
+            next[field] = fields[field];
+        }
+        battleReplay = next;
+    }
+
+    function stepBattleReplay(delta) {
+        if (!battleReplay.active || battleReplay.loading || !battleReplay.base_battle) {
+            return;
+        }
+        var next = Math.max(0, Math.min(battleReplay.max_turn,
+                                        battleReplay.turn + delta));
+        if (next === battleReplay.turn) {
+            return;
+        }
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (wnd) {
+            wnd.cancelReplayPlayback();
+        }
+        gBattle = JSON.parse(JSON.stringify(battleReplay.base_battle));
+        gBattle.replay = true;
+        gBattle.read_only = true;
+        updateBattleReplay({
+            turn: next,
+            playing: false,
+            needs_snapshot: next > 0,
+            loading: false
+        });
+        if (wnd) {
+            wnd.resetReplayBoardView();
+        }
+    }
+
+    function mergeReplayGestures(state) {
+        var base = battleReplay.base_battle;
+        if (!base || !base.warlocks || !state.warlocks) {
+            return;
+        }
+        for (var i = 0; i < state.warlocks.length; ++i) {
+            for (var j = 0; j < base.warlocks.length; ++j) {
+                if (state.warlocks[i].name === base.warlocks[j].name) {
+                    state.warlocks[i].L = base.warlocks[j].L;
+                    state.warlocks[i].R = base.warlocks[j].R;
+                    break;
+                }
+            }
+        }
+    }
+
+    function applyBattleReplayState(selected_turn, json) {
+        if (!battleReplay.active || (selected_turn !== battleReplay.turn)) {
+            return;
+        }
+        updateBattleReplay({ loading: false });
+        if (!json) {
+            updateBattleReplay({ needs_snapshot: true });
+            showErrorWnd({text:warlockDictionary.getStringByCode("BattleProblemContact")});
+            return;
+        }
+
+        var state = JSON.parse(json);
+        mergeReplayGestures(state);
+        if (battleReplay.base_battle) {
+            state.battle_hist = battleReplay.base_battle.battle_hist || "";
+            state.battle_chat = battleReplay.base_battle.battle_chat || "";
+        }
+        state.replay = true;
+        state.read_only = true;
+        state.hint = [];
+        state.last_turn_hist = [];
+        gBattle = state;
+        updateBattleReplay({ needs_snapshot: false });
+
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (wnd) {
+            wnd.reloadReplayBoard();
+            wnd.playReplayTurn(selected_turn);
+        }
+    }
+
+    function toggleBattleReplay() {
+        if (!battleReplay.active || battleReplay.loading) {
+            return;
+        }
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (battleReplay.playing) {
+            setBattleReplayState(false, battleReplay.turn);
+            if (wnd) {
+                wnd.stopReplay();
+            }
+            return;
+        }
+        // Play always restarts the current turn from its first event.
+        if (battleReplay.turn > 0) {
+            if (wnd) {
+                wnd.cancelReplayPlayback();
+            }
+            updateBattleReplay({ loading: true, needs_snapshot: true });
+            var json = core.battleReplayState(battleReplay.battle_id,
+                                              battleReplay.turn);
+            applyBattleReplayState(battleReplay.turn, json);
+            return;
+        }
+
+        var start = 1;
+        if (start > battleReplay.max_turn) {
+            return;
+        }
+        if (wnd) {
+            wnd.playReplayTurn(start);
+        }
+    }
+
+    function replayTurnClosed(had_events) {
+        if (!battleReplay.active || !battleReplay.playing) {
+            return;
+        }
+        var next = battleReplay.turn + 1;
+        if (next > battleReplay.max_turn) {
+            setBattleReplayState(false, battleReplay.turn);
+            return;
+        }
+        var wnd = WNDU.arr_wnd_instance[WNDU.wnd_battle];
+        if (wnd) {
+            wnd.scheduleReplayTurn(had_events ? 0 : 2000);
+        }
     }
 
     property int needTopList: 0;

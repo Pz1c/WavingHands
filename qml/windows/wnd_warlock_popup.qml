@@ -72,7 +72,7 @@ InfoWindow {
                 font.pixelSize: 42 * mainWindow.ratioFont
                 color: "#0654C0"
                 horizontalAlignment: Text.AlignHCenter
-                text: "Warlock stats"
+                text: dict.getStringByCode("WarlockStats")
             }
 
             Text {
@@ -97,7 +97,7 @@ InfoWindow {
                 font.pixelSize: 28 * mainWindow.ratioFont
                 color: "#FEE2D6"
                 horizontalAlignment: Text.AlignHCenter
-                text: "online"
+                text: dict.getStringByCode("OnlineLabel")
                 font.italic: true
                 visible: false
             }
@@ -141,7 +141,7 @@ InfoWindow {
                     font.pixelSize: 28 * mainWindow.ratioFont
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignLeft
-                    text: "Score: "
+                    text: dict.getStringByCode("StatScore")
                 }
 
                 Text {
@@ -153,7 +153,7 @@ InfoWindow {
                     font.pixelSize: 28 * mainWindow.ratioFont
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignLeft
-                    text: "Played: "
+                    text: dict.getStringByCode("StatPlayed")
                 }
 
                 Text {
@@ -166,7 +166,7 @@ InfoWindow {
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignRight
 
-                    text: "Won: "
+                    text: dict.getStringByCode("StatWon")
                 }
 
                 Text {
@@ -178,14 +178,14 @@ InfoWindow {
                     font.pixelSize: 28 * mainWindow.ratioFont
                     color: "#FEE2D6"
                     horizontalAlignment: Text.AlignRight
-                    text: "Lost: "
+                    text: dict.getStringByCode("StatLost")
                 }
             }
 
             BtnBig {
                 id: bbAction
                 text_color: "#ABF4F4"
-                text: "Challenge"
+                text: dict.getStringByCode("Challenge")
                 border.width: 0
                 radius: 30
                 visible: true
@@ -221,7 +221,7 @@ InfoWindow {
             Text {
                 id: bbBtn2
                 color: "#A8F4F4"
-                text: "Practice together"
+                text: dict.getStringByCode("PracticeTogether")
                 font.underline: true
                 visible: false
                 horizontalAlignment: Text.AlignLeft
@@ -273,12 +273,12 @@ InfoWindow {
 
         ltTitle.text = warlock_data.name;
         ltLast.text = UPU.getLastActivityText(warlock_data.last_activity);
-        ltScore.text = "Score: " + warlock_data.elo;
-        ltWon.text = "Won: " + warlock_data.won;
-        ltLost.text = "Lost: " + (warlock_data.played - warlock_data.won);
-        ltPlayed.text = "Played: " + warlock_data.played;
+        ltScore.text = dict.getStringByCode("StatScore") + warlock_data.elo;
+        ltWon.text = dict.getStringByCode("StatWon") + warlock_data.won;
+        ltLost.text = dict.getStringByCode("StatLost") + (warlock_data.played - warlock_data.won);
+        ltPlayed.text = dict.getStringByCode("StatPlayed") + warlock_data.played;
         bbBtn2.visible = !warlock_data.isPlayer;
-        bbAction.text = warlock_data.isPlayer ? "Hall of Fame" : "Challenge";
+        bbAction.text = dict.getStringByCode(warlock_data.isPlayer ? "TopList" : "Challenge");
         ltTitleOnline.visible = warlock_data.online;
         saClick.start();
 

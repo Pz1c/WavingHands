@@ -44,7 +44,7 @@ InfoWindow {
             wrapMode: Text.WordWrap
             font.pixelSize: 49 * mainWindow.ratioFont
             color: "#A8F4F4"
-            text: "Ready to start?"
+            text: dict.getStringByCode("AfterRegTitle")
 
         }
 
@@ -58,7 +58,7 @@ InfoWindow {
             wrapMode: Text.WordWrap
             font.pixelSize: 28 * mainWindow.ratioFont
             color: "#A8F4F4"
-            text: "You will start with a small apprentice spellbook. After you've trained a bit, go ahead and play with other players."
+            text: dict.getStringByCode("AfterRegDesc1")
         }
 
         Text {
@@ -71,7 +71,7 @@ InfoWindow {
             wrapMode: Text.WordWrap
             font.pixelSize: 28 * mainWindow.ratioFont
             color: "#A8F4F4"
-            text: "This can be one of the best games you've ever played, but it takes 2 to 3 games to master, so take your time :)<br><br>Let's play!"
+            text: dict.getStringByCode("AfterRegDesc2")
         }
 
         IconInfo {
@@ -97,7 +97,7 @@ InfoWindow {
 
             color: "transparent"
             text_color: "#A8F4F4"
-            text: "Start"
+            text: dict.getStringByCode("Start")
 
             onClicked: {
                 console.log("wnd_after_reg.start");

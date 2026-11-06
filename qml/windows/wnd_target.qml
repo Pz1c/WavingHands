@@ -132,6 +132,7 @@ BaseWindow {
                                                 borderOnPress: false
                                                 border.color: "#A8F4F4"
                                                 border.width: (targetItem.targetName === tile.key ? 3 : 0) * mainWindow.ratioObject
+                                                opacity: tile.placeholder ? 0.3 : 1
 
                                                 onClicked: {
                                                     targetItem.chooseTarget(l_data);
@@ -315,7 +316,7 @@ BaseWindow {
 
                 color: "transparent"
                 text_color: active ? "#A8F4F4" : "#544653"
-                text: "Done"
+                text: dict.getStringByCode("Done")
 
                 onClicked: {
                     console.log("wnd_target.bbDone", JSON.stringify(mainWindow.gBattle.actions), JSON.stringify(target));
@@ -424,7 +425,8 @@ BaseWindow {
                     continue;
                 }
                 tiles.push({key:m.name,text:placeholder ? "?" : "" + m.hp,icon:"qrc:/res/" + m.icon + ".png",
-                            info:m.enchantment_icon ? m.enchantment_icon : "",data:m});
+                            info:m.enchantment_icon ? m.enchantment_icon : "",
+                            placeholder:placeholder,data:m});
             }
             res.push({name:w.name,player:w.player ? true : false,tiles:tiles});
         }
@@ -460,9 +462,9 @@ BaseWindow {
         var txt = "";
         if (isSpell && currentSpell.n) {
             if (battle.player_has_bank) {
-                txt = "To bank a " + currentSpell.n + ", click the bank icon and then choose a target";
+                txt = dict.getStringByCode("HintBankSpell").replace("%1", currentSpell.n);
             } else if (battle.player_has_permanency) {
-                txt = "To make " + currentSpell.n + " permanent, click the permanency icon and then choose a target";
+                txt = dict.getStringByCode("HintPermanentSpell").replace("%1", currentSpell.n);
             }
         }
         if (txt !== "") {
