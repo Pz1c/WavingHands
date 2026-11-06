@@ -1297,20 +1297,29 @@ ApplicationWindow {
         return res;
     }
 
+    function isTwoHandedSpell(spell) {
+        return !!spell && /[a-z]/.test(spell.g || "");
+    }
+
     function setGesture(gesture, spell, need_target) {
-        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) || (((gesture === "C") || (spell.th> 0)) && !gBattle.player_under_control);
+        var is_two_handed = isTwoHandedSpell(spell);
+        var is_maladroit = (gBattle.warlocks[0].maladroit > 0) ||
+                ((gesture === "C") && !gBattle.player_under_control);
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
         if (!spell.n) {
             spell.n = "None";
         }
 
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
-        if (is_maladroit && (gBattle.actions[gBattle.otherHand].g !== gesture)) {
+        if (is_two_handed) {
+            gBattle["ng" + gBattle.otherHand] = gesture;
+            gBattle.actions[gBattle.otherHand] = {g:gesture,s:spell};
+        } else if (is_maladroit && (gBattle.actions[gBattle.otherHand].g !== gesture)) {
             gBattle["ng" + gBattle.otherHand] = gesture;
             gBattle.actions[gBattle.otherHand] = {g:gesture,s:{gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}};
         }
 
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit);
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit || is_two_handed);
         if (need_target) {
             console.log("NEED_TARGET", gBattle.actions.P, gBattle.currentHandIdx);
             spell.permanency = (gBattle.actions.P === -1) || (gBattle.actions.P !== gBattle.currentHandIdx) ? 0 : 1;
@@ -1370,7 +1379,15 @@ ApplicationWindow {
     function setSpellTarget(TargetName, lPermanent, lDelay, OperationType) {
         console.log("main.setSpellTarget", TargetName, lPermanent, lDelay, OperationType, gBattle.currentHand);
         if (OperationType === 1) {
+            var spell = gBattle.actions[gBattle.currentHand].s;
             gBattle.actions[gBattle.currentHand].target = TargetName;
+            if (isTwoHandedSpell(spell)) {
+                var other = gBattle.otherHand ||
+                        (gBattle.currentHand === "L" ? "R" : "L");
+                gBattle.actions[other].g = gBattle.actions[gBattle.currentHand].g;
+                gBattle.actions[other].s = spell;
+                gBattle.actions[other].target = TargetName;
+            }
             if (lPermanent === 1) {
                 gBattle.actions.P = gBattle.currentHandIdx;
             } else {
