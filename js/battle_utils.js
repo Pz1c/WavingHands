@@ -1656,7 +1656,8 @@ function prepareBattle(raw_battle) {
     battle = {id:raw_battle.id,size:0,fire:raw_battle.fire,chat:raw_battle.chat,is_fdf:raw_battle.is_fdf,is_fc:raw_battle.is_fc,warlocks:[],elemental:{hp:0,type:"fire"},
         monsters:{},ngL:"",ngR:"",turn_num: raw_battle.turn_num,hint: raw_battle.hint, msg: raw_battle.msg, battle_hist: BGU.replaceAll(raw_battle.battle_hist, "&quot;", '"'),
         battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only,
-        replay: raw_battle.replay, maladroit: raw_battle.maladroit,
+        replay: raw_battle.replay, finished: raw_battle.finished === true,
+        maladroit: raw_battle.maladroit,
         // https://github.com/Pz1c/WavingHands/issues/315: true while the site offers its SUICIDE checkbox.
         // battleInfo() sends 1/0; a battle prepared once already holds the bool. Note "0" is truthy in JS.
         suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true)};
@@ -1876,14 +1877,6 @@ function finishPrepareWarlockList() {
     var show_warlocks = [];
     map_warlock_name_to_idx = {};
     map_monster_name_to_idx = {};
-    var active_warlocks = 0;
-    for (var aw = 0, LnA = battle.warlocks.length; aw < LnA; ++aw) {
-        if (battle.warlocks[aw] && battle.warlocks[aw].active) {
-            ++active_warlocks;
-        }
-    }
-    // Hide inactive cards only while at least two active Warlocks remain.
-    var can_hide_inactive = !battle.read_only && (active_warlocks >= 2);
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         // The snapshot unit section is the turn-start board, so a Warlock who
         // dies during the news is still present here and can show his RIP card.
@@ -1895,7 +1888,7 @@ function finishPrepareWarlockList() {
         var start_hp = battle.warlocks[i] ? parseInt(battle.warlocks[i].hp, 10) : 0;
         var turn_news_keep_card = (start_hp > 0) && !surrendered;
         if (!battle.warlocks[i] ||
-                (can_hide_inactive && !battle.warlocks[i].active &&
+                (!battle.finished && !battle.warlocks[i].active &&
                  !turn_news_keep_card)) {
             continue;
         }

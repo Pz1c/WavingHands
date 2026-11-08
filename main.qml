@@ -1096,6 +1096,7 @@ ApplicationWindow {
         console.log("showReadyBattle", battle_str);
         gBattle = JSON.parse(battle_str);
         gBattle.read_only = false;
+        gBattle.finished = false;
         if (battle_open) {
             WNDU.arr_wnd_instance[WNDU.wnd_battle].showWnd();
         } else {
@@ -1664,10 +1665,12 @@ ApplicationWindow {
             return;
         }
 
+        var finished = GUI.isBattleFinished(BattleID);
         gBattle = JSON.parse(battle_str);
         gBattle.read_only = true;
-        gBattle.waiting_for_turn = !GUI.isBattleFinished(BattleID);
-        if (GUI.isBattleFinished(BattleID)) {
+        gBattle.finished = finished;
+        gBattle.waiting_for_turn = !finished;
+        if (finished) {
             startBattleReplay(BattleID);
         }
         WNDU.showBattle();
@@ -1789,6 +1792,7 @@ ApplicationWindow {
         }
         state.replay = true;
         state.read_only = true;
+        state.finished = true;
         state.hint = [];
         state.last_turn_hist = [];
         gBattle = state;
