@@ -767,9 +767,55 @@ bool QBattleInfo::hasBoard() const
             !_fullJSON.contains("\"warlocks\":[]");
 }
 
+// The waiting page has no monoturnfuture block. It prints the submitted order
+// separately after "Your orders are in for this turn.":
+//   <FONT COLOR="#AAAAAA">LH: W</FONT>
+//   <FONT COLOR="#AAAAAA">RH: P (Shield at Azi).</FONT>
+static bool parseSubmittedGestures(const QString &data, QString &left, QString &right) {
+    const int wait = data.indexOf("Your orders are in for this turn.");
+    if (wait == -1) {
+        return false;
+    }
+    const QString tail = data.mid(wait);
+
+    auto readGesture = [&tail](const QString &key) {
+        int start = tail.indexOf(key);
+        if (start == -1) {
+            return QString();
+        }
+        start += key.length();
+        int end = tail.indexOf("</FONT>", start);
+        if (end == -1) {
+            end = tail.indexOf("<BR>", start);
+        }
+        if (end == -1) {
+            return QString();
+        }
+        QString text = tail.mid(start, end - start);
+        text.replace("&nbsp;", " ").replace("&gt;", ">")
+            .replace("&lt;", "<").replace("&amp;", "&");
+        text = text.trimmed();
+        return text.left(1);
+    };
+
+    left = readGesture("LH:");
+    right = readGesture("RH:");
+    return !left.isEmpty() && !right.isEmpty();
+}
+
 void QBattleInfo::parseAllTurns(QString &Data, QString &Login, bool Last) {
     qDebug() << "QBattleInfo::parseAllTurns" << Login << Last;
     parseUnits(Data, Login);
+
+    QString pendingL, pendingR;
+    if (parseSubmittedGestures(Data, pendingL, pendingR)) {
+        for (int i = 0; i < _Warlock.size(); ++i) {
+            if (_Warlock[i]->name().compare(Login, Qt::CaseInsensitive) == 0) {
+                _Warlock[i]->setPendingGestures(pendingL, pendingR);
+                break;
+            }
+        }
+    }
 
     int last_idx = Data.indexOf("<TABLE CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="), first_idx = Data.indexOf("<U>Turn");
     QString hist = Data.mid(first_idx, last_idx - first_idx).replace("<a href=\"/player", "<b atr=\"")

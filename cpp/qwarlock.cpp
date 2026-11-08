@@ -47,6 +47,19 @@ static bool gestureInSet(const QString &gesture, const QString &allowed) {
 // checkSpellPosible reject every spell, which leaves the AI with no move at all.
 static const QString DEFAULT_POSSIBLE_GESTURES = "W,S,D,P,C,F";
 
+// The waiting page prints the submitted gesture separately from the history.
+// Append it for display only; the real history stays untouched for game logic.
+static QString appendPendingGesture(const QString &history, const QString &pending) {
+    if (pending.isEmpty()) {
+        return history;
+    }
+    QString result = history;
+    while (result.endsWith(' ')) {
+        result.chop(1);
+    }
+    return result + pending;
+}
+
 QWarlock::QWarlock(QString Name, QString Status, QString LeftGestures, QString RightGestures, bool Player, bool isAI) :
     _scared(0), _confused(0), _charmed(0), _paralized(0), _shield(0), _coldproof(0), _fireproof(0), _hp(0), _poison(0), _disease(0), _amnesia(0),
     _maladroit(0), _bestSpellL(nullptr), _bestSpellR(nullptr)
@@ -81,6 +94,8 @@ QWarlock::QWarlock(QWarlock *CopyFrom) {
     _status = CopyFrom->_status;
     _leftGestures = CopyFrom->_leftGestures;
     _rightGestures = CopyFrom->_rightGestures;
+    _pendingL = CopyFrom->_pendingL;
+    _pendingR = CopyFrom->_pendingR;
     _player = CopyFrom->_player;
     _AI = CopyFrom->_AI;
     _possibleLeftGestures = CopyFrom->_possibleLeftGestures;
@@ -138,6 +153,11 @@ QString QWarlock::leftGestures() {
 
 QString QWarlock::rightGestures() {
     return _rightGestures;
+}
+
+void QWarlock::setPendingGestures(const QString &left, const QString &right) {
+    _pendingL = left;
+    _pendingR = right;
 }
 
 bool QWarlock::isParaFDF() const
@@ -362,6 +382,8 @@ QString QWarlock::separatedString() {
     }
     
     QString changed_mind = (_charmed > 0) || (_confused > 0) || (_paralized > 0) ? "1" : "0";
+    const QString left_gestures = appendPendingGesture(_leftGestures, _pendingL);
+    const QString right_gestures = appendPendingGesture(_rightGestures, _pendingR);
 
     return QString("{\"name\":\"%1\",\"status\":\"%2\",\"L\":\"%3\",\"R\":\"%4\",\"spells\":%5,\"player\":%6,\"bsL\":%7,\"bsR\":%8,\"hp\":%9,\"scared\":%10,"
                    "\"confused\":%11,\"charmed\":%12,\"paralized\":%13,\"shield\":%14,\"coldproof\":%15,\"fireproof\":%16,\"poison\":%17,\"disease\":%18,"
@@ -370,7 +392,7 @@ QString QWarlock::separatedString() {
                    "\"lgL\":\"%35\",\"lgR\":\"%36\",\"smcL\":%37,\"smcR\":%38,\"changed_mind\":%39,"
                    "\"pgL\":\"%40\",\"pgR\":\"%41\",\"ptL\":\"%42\",\"ptR\":\"%43\",\"psL\":\"%44\",\"psR\":\"%45\",\"id\":\"%46\",\"fh\":%47,\"bank\":\"%48\",\"fg\":\"%49\","
                    "\"is_bot\":%50}").
-            arg(_name, _status, _leftGestures, _rightGestures, res, boolToStr(_player), sbsL, sbsR, intToStr(_hp)).
+            arg(_name, _status, left_gestures, right_gestures, res, boolToStr(_player), sbsL, sbsR, intToStr(_hp)).
             arg(intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield),
                 intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_disease)).
             arg(intToStr(_amnesia), intToStr(_maladroit), intToStr(summon_left), intToStr(summon_right), _active ? "1" : "0").

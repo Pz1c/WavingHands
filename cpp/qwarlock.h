@@ -72,6 +72,7 @@ public:
     QString status();
     QString leftGestures();
     QString rightGestures();
+    void setPendingGestures(const QString &left, const QString &right);
     QString separatedString();
     bool player() const;
 
@@ -177,6 +178,8 @@ private:
     QString _status;
     QString _leftGestures;
     QString _rightGestures;
+    QString _pendingL;
+    QString _pendingR;
     QString _possibleLeftGestures;
     QString _possibleRightGestures;
     QString _banked_spell;
