@@ -354,6 +354,7 @@ function getHandByIdx(idx) {
     switch(idx) {
         case 0: return "#";
         case 1: return "LH#";
+        case 3: return "RH#";
         default: return "RH#";
     }
 }

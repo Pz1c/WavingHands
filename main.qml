@@ -1322,7 +1322,8 @@ ApplicationWindow {
         if (need_target) {
             console.log("NEED_TARGET", gBattle.actions.P, gBattle.currentHandIdx);
             spell.permanency = (gBattle.actions.P === -1) || (gBattle.actions.P !== gBattle.currentHandIdx) ? 0 : 1;
-            spell.delay = (gBattle.actions.D === -1) || (gBattle.actions.D !== gBattle.currentHandIdx) ? 0 : 1;
+            spell.delay = ((gBattle.actions.D === 3) ||
+                           (gBattle.actions.D === gBattle.currentHandIdx)) ? 1 : 0;
             // the gesture window goes first, the target window then sits on top of the battle
             WNDU.processEscape();
             showTargetWnd(true, spell);
@@ -1359,7 +1360,8 @@ ApplicationWindow {
             return;
         }
         spell.permanency = (gBattle.actions.P === -1) || (gBattle.actions.P !== gBattle.currentHandIdx) ? 0 : 1;
-        spell.delay = (gBattle.actions.D === -1) || (gBattle.actions.D !== gBattle.currentHandIdx) ? 0 : 1;
+        spell.delay = ((gBattle.actions.D === 3) ||
+                       (gBattle.actions.D === gBattle.currentHandIdx)) ? 1 : 0;
 
         showTargetWnd(true, spell);
         logEvent("Play_Target_View", {Mode:"spell"});
@@ -1379,8 +1381,9 @@ ApplicationWindow {
         console.log("main.setSpellTarget", TargetName, lPermanent, lDelay, OperationType, gBattle.currentHand);
         if (OperationType === 1) {
             var spell = gBattle.actions[gBattle.currentHand].s;
+            var is_two_handed = isTwoHandedSpell(spell);
             gBattle.actions[gBattle.currentHand].target = TargetName;
-            if (isTwoHandedSpell(spell)) {
+            if (is_two_handed) {
                 var other = gBattle.otherHand ||
                         (gBattle.currentHand === "L" ? "R" : "L");
                 gBattle.actions[other].g = gBattle.actions[gBattle.currentHand].g;
@@ -1397,10 +1400,12 @@ ApplicationWindow {
                 }
             }
             if (lDelay === 1) {
-                gBattle.actions.D = gBattle.currentHandIdx;
+                // The order form has a separate "Two-handed" delay option.
+                gBattle.actions.D = is_two_handed ? 3 : gBattle.currentHandIdx;
             } else {
                 lDelay = 0;
-                if (gBattle.actions.D === gBattle.currentHandIdx) {
+                if ((gBattle.actions.D === gBattle.currentHandIdx) ||
+                        (gBattle.actions.D === 3)) {
                     gBattle.actions.D = -1;
                 }
             }
