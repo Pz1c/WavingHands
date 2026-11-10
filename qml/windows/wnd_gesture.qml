@@ -641,8 +641,7 @@ BaseWindow {
                         if (actionType !== 0) {
                             return;
                         }
-
-                        mainWindow.setGesture(currGesture, arrSpell[mainWindow.gBattle.spellIdx], true);
+                        sendGesture();
                         mainWindow.logEvent("Play_Gesture_Submit", {Letter:currGesture});
                     }
                 }

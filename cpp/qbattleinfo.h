@@ -53,6 +53,16 @@ public:
     // so an empty entry means the turn was never parsed, not a turn without news.
     bool historyComplete() const;
 
+    // The ready page as it was fetched, before the unit section is replaced by
+    // the older snapshot used for the turn news. refreshCurrentTurn() rebuilds
+    // the board from this copy after the news.
+    void setCurrentPageData(const QString &data);
+    const QString &currentPageData() const;
+
+    // Old archive entries can contain history without a parsed unit section.
+    // Such a record can show a result, but not the battle board.
+    bool hasBoard() const;
+
     bool active(const QString &login) const;
 
     int size() const;
@@ -98,6 +108,15 @@ public:
 
     QString fullJSON() const;
 
+    // Parse the board section of a historical turn page into this record.
+    // The stored full JSON is left untouched.
+    bool loadBoardSnapshot(const QString &Data, const QString &Login);
+
+    // Serialize the current board for replay. WithHistory=false leaves the
+    // stored history and turn rows out of the result.
+    QString buildBoardJSON(const QString &Login, int Turn,
+                           bool WithHistory = false);
+
     bool isInviteRejected();
     void checkRejection();
 
@@ -107,7 +126,7 @@ protected:
     void init();
     void cleanLists();
     void parseUnits(QString &Data, QString &Login);
-    void generateJSON(QString &Login);
+    void generateJSON(const QString &Login);
 
 private:
     int _battleID;
@@ -136,6 +155,7 @@ private:
     QString _winner;
     QString _sub_title;
     QString _fullJSON;
+    QString _currentPageData;
     int _app_version;
 
     QList<QMonster *> _Monsters;

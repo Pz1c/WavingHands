@@ -1,6 +1,18 @@
 #include "qwarlock.h"
 #include "qwarlockspellchecker.h"
 
+#include <QRegularExpression>
+
+static int healthFromStatus(const QString &status) {
+    static const QRegularExpression re(QStringLiteral("Health:\\s*(permanent|\\d+)"),
+                                       QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch match = re.match(status);
+    if (!match.hasMatch()) {
+        return 0;
+    }
+    return QWarlockUtils::strValueToInt(match.captured(1).toLower());
+}
+
 // Gesture histories are time-aligned across every warlock in a battle: a warlock
 // that did not act on a tick - because someone else was hasted or time-stopped -
 // is padded with ' ', and a gesture this client may not see is '?'. Neither is a
@@ -120,7 +132,6 @@ QString QWarlock::status() {
     return _status;
 }
 
-
 QString QWarlock::leftGestures() {
     return _leftGestures;
 }
@@ -203,7 +214,7 @@ void QWarlock::setPossibleGestures(QString left, QString right) {
 void QWarlock::parseStatus() {
     _surrender = _status.indexOf("Surrender") != -1;
     int pos = 0;
-    _hp = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Health", ":", " #;#)", pos, true));
+    _hp = healthFromStatus(_status);
     _active = _hp > 0 && !_surrender;
     _scared = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Afraid", "(", ")", pos, true));
     _confused = QWarlockUtils::strValueToInt(QWarlockUtils::getStringFromData(_status, "Confused", "(", ")", pos, true));
@@ -261,6 +272,16 @@ const QList<QSpell *> &QWarlock::possibleSpells() const
 int QWarlock::maladroit() const
 {
     return _maladroit;
+}
+
+int QWarlock::charmed() const
+{
+    return _charmed;
+}
+
+int QWarlock::confused() const
+{
+    return _confused;
 }
 
 bool QWarlock::isParaFC() const
