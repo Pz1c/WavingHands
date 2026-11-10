@@ -1211,6 +1211,10 @@ ApplicationWindow {
         if (!warlock_idx) {
             warlock_idx = 0;
         }
+        if (gBattle.shown_warlock_indices &&
+                gBattle.shown_warlock_indices[warlock_idx] !== undefined) {
+            warlock_idx = gBattle.shown_warlock_indices[warlock_idx];
+        }
         if (!hand_idx) {
             hand_idx = gBattle.currentHandIdx;
         }

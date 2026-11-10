@@ -1895,6 +1895,9 @@ function finishPrepareWarlockList() {
         show_warlocks.push(i);
     }
     battle.shown_warlocks = show_warlocks.length;
+    // Card index -> index in battle.warlocks. They differ when an inactive
+    // Warlock card is hidden.
+    battle.shown_warlock_indices = show_warlocks.slice();
     var card_idx = 0;
     for (var wi = 0, LnW = show_warlocks.length; wi < LnW; ++wi) {
         var idx = show_warlocks[wi];
