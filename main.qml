@@ -238,6 +238,40 @@ ApplicationWindow {
             height: 188 * ratioObject
             z: 10
 
+            // Interface language: WarlockDictionary stores the choice, and the shown texts follow it.
+            // Same top offset as the windows' "Back" item, same left margin as the menu texts.
+            Row {
+                id: rmLang
+                anchors.top: parent.top
+                anchors.topMargin: 24 * ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: 48 * ratioObject
+                spacing: 18 * ratioObject
+
+                Repeater {
+                    model: GUI.getLangMenuList()
+
+                    BtnBig {
+                        readonly property bool selected: WarlockDictionary.lang === modelData.c
+
+                        width: 128 * ratioObject
+                        height: 52 * ratioObject
+                        radius: height / 2
+                        border.width: 2 * ratioObject
+                        text_color: "#ABF4F4"
+                        font.pixelSize: 24 * ratioFont
+                        text: warlockDictionary.getStringByCode(modelData.t)
+                        bg_color_active: selected ? "#551470" : "transparent"
+                        border_color_active: selected ? "#ABF4F4" : "#905B93"
+
+                        onClicked: {
+                            logEvent("menu_action", {action:"lang_" + modelData.c});
+                            WarlockDictionary.setCurrentLang(modelData.c);
+                        }
+                    }
+                }
+            }
+
             LargeText {
                 id: dmIHi
                 anchors.top: parent.top
@@ -270,7 +304,7 @@ ApplicationWindow {
             anchors.leftMargin: 48 * ratioObject
             anchors.right: parent.right
             anchors.rightMargin: 48 * ratioObject
-            anchors.bottom: rmLang.top
+            anchors.bottom: bbNewGameWithFriend.top
             anchors.bottomMargin: 24 * ratioObject
             // on a short screen the items scroll here instead of running over the buttons below
             clip: true
@@ -355,38 +389,6 @@ ApplicationWindow {
             }
 
 
-        }
-
-        // Interface language: WarlockDictionary stores the choice, and the shown texts follow it
-        Row {
-            id: rmLang
-            anchors.bottom: bbNewGameWithFriend.top
-            anchors.bottomMargin: 24 * ratioObject
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 18 * ratioObject
-
-            Repeater {
-                model: GUI.getLangMenuList()
-
-                BtnBig {
-                    readonly property bool selected: WarlockDictionary.lang === modelData.c
-
-                    width: 128 * ratioObject
-                    height: 52 * ratioObject
-                    radius: height / 2
-                    border.width: 2 * ratioObject
-                    text_color: "#ABF4F4"
-                    font.pixelSize: 24 * ratioFont
-                    text: warlockDictionary.getStringByCode(modelData.t)
-                    bg_color_active: selected ? "#551470" : "transparent"
-                    border_color_active: selected ? "#ABF4F4" : "#905B93"
-
-                    onClicked: {
-                        logEvent("menu_action", {action:"lang_" + modelData.c});
-                        WarlockDictionary.setCurrentLang(modelData.c);
-                    }
-                }
-            }
         }
 
         BtnBig {
@@ -531,17 +533,14 @@ ApplicationWindow {
 
     // https://github.com/Pz1c/WavingHands/issues/320: the first message of the inbox, with
     // the way to the Messages window; gone (and 0 high) while the inbox is empty.
-    Rectangle {
+    // No fill of its own (issue #374): the text sits on the blue top of the background.
+    Item {
         id: rMsgBanner
         anchors.top: tbTop.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         height: visible ? 72 * ratioObject : 0
         visible: tbTop.visible && (core.messageCount > 0)
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#0654C0" }
-            GradientStop { position: 1.0; color: "#210430" }
-        }
 
         property var first: core.messageCount > 0 ? JSON.parse(core.messages)[0] : ({from: "", text: ""})
 
@@ -1336,27 +1335,36 @@ ApplicationWindow {
         return res;
     }
 
+    function isTwoHandedSpell(spell) {
+        return !!spell && /[a-z]/.test(spell.g || "");
+    }
+
     function setGesture(gesture, spell, need_target) {
         // While a hand is paralyzed or charmed the other hand is forced by that
         // state. Maladroit/C must not overwrite it with the chosen gesture.
         var is_maladroit = !gBattle.player_under_control &&
                 ((gBattle.warlocks[0].maladroit > 0) || (gesture === "C") || (spell.th > 0));
+        var is_two_handed = isTwoHandedSpell(spell);
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
         if (!spell.n) {
             spell.n = "None";
         }
 
         gBattle.actions[gBattle.currentHand] = {g:gesture,s:spell};
-        if (is_maladroit && (gBattle.actions[gBattle.otherHand].g !== gesture)) {
+        if (is_two_handed) {
+            gBattle["ng" + gBattle.otherHand] = gesture;
+            gBattle.actions[gBattle.otherHand] = {g:gesture,s:spell};
+        } else if (is_maladroit && (gBattle.actions[gBattle.otherHand].g !== gesture)) {
             gBattle["ng" + gBattle.otherHand] = gesture;
             gBattle.actions[gBattle.otherHand] = {g:gesture,s:{gp:"?",n:"Default",choose:1,t:1,cast_type:1,need_target:true}};
         }
 
-        WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit);
+        WNDU.arr_wnd_instance[WNDU.wnd_battle].setGesture(gesture, is_maladroit || is_two_handed);
         if (need_target) {
             console.log("NEED_TARGET", gBattle.actions.P, gBattle.currentHandIdx);
             spell.permanency = (gBattle.actions.P === -1) || (gBattle.actions.P !== gBattle.currentHandIdx) ? 0 : 1;
-            spell.delay = (gBattle.actions.D === -1) || (gBattle.actions.D !== gBattle.currentHandIdx) ? 0 : 1;
+            spell.delay = ((gBattle.actions.D === 3) ||
+                           (gBattle.actions.D === gBattle.currentHandIdx)) ? 1 : 0;
             // the gesture window goes first, the target window then sits on top of the battle
             WNDU.processEscape();
             showTargetWnd(true, spell);
@@ -1393,7 +1401,8 @@ ApplicationWindow {
             return;
         }
         spell.permanency = (gBattle.actions.P === -1) || (gBattle.actions.P !== gBattle.currentHandIdx) ? 0 : 1;
-        spell.delay = (gBattle.actions.D === -1) || (gBattle.actions.D !== gBattle.currentHandIdx) ? 0 : 1;
+        spell.delay = ((gBattle.actions.D === 3) ||
+                       (gBattle.actions.D === gBattle.currentHandIdx)) ? 1 : 0;
 
         showTargetWnd(true, spell);
         logEvent("Play_Target_View", {Mode:"spell"});
@@ -1412,7 +1421,16 @@ ApplicationWindow {
     function setSpellTarget(TargetName, lPermanent, lDelay, OperationType) {
         console.log("main.setSpellTarget", TargetName, lPermanent, lDelay, OperationType, gBattle.currentHand);
         if (OperationType === 1) {
+            var spell = gBattle.actions[gBattle.currentHand].s;
+            var is_two_handed = isTwoHandedSpell(spell);
             gBattle.actions[gBattle.currentHand].target = TargetName;
+            if (is_two_handed) {
+                var other = gBattle.otherHand ||
+                        (gBattle.currentHand === "L" ? "R" : "L");
+                gBattle.actions[other].g = gBattle.actions[gBattle.currentHand].g;
+                gBattle.actions[other].s = spell;
+                gBattle.actions[other].target = TargetName;
+            }
             if (lPermanent === 1) {
                 gBattle.actions.P = gBattle.currentHandIdx;
             } else {
@@ -1423,10 +1441,12 @@ ApplicationWindow {
                 }
             }
             if (lDelay === 1) {
-                gBattle.actions.D = gBattle.currentHandIdx;
+                // The order form has a separate "Two-handed" delay option.
+                gBattle.actions.D = is_two_handed ? 3 : gBattle.currentHandIdx;
             } else {
                 lDelay = 0;
-                if (gBattle.actions.D === gBattle.currentHandIdx) {
+                if ((gBattle.actions.D === gBattle.currentHandIdx) ||
+                        (gBattle.actions.D === 3)) {
                     gBattle.actions.D = -1;
                 }
             }

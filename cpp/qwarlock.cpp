@@ -450,9 +450,15 @@ void QWarlock::setSpellPriority(QWarlock *enemy, const QList<QMonster *> &monste
     qDebug() << "QWarlock::setSpellPriority start";
     int _coldproof_in = 999, _fireproof_in = 999;
     int paralysis_left = 3, paralysis_right = 3;
-    bool fff_now_left = (_leftGestures.replace(" ", "").right(3).compare("FFF") == 0);
-    bool fff_now_right = (_rightGestures.replace(" ", "").right(3).compare("FFF") == 0);
-    bool clap_off_lighting_used = (_leftGestures.replace(" ", "").indexOf("WDDC") != -1) || (_rightGestures.replace(" ", "").indexOf("WDDC") != -1);
+    // Work on copies: replace() mutates the string in place, and the stored
+    // histories must keep their spaces as the turn-grid padding.
+    QString left_gestures = _leftGestures;
+    QString right_gestures = _rightGestures;
+    left_gestures.remove(' ');
+    right_gestures.remove(' ');
+    bool fff_now_left = (left_gestures.right(3).compare("FFF") == 0);
+    bool fff_now_right = (right_gestures.right(3).compare("FFF") == 0);
+    bool clap_off_lighting_used = (left_gestures.indexOf("WDDC") != -1) || (right_gestures.indexOf("WDDC") != -1);
     qDebug() << "QWarlock::setSpellPriority" << "clap_off_lighting_used" << clap_off_lighting_used;
 
     enemy->fillTurnToCast();

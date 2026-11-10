@@ -1663,7 +1663,7 @@ function prepareBattle(raw_battle) {
     // L left  obj
     // R Right obj
     // C Chat  text
-    // D Delay int 0 - none, 1 left, 2 right, -1 unavailable
+    // D Delay int 0 - none, 1 left, 2 right, 3 two-handed, -1 unavailable
     // P Permanent int 0 - none, 1 left, 2 right, -1 unavailable
     // F Fire int 0, 1, -1
     // M monsters arr of obj
