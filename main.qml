@@ -717,9 +717,11 @@ ApplicationWindow {
                     }
                 }
 
-                ListView {
+                // a plain Column, not a ListView: the games list must never
+                // scroll by itself, only the whole iBattleList scrolls
+                Column {
                     id: lvActiveBattle
-                    model: GUI.loadBattleList(1)
+                    property var model: GUI.loadBattleList(1)
                     anchors.top: ltActiveBattle.bottom
                     anchors.topMargin: 6 * ratioObject
                     anchors.left: parent.left
@@ -728,6 +730,8 @@ ApplicationWindow {
                     //anchors.horizontalCenter: parent.horizontalCenter
                     height: model.length * 96 * ratioObject
 
+                    Repeater {
+                    model: lvActiveBattle.model
                     delegate: Item {
                             id: idRoot
                             width: lvActiveBattle.width
@@ -841,6 +845,7 @@ ApplicationWindow {
                             anchors.bottomMargin: 12 * ratioObject
                         }
                     }
+                    }
                 }
 
                 LargeText {
@@ -858,9 +863,10 @@ ApplicationWindow {
                     visible: lvFinishedBattle.model.length > 0
                 }
 
-                ListView {
+                // a Column for the same reason as lvActiveBattle
+                Column {
                     id: lvFinishedBattle
-                    model: GUI.loadBattleList(2)
+                    property var model: GUI.loadBattleList(2)
                     anchors.top: ltFinishedBattle.bottom
                     //anchors.topMargin: 0.01 * mainWindow.height
                     width: 0.9 * mainWindow.width
@@ -868,6 +874,9 @@ ApplicationWindow {
                     height: model.length * 96 * ratioObject
                     // finished games not shown until "Show more" is pressed
                     property int hiddenCount: 0
+
+                    Repeater {
+                    model: lvFinishedBattle.model
                     delegate: Item {
                             id: idfRoot
                             width: lvFinishedBattle.width
@@ -932,6 +941,7 @@ ApplicationWindow {
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 12 * ratioObject
                         }
+                    }
                     }
                 }
 
