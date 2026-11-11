@@ -51,6 +51,13 @@ public class CheckStatus {
                 if (check_url.isEmpty()) {
                     return;
                 }
+                // The app is on screen: it reads the player's page itself, and what this
+                // check could notify of is on the game list in front of the player. Without
+                // this the game server got the profile page from here every minute as well.
+                if (MainActivity.isForeground) {
+                    Log.d(TAG, "app in foreground, no check");
+                    return;
+                }
                 int last_sent_notif = sharedPreferences.getInt("last_notification", 0);
                 int app_last_activity = sharedPreferences.getInt("app_last_activity", 0);
                 int last_notification = Math.round(System.currentTimeMillis()/1000L);

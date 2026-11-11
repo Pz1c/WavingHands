@@ -184,8 +184,14 @@ signals:
 public slots:
 
     QString getOnlineUrl(int battle_id = 0);
-    void scanState(bool Silent = false);
+    // Challenges: false for a scan that follows something the player did (a message
+    // deleted, a game left, an invite sent) rather than the player's own Refresh: shown
+    // the same way, but nothing in it calls for the open challenges (challengeListDue).
+    void scanState(bool Silent = false, bool Challenges = true);
     void getChallengeList(bool Silent = false);
+    // The New Game window is opening: the open challenges it offers to join are read again
+    // unless they have just been.
+    void refreshChallengeList();
     void scanTopList(bool Silent = false, bool ForceFull = false);
     // Background: a join the app makes on its own (auto matching), so no loading overlay, it
     // leaves the battle slot alone, and a failure only logs.
@@ -432,6 +438,16 @@ protected:
     bool hasUnstartedBattle();
     int findChallengeToJoin();
     void releaseKeepMeOn(const QString &url);
+    bool keepMeOnHasRoom() const;
+    void keepMeOnFailed();
+    bool keepMeOnOnHold() const;
+
+    // Requests to the game server that are not needed are not made, see the .cpp: the open
+    // challenges only come along with a scan that has a use for them, and a battle page
+    // the player looked at leads to a scan only when it contradicts the game list.
+    bool challengeListDue(bool Asked) const;
+    void releaseChallengeList(const QString &url);
+    void refreshBattleRow(const QBattleInfo *bi, const QString &RowBefore);
 
     // Live matches (https://github.com/Pz1c/WavingHands/issues/287), see the .cpp.
     void liveCheckInvites();
@@ -477,6 +493,17 @@ private:
     bool _keepMeOnBusy;
     // One shot, see skipKeepMeOnOffer().
     bool _keepMeOnOfferSkip;
+    // Joins and creations in a row that the site turned down, and when the last one was
+    // (keepMeOnFailed).
+    int _keepMeOnFails;
+    qint64 _keepMeOnFailedAt;
+    // When the site's open challenges were last asked for or read, in seconds; 0: with the
+    // next scan. And the player's own Refresh on its way (scanState).
+    qint64 _lastChallengeScan;
+    bool _challengesAsked;
+    // The bot last called to play, and when (callAI).
+    QString _lastAiCall;
+    qint64 _lastAiCallAt;
     // The Game notifications setting; the FCM token the caster server acknowledged, and the
     // one last asked for (acknowledged or not), so an UNPUSH can follow a PUSH still in flight.
     bool _pushNotifications;
@@ -649,6 +676,8 @@ private:
     bool _isScanForced;
     bool _isAsService;
     bool _isAiBusy;
+    // The bot service was called for one bot's turn, not for any bot (doAIAnswer).
+    bool _aiOneBot;
     qint64 _lastAnyAiCall;
     int _appVersion;
 

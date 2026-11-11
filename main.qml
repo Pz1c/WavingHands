@@ -654,6 +654,8 @@ ApplicationWindow {
                     onClicked: {
                         console.log("start game btn 1");
                         logEvent("New_game_button", {});
+                        // what the window offers to join comes from the open challenges
+                        core.refreshChallengeList();
                         WNDU.showNewGame();
                         //GUI.startGame(0);
                     }
@@ -1065,7 +1067,8 @@ ApplicationWindow {
         } else {
             showErrorWnd({text:txt,type:2,title:warlockDictionary.getStringByCode("BattleTitle").replace("%1", bit)});
         }
-        core.scanState(1);
+        // No scan from here: the core reads the player page again itself when the battle
+        // it has just shown turns out to be in another state than the list had it in.
     }
 
     function showAfterRegWnd() {
