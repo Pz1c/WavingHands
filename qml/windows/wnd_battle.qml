@@ -71,6 +71,96 @@ BaseWindow {
             }
         }
 
+        // https://github.com/Pz1c/WavingHands/issues/227
+        // What the turn news plays over the board, above the overlay that dims it: the icon of a cast
+        // spell on its way from the gestures to the tile it leaves, the big result icon of an attack.
+        Item {
+            id: iHintStage
+            anchors.fill: bfWarlocks
+            z: 900
+
+            // the spell icon: its middle and its size are animated (BWU.processFlyHintAction)
+            Image {
+                id: iHintFly
+                property real cx: 0
+                property real cy: 0
+                property real size: 0
+                x: cx - 0.5 * size
+                y: cy - 0.5 * size
+                width: size
+                height: size
+                visible: false
+            }
+
+            SequentialAnimation {
+                id: saHintFly
+
+                // grows out of the last letter on its way to the middle of the caster's side...
+                ParallelAnimation {
+                    NumberAnimation { id: naHintFlyGrowX; target: iHintFly; property: "cx"; duration: 200; easing.type: Easing.OutQuad }
+                    NumberAnimation { id: naHintFlyGrowY; target: iHintFly; property: "cy"; duration: 200; easing.type: Easing.OutQuad }
+                    NumberAnimation { id: naHintFlyGrow; target: iHintFly; property: "size"; duration: 200; easing.type: Easing.OutQuad }
+                }
+                // ...and shrinks into the tile the spell leaves on the board
+                ParallelAnimation {
+                    NumberAnimation { id: naHintFlyLandX; target: iHintFly; property: "cx"; duration: 150; easing.type: Easing.InQuad }
+                    NumberAnimation { id: naHintFlyLandY; target: iHintFly; property: "cy"; duration: 150; easing.type: Easing.InQuad }
+                    NumberAnimation { id: naHintFlyLand; target: iHintFly; property: "size"; duration: 150; easing.type: Easing.InQuad }
+                }
+                NumberAnimation { target: iHintFly; property: "opacity"; to: 0; duration: 80 }
+                PropertyAction { target: iHintFly; property: "visible"; value: false }
+            }
+
+            // 1damage ... 4damage, defense, defense_by_counter, defense_by_dispell: stays until the step is left
+            Image {
+                id: iHintBig
+                anchors.horizontalCenter: parent.horizontalCenter
+                // in the middle of the warlocks, of what the board shows of them
+                y: 0.5 * (Math.min(parent.height, iWarlocks.height) - height)
+                width: BWU.HINT_BIG_ICON * mainWindow.ratioObject
+                height: BWU.HINT_BIG_ICON * mainWindow.ratioObject
+                visible: false
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        ltTTT.clicked();
+                    }
+                }
+            }
+
+            ParallelAnimation {
+                id: paHintBigPop
+                NumberAnimation { target: iHintBig; property: "scale"; from: 0; to: 1; duration: 300; easing.type: Easing.OutBack }
+                NumberAnimation { target: iHintBig; property: "opacity"; from: 0; to: 1; duration: 150 }
+            }
+
+            // the elemental when it runs amok: iiElemental itself is under the news (BWU.processElementalHintAction)
+            IconInfo {
+                id: iiHintElemental
+                source: iiElemental.source
+                text: iiElemental.text
+                height: 78 * mainWindow.ratioObject
+                width: height
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 6 * mainWindow.ratioObject
+                anchors.left: parent.left
+                anchors.leftMargin: 6 * mainWindow.ratioObject
+                radius: 10
+                transformOrigin: Item.BottomLeft
+                active: false
+                borderOnPress: false
+                visible: false
+            }
+
+            ParallelAnimation {
+                id: paHintElementalGrow
+                ColorAnimation { id: caHintElementalGrow; target: iiHintElemental; property: "color"; duration: 150 }
+                // as big as the tiles of the warlocks get (Warlock.newsGrowScale)
+                NumberAnimation { target: iiHintElemental; property: "scale"; to: 1.7; duration: 150; easing.type: Easing.OutQuad }
+            }
+        }
+
         Item {
             id: bfAll
             anchors.bottom: parent.bottom
@@ -410,6 +500,16 @@ BaseWindow {
                     }
                 }
 
+                // the text of a step that plays on the board shows when the play is over (BWU.playHintActions)
+                NumberAnimation {
+                    id: naHintTextReveal
+                    target: ltTTT
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 120
+                }
+
                 LargeText {
                     id: ltTTTNext
                     anchors.verticalCenter: parent.verticalCenter
@@ -541,6 +641,7 @@ BaseWindow {
         console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
         if (++readyWarlocks >= mainWindow.gBattle.size) {
             readyWarlocks = 0;
+            BWU.prepareHintBoard();
             tHintDelay.start();
         }
     }
@@ -820,8 +921,9 @@ BaseWindow {
             return;
         }
         readyWarlocks = 0;
-        // frames left over from the last battle must not touch the new warlocks
-        BWU.stopHintAnimation();
+        // the turn news of the battle shown before is over: its frames must not touch the new warlocks,
+        // its bar and what it plays over the board must not stay when this battle has no news
+        BWU.closeTutorial();
         title_text = dict.getStringByCode("BattleTitle").replace("%1", mainWindow.gBattle.id);
         rTT.visible = false;
         BU.applyBattle();

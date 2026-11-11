@@ -180,6 +180,13 @@ function isBeginnerTurnNews(row) {
     }
 }
 
+// https://github.com/Pz1c/WavingHands/issues/227
+// An attack is told in the color of a hit also when it did no harm, and so is a blow that a shield
+// stopped: the site paints those rows blue, in the turn news the tiles they light up are orange.
+function isBlowTurnNews(row) {
+    return (row.row_type === "attack") || ((row.row_type === "other") && (row.obj.shield || row.obj.counter_spell));
+}
+
 function prepareTurnActionInfo(last_turn_hist) {
     // A finished battle is a static record: opening it must not pop the turn news of its last
     // turn again. Only a battle in progress has something new to announce.
@@ -248,7 +255,7 @@ function prepareTurnActionInfo(last_turn_hist) {
         // https://github.com/Pz1c/WavingHands/issues/311
         BGU.processHintText(real_actions[i], mainWindow.warlockDictionary);
 
-        if ((real_actions[i].color === "#FF6666") || (real_actions[i].color === "#FF8888")) {
+        if ((real_actions[i].color === "#FF6666") || (real_actions[i].color === "#FF8888") || isBlowTurnNews(real_actions[i])) {
             real_actions[i].color = "#FEE2D6";
         } else {
             real_actions[i].color = "#10C9F5";
