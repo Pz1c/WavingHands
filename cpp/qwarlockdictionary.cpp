@@ -430,6 +430,13 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("BattleListDrawVs", "Draw vs. %1", "Unentschieden gegen %1", "Empate contra %1");
     fillDictionary("BattleListWonVs", "Won vs. %1", "Gewonnen gegen %1", "Victoria contra %1");
     fillDictionary("BattleListLostVs", "Lost vs. %1", "Verloren gegen %1", "Derrota contra %1");
+    // https://github.com/Pz1c/WavingHands/issues/121: the games of another warlock's profile
+    fillDictionary("BattleListTurnVs", "To move vs. %1", "Am Zug gegen %1", "Le toca contra %1");
+    fillDictionary("ProfileGames", "%1's Games:", "Spiele von %1:", "Partidas de %1:");
+    fillDictionary("WriteMessage", "Write a Message", "Nachricht schreiben", "Escribir un mensaje");
+    fillDictionary("SpectatorResultTitleWin", "%1 won the game.", "%1 hat das Spiel gewonnen.", "%1 ha ganado la partida.");
+    fillDictionary("SpectatorResultTitleLose", "%1 lost the game.", "%1 hat das Spiel verloren.", "%1 ha perdido la partida.");
+    fillDictionary("SpectatorNotStartDesc", "You are not in this battle.", "Du nimmst an diesem Kampf nicht teil.", "No participas en esta batalla.");
     fillDictionary("ChallengedBy", "Challenged by %1", "Herausgefordert von %1", "Desafío de %1");
     fillDictionary("ChallengeListOpen", "Open challenge by %1", "Offene Herausforderung von %1", "Desafío abierto de %1");
     fillDictionary("ChallengeListPractice", "Practice challenge by %1", "Übungsherausforderung von %1", "Desafío de práctica de %1");

@@ -1522,6 +1522,17 @@ ApplicationWindow {
         }
     }
 
+    // https://github.com/Pz1c/WavingHands/issues/121: a game of another warlock's profile,
+    // b is a row of QWarloksDuelCore::profileBattles
+    function openProfileBattle(b) {
+        logEvent("Profile_Game_Clicked", {Id:b.id});
+        if ((b.o === 1) && (b.s !== 2)) {
+            // the player's own game: the battle window only opens over the bare game list
+            WNDU.closeChilds();
+        }
+        core.getBattle(b.id, b.s);
+    }
+
     function confirmOrdersEx() {
         // The order submit rescans the player page itself: that is the refresh a
         // deferred TURNREADY was waiting for.

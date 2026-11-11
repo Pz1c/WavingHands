@@ -1405,7 +1405,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
     if (_loadedBattleType == 2) {
         QBattleInfo* bi = getBattleInfo(_loadedBattleID);
         if (bi->fullParsed()) {
-            _finishedBattle = bi->getFinishedBattleInfo(_login);
+            _finishedBattle = finishedBattleInfo(bi);
             markResultShown(_loadedBattleID);
             emit finishedBattleChanged();
             return;
@@ -1432,9 +1432,95 @@ QBattleInfo *QWarloksDuelCore::getBattleInfo(int battleId) {
     if (!_battleInfo.contains(battleId)) {
         _battleInfo.insert(battleId, new QBattleInfo());
         _battleInfo[battleId]->setBattleID(battleId);
-        _battleInfo[battleId]->addParticipant(_login);
+        if (_foreign_battles.indexOf(battleId) == -1) {
+            _battleInfo[battleId]->addParticipant(_login);
+        }
     }
     return _battleInfo[battleId];
+}
+
+// The warlock a battle is shown for: the player, or in somebody else's battle (opened from
+// that warlock's profile, https://github.com/Pz1c/WavingHands/issues/121) the owner of the
+// profile, else the first participant.
+QString QWarloksDuelCore::battleViewer(const QBattleInfo *bi) const {
+    if (!bi->active(_login)) {
+        return _login;
+    }
+    if (!_profileLogin.isEmpty() && !bi->active(_profileLogin)) {
+        return _profileLogin;
+    }
+    QString first = bi->getEnemy(_login);
+    return first.isEmpty() ? _login : first;
+}
+
+bool QWarloksDuelCore::isSpectator(const QBattleInfo *bi) const {
+    return bi->active(_login) && !bi->getEnemy(_login).isEmpty();
+}
+
+// The result window of a finished battle; for somebody else's battle from the side of
+// battleViewer(), named in "spectator".
+QString QWarloksDuelCore::finishedBattleInfo(const QBattleInfo *bi) const {
+    if (!isSpectator(bi)) {
+        return bi->getFinishedBattleInfo(_login);
+    }
+    QString viewer = battleViewer(bi);
+    QString res = bi->getFinishedBattleInfo(viewer);
+    res.chop(1);
+    return res.append(QString(",\"spectator\":\"%1\"}").arg(QWarlockUtils::jsonEscape(viewer)));
+}
+
+// A row of the profile window's game list: a battle the app knows is named as in the
+// player's own list, any other one by its number. State: 1 the warlock's turn, 0 waiting,
+// 2 finished.
+QString QWarloksDuelCore::profileBattleTitle(int BattleId, int State, const QString &Login) const {
+    QBattleInfo *bi = _battleInfo.value(BattleId, nullptr);
+    if (bi && !bi->active(_login)) {
+        // the player's battle as well
+        return bi->getInListDescription(_login);
+    }
+    if (bi && (bi->status() == BATTLE_INFO_STATUS_NO_START) && (State != 2)) {
+        return GameDictionary->getStringByCode("BattleListWaitingStart");
+    }
+    QString enemy = bi && !bi->active(Login) ? bi->getEnemy(Login, true) : QString();
+    if (enemy.isEmpty()) {
+        return GameDictionary->getStringByCode("BattleTitle").arg(intToStr(BattleId));
+    }
+    if (State == 2) {
+        return bi->status() == BATTLE_INFO_STATUS_FINISHED ? bi->getInListDescription(Login)
+                                                           : GameDictionary->getStringByCode("BattleListFinishedVs").arg(enemy);
+    }
+    return GameDictionary->getStringByCode(State == 1 ? "BattleListTurnVs" : "BattleListWaitingFor").arg(enemy);
+}
+
+// The games of a profile page as the "battles" array of the profile window: the warlock's
+// turn first, then waiting, then finished, each newest first. "s" is what getBattle takes,
+// "r" marks the player's own turn, "o" the player's own game, "w" a game the
+// warlock won.
+QString QWarloksDuelCore::profileBattles(QString &Data, const QString &Login) {
+    const QList<int> lists[3] = {QWarlockUtils::getBattleList(Data, "Ready in battles:"),
+                                 QWarlockUtils::getBattleList(Data, "Waiting in battles:"),
+                                 QWarlockUtils::getBattleList(Data, "Finished battles:")};
+    const int states[3] = {1, 0, 2};
+    QString res = "[";
+    for (int l = 0; l < 3; ++l) {
+        for (int i = lists[l].size() - 1; i >= 0; --i) {
+            int bid = lists[l].at(i);
+            bool own = (_ready_in_battles.indexOf(bid) != -1) || (_waiting_in_battles.indexOf(bid) != -1) || (_finished_battles.indexOf(bid) != -1);
+            if (!own && (_foreign_battles.indexOf(bid) == -1)) {
+                _foreign_battles.append(bid);
+            }
+            QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+            if (res.length() > 1) {
+                res.append(",");
+            }
+            res.append(QString("{\"id\":%1,\"s\":%2,\"d\":\"%3\",\"r\":%4,\"w\":%5,\"o\":%6}")
+                       .arg(intToStr(bid), intToStr(states[l] == 2 ? 2 : 0), QWarlockUtils::jsonEscape(profileBattleTitle(bid, states[l], Login)),
+                            boolToIntS((_ready_in_battles.indexOf(bid) != -1)),
+                            boolToIntS(((states[l] == 2) && bi && (bi->status() == BATTLE_INFO_STATUS_FINISHED) && bi->isWinner(Login))),
+                            boolToIntS(own)));
+        }
+    }
+    return res.append("]");
 }
 
 int QWarloksDuelCore::parseBattleDescription(QString &Data) {
@@ -1559,7 +1645,7 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             _battleInfo[_loadedBattleID] = bi;
             delete battleInfo;
             battleInfo = bi;
-            _finishedBattle = battleInfo->getFullHist(_login);
+            _finishedBattle = finishedBattleInfo(battleInfo);
             if (!_loadedBattleSilent) {
                 markResultShown(_loadedBattleID);
             }
@@ -1671,6 +1757,22 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             battleInfo->parseAllTurns(Data, _login, false);
         } else if (_loadedBattleType == -1) {
             _finishedBattle = QString("{\"type\":12,\"d\":\"\",\"id\":%1,\"battle_data\":%2}").arg(intToStr(_loadedBattleID), battleInfo->toJSON(_login));
+        } else if ((_loadedBattleType == 2) && isSpectator(battleInfo)) {
+            // somebody else's battle: no result of the player's to count, archive or report
+            QString viewer = battleViewer(battleInfo);
+            battleInfo->parseAllTurns(Data, viewer, true);
+            _finishedBattle = finishedBattleInfo(battleInfo);
+            is_result = true;
+        } else if ((_loadedBattleType == 0) && isSpectator(battleInfo)) {
+            // somebody else's battle in progress: the news of its last turn, and the board
+            // behind "View" as for a battle the player waits in
+            QString viewer = battleViewer(battleInfo);
+            int idx_units = _finishedBattle.indexOf("<TABLE");
+            QString news = (idx_units == -1 ? _finishedBattle : _finishedBattle.left(idx_units)).replace("\n", " ");
+            battleInfo->parseAllTurns(Data, viewer, false);
+            _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":0,\"id\":%2,\"spectator\":\"%3\",\"t\":\"%4\"}")
+                    .arg(QWarlockUtils::jsonEscape(news), intToStr(_loadedBattleID), QWarlockUtils::jsonEscape(viewer),
+                         QWarlockUtils::jsonEscape(battleInfo->getInListParticipant(viewer)));
         } else if (_loadedBattleType == 2) {
             battleInfo->parseAllTurns(Data, _login, true);
             _finishedBattle = battleInfo->getFinishedBattleInfo(_login);
@@ -2389,6 +2491,16 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     _ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
     _waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
     _finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
+    // a game seen on somebody's profile that the player has joined since
+    for (int i = _foreign_battles.size() - 1; i >= 0; --i) {
+        int bid = _foreign_battles.at(i);
+        if ((_ready_in_battles.indexOf(bid) != -1) || (_waiting_in_battles.indexOf(bid) != -1) || (_finished_battles.indexOf(bid) != -1)) {
+            _foreign_battles.removeAt(i);
+            if (_battleInfo.contains(bid)) {
+                _battleInfo[bid]->addParticipant(_login);
+            }
+        }
+    }
     Idx = 0;
     QString challendge = QWarlockUtils::getStringFromData(Data, "Challenged to battles:</TD>", "<TD>", "</TD>", Idx);
     if (!challendge.isEmpty()) {
@@ -3195,6 +3307,7 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     }
     QWarlockStat *wi = _playerStats[ll];
     wi->setWarlockId(_warlockId.toInt());
+    _profileLogin = login;
     //            ltTitle.text = warlock_data.name;
     //            ltLast.text = UPU.getLastActivityText(warlock_data.last_activity);
     //            ltScore.text = "Score: " + warlock_data.elo;
@@ -3204,8 +3317,9 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     //            bbBtn2.visible = !warlock_data.isPlayer;
     //            bbAction.text = warlock_data.isPlayer ? "Hall of Fame" : "Challenge";
     //            ltTitleOnline.visible = warlock_data.online;
-    _errorMsg = QString("{\"type\":15,\"name\":\"%1\",\"last_activity\":%2,\"elo\":%3,\"won\":%4,\"played\":%5,\"isPlayer\":false,\"online\":%6}")
-                    .arg(QWarlockUtils::jsonEscape(login), intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()));
+    _errorMsg = QString("{\"type\":15,\"name\":\"%1\",\"last_activity\":%2,\"elo\":%3,\"won\":%4,\"played\":%5,\"isPlayer\":false,\"online\":%6,\"battles\":%7}")
+                    .arg(QWarlockUtils::jsonEscape(login), intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()),
+                         profileBattles(Data, login));
     emit errorOccurred();
 
     /*_warlockInfo.clear();
@@ -3541,6 +3655,8 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     _login = Login;
     _password = Password;
     _finished_battles.clear();
+    _foreign_battles.clear();
+    _profileLogin.clear();
     // Reseed from the new account's first scan instead of announcing its whole history.
     _shown_battles.clear();
     _shownBattlesKnown = false;
@@ -4339,6 +4455,8 @@ void QWarloksDuelCore::logout() {
     clearMessages();
 
     _finished_battles.clear();
+    _foreign_battles.clear();
+    _profileLogin.clear();
     _shown_battles.clear();
     _shownBattlesKnown = false;
     _resultAttempts.clear();

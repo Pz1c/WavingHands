@@ -17,6 +17,8 @@ function cleanUpWindow(ratioObject) {
     bbAction.font.underline = false;
     svMain.anchors.top = ltDesc.bottom;
     svMain.anchors.topMargin = 20 * ratioObject;
+    svMain.anchors.bottom = iItem.bottom;
+    svMain.anchors.bottomMargin = 0;
     ltError.visible = true;
     svMain.visible = true;
     lvHistory.visible = false;
@@ -96,11 +98,13 @@ function prepareUnstartedGame(l_data, dict) {
             //ltError.text += "Join to start battle<br>";
         }
     }
-    ltError.text += "<br><font size=\"-1\">" + dict.getStringByCode('DefNotStartDesc') + "</font>";
-    bbAction.text = dict.getStringByCode("KeepWaiting");
+    // a battle of another warlock's profile (https://github.com/Pz1c/WavingHands/issues/121): nothing to leave
+    var spectator = !!(l_data.battle_data && l_data.battle_data.active);
+    ltError.text += "<br><font size=\"-1\">" + dict.getStringByCode(spectator ? 'SpectatorNotStartDesc' : 'DefNotStartDesc') + "</font>";
+    bbAction.text = dict.getStringByCode(spectator ? "Back" : "KeepWaiting");
     bbAction.visible = true;
     bbSkipAction.text = dict.getStringByCode("Leave");
-    bbSkipAction.visible = true;
+    bbSkipAction.visible = !spectator;
 }
 
 function prepareDataType11(l_data, dict) {
@@ -132,6 +136,14 @@ function prepareDataType9(l_data, dict) {
 function prepareDataOrderSubmitted(l_data, dict) {
     ltTitle.text = dict.getStringByCode("OrdersSubmittedTitle");
     ltShortDesc.text = dict.getStringByCode("OrdersSubmittedSDesc");
+    if (l_data.spectator) {
+        // somebody else's battle in progress (https://github.com/Pz1c/WavingHands/issues/121)
+        ltTitle.text = l_data.t;
+        ltShortDesc.text = dict.getStringByCode("BattleTitle").replace("%1", l_data.id);
+        // the news of a whole turn: it ends above the button
+        svMain.anchors.bottom = bbAction.top;
+        svMain.anchors.bottomMargin = 12 * mainWindow.ratioObject;
+    }
     ltError.text = l_data.d;
     bbAction.text = dict.getStringByCode("View");
     bbAction.visible = true;

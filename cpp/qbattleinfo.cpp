@@ -602,7 +602,8 @@ QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
 QString QBattleInfo::getFinishedBattleInfo(const QString &Login) const {
     // main.qml JSON.parse()s this. A backslash in the last turn's line (players sign off with
     // \o/) or a tab left in the chat was an invalid string and cost the whole result window.
-    QString fh = QWarlockUtils::jsonEscape(prepareToPrint(_chat.last()));
+    // No turn at all: a page without a turn log, of a battle the app has not followed.
+    QString fh = QWarlockUtils::jsonEscape(prepareToPrint(_chat.isEmpty() ? QString() : _chat.last()));
     return QString("{\"type\":9,\"lc\":\"%1\",\"id\":%2,\"t\":\"%3\",\"st\":\"%4\",\"sc\":\"%5\",\"enemy\":\"%6\",\"level\":%7,\"with_bot\":%8}")
         .arg(fh, intToStr(_battleID), QWarlockUtils::jsonEscape(getInListParticipant(Login)), QWarlockUtils::jsonEscape(_sub_title),
              getInListStatus(Login), QWarlockUtils::jsonEscape(getEnemy(Login)), intToStr(_level), boolToStr(_for_bot || _with_bot));

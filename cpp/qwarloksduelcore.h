@@ -359,6 +359,12 @@ protected:
     QString getBattleHint(QBattleInfo *battle_info);
 
     QBattleInfo *getBattleInfo(int battleId);
+    // Somebody else's battles (https://github.com/Pz1c/WavingHands/issues/121), see the .cpp
+    QString battleViewer(const QBattleInfo *bi) const;
+    bool isSpectator(const QBattleInfo *bi) const;
+    QString finishedBattleInfo(const QBattleInfo *bi) const;
+    QString profileBattleTitle(int BattleId, int State, const QString &Login) const;
+    QString profileBattles(QString &Data, const QString &Login);
 
     void storeFullParsedBattle(QBattleInfo *bi);
     QString prepareBattleOrders();
@@ -457,6 +463,11 @@ private:
     QList<int> _ready_in_battles;
     QList<int> _waiting_in_battles;
     QList<int> _finished_battles;
+    // Battles listed on other warlocks' profile pages that the player is not in:
+    // getBattleInfo() must not make the player a participant of these.
+    QList<int> _foreign_battles;
+    // The warlock whose profile page was loaded last.
+    QString _profileLogin;
     // Battles whose Win/Lose/Draw result the player has already been shown. Persisted, so a
     // restart does not replay results, and seeded from the first scan of an account so the
     // whole existing history is not announced at once.
