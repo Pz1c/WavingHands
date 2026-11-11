@@ -15,6 +15,9 @@ Item {
     // Set while this row is being moved by mainWindow.gesturesScrollX, so the move is not
     // reported back as a user scroll (which would echo between the rows forever).
     property bool gesturesScrollInhibit: false
+    // how big the turn news makes the one that attacks and the one that takes the blow
+    // https://github.com/Pz1c/WavingHands/issues/227
+    property real newsGrowScale: 1.7
 
     signal clicked(var data)
     signal doubleClicked(var data)
@@ -100,6 +103,21 @@ Item {
         }
     }
 
+    // an attack: the HP card of the warlock who takes the blow grows and stays big while the step shows
+    // https://github.com/Pz1c/WavingHands/issues/227
+    ParallelAnimation {
+        id: paHPGrow
+
+        ColorAnimation {
+            id: caHPGrow
+            target: iiHP
+            property: "color"
+            duration: 150
+        }
+
+        NumberAnimation { target: iiHP; property: "scale"; to: rWarlock.newsGrowScale; duration: 150; easing.type: Easing.OutQuad }
+    }
+
     IconInfo {
         id: iiBanked
         source: "qrc:/res/banked_spell.png";
@@ -138,6 +156,8 @@ Item {
         anchors.left: parent.left
         width: 0.5 * parent.width
         height: 78 * l_ratio
+        // over the gestures: a tile the turn news made big reaches down to them
+        z: 1
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
         //contentWidth: iMonsters.width
@@ -177,15 +197,42 @@ Item {
                     }
                 }
 
-                function highlightNews(news_color) {
-                    caMonsterHighlight.to = news_color;
-                    paMonsterHighlight.restart();
+                // an attack: the monster that attacks and the one that is hit grow and stay big while the step shows
+                ParallelAnimation {
+                    id: paMonsterGrow
+
+                    ColorAnimation {
+                        id: caMonsterGrow
+                        target: iiDM
+                        property: "color"
+                        duration: 150
+                    }
+
+                    NumberAnimation { target: iiDM; property: "scale"; to: rWarlock.newsGrowScale; duration: 150; easing.type: Easing.OutQuad }
+                }
+
+                // monsters stand on the left, they grow to the bottom right
+                function highlightNews(news_color, grow) {
+                    iiDM.opacity = 1;
+                    if (grow) {
+                        iiDM.transformOrigin = Item.TopLeft;
+                        iiDM.z = 1;
+                        caMonsterGrow.to = news_color;
+                        paMonsterGrow.restart();
+                    } else {
+                        caMonsterHighlight.to = news_color;
+                        paMonsterHighlight.restart();
+                    }
                 }
 
                 function restoreNews() {
                     paMonsterHighlight.stop();
-                    scale = 1;
-                    color = bg_color;
+                    paMonsterGrow.stop();
+                    iiDM.transformOrigin = Item.Center;
+                    iiDM.scale = 1;
+                    iiDM.z = 0;
+                    iiDM.opacity = 1;
+                    iiDM.color = iiDM.bg_color;
                 }
 
                 onClicked: {
@@ -206,6 +253,7 @@ Item {
         //anchors.left: svMonsters.right
         width: 0.5 * parent.width
         height: 78 * l_ratio
+        z: 1
         ScrollBar.horizontal.policy: ScrollBar.AsNeeded
         ScrollBar.vertical.policy: ScrollBar.AlwaysOff
         //contentWidth: iCharm.width
@@ -244,15 +292,42 @@ Item {
                     }
                 }
 
-                function highlightNews(news_color) {
-                    caStatusHighlight.to = news_color;
-                    paStatusHighlight.restart();
+                // an attack: the shield that takes the blow grows and stays big while the step shows
+                ParallelAnimation {
+                    id: paStatusGrow
+
+                    ColorAnimation {
+                        id: caStatusGrow
+                        target: iiDC
+                        property: "color"
+                        duration: 150
+                    }
+
+                    NumberAnimation { target: iiDC; property: "scale"; to: rWarlock.newsGrowScale; duration: 150; easing.type: Easing.OutQuad }
+                }
+
+                // the statuses stand on the right, they grow to the bottom left
+                function highlightNews(news_color, grow) {
+                    iiDC.opacity = 1;
+                    if (grow) {
+                        iiDC.transformOrigin = Item.TopRight;
+                        iiDC.z = 1;
+                        caStatusGrow.to = news_color;
+                        paStatusGrow.restart();
+                    } else {
+                        caStatusHighlight.to = news_color;
+                        paStatusHighlight.restart();
+                    }
                 }
 
                 function restoreNews() {
                     paStatusHighlight.stop();
-                    scale = 1;
-                    color = checked ? bg_color_checked : bg_color;
+                    paStatusGrow.stop();
+                    iiDC.transformOrigin = Item.Center;
+                    iiDC.scale = 1;
+                    iiDC.z = 0;
+                    iiDC.opacity = 1;
+                    iiDC.color = iiDC.checked ? iiDC.bg_color_checked : iiDC.bg_color;
                 }
 
                 onClicked: {
@@ -527,7 +602,7 @@ Item {
         iiLeft.visible = Restore && (isHandsVisible === 1);
         iiRight.visible = Restore && (isHandsVisible === 1);
         if (Restore) {
-            setTempIcons([], []);
+            setTempIcons([], [], [], []);
         }
     }
 
@@ -535,19 +610,24 @@ Item {
     // Temporary icons of the turn news: a status the warlock had during the turn but not at its end
     // (a one-turn shield, a countered enchantment) and monsters that are gone (died, summon absorbed).
     // They sit in the real lists while the news plays: statuses first (at the right edge), monsters last.
+    // What came to the board during the turn and stayed (a summoned monster, the status a spell left)
+    // is taken out of the lists in the steps before the one that brings it (hide_statuses, hide_monsters).
     // The lists are only rebuilt when the set changes, so a step keeps the tiles of the step before.
-    property string tempStatusKey: "[]"
-    property string tempMonsterKey: "[]"
+    property string tempStatusKey: "[[],[]]"
+    property string tempMonsterKey: "[[],[]]"
 
-    function setTempIcons(statuses, monsters) {
-        var sk = JSON.stringify(statuses), mk = JSON.stringify(monsters);
+    function setTempIcons(statuses, monsters, hide_statuses, hide_monsters) {
+        var hs = hide_statuses ? hide_statuses : [], hm = hide_monsters ? hide_monsters : [];
+        var sk = JSON.stringify([statuses, hs]), mk = JSON.stringify([monsters, hm]);
         if (sk !== tempStatusKey) {
             tempStatusKey = sk;
-            iCharm.model = statuses.length > 0 ? statuses.concat(l_warlock.statusIcons) : l_warlock.statusIcons;
+            var real_s = hs.length > 0 ? l_warlock.statusIcons.filter(function(s) { return hs.indexOf(s.action) === -1; }) : l_warlock.statusIcons;
+            iCharm.model = statuses.length > 0 ? statuses.concat(real_s) : real_s;
         }
         if (mk !== tempMonsterKey) {
             tempMonsterKey = mk;
-            iMonsters.model = monsters.length > 0 ? l_warlock.monsters.concat(monsters) : l_warlock.monsters;
+            var real_m = hm.length > 0 ? l_warlock.monsters.filter(function(m) { return hm.indexOf(m.name) === -1; }) : l_warlock.monsters;
+            iMonsters.model = monsters.length > 0 ? real_m.concat(monsters) : real_m;
         }
     }
 
@@ -617,8 +697,16 @@ Item {
         if (a.object_type === "warlock") {
             switch(a.object) {
             case "hp":
-                caHPHighlight.to = a.color ? a.color : iiHP.bg_color_checked;
-                paHPHighlight.restart();
+                if (a.grow) {
+                    // the HP card is in the top left corner, it grows to the bottom right, over the monsters
+                    iiHP.transformOrigin = Item.TopLeft;
+                    iiHP.z = 2;
+                    caHPGrow.to = a.color ? a.color : iiHP.bg_color_checked;
+                    paHPGrow.restart();
+                } else {
+                    caHPHighlight.to = a.color ? a.color : iiHP.bg_color_checked;
+                    paHPHighlight.restart();
+                }
                 break;
             case "gestures":
                 lwGestures.model = a.data;
@@ -628,12 +716,12 @@ Item {
         } else if (a.object_type === "monster") {
             var mi = findMonsterItem(a.object);
             if (mi) {
-                mi.highlightNews(a.color ? a.color : "#FEE2D6");
+                mi.highlightNews(a.color ? a.color : "#FEE2D6", a.grow);
             }
         } else if (a.object_type === "status") {
             var si = findStatusItem(a.object);
             if (si) {
-                si.highlightNews(a.color ? a.color : "#10C9F5");
+                si.highlightNews(a.color ? a.color : "#10C9F5", a.grow);
             }
         }
     }
@@ -644,7 +732,10 @@ Item {
             switch(a.object) {
             case "hp":
                 paHPHighlight.stop();
+                paHPGrow.stop();
+                iiHP.transformOrigin = Item.Center;
                 iiHP.scale = 1;
+                iiHP.z = 0;
                 iiHP.color = iiHP.bg_color;
                 break;
             case "gestures":
@@ -694,6 +785,60 @@ Item {
             }
         }
         return null;
+    }
+
+    // https://github.com/Pz1c/WavingHands/issues/227
+    // the tile a highlight action of the turn news is about: the HP card, a monster, a status icon
+    function newsItem(a) {
+        if (a.object_type === "warlock") {
+            return a.object === "hp" ? iiHP : null;
+        } else if (a.object_type === "monster") {
+            return findMonsterItem(a.object);
+        } else if (a.object_type === "status") {
+            return findStatusItem(a.object);
+        }
+        return null;
+    }
+
+    // its middle in the coordinates of item `to` and the size of its icon: where a cast spell's icon lands
+    function newsTilePoint(a, to) {
+        var item = newsItem(a);
+        if (!item) {
+            return null;
+        }
+        var p = item.mapToItem(to, 0.5 * item.width, 0.5 * item.height);
+        return {x: p.x, y: p.y, size: item.iconWidth};
+    }
+
+    // a tile that comes to the board in a step is not seen until its turn in the step
+    function newsTileVisible(a, show) {
+        var item = newsItem(a);
+        if (item) {
+            item.opacity = show ? 1 : 0;
+        }
+    }
+
+    // the middle of the last lit letter of the spell that is being cast (of both for a two-handed one)
+    // in the coordinates of item `to`, null when no letter is lit
+    function newsGesturePoint(to) {
+        var data = lwGestures.model, col = data ? data.length - 1 : -1, pts = [], card;
+        while ((col >= 0) && !data[col].la && !data[col].ra) {
+            --col;
+        }
+        var item = col >= 0 ? lwGestures.itemAtIndex(col) : null;
+        if (!item) {
+            return null;
+        }
+        // the cards of a turn: the left hand's first, then the right hand's (lwiGesture)
+        if (data[col].la) {
+            card = item.children[0];
+            pts.push(card.mapToItem(to, 0.5 * card.width, 0.5 * card.height));
+        }
+        if (data[col].ra) {
+            card = item.children[1];
+            pts.push(card.mapToItem(to, 0.5 * card.width, 0.5 * card.height));
+        }
+        return pts.length === 2 ? {x: 0.5 * (pts[0].x + pts[1].x), y: 0.5 * (pts[0].y + pts[1].y)} : {x: pts[0].x, y: pts[0].y};
     }
 
     function setGesture(Hand, GestureIcon, Gesture, Inside) {

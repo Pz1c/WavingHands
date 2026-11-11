@@ -180,6 +180,13 @@ function isBeginnerTurnNews(row) {
     }
 }
 
+// https://github.com/Pz1c/WavingHands/issues/227
+// An attack is told in the color of a hit also when it did no harm, and so is a blow that a shield
+// stopped: the site paints those rows blue, in the turn news the tiles they light up are orange.
+function isBlowTurnNews(row) {
+    return (row.row_type === "attack") || ((row.row_type === "other") && (row.obj.shield || row.obj.counter_spell));
+}
+
 function prepareTurnActionInfo(last_turn_hist) {
     // A finished battle is a static record: opening it must not pop the turn news of its last
     // turn again. Only a battle in progress has something new to announce.
@@ -248,7 +255,7 @@ function prepareTurnActionInfo(last_turn_hist) {
         // https://github.com/Pz1c/WavingHands/issues/311
         BGU.processHintText(real_actions[i], mainWindow.warlockDictionary);
 
-        if ((real_actions[i].color === "#FF6666") || (real_actions[i].color === "#FF8888")) {
+        if ((real_actions[i].color === "#FF6666") || (real_actions[i].color === "#FF8888") || isBlowTurnNews(real_actions[i])) {
             real_actions[i].color = "#FEE2D6";
         } else {
             real_actions[i].color = "#10C9F5";
@@ -333,7 +340,9 @@ function prepareBattle(raw_battle) {
         battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit,
         // https://github.com/Pz1c/WavingHands/issues/315: true while the site offers its SUICIDE checkbox.
         // battleInfo() sends 1/0; a battle prepared once already holds the bool. Note "0" is truthy in JS.
-        suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true)};
+        suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true),
+        // https://github.com/Pz1c/WavingHands/issues/287: 1 for a live match, the battle window then shows the player's clock
+        live: raw_battle.live === 1 ? 1 : 0};
     // L left  obj
     // R Right obj
     // C Chat  text

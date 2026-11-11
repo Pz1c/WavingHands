@@ -51,6 +51,13 @@ public class CheckStatus {
                 if (check_url.isEmpty()) {
                     return;
                 }
+                // The app is on screen: it reads the player's page itself, and what this
+                // check could notify of is on the game list in front of the player. Without
+                // this the game server got the profile page from here every minute as well.
+                if (MainActivity.isForeground) {
+                    Log.d(TAG, "app in foreground, no check");
+                    return;
+                }
                 int last_sent_notif = sharedPreferences.getInt("last_notification", 0);
                 int app_last_activity = sharedPreferences.getInt("app_last_activity", 0);
                 int last_notification = Math.round(System.currentTimeMillis()/1000L);
@@ -261,6 +268,22 @@ public class CheckStatus {
         }
         Log.d(TAG, msg);
         notify(context, msg, btn_title, msg_data, action_type);
+    }
+
+    // An invite to a live match (https://github.com/Pz1c/WavingHands/issues/287), from the push
+    // only. The tap is an invite's: it opens the app, whose own scan finds the challenge and
+    // shows it with the time left to accept. A notification id of its own, so it does not
+    // replace (nor is replaced by) the one of an ordinary invite.
+    public static void notifyLive(Context context, String from, int battle_id) {
+        String who = (from == null || from.trim().isEmpty()) ? "A warlock" : from.trim();
+        String msg = who + " challenges you to a live match! You have 5 minutes to accept.";
+        Bundle msg_data = new Bundle();
+        msg_data.putInt("action_type", 1);
+        if (battle_id > 0) {
+            msg_data.putInt("battle_id", battle_id);
+        }
+        Log.d(TAG, msg);
+        notify(context, msg, "Play", msg_data, 5);
     }
 
     public static void notify(Context context, String message, String btn_title, Bundle data, int notification_id) {

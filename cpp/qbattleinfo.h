@@ -100,6 +100,34 @@ public:
 
     bool isInviteRejected();
     void checkRejection();
+    // The first warlock invited to this unstarted battle, as far as its page was read.
+    QString challengedWarlock() const;
+
+    // Live match (https://github.com/Pz1c/WavingHands/issues/287): a private duel played
+    // against the clock, see QWarlockUtils::liveDescription. The clock is this player's
+    // own and kept by the app. A turn gets liveBudget(): what is left of the total, and
+    // never less than the extra. It starts when the player opens the turn
+    // (liveTurnEntered) or LIVE_MATCH_NOTICE_SEC after the app learned of it
+    // (liveTurnNoticed), whichever comes first, and stops when the orders are in
+    // (liveTurnDone). Every Now is in seconds since epoch.
+    bool live() const;
+    void setLive(int Total, int Extra, qint64 ValidBy);
+    qint64 liveValidBy() const;
+    int liveTotal() const;
+    int liveExtra() const;
+    int liveUsed() const;
+    void liveTurnNoticed(qint64 Now);
+    void liveTurnEntered(qint64 Now);
+    void liveTurnDone(qint64 Now);
+    // true between liveTurnNoticed / liveTurnEntered and liveTurnDone
+    bool liveTurnOpen() const;
+    int liveBudget() const;
+    // When this turn's clock started, 0 while it does not run yet.
+    qint64 liveClockStart(qint64 Now) const;
+    // Seconds left for this turn; negative once the time is out.
+    int liveLeft(qint64 Now) const;
+    // When this turn's time is (or would be, by the notice rule) out; 0 with no turn open.
+    qint64 liveDeadline(qint64 Now) const;
 
 protected:
     QString prepareToPrint(QString str) const;
@@ -141,6 +169,15 @@ private:
     QList<QMonster *> _Monsters;
     QList<QWarlock *> _Warlock;
 
+    // live match: the rules (_liveTotal 0 = not a live match), the seconds spent in the
+    // turns played so far, when the app learned of the current turn and when the player
+    // opened it (0 = not yet)
+    int _liveTotal;
+    int _liveExtra;
+    qint64 _liveValidBy;
+    int _liveUsed;
+    qint64 _liveNotified;
+    qint64 _liveStart;
 };
 
 #endif // QBATTLEINFO_H

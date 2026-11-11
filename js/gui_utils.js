@@ -288,7 +288,8 @@ function startGameWithPlayer(WarlockName, FriendlyLevel, OnlineGame) {
     if (!WarlockName) {
         showErrorWnd({id:-1,type:19});
     } else {
-        core.createNewChallenge(1, 1, 1, 1, 2, FriendlyLevel, "Welcome to fight", WarlockName);
+        // OnlineGame: a live match (https://github.com/Pz1c/WavingHands/issues/287), the core writes its description
+        core.createNewChallenge(1, 1, 1, 1, 2, FriendlyLevel, "Welcome to fight", WarlockName, OnlineGame ? 1 : 0);
     }
 }
 

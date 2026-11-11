@@ -29,7 +29,11 @@ import java.util.Map;
  * every value a string:
  *   v          always "1"; anything else is ignored
  *   type       "ready": battles await the player's orders; "invite": private challenges await
- *              the player's answer. Never mixed in one message.
+ *              the player's answer. Never mixed in one message. "live": a warlock who is in
+ *              the app right now invites the player to a live match
+ *              (https://github.com/Pz1c/WavingHands/issues/287); the invite is good for a few
+ *              minutes only, so the message is dropped once it is older than that.
+ *   from       "live" only: who invites
  *   battles    ascending battle numbers joined with ';', at least one
  *   battle_id  the number when count is "1", "" otherwise
  *   count      number of ids in battles
@@ -40,6 +44,8 @@ public class PushService extends FirebaseMessagingService {
     // The logcat tag of the token registration, shared with NotificationClient and the core.
     public static final String PUSH_TAG = "Push";
     private static final long MAX_AGE_SEC = 12L * 60 * 60;
+    // How long a live match invite is good for (LIVE_MATCH_INVITE_SEC in qgameconstant.h).
+    private static final long MAX_LIVE_AGE_SEC = 5L * 60;
 
     @Override
     public void onNewToken(@NonNull String token) {
@@ -60,8 +66,9 @@ public class PushService extends FirebaseMessagingService {
                 return;
             }
             String type = data.get("type");
+            boolean live = "live".equals(type);
             int action_type;
-            if ("invite".equals(type)) {
+            if ("invite".equals(type) || live) {
                 action_type = 1;
             } else if ("ready".equals(type)) {
                 action_type = 2;
@@ -75,7 +82,7 @@ public class PushService extends FirebaseMessagingService {
             int battle_id = (int) parseLong(data.get("battle_id"), 0L);
             Log.d(TAG, "onMessageReceived: type=" + type + " battles=" + data.get("battles")
                     + " count=" + data.get("count") + " battle_id=" + battle_id + " age=" + age + "s");
-            if (age > MAX_AGE_SEC) {
+            if (age > (live ? MAX_LIVE_AGE_SEC : MAX_AGE_SEC)) {
                 Log.d(TAG, "onMessageReceived: stale, dropped");
                 return;
             }
@@ -95,7 +102,11 @@ public class PushService extends FirebaseMessagingService {
                 Log.d(TAG, "onMessageReceived: push not active on this device, dropped");
                 return;
             }
-            CheckStatus.notifyType(context, action_type, battle_id);
+            if (live) {
+                CheckStatus.notifyLive(context, data.get("from"), battle_id);
+            } else {
+                CheckStatus.notifyType(context, action_type, battle_id);
+            }
             // The bookkeeping of CheckStatus.performCheck, so the poll's reminder logic keeps
             // working from the last notification whichever road posted it.
             SharedPreferences.Editor editor = prefs.edit();

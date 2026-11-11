@@ -10,6 +10,21 @@
 
 // Least time between two battle-list refreshes set off by TURNREADY pushes.
 static const qint64 kTurnReadyRefreshGapMs = 10000;
+// The site's open challenges come along with a scan of the player page at most this often
+// (challengeListDue), and the New Game window takes them for fresh this long.
+static const int kChallengeListGapSec = 180;
+static const int kChallengeListFreshSec = 30;
+// Keep me On: after this many joins or creations in a row that the site turned down, the
+// next one waits this long.
+static const int kKeepMeOnMaxFails = 2;
+static const int kKeepMeOnRetrySec = 60;
+// One bot is not called to play twice within this time: the order submit calls it, and so
+// does the scan of the player page that follows the submit.
+static const qint64 kAiCallGapMs = 3000;
+// A challenge's battle page (issue #287, liveCheckInvites): asked for again after this long
+// without an answer, and this many times at most.
+static const int kLiveProbeRetrySec = 10;
+static const int kLiveProbeTries = 3;
 // Automatic requests for one battle's result before it is left to the Finished list.
 static const int kMaxResultAttempts = 3;
 // Pause between the last window closing and a held-back result being announced.
@@ -92,6 +107,18 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
     _keepMeOn = false;
     _keepMeOnBusy = false;
     _keepMeOnOfferSkip = false;
+    _keepMeOnFails = 0;
+    _keepMeOnFailedAt = 0;
+    _lastChallengeScan = 0;
+    _challengesAsked = false;
+    _lastAiCallAt = 0;
+    _aiOneBot = false;
+    _liveExpectInvite = 0;
+    _liveExpectTries = 0;
+    _liveNewBattle = 0;
+    _liveExpiryScan = 0;
+    _liveSurrenderBattle = 0;
+    _liveSurrenderStarted = 0;
     _pushNotifications = true;
     _pushForceSend = false;
     _fastGesture = false;
@@ -161,6 +188,10 @@ QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
         connect(_rosterLink, &QRosterLink::pushUnregistered, this, &QWarloksDuelCore::onPushUnregistered);
         connect(_rosterLink, &QRosterLink::pushUnsupported, this, &QWarloksDuelCore::onPushUnsupported);
         connect(_rosterLink, &QRosterLink::pushFailed, this, &QWarloksDuelCore::onPushFailed);
+        connect(_rosterLink, &QRosterLink::liveInvite, this, &QWarloksDuelCore::onLinkLiveInvite);
+        connect(_rosterLink, &QRosterLink::liveSent, this, &QWarloksDuelCore::onLinkLiveSent);
+        _liveTimer.setInterval(1000);
+        connect(&_liveTimer, &QTimer::timeout, this, &QWarloksDuelCore::liveTick);
         _pushForceTimer.setSingleShot(true);
         connect(&_pushForceTimer, &QTimer::timeout, this, &QWarloksDuelCore::onPushForceTimeout);
         registerPushNatives();
@@ -247,6 +278,11 @@ void QWarloksDuelCore::aiCreateNewChallenge() {
     }
     if (_waiting_in_battles.count() < 3) {
         createNewChallenge(true, false, true, true, 2, 2, "Training Battle with AI Player, NO BOT allowed");
+    } else if (_isAsService && _aiOneBot) {
+        // The bot service was called for this bot's turn (doAIAnswer), and that is played.
+        // Logging the next bot in after every turn of a bot with games enough cost the game
+        // server three requests a turn; the calls for any bot go on to the next one.
+        _isAiBusy = false;
     } else {
         aiLogin();
     }
@@ -266,6 +302,9 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     if (!_newBattle) {
         _newBattle = new QBattleInfo();
     }
+    _newBattle->setLive(0, 0, 0);   // one left over from a creation that failed
+    _liveNewBattle = 0;
+    _liveNewWarlock.clear();
     _newBattle->setFast(Fast); // true by default
     _newBattle->setDescription(Description);
     _newBattle->setParafc(ParaFC);
@@ -281,6 +320,14 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     } else {
         _inviteToBattle.clear();
         l_p = false;
+    }
+    // https://github.com/Pz1c/WavingHands/issues/287: a live match is a private duel whose
+    // description carries the rules, for the app of the invited warlock to read.
+    if ((IsOnline != 0) && l_p && (Count == 2) && !_isAI && !_isAsService) {
+        Description = QWarlockUtils::liveDescription(QDateTime::currentSecsSinceEpoch() + LIVE_MATCH_INVITE_SEC,
+                                                     LIVE_MATCH_TOTAL_SEC, LIVE_MATCH_EXTRA_SEC);
+        _newBattle->setDescription(Description);    // which makes it a live match
+        _liveNewWarlock = _inviteToBattle;
     }
 
     QString p_data = "fast=1&";
@@ -435,6 +482,7 @@ void QWarloksDuelCore::clearMessages() {
 void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, const QString &Pass) {
     Q_UNUSED(Email) // kept in the signature for the QML call site; the email field is disabled
     ++_sessionEpoch;
+    _lastChallengeScan = 0;
     _login = Login;
     _password = Pass.isEmpty() ? QGameUtils::rand(10) : Pass;
     setIsLoading(true);
@@ -613,6 +661,14 @@ void QWarloksDuelCore::aiLogin() {
 void QWarloksDuelCore::callAI(QString Login, int MagicBookLevel) {
     qDebug() << "QWarloksDuelCore::callAI" << Login << MagicBookLevel;
     if (!Login.isEmpty()) {
+        // Asked for twice in a row (kAiCallGapMs), the bot service would log the bot in
+        // and play its turn twice over.
+        qint64 curr_ms = QDateTime::currentMSecsSinceEpoch();
+        if ((_lastAiCall.compare(Login, Qt::CaseInsensitive) == 0) && (curr_ms - _lastAiCallAt < kAiCallGapMs)) {
+            return;
+        }
+        _lastAiCall = Login;
+        _lastAiCallAt = curr_ms;
         emit needAIAnswer(Login, MagicBookLevel);
         return;
     }
@@ -626,6 +682,9 @@ void QWarloksDuelCore::callAI(QString Login, int MagicBookLevel) {
 void QWarloksDuelCore::finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl) {
     QList<QBattleInfo*> list = QWarlockUtils::parseChallengesList(Data);
     qDebug() << "finishChallengeList" << StatusCode << NewUrl << _isAI;// << _challengeList << list;
+    // Fresh as of now, whichever request brought it (an accepted challenge redirects here
+    // too); anything but the list is asked for again with the next scan.
+    _lastChallengeScan = (StatusCode == 200) ? QDateTime::currentSecsSinceEpoch() : 0;
     QString list_str;
     bool working = false, active_challenge = false;
     int with_bot = 0;
@@ -876,12 +935,14 @@ void QWarloksDuelCore::applyRosterBlock(const QRosterBlock &block) {
         ws->setDied(r.died);
         ws->setElo(r.elo);
         ws->setColor(r.color);
-        ws->setLastActivity(now - r.idleSeconds);
-        if (r.mobile) {
-            // A site scan can never observe this, so the wire 0 is structural
-            // rather than authoritative.
-            ws->setMobile(true);
-        }
+        // Never back in time: a warlock's last activity only moves forward, and a caster
+        // whose scan of the site has stalled keeps sending the idle time of its last good
+        // scan, which would wipe the fresher one the HTTP roster or a profile page gave
+        // (the Active tab of the Hall of Fame went empty that way).
+        ws->setLastActivity(qMin(now, qMax(ws->lastActivity(), now - r.idleSeconds)));
+        // The caster's own knowledge, not the site's: this warlock's app plays live
+        // matches and can be told of an invite right now (issue #287).
+        ws->setMobile(r.mobile);
     }
     foreach(QString name, block.removed) {
         if (QWarlockStat *dead = _playerStats.take(name.toLower())) {
@@ -964,10 +1025,14 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
     _keepMeOnOfferSkip = false;
     if (NewUrl.isEmpty()) {
         if (_isAsService) {
-            //aiLogin();
-            //do nothing
+            // The site did not take the bot's game. The scan that used to follow led straight
+            // back here (no game of the bot's among the open ones: make one), in a loop that
+            // only ended with the app; the next call for a bot tries again.
+            _isAiBusy = false;
+            return false;
         } else if (keep_me_on_game) {
             // Nobody asked for this game, so no error window: the next scan tries again.
+            keepMeOnFailed();
             logEvent("KeepMeOn_Game_Created_Error", QString("login;%1;").arg(_login));
             scanState(true);
             return false;
@@ -984,7 +1049,11 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
     int pos = 0;
     QString created_id = QWarlockUtils::getStringFromData(url, "num", "=", "&", pos);
     int bid = created_id.toInt();
+    bool invite_sent = false;
     if (bid > 0) {
+        if (keep_me_on_game) {
+            _keepMeOnFails = 0;
+        }
         if (_newBattle) {
             _newBattle->setBattleID(bid);
             _battleInfo.insert(bid, _newBattle);
@@ -994,7 +1063,13 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
         battle_info->addParticipant(_login);
         battle_info->setStatus(BATTLE_INFO_STATUS_NO_START);
         if (!_inviteToBattle.isEmpty() && !created_id.isEmpty()) {
+            if (battle_info->live() && !_liveNewWarlock.isEmpty()) {
+                // liveAfterInvite() goes on once the site has the invite
+                _liveNewBattle = bid;
+                logEvent("Live_Game_Created", QString("Id;%1;With;%2;Warlock;%3;").arg(created_id, _liveNewWarlock, _login));
+            }
             sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
+            invite_sent = true;
         } else if (!_isAsService && battle_info->for_bot()) {
             qDebug() << "emit needAIAnswer";
             callAI("", 5);
@@ -1022,7 +1097,11 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
         }
     }
 
-    scanState(true);
+    if (!invite_sent) {
+        // With an invite on its way the scan is left to its reply (slotReadyRead): that
+        // page shows the game with the invite, this one would be read for nothing.
+        scanState(true);
+    }
     return true;
 }
 
@@ -1031,7 +1110,16 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
     // Joined by the auto matching rather than by the player (https://github.com/Pz1c/WavingHands/issues/216).
     bool keep_me_on_join = _keepMeOnBusy;
     _keepMeOnBusy = false;
+    if (NewUrl.isEmpty()) {
+        // The challenge is not to be had any more: the list that offered it is out of date.
+        _lastChallengeScan = 0;
+    }
     if (keep_me_on_join) {
+        if (NewUrl.isEmpty()) {
+            keepMeOnFailed();
+        } else {
+            _keepMeOnFails = 0;
+        }
         // The game is on either way as far as the player is concerned: no error window, no
         // battle page load that would pop the battle up. The rescan lists it as ready, or
         // finds the next challenge should the server have turned this one down.
@@ -1056,6 +1144,10 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
         }
         qDebug() << "final url " << url;
         sendGetRequest(url);
+        if (_rosterLink && _liveInvites.contains(_loadedBattleID)) {
+            // the challenger's app need not wait for its next scan to see the match begin
+            _rosterLink->sendTurn(_liveInvites.value(_loadedBattleID).from);
+        }
         if (!_isAsService && (_loadedBattleID > 0)) {
             QBattleInfo *bi = getBattleInfo(_loadedBattleID);
             qDebug() << "QWarloksDuelCore::finishAccept" << bi->getEnemy(_login) << bi->toJSON(_login);
@@ -1083,6 +1175,14 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
     }
     emit orderSubmitedChanged();
     qDebug() << "finishOrderSubmit" << StatusCode << NewUrl;
+    if (QBattleInfo *live_bi = _battleInfo.value(background ? _loadedBattleID : _ordersBattleID, nullptr)) {
+        if (live_bi->liveTurnOpen()) {
+            // a live match: this turn's clock stops here (issue #287)
+            live_bi->liveTurnDone(QDateTime::currentSecsSinceEpoch());
+            _liveTimeoutSaid.remove(live_bi->battleID());
+            saveParameters(false, false, true, false, false);
+        }
+    }
     if (Data.isEmpty()) {
         qDebug() << "Data not empty";
     }
@@ -1173,7 +1273,7 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
     return false;
 }
 
-void QWarloksDuelCore::scanState(bool Silent) {
+void QWarloksDuelCore::scanState(bool Silent, bool Challenges) {
     qDebug() << "scanState" << _isLogined << _isAI << _ready_in_battles.count() << _lstAI.count() << _botIdx << _isAsService;;
     if (!_isLogined) {
         loginToSite(Silent);
@@ -1182,6 +1282,7 @@ void QWarloksDuelCore::scanState(bool Silent) {
 
     if (!Silent) {
         _isScanForced = true;
+        _challengesAsked = Challenges;
         setIsLoading(true);
         //_challengeList.clear();
     }
@@ -1195,7 +1296,77 @@ void QWarloksDuelCore::getChallengeList(bool Silent) {
         setIsLoading(true);
     }
 
+    // On its way: no scan sends another one after it.
+    _lastChallengeScan = QDateTime::currentSecsSinceEpoch();
     sendGetRequest(GAME_SERVER_URL_CHALLENGES, Silent);
+}
+
+// The New Game window is opening. What it offers to join comes from the open challenges,
+// which scans bring along only now and then (challengeListDue): they are read again here,
+// unless they have just been.
+void QWarloksDuelCore::refreshChallengeList() {
+    if (!_isLogined || _isAI || _isAsService) {
+        return;
+    }
+    if (QDateTime::currentSecsSinceEpoch() - _lastChallengeScan < kChallengeListFreshSec) {
+        return;
+    }
+    getChallengeList(true);
+}
+
+// Whether a scan of the player page brings the site's open challenges along. They change
+// slowly, and only the game list (its "open challenge" rows), the New Game window and Keep
+// me On read them, so a scan made for another reason - a move, a TURNREADY, a bot's
+// answer, the timer most of the time - goes without. Asked: the player's own Refresh.
+bool QWarloksDuelCore::challengeListDue(bool Asked) const {
+    if (_isAsService && _aiOneBot && !_ready_in_battles.isEmpty()) {
+        // Called for one bot, which has a turn to play: the list comes with the scan that
+        // follows its orders. Asked for here as well, it was read twice a turn.
+        return false;
+    }
+    if (_isAI || _isAsService) {
+        return true;    // a bot account acts on the list after every scan
+    }
+    if (Asked || (_lastChallengeScan == 0)) {
+        return true;    // never read yet, or the last answer was lost
+    }
+    if (QDateTime::currentSecsSinceEpoch() - _lastChallengeScan >= kChallengeListGapSec) {
+        return true;
+    }
+    if (_ready_in_battles.isEmpty() && _waiting_in_battles.isEmpty()) {
+        return true;    // no game of the player's own: the open ones are what the list shows
+    }
+    return keepMeOnHasRoom();
+}
+
+// Keep me On will join or make a game once it has the open challenges (keepMeOnCheck): by
+// the player's own lists there is room for one, and none that still waits for an opponent.
+bool QWarloksDuelCore::keepMeOnHasRoom() const {
+    if (!_keepMeOn || _keepMeOnBusy || keepMeOnOnHold() ||
+            (_ready_in_battles.count() + _waiting_in_battles.count() >= KEEP_ME_ON_MAX_GAMES)) {
+        return false;
+    }
+    foreach(int bid, _waiting_in_battles) {
+        const QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+        if (bi && (bi->status() == BATTLE_INFO_STATUS_NO_START)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// The site turned a join or a creation of Keep me On's down. One refusal is tried again at
+// once (somebody else took the challenge: the rescan finds the next one); after
+// kKeepMeOnMaxFails in a row it is once in kKeepMeOnRetrySec. With no limit, a site that
+// keeps refusing was asked again as fast as it answered, for as long as the app ran.
+void QWarloksDuelCore::keepMeOnFailed() {
+    ++_keepMeOnFails;
+    _keepMeOnFailedAt = QDateTime::currentSecsSinceEpoch();
+}
+
+bool QWarloksDuelCore::keepMeOnOnHold() const {
+    return (_keepMeOnFails >= kKeepMeOnMaxFails) &&
+           (QDateTime::currentSecsSinceEpoch() - _keepMeOnFailedAt < kKeepMeOnRetrySec);
 }
 
 void QWarloksDuelCore::scanTopList(bool Silent, bool ForceFull) {
@@ -1285,6 +1456,13 @@ void QWarloksDuelCore::leaveBattle(int battle_id, int warlock_id, bool Silent) {
     if (!Silent) {
         setIsLoading(true);
     }
+    const QBattleInfo *live_bi = _battleInfo.value(battle_id, nullptr);
+    if (_rosterLink && live_bi && live_bi->live() && (live_bi->status() == BATTLE_INFO_STATUS_NO_START) &&
+            !live_bi->challengedWarlock().isEmpty()) {
+        // A live invite of the player's is withdrawn (issue #287): the invited app looks at
+        // its list now, and takes the invite off the screen, rather than at its next scan.
+        _rosterLink->sendTurn(live_bi->challengedWarlock());
+    }
     if (warlock_id> 0) {
         logEvent("Game_Kick_Out", QString("Id;%1;WarlockId;%2;").arg(intToStr(battle_id), intToStr(warlock_id)));
         sendGetRequest(QString(GAME_SERVER_URL_LEAVE_GAME_OTHER).arg(intToStr(battle_id), intToStr(warlock_id)), Silent);
@@ -1297,6 +1475,18 @@ void QWarloksDuelCore::leaveBattle(int battle_id, int warlock_id, bool Silent) {
 
 void QWarloksDuelCore::acceptChallenge(int battle_id, bool from_card, bool Background) {
     qDebug() << "QWarloksDuelCore::acceptChallenge" << battle_id << from_card << Background;
+    if (_liveInvites.contains(battle_id)) {
+        // a live match (issue #287): good only until its time, and played by its rules
+        const QPersonalChallenge invite = _liveInvites.value(battle_id);
+        if (QDateTime::currentSecsSinceEpoch() > invite.validBy) {
+            _errorMsg = GameDictionary->getStringByCode("LiveInviteGone");
+            emit errorOccurred();
+            scanState(true);
+            return;
+        }
+        getBattleInfo(battle_id)->setLive(invite.total, invite.extra, invite.validBy);
+        logEvent("Live_Game_Accepted", QString("Id;%1;From;%2;Warlock;%3;").arg(intToStr(battle_id), invite.from, _login));
+    }
     if (!Background) {
         setIsLoading(true);
 
@@ -1405,7 +1595,7 @@ void QWarloksDuelCore::getBattle(int battle_id, int battle_type, bool silent) {
     if (_loadedBattleType == 2) {
         QBattleInfo* bi = getBattleInfo(_loadedBattleID);
         if (bi->fullParsed()) {
-            _finishedBattle = bi->getFinishedBattleInfo(_login);
+            _finishedBattle = finishedBattleInfo(bi);
             markResultShown(_loadedBattleID);
             emit finishedBattleChanged();
             return;
@@ -1432,9 +1622,95 @@ QBattleInfo *QWarloksDuelCore::getBattleInfo(int battleId) {
     if (!_battleInfo.contains(battleId)) {
         _battleInfo.insert(battleId, new QBattleInfo());
         _battleInfo[battleId]->setBattleID(battleId);
-        _battleInfo[battleId]->addParticipant(_login);
+        if (_foreign_battles.indexOf(battleId) == -1) {
+            _battleInfo[battleId]->addParticipant(_login);
+        }
     }
     return _battleInfo[battleId];
+}
+
+// The warlock a battle is shown for: the player, or in somebody else's battle (opened from
+// that warlock's profile, https://github.com/Pz1c/WavingHands/issues/121) the owner of the
+// profile, else the first participant.
+QString QWarloksDuelCore::battleViewer(const QBattleInfo *bi) const {
+    if (!bi->active(_login)) {
+        return _login;
+    }
+    if (!_profileLogin.isEmpty() && !bi->active(_profileLogin)) {
+        return _profileLogin;
+    }
+    QString first = bi->getEnemy(_login);
+    return first.isEmpty() ? _login : first;
+}
+
+bool QWarloksDuelCore::isSpectator(const QBattleInfo *bi) const {
+    return bi->active(_login) && !bi->getEnemy(_login).isEmpty();
+}
+
+// The result window of a finished battle; for somebody else's battle from the side of
+// battleViewer(), named in "spectator".
+QString QWarloksDuelCore::finishedBattleInfo(const QBattleInfo *bi) const {
+    if (!isSpectator(bi)) {
+        return bi->getFinishedBattleInfo(_login);
+    }
+    QString viewer = battleViewer(bi);
+    QString res = bi->getFinishedBattleInfo(viewer);
+    res.chop(1);
+    return res.append(QString(",\"spectator\":\"%1\"}").arg(QWarlockUtils::jsonEscape(viewer)));
+}
+
+// A row of the profile window's game list: a battle the app knows is named as in the
+// player's own list, any other one by its number. State: 1 the warlock's turn, 0 waiting,
+// 2 finished.
+QString QWarloksDuelCore::profileBattleTitle(int BattleId, int State, const QString &Login) const {
+    QBattleInfo *bi = _battleInfo.value(BattleId, nullptr);
+    if (bi && !bi->active(_login)) {
+        // the player's battle as well
+        return bi->getInListDescription(_login);
+    }
+    if (bi && (bi->status() == BATTLE_INFO_STATUS_NO_START) && (State != 2)) {
+        return GameDictionary->getStringByCode("BattleListWaitingStart");
+    }
+    QString enemy = bi && !bi->active(Login) ? bi->getEnemy(Login, true) : QString();
+    if (enemy.isEmpty()) {
+        return GameDictionary->getStringByCode("BattleTitle").arg(intToStr(BattleId));
+    }
+    if (State == 2) {
+        return bi->status() == BATTLE_INFO_STATUS_FINISHED ? bi->getInListDescription(Login)
+                                                           : GameDictionary->getStringByCode("BattleListFinishedVs").arg(enemy);
+    }
+    return GameDictionary->getStringByCode(State == 1 ? "BattleListTurnVs" : "BattleListWaitingFor").arg(enemy);
+}
+
+// The games of a profile page as the "battles" array of the profile window: the warlock's
+// turn first, then waiting, then finished, each newest first. "s" is what getBattle takes,
+// "r" marks the player's own turn, "o" the player's own game, "w" a game the
+// warlock won.
+QString QWarloksDuelCore::profileBattles(QString &Data, const QString &Login) {
+    const QList<int> lists[3] = {QWarlockUtils::getBattleList(Data, "Ready in battles:"),
+                                 QWarlockUtils::getBattleList(Data, "Waiting in battles:"),
+                                 QWarlockUtils::getBattleList(Data, "Finished battles:")};
+    const int states[3] = {1, 0, 2};
+    QString res = "[";
+    for (int l = 0; l < 3; ++l) {
+        for (int i = lists[l].size() - 1; i >= 0; --i) {
+            int bid = lists[l].at(i);
+            bool own = (_ready_in_battles.indexOf(bid) != -1) || (_waiting_in_battles.indexOf(bid) != -1) || (_finished_battles.indexOf(bid) != -1);
+            if (!own && (_foreign_battles.indexOf(bid) == -1)) {
+                _foreign_battles.append(bid);
+            }
+            QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+            if (res.length() > 1) {
+                res.append(",");
+            }
+            res.append(QString("{\"id\":%1,\"s\":%2,\"d\":\"%3\",\"r\":%4,\"w\":%5,\"o\":%6}")
+                       .arg(intToStr(bid), intToStr(states[l] == 2 ? 2 : 0), QWarlockUtils::jsonEscape(profileBattleTitle(bid, states[l], Login)),
+                            boolToIntS((_ready_in_battles.indexOf(bid) != -1)),
+                            boolToIntS(((states[l] == 2) && bi && (bi->status() == BATTLE_INFO_STATUS_FINISHED) && bi->isWinner(Login))),
+                            boolToIntS(own)));
+        }
+    }
+    return res.append("]");
 }
 
 int QWarloksDuelCore::parseBattleDescription(QString &Data) {
@@ -1543,9 +1819,32 @@ void QWarloksDuelCore::processSpellBookLevelAfterBattle(QBattleInfo *bi) {
     }
 }
 
+// The row of a battle in the game list reads differently once its page is known (who the
+// opponent is, who won): the list is put together again from what the app has, with no
+// scan of the player page.
+void QWarloksDuelCore::refreshBattleRow(const QBattleInfo *bi, const QString &RowBefore) {
+    if (_isAI || _isAsService || _battleList.isEmpty()) {
+        return;
+    }
+    int bid = bi->battleID();
+    if ((_ready_in_battles.indexOf(bid) == -1) && (_waiting_in_battles.indexOf(bid) == -1) && (_finished_battles.indexOf(bid) == -1)) {
+        return;     // not a game of the list
+    }
+    if (bi->getInListDescription(_login) != RowBefore) {
+        generateBattleList();
+    }
+}
+
 bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     qDebug() << "finishGetFinishedBattle" << _loadedBattleID << _loadedBattleType << Announce;
     QBattleInfo *battleInfo = getBattleInfo(_loadedBattleID);
+    // What the game list says of this battle before its page is read (refreshBattleRow).
+    const QString row_before = (_isAI || _isAsService) ? QString() : battleInfo->getInListDescription(_login);
+    // This page was asked for by liveSurrender(); whatever it turns out to be, the request is over.
+    bool live_surrender = (_liveSurrenderBattle > 0) && (_liveSurrenderBattle == _loadedBattleID);
+    if (live_surrender) {
+        _liveSurrenderBattle = 0;
+    }
     if ((_loadedBattleType == 2) && (Data.indexOf("id#=#") == 0)) {
         QBattleInfo *bi = new QBattleInfo(Data);
         if (bi->battleID() != _loadedBattleID) {
@@ -1559,10 +1858,11 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             _battleInfo[_loadedBattleID] = bi;
             delete battleInfo;
             battleInfo = bi;
-            _finishedBattle = battleInfo->getFullHist(_login);
+            _finishedBattle = finishedBattleInfo(battleInfo);
             if (!_loadedBattleSilent) {
                 markResultShown(_loadedBattleID);
             }
+            refreshBattleRow(battleInfo, row_before);
         }
         if (!_loadedBattleSilent) {
             emit finishedBattleChanged();
@@ -1662,6 +1962,10 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
     if (_loadedBattleType != 1) {
         qDebug() << "battle is not ready end there" << _loadedBattleType;
         bool is_result = false;
+        // The page shows the battle in another state than the game list has it in: only
+        // then is the player page read again. (main.qml used to scan after every window
+        // opened here, a waiting or a finished game the player merely looked at included.)
+        bool list_stale = false;
         int idx = _finishedBattle.indexOf("Your orders are in for this turn.");
         if (idx != -1) {
             idx += 33;
@@ -1669,8 +1973,26 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
                     .replace("<BR><BR>", "").replace("\n", " ").replace("RH:", "Right hand:").replace("LH:", "Left hand:");
             _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":%2,\"id\":%3}").arg(_finishedBattle, ForceSurrenderTurn, intToStr(_loadedBattleID));
             battleInfo->parseAllTurns(Data, _login, false);
+            // listed as the player's turn, but the orders are in (given on the site)
+            list_stale = _ready_in_battles.indexOf(_loadedBattleID) != -1;
         } else if (_loadedBattleType == -1) {
             _finishedBattle = QString("{\"type\":12,\"d\":\"\",\"id\":%1,\"battle_data\":%2}").arg(intToStr(_loadedBattleID), battleInfo->toJSON(_login));
+        } else if ((_loadedBattleType == 2) && isSpectator(battleInfo)) {
+            // somebody else's battle: no result of the player's to count, archive or report
+            QString viewer = battleViewer(battleInfo);
+            battleInfo->parseAllTurns(Data, viewer, true);
+            _finishedBattle = finishedBattleInfo(battleInfo);
+            is_result = true;
+        } else if ((_loadedBattleType == 0) && isSpectator(battleInfo)) {
+            // somebody else's battle in progress: the news of its last turn, and the board
+            // behind "View" as for a battle the player waits in
+            QString viewer = battleViewer(battleInfo);
+            int idx_units = _finishedBattle.indexOf("<TABLE");
+            QString news = (idx_units == -1 ? _finishedBattle : _finishedBattle.left(idx_units)).replace("\n", " ");
+            battleInfo->parseAllTurns(Data, viewer, false);
+            _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":0,\"id\":%2,\"spectator\":\"%3\",\"t\":\"%4\"}")
+                    .arg(QWarlockUtils::jsonEscape(news), intToStr(_loadedBattleID), QWarlockUtils::jsonEscape(viewer),
+                         QWarlockUtils::jsonEscape(battleInfo->getInListParticipant(viewer)));
         } else if (_loadedBattleType == 2) {
             battleInfo->parseAllTurns(Data, _login, true);
             _finishedBattle = battleInfo->getFinishedBattleInfo(_login);
@@ -1682,12 +2004,22 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             QString params = QString("Id;%1;Players;%2;Winner;%3;").arg(intToStr(_loadedBattleID), battleInfo->getInListParticipant(_login, true), battleInfo->winner());
             logEvent("Game_End", params);
             is_result = true;
+        } else {
+            // a battle of the player's that waits neither for the player nor for the
+            // others: it is over, and the list still has it as going on
+            list_stale = true;
+        }
+        if (!list_stale) {
+            refreshBattleRow(battleInfo, row_before);
         }
         if (!_loadedBattleSilent && (is_result || !Announce)) {
             if (is_result) {
                 markResultShown(_loadedBattleID);
             }
             emit finishedBattleChanged();
+        }
+        if (list_stale && !_isAI && !_isAsService) {
+            scanState(true);
         }
         return false;
     }
@@ -1712,6 +2044,19 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
         return false;
     }
     bool res = parseReadyBattle(ReadyData);
+    if (res && !_isAI && !_isAsService && battleInfo->live()) {
+        // https://github.com/Pz1c/WavingHands/issues/287
+        if (live_surrender) {
+            liveSubmitSurrender();
+            return false;
+        }
+        if (!_loadedBattleSilent && !battleInfo->liveClockStart(QDateTime::currentSecsSinceEpoch())) {
+            // the player has opened the turn: its clock runs from now
+            battleInfo->liveTurnEntered(QDateTime::currentSecsSinceEpoch());
+            saveParameters(false, false, true, false, false);
+        }
+        liveCheckTimer();
+    }
     if (!_loadedBattleSilent && res) {
         qDebug() << "Check spellbook levelup" << _loadedBattleTurn << battleInfo->with_bot();
 
@@ -2131,12 +2476,15 @@ bool QWarloksDuelCore::parseReadyBattle(QString &Data) {
 
 void QWarloksDuelCore::setTimeState(bool State) {
     //timer.s
-    _isTimerActive = State;
+    // A live match that waits for the other warlock (https://github.com/Pz1c/WavingHands/issues/287)
+    // is looked after twice as often, and also while some other battle is ready.
+    bool live = liveWatch();
+    _isTimerActive = State || live;
     if ((_isTimerActive && _timer.isActive()) || !_isTimerActive) {
         _timer.stop();
     }
     if (_isTimerActive && !_isAsService) {
-        _timer.start(_isAI ? 30000 : 60000);
+        _timer.start((_isAI || live) ? 30000 : 60000);
     }
     //emit timerStateChanged();
 }
@@ -2224,7 +2572,7 @@ void QWarloksDuelCore::parseMessages(QString &Data) {
 
 void QWarloksDuelCore::parseChallendge(QString &Data) {
     qDebug() << "QWarloksDuelCore::parseChallendge" << Data;
-    QWarlockUtils::parsePersonalChallenge(Data, _challenge);
+    QWarlockUtils::parsePersonalChallenge(Data, _challenge, &_personalChallenges);
     qDebug() << "QWarloksDuelCore::parseChallendge" << _challenge;
 }
 
@@ -2244,7 +2592,7 @@ void QWarloksDuelCore::generateBattleList() {
         }
         battle_info = getBattleInfo(bid);
         battle_info->setStatus(BATTLE_INFO_STATUS_READY);
-        _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login)));
+        _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"%4}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login), liveRow(battle_info)));
     }
 
     QString wait_str = "";
@@ -2261,12 +2609,12 @@ void QWarloksDuelCore::generateBattleList() {
             } else {
                 _battleList.append(",");
             }
-            _battleList.append(QString("{\"id\":%1,\"s\":0,\"d\":\"%2\",\"el\":\"%3\"}").arg(intToStr(bid), d, battle_info->getEnemy(_login)));
+            _battleList.append(QString("{\"id\":%1,\"s\":0,\"d\":\"%2\",\"el\":\"%3\"%4}").arg(intToStr(bid), d, battle_info->getEnemy(_login), liveRow(battle_info)));
         } else {
            if (!wait_str.isEmpty()) {
                wait_str.append(",");
            }
-           wait_str.append(QString("{\"id\":%1,\"s\":-1,\"d\":\"%3\"}").arg(intToStr(bid), d));
+           wait_str.append(QString("{\"id\":%1,\"s\":-1,\"d\":\"%2\"%3}").arg(intToStr(bid), d, liveRow(battle_info)));
         }
     }
     if (!wait_str.isEmpty()) {
@@ -2373,7 +2721,9 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     // The battle slot as this pass found it (see announceNextResult at the end).
     int slot_id = _loadedBattleID, slot_type = _loadedBattleType;
     bool slot_silent = _loadedBattleSilent;
+    QStringList old_challenge(_challenge);
     _challenge.clear();
+    _personalChallenges.clear();
     int Idx = 0;
     _played = QWarlockUtils::getIntFromPlayerData(Data, "Played:", "<TD>", "</TD>", Idx);
     _won = QWarlockUtils::getIntFromPlayerData(Data, "Won:", "<TD>", "</TD>", Idx);
@@ -2389,11 +2739,22 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     _ready_in_battles = QWarlockUtils::getBattleList(Data, "Ready in battles:");
     _waiting_in_battles = QWarlockUtils::getBattleList(Data, "Waiting in battles:");
     _finished_battles = QWarlockUtils::getBattleList(Data, "Finished battles:");
+    // a game seen on somebody's profile that the player has joined since
+    for (int i = _foreign_battles.size() - 1; i >= 0; --i) {
+        int bid = _foreign_battles.at(i);
+        if ((_ready_in_battles.indexOf(bid) != -1) || (_waiting_in_battles.indexOf(bid) != -1) || (_finished_battles.indexOf(bid) != -1)) {
+            _foreign_battles.removeAt(i);
+            if (_battleInfo.contains(bid)) {
+                _battleInfo[bid]->addParticipant(_login);
+            }
+        }
+    }
     Idx = 0;
     QString challendge = QWarlockUtils::getStringFromData(Data, "Challenged to battles:</TD>", "<TD>", "</TD>", Idx);
     if (!challendge.isEmpty()) {
         parseChallendge(challendge);
     }
+    liveCheckInvites();
     parseMessages(Data);
 
     if (!_allowedAccept && ((_finished_battles.count() > 0) || (_played > 0))) {
@@ -2431,7 +2792,8 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
         setTimeState(true);
     }
     qDebug() << old_read <<  _ready_in_battles << old_wait << _waiting_in_battles;// << new_fb_id;
-    bool changed = _ready_in_battles.size() > 0;
+    // a challenge that came or went shows in the list as well
+    bool changed = (_ready_in_battles.size() > 0) || (old_challenge != _challenge);
     if (_isScanForced) {
         changed = true;
         _isScanForced = false;
@@ -2564,8 +2926,19 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     // try to find refferrer
     processRefferer();
 
+    // Live matches: the clocks of the turns that came and went, the player's own invite
+    // nobody took in time.
+    QList<int> live_ready;
+    if (liveAfterScan(old_read, live_ready)) {
+        changed = true;
+        saveParameters(false, false, true, false, false);
+    }
+
     if (changed || ForceBattleList) {
         generateBattleList();
+    }
+    foreach(int bid, live_ready) {
+        emit liveBattleReady(bid);
     }
     saveParameters();
     if (shown_changed) {
@@ -2645,6 +3018,13 @@ void QWarloksDuelCore::releaseResultFetch(const QString &url) {
     }
 }
 
+void QWarloksDuelCore::releaseChallengeList(const QString &url) {
+    // The open challenges did not come: the next scan asks for them again.
+    if (url.indexOf("/challenges") != -1) {
+        _lastChallengeScan = 0;
+    }
+}
+
 void QWarloksDuelCore::releaseKeepMeOn(const QString &url) {
     // A Keep me On join or creation that got no answer: the next scan may try again.
     if ((url.indexOf("/newchallenge") != -1) || (url.indexOf("/accept") != -1)) {
@@ -2675,6 +3055,7 @@ void QWarloksDuelCore::setKeepMeOn(bool On) {
         return;
     }
     _keepMeOn = On;
+    _keepMeOnFails = 0;     // the player's own switch: whatever the site refused before is tried again
     // Explicit flags: a bare saveParameters() writes nothing, and the destructor that would
     // otherwise persist this is not guaranteed to run when Android kills the app.
     saveParameters(false, false, true);
@@ -2990,6 +3371,357 @@ void QWarloksDuelCore::onPushForceTimeout() {
     setPushTokenStatus("PushNotConnected");
 }
 
+// ---------------------------------------------------------------------------------------
+// Live matches (https://github.com/Pz1c/WavingHands/issues/287).
+//
+// A live match is an ordinary private duel on the site between two warlocks who are in the
+// app right now, played against a clock: LIVE_MATCH_TOTAL_SEC each for the whole game, then
+// LIVE_MATCH_EXTRA_SEC a turn. The site knows nothing of it. The rules travel in the
+// challenge's description (QWarlockUtils::liveDescription), each app keeps its own player's
+// clock (QBattleInfo::live...) and, when that runs out, submits the surrender itself.
+//
+// Who can be invited is the caster server's word (the roster's "mobile": their app declared
+// the capability, and the server can reach it now). The invite is good for
+// LIVE_MATCH_INVITE_SEC: the challenger's app withdraws the game after that, the invited
+// one refuses a challenge that is past its time. The caster link passes the invite (LIVE ->
+// LIVEINVITE, or a push to the phone) and each move (TURN -> TURNREADY) on at once; the
+// scan timer, at half its usual period while a live match waits, is the fallback.
+// ---------------------------------------------------------------------------------------
+
+void QWarloksDuelCore::liveReset() {
+    _liveTimer.stop();
+    _personalChallenges.clear();
+    _challengeProbes.clear();
+    _liveInvites.clear();
+    _liveInvitesSeen.clear();
+    _liveRefused.clear();
+    _liveExpectInvite = 0;
+    _liveExpectTries = 0;
+    _liveNewBattle = 0;
+    _liveNewWarlock.clear();
+    _liveLeaving.clear();
+    _liveSurrenderBattle = 0;
+    _liveTimeoutSaid.clear();
+}
+
+// For a row of the game list: nothing for an ordinary battle.
+QString QWarloksDuelCore::liveRow(const QBattleInfo *bi) const {
+    if (!bi->live()) {
+        return QString();
+    }
+    return QString(",\"live\":1,\"till\":%1").arg(intToStr(bi->liveValidBy()));
+}
+
+// A live match of the player's waits for the other warlock: to accept it, or to move.
+bool QWarloksDuelCore::liveWatch() const {
+    if (_isAI || _isAsService) {
+        return false;
+    }
+    foreach(int bid, _waiting_in_battles) {
+        const QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+        if (bi && bi->live()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void QWarloksDuelCore::liveCheckTimer() {
+    bool need = false;
+    if (!_isAI && !_isAsService && _isLogined) {
+        foreach(int bid, _ready_in_battles) {
+            const QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+            if (bi && bi->live()) {
+                need = true;    // a clock runs, or will by the notice rule
+                break;
+            }
+        }
+        if (!need) {
+            foreach(int bid, _waiting_in_battles) {
+                const QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+                if (bi && bi->live() && (bi->status() == BATTLE_INFO_STATUS_NO_START)) {
+                    need = true;    // an invite of the player's is out
+                    break;
+                }
+            }
+        }
+    }
+    if (need && !_liveTimer.isActive()) {
+        _liveTimer.start();
+    } else if (!need && _liveTimer.isActive()) {
+        _liveTimer.stop();
+    }
+}
+
+// The challenges just parsed, as the rows of the game list. The player page does not show a
+// challenge's description, so each new one is looked up once on its battle page
+// (finishLiveProbe) and stays off the list until that answer is in: a live match must not
+// be taken for an ordinary game. A live one gets its rules into the row and is announced;
+// one past its time is refused instead, so the challenger's app sees the answer.
+void QWarloksDuelCore::liveCheckInvites() {
+    if (_isAI || _isAsService) {
+        return;
+    }
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+    QMap<int, QPersonalChallenge> open;
+    QStringList rows, fresh;
+    QList<int> ids;
+    bool expected = false;
+    foreach(const QPersonalChallenge &pc, _personalChallenges) {
+        ids.append(pc.id);
+        expected = expected || (pc.id == _liveExpectInvite);
+        QChallengeProbe &probe = _challengeProbes[pc.id];
+        if (!probe.done && ((probe.sent == 0) || (now - probe.sent >= kLiveProbeRetrySec))) {
+            if (probe.tries >= kLiveProbeTries) {
+                // its page cannot be read: listed as the ordinary challenge it most likely is
+                probe.done = true;
+            } else {
+                ++probe.tries;
+                probe.sent = now;
+                sendGetRequest(QString(GAME_SERVER_URL_GET_BATTLE_PROBE).arg(intToStr(pc.id)), true);
+            }
+        }
+        if (!probe.done) {
+            continue;
+        }
+        if (!probe.live) {
+            rows.append(pc.row);
+            continue;
+        }
+        if (now > probe.validBy) {
+            if (!_liveRefused.contains(pc.id)) {
+                _liveRefused.insert(pc.id);
+                qDebug() << "QWarloksDuelCore::liveCheckInvites" << "refusing the expired live challenge" << pc.id << pc.from;
+                sendGetRequest(QString(GAME_SERVER_URL_REFUSE_CHALLENGE).arg(intToStr(pc.id)), true);
+            }
+            continue;
+        }
+        QPersonalChallenge invite = pc;
+        invite.live = true;
+        invite.validBy = probe.validBy;
+        invite.total = probe.total;
+        invite.extra = probe.extra;
+        invite.row = pc.row.chopped(1).append(QString(",\"live\":1,\"till\":%1,\"lt\":%2,\"le\":%3}")
+                                              .arg(intToStr(probe.validBy), intToStr(probe.total), intToStr(probe.extra)));
+        rows.append(invite.row);
+        open.insert(pc.id, invite);
+        if (!_liveInvitesSeen.contains(pc.id)) {
+            _liveInvitesSeen.insert(pc.id);
+            fresh.append(invite.row);
+        }
+    }
+    QMap<int, QChallengeProbe>::iterator pi = _challengeProbes.begin();
+    while (pi != _challengeProbes.end()) {
+        pi = (ids.indexOf(pi.key()) == -1) ? _challengeProbes.erase(pi) : ++pi;
+    }
+    _challenge = rows;
+    _liveInvites = open;
+    if (_liveExpectInvite > 0) {
+        // LIVEINVITE can outrun the site: look once more, a little later
+        if (expected || (--_liveExpectTries <= 0)) {
+            _liveExpectInvite = 0;
+        } else {
+            QTimer::singleShot(4000, this, [this]() {
+                if (_isLogined && !_isAI && (_liveExpectInvite > 0)) {
+                    scanState(true);
+                }
+            });
+        }
+    }
+    foreach(const QString &row, fresh) {
+        emit liveInviteReceived(row);
+    }
+}
+
+// The battle page of a challenge to the player: an unstarted battle, with the description
+// its maker gave it. Anything else (a page cut short, an error) is asked for again by the
+// next scan.
+void QWarloksDuelCore::finishLiveProbe(QString &Data, int StatusCode, const QString &url) {
+    int battle_id = battleIdFromUrl(url);
+    qDebug() << "QWarloksDuelCore::finishLiveProbe" << battle_id << StatusCode;
+    if ((battle_id <= 0) || !_challengeProbes.contains(battle_id) || _challengeProbes[battle_id].done) {
+        return;
+    }
+    if ((StatusCode != 200) || (Data.indexOf("</BODY>", 0, Qt::CaseInsensitive) == -1)) {
+        return;
+    }
+    QChallengeProbe &probe = _challengeProbes[battle_id];
+    probe.done = true;
+    if (Data.indexOf("has not yet begun.") != -1) {
+        QBattleInfo page;
+        QWarlockUtils::parseUnstartedBattle(Data, &page);
+        probe.live = page.live();
+        probe.validBy = page.liveValidBy();
+        probe.total = page.liveTotal();
+        probe.extra = page.liveExtra();
+    }
+    QStringList before(_challenge);
+    liveCheckInvites();
+    if (before != _challenge) {
+        generateBattleList();
+    }
+}
+
+void QWarloksDuelCore::onLinkLiveInvite(const QString &by, int battle_id) {
+    qDebug() << "QWarloksDuelCore::onLinkLiveInvite" << by << battle_id;
+    if (_isAsService || _isAI || !_isLogined || (battle_id <= 0)) {
+        return;
+    }
+    if (_liveInvites.contains(battle_id) || _liveRefused.contains(battle_id)) {
+        return;     // known already
+    }
+    _liveExpectInvite = battle_id;
+    _liveExpectTries = 3;
+    scanState(true);
+}
+
+void QWarloksDuelCore::onLinkLiveSent(const QString &opponent, int battle_id, const QString &result) {
+    qDebug() << "QWarloksDuelCore::onLinkLiveSent" << opponent << battle_id << result;
+    logEvent("Live_Invite_Sent", QString("Id;%1;To;%2;Result;%3;").arg(intToStr(battle_id), opponent, result));
+}
+
+// The site has the invite of the live match just made: the invited app is told now rather
+// than at its next scan, and the player gets the waiting window with its countdown.
+void QWarloksDuelCore::liveAfterInvite() {
+    if (_liveNewBattle <= 0) {
+        return;
+    }
+    int bid = _liveNewBattle;
+    _liveNewBattle = 0;
+    if (_rosterLink && !_liveNewWarlock.isEmpty()) {
+        _rosterLink->sendLive(_liveNewWarlock, bid);
+    }
+    _liveNewWarlock.clear();
+    setTimeState(true);
+    liveCheckTimer();
+    getBattle(bid, 0);
+}
+
+// After a scan of the player page. Returns whether anything of a live match changed;
+// NewReady gets the live matches that have a turn for the player since this scan.
+bool QWarloksDuelCore::liveAfterScan(const QList<int> &OldReady, QList<int> &NewReady) {
+    if (_isAI || _isAsService) {
+        return false;
+    }
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+    bool changed = false;
+    foreach(int bid, _ready_in_battles) {
+        QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+        if (!bi || !bi->live()) {
+            continue;
+        }
+        bool fresh = OldReady.indexOf(bid) == -1;
+        if (!bi->liveTurnOpen()) {
+            // the app has learned of this turn: its clock starts when the player opens
+            // it, and LIVE_MATCH_NOTICE_SEC from now at the latest. A battle that stayed
+            // ready has a new turn all the same: the player's orders were the last ones in.
+            bi->liveTurnNoticed(now);
+            changed = true;
+            fresh = true;
+        }
+        if (fresh) {
+            NewReady.append(bid);
+        }
+        _liveLeaving.remove(bid);
+    }
+    QMap<int, QBattleInfo *>::const_iterator bii;
+    for (bii = _battleInfo.constBegin(); bii != _battleInfo.constEnd(); ++bii) {
+        QBattleInfo *bi = bii.value();
+        if (bi->liveTurnOpen() && (_ready_in_battles.indexOf(bii.key()) == -1)) {
+            // moved elsewhere (the site, another device), or the battle is over
+            bi->liveTurnDone(now);
+            _liveTimeoutSaid.remove(bii.key());
+            changed = true;
+        }
+    }
+    foreach(int bid, _waiting_in_battles) {
+        QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+        if (!bi || !bi->live() || (bi->status() != BATTLE_INFO_STATUS_NO_START) || _liveLeaving.contains(bid)) {
+            continue;
+        }
+        if (now > bi->liveValidBy() + LIVE_MATCH_INVITE_GRACE_SEC) {
+            // nobody took the invite in time, and this page is fresh: the game goes
+            _liveLeaving.insert(bid);
+            QString warlock = bi->challengedWarlock();
+            logEvent("Live_Invite_Expired", QString("Id;%1;Warlock;%2;").arg(intToStr(bid), _login));
+            leaveBattle(bid, 0, true);
+            emit liveInviteExpired(bid, warlock);
+            changed = true;
+        }
+    }
+    liveCheckTimer();
+    return changed;
+}
+
+void QWarloksDuelCore::liveTick() {
+    if (_isAI || _isAsService || !_isLogined) {
+        _liveTimer.stop();
+        return;
+    }
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+    foreach(int bid, _ready_in_battles) {
+        const QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+        if (!bi || !bi->live() || (bi->liveLeft(now) > 0)) {
+            continue;
+        }
+        // Out of time. Said again every now and then until the surrender is in: the player
+        // may be busy with another battle's orders, a request may get lost.
+        if (now - _liveTimeoutSaid.value(bid, 0) >= 20) {
+            _liveTimeoutSaid.insert(bid, now);
+            emit liveTimeExpired(bid);
+        }
+    }
+    bool overdue = false;
+    foreach(int bid, _waiting_in_battles) {
+        const QBattleInfo *bi = _battleInfo.value(bid, nullptr);
+        if (bi && bi->live() && (bi->status() == BATTLE_INFO_STATUS_NO_START) && !_liveLeaving.contains(bid) &&
+                (now > bi->liveValidBy() + LIVE_MATCH_INVITE_GRACE_SEC)) {
+            overdue = true;
+            break;
+        }
+    }
+    if (overdue && (now - _liveExpiryScan >= 20)) {
+        // liveAfterScan() withdraws it, on a page that shows it was not accepted meanwhile
+        _liveExpiryScan = now;
+        scanState(true);
+    }
+}
+
+int QWarloksDuelCore::liveTimeLeft(int battle_id) {
+    const QBattleInfo *bi = _battleInfo.value(battle_id, nullptr);
+    if (!bi || !bi->live() || !bi->liveTurnOpen()) {
+        return 1000000;
+    }
+    return bi->liveLeft(QDateTime::currentSecsSinceEpoch());
+}
+
+// The player's time is out: load the turn and submit it as a surrender. The load takes the
+// battle slot, which is why QML only calls this with no other battle's orders in the making.
+void QWarloksDuelCore::liveSurrender(int battle_id) {
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+    const QBattleInfo *bi = _battleInfo.value(battle_id, nullptr);
+    qDebug() << "QWarloksDuelCore::liveSurrender" << battle_id << _liveSurrenderBattle;
+    if (_isAI || _isAsService || !_isLogined || !bi || !bi->live() || (_ready_in_battles.indexOf(battle_id) == -1) ||
+            (bi->liveLeft(now) > 0)) {
+        return;
+    }
+    if ((_liveSurrenderBattle > 0) && (now - _liveSurrenderStarted < 20)) {
+        return;     // one is on its way
+    }
+    _liveSurrenderBattle = battle_id;
+    _liveSurrenderStarted = now;
+    getBattle(battle_id, 1, true);
+}
+
+void QWarloksDuelCore::liveSubmitSurrender() {
+    // the hidden fields of the page just parsed, and P with both hands
+    QString postData = _extraOrderInfo;
+    postData.append("&say=&LH=P&RH=P&LHS=&RHS=&LHT=&RHT=");
+    qDebug() << "QWarloksDuelCore::liveSubmitSurrender" << _loadedBattleID << postData;
+    logEvent("Live_Timeout_Surrender", QString("Id;%1;Turn;%2;Warlock;%3;").arg(intToStr(_loadedBattleID), intToStr(_loadedBattleTurn), _login));
+    sendPostRequest(GAME_SERVER_URL_SUBMIT, postData.toUtf8(), true);
+}
+
 bool QWarloksDuelCore::hasUnstartedBattle() {
     foreach(int bid, _waiting_in_battles) {
         if (getBattleInfo(bid)->status() == BATTLE_INFO_STATUS_NO_START) {
@@ -3049,7 +3781,7 @@ int QWarloksDuelCore::findChallengeToJoin() {
 }
 
 void QWarloksDuelCore::keepMeOnCheck() {
-    if (!_keepMeOn || _isAI || _isAsService || !_isLogined || _keepMeOnBusy) {
+    if (!_keepMeOn || _isAI || _isAsService || !_isLogined || _keepMeOnBusy || keepMeOnOnHold()) {
         return;
     }
     int games = _ready_in_battles.count() + _waiting_in_battles.count();
@@ -3138,8 +3870,11 @@ void QWarloksDuelCore::processRefferer() {
 }
 
 bool QWarloksDuelCore::finishScan(QString &Data, bool ForceBattleList) {
+    // The player's own Refresh (scanState).
+    bool asked = _challengesAsked;
+    _challengesAsked = false;
     parsePlayerInfo(Data, ForceBattleList);
-    if (!ForceBattleList) {
+    if (!ForceBattleList && challengeListDue(asked)) {
         getChallengeList(true);
     }
     if (!_isAI && !_isAsService) {
@@ -3156,7 +3891,6 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     qDebug() << "QWarloksDuelCore::finishScanWarlock" << Data;
     int pos = 0;
     bool registered = Data.indexOf("<img width=\"12\" height=\"12\" src=\"/img/reg.png\" alt=\"Registered!\">") != -1;
-    bool mobile = Data.indexOf("I am using Android application") != -1;
     QString login = QWarlockUtils::getStringFromData(Data, "Info for", " ", " ", pos);
     QString lastActive = QWarlockUtils::getStringFromData(Data, "Last Active:</TD>", "<TD>", " ago", pos);
     _warlockId = QWarlockUtils::getStringFromData(Data, "<INPUT TYPE=HIDDEN NAME=rcpt VALUE", "=", ">", pos);
@@ -3188,13 +3922,14 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
         _playerStats[ll]->setDied(died);
         _playerStats[ll]->setElo(elo);
         _playerStats[ll]->setLastActivity(QWarlockUtils::parseLastActivity(lastActive));
-        _playerStats[ll]->setMobile(mobile);
     } else {
         // QWarlockStat(QString Name, bool Registered, int Ladder, int Melee, int Played, int Won, int Died, int Elo, QString Color, qint64 LastActivity, bool Mobile);
-        _playerStats[ll] = new QWarlockStat(login, registered, ladder, melee, played, won, died, elo, "#FF0000", QWarlockUtils::parseLastActivity(lastActive), mobile);
+        // mobile (can be invited to a live match) is only ever the roster's word
+        _playerStats[ll] = new QWarlockStat(login, registered, ladder, melee, played, won, died, elo, "#FF0000", QWarlockUtils::parseLastActivity(lastActive), false);
     }
     QWarlockStat *wi = _playerStats[ll];
     wi->setWarlockId(_warlockId.toInt());
+    _profileLogin = login;
     //            ltTitle.text = warlock_data.name;
     //            ltLast.text = UPU.getLastActivityText(warlock_data.last_activity);
     //            ltScore.text = "Score: " + warlock_data.elo;
@@ -3204,8 +3939,11 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
     //            bbBtn2.visible = !warlock_data.isPlayer;
     //            bbAction.text = warlock_data.isPlayer ? "Hall of Fame" : "Challenge";
     //            ltTitleOnline.visible = warlock_data.online;
-    _errorMsg = QString("{\"type\":15,\"name\":\"%1\",\"last_activity\":%2,\"elo\":%3,\"won\":%4,\"played\":%5,\"isPlayer\":false,\"online\":%6}")
-                    .arg(QWarlockUtils::jsonEscape(login), intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()));
+    // "mobile": a live match can be offered (https://github.com/Pz1c/WavingHands/issues/287) -
+    // their app plays them, and the caster this app is connected to passes the invite on
+    _errorMsg = QString("{\"type\":15,\"name\":\"%1\",\"last_activity\":%2,\"elo\":%3,\"won\":%4,\"played\":%5,\"isPlayer\":false,\"online\":%6,\"battles\":%7,\"mobile\":%8}")
+                    .arg(QWarlockUtils::jsonEscape(login), intToStr(wi->lastActivity()), intToStr(wi->elo()),intToStr(won),intToStr(played),intToStr(wi->online()),
+                         profileBattles(Data, login), boolToIntS(wi->mobile() && !wi->ai() && _rosterLink && _rosterLink->isLiveSupported()));
     emit errorOccurred();
 
     /*_warlockInfo.clear();
@@ -3265,7 +4003,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
     qDebug() << "QWarloksDuelCore::processData" << statusCode << url << new_url;
 
     if (url.indexOf("delmess?from") != -1) {
-        scanState();
+        scanState(false, false);
         return true;
     }
 
@@ -3332,6 +4070,12 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return true;
     }
 
+    // Likewise the look at a challenge's page (issue #287).
+    if ((url.indexOf("/warlocks") != -1) && (url.indexOf("probe=1") != -1)) {
+        finishLiveProbe(data, statusCode, url);
+        return true;
+    }
+
     // battle parsing there
     if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1) || (url.indexOf("robot_gateway/wh/") != -1)) {
         int reply_id = battleIdFromUrl(url);
@@ -3369,7 +4113,7 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
     }
 
     if (/*(url.indexOf("/refuse") != -1) ||*/ (url.indexOf("/leave") != -1)) {
-        scanState(isBackground(_currentReply));
+        scanState(isBackground(_currentReply), false);
         return false;
     }
 
@@ -3428,9 +4172,15 @@ void QWarloksDuelCore::slotReadyRead() {
         releaseResultFetch(url);
         releaseKeepMeOn(url);
         releasePendingMessage(url);
+        releaseChallengeList(url);
         if (!isBackground(reply)) {
             _errorMsg = GameDictionary->getStringByCode("ErrServerHttp").arg(_httpResponceCode);
             emit errorOccurred();
+        }
+        if (url.indexOf("/chalplayer") != -1) {
+            // The game the invite was for is made, and finishCreateChallenge left its scan
+            // to this reply.
+            scanState(true);
         }
         return;
     } else if ((_httpResponceCode >= 300) && (_httpResponceCode < 400))  {
@@ -3454,7 +4204,9 @@ void QWarloksDuelCore::slotReadyRead() {
         releaseResultFetch(url);
         releaseKeepMeOn(url);
         releasePendingMessage(url);
-        if ((url.indexOf("/warlocksubmit") != -1) || (url.indexOf("/newchallenge") != -1) || (url.indexOf("/leave") != -1)) {
+        releaseChallengeList(url);
+        if ((url.indexOf("/warlocksubmit") != -1) || (url.indexOf("/newchallenge") != -1) || (url.indexOf("/leave") != -1) ||
+                (url.indexOf("/chalplayer") != -1)) {
             // The server may well have taken it: show what it actually recorded.
             // Silently: the failure is reported already, and a foreground scan
             // would cover that message with the overlay.
@@ -3469,7 +4221,8 @@ void QWarloksDuelCore::slotReadyRead() {
     }
 
     if (url.indexOf("/chalplayer") != -1) {
-        scanState(isBackground(reply));
+        scanState(isBackground(reply), false);
+        liveAfterInvite();
         return;
     }
 
@@ -3530,6 +4283,9 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     // Nothing of the previous account's turns may act for the new one.
     _turnReadyTimer.stop();
     _ordersBattleID = 0;
+    liveReset();
+    _lastChallengeScan = 0;
+    _keepMeOnFails = 0;
     // The LOGOUT of clearIdentity() drops the push binding server side; the new account
     // registers the token afresh once its link is up (issue #336).
     _pushRegisteredToken.clear();
@@ -3541,6 +4297,8 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     _login = Login;
     _password = Password;
     _finished_battles.clear();
+    _foreign_battles.clear();
+    _profileLogin.clear();
     // Reseed from the new account's first scan instead of announcing its whole history.
     _shown_battles.clear();
     _shownBattlesKnown = false;
@@ -4144,12 +4902,13 @@ QString QWarloksDuelCore::battleInfo() {
                    "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
                    "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25,"
-                   "\"maladroit\":%26,\"suicide\":%27}")
+                   "\"maladroit\":%26,\"suicide\":%27,\"live\":%28}")
             .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
             .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
             .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
             .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT, boolToStr(_isMaladroit), // 21-26
-                 boolToIntS(_isSuicide)); // 27: 1 while the site offers the SUICIDE checkbox (#315)
+                 boolToIntS(_isSuicide), // 27: 1 while the site offers the SUICIDE checkbox (#315)
+                 boolToIntS(battle_info->live())); // 28: a live match, its clock is liveTimeLeft() (#287)
 }
 
 void QWarloksDuelCore::setParamValue(const QString &Parameter, const QString &Value) {
@@ -4332,6 +5091,7 @@ void QWarloksDuelCore::logout() {
     _rosterRevision = 0;
     _turnReadyTimer.stop();
     _ordersBattleID = 0;
+    liveReset();
 
     _isLogined = false;
     _login.clear();
@@ -4339,6 +5099,8 @@ void QWarloksDuelCore::logout() {
     clearMessages();
 
     _finished_battles.clear();
+    _foreign_battles.clear();
+    _profileLogin.clear();
     _shown_battles.clear();
     _shownBattlesKnown = false;
     _resultAttempts.clear();
@@ -4359,6 +5121,8 @@ void QWarloksDuelCore::logout() {
     _keepMeOn = false;
     _keepMeOnBusy = false;
     _keepMeOnOfferSkip = false;
+    _keepMeOnFails = 0;
+    _lastChallengeScan = 0;
     emit keepMeOnChanged();
     // Likewise the Game notifications default (issue #336). No UNPUSH: the LOGOUT of
     // clearIdentity() above removes the binding server side.
@@ -4487,6 +5251,9 @@ void QWarloksDuelCore::doAIAnswer(QString Login, int MagicBookLevel) {
         return;
     }
     _isAiBusy = !Login.isEmpty();
+    // A call for one bot is a call to play its turn: see challengeListDue() and
+    // aiCreateNewChallenge() for what such a call leaves to the calls for any bot.
+    _aiOneBot = !Login.isEmpty();
     _exp_lv = MagicBookLevel;
     sendGetRequest(QString(GAME_SERVER_URL_WARLOCK_GET).arg(Login), true);
 }
@@ -4495,7 +5262,10 @@ void QWarloksDuelCore::checkAIAnswer(int battle_id) {
     qDebug() << "QWarloksDuelCore::checkAIAnswer" << _isAsService << battle_id;
     if (battle_id > 0) {
         QBattleInfo *bi = getBattleInfo(battle_id);
-        if (bi->with_bot()) {
+        // With the battle listed as the player's turn the bot's move changes nothing the
+        // player page could tell: the bot has answered the turn that the player's orders
+        // completed, and the battle page that submit ended on already showed it.
+        if (bi->with_bot() && (_ready_in_battles.indexOf(battle_id) == -1)) {
             scanState(true);
         }
     }

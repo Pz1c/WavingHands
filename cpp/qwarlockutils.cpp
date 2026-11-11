@@ -4,6 +4,8 @@
 #include "qmonster.h"
 #include "qbattleinfo.h"
 
+#include <QRegularExpression>
+
 
 QWarlockUtils::QWarlockUtils()
 {
@@ -703,7 +705,45 @@ int QWarlockUtils::getStrengthByMonsterName(QString val) {
     }
 }
 
-void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &result) {
+QString QWarlockUtils::liveDescription(qint64 ValidBy, int Total, int Extra) {
+    // What decides the rules comes first: should the site cut a long description, the
+    // tail goes, not the deadline.
+    return QString("Live match - Valid by UTC %1 - Total:%2:%3m - Extra:%4s - MOBILE GAME ONLY - v%5")
+            .arg(QString::number(ValidBy), QString::number(Total / 60), QString::number(Total % 60).rightJustified(2, '0'),
+                 QString::number(Extra), APPLICATION_VERSION_PRINT);
+}
+
+bool QWarlockUtils::parseLiveDescription(const QString &Description, qint64 *ValidBy, int *Total, int *Extra) {
+    static const QRegularExpression reLive("Live match\\b.*?\\bUTC\\s*(\\d{9,11})", QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression reTotal("Total:\\s*(\\d{1,3}):(\\d{2})m", QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression reExtra("Extra:\\s*(\\d{1,4})s", QRegularExpression::CaseInsensitiveOption);
+    QRegularExpressionMatch m = reLive.match(Description);
+    if (!m.hasMatch()) {
+        return false;
+    }
+    qint64 valid_by = m.captured(1).toLongLong();
+    int total = LIVE_MATCH_TOTAL_SEC, extra = LIVE_MATCH_EXTRA_SEC;
+    m = reTotal.match(Description);
+    if (m.hasMatch() && (m.captured(1).toInt() * 60 + m.captured(2).toInt() > 0)) {
+        total = m.captured(1).toInt() * 60 + m.captured(2).toInt();
+    }
+    m = reExtra.match(Description);
+    if (m.hasMatch() && (m.captured(1).toInt() > 0)) {
+        extra = m.captured(1).toInt();
+    }
+    if (ValidBy) {
+        *ValidBy = valid_by;
+    }
+    if (Total) {
+        *Total = total;
+    }
+    if (Extra) {
+        *Extra = extra;
+    }
+    return true;
+}
+
+void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &result, QList<QPersonalChallenge> *Parsed) {
     int idx1 = 0, idx2, battle_id;
     QString tmp, desc, logins, fast, level, parafc, maladroit, fl, need;
 
@@ -745,7 +785,14 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
         }
         if (battle_id > 0) {
             QStringList lg = logins.split(",");
-            result.append(QString("{\"id\":%1,\"s\":3,\"d\":\"%2\",\"dt\":\"%3\",\"el\":\"%4\"}").arg(intToStr(battle_id), QWarlockDictionary::getInstance()->getStringByCode("ChallengedBy").arg(lg.at(0).trimmed()), desc, lg.at(0).trimmed()));
+            QPersonalChallenge pc;
+            pc.id = battle_id;
+            pc.from = lg.at(0).trimmed();
+            pc.row = QString("{\"id\":%1,\"s\":3,\"d\":\"%2\",\"dt\":\"%3\",\"el\":\"%4\"}").arg(intToStr(battle_id), QWarlockDictionary::getInstance()->getStringByCode("ChallengedBy").arg(pc.from), desc, pc.from);
+            result.append(pc.row);
+            if (Parsed) {
+                Parsed->append(pc);
+            }
         }
     }
 }

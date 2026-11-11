@@ -1,4 +1,5 @@
 function cleanUpWindow(ratioObject) {
+    dMainItem.countdownTill = 0;
     //ltDesc.visible = true;
     icon.visible = false;
     icon.iconInfoVisible = false;
@@ -17,6 +18,8 @@ function cleanUpWindow(ratioObject) {
     bbAction.font.underline = false;
     svMain.anchors.top = ltDesc.bottom;
     svMain.anchors.topMargin = 20 * ratioObject;
+    svMain.anchors.bottom = iItem.bottom;
+    svMain.anchors.bottomMargin = 0;
     ltError.visible = true;
     svMain.visible = true;
     lvHistory.visible = false;
@@ -96,11 +99,26 @@ function prepareUnstartedGame(l_data, dict) {
             //ltError.text += "Join to start battle<br>";
         }
     }
-    ltError.text += "<br><font size=\"-1\">" + dict.getStringByCode('DefNotStartDesc') + "</font>";
-    bbAction.text = dict.getStringByCode("KeepWaiting");
+    // a battle of another warlock's profile (https://github.com/Pz1c/WavingHands/issues/121): nothing to leave
+    var spectator = !!(l_data.battle_data && l_data.battle_data.active);
+    if (!spectator && l_data.battle_data && (l_data.battle_data.live === 1)) {
+        // the player's own live challenge (https://github.com/Pz1c/WavingHands/issues/287): it is
+        // good until live_till, the clock in the corner counts down to that
+        var invited = l_data.battle_data.challenged ? l_data.battle_data.challenged.split(",")[0].split(":")[0] : "";
+        ltShortDesc.text = invited ? dict.getStringByCode("LiveWaitSTitle").replace("%1", invited) : dict.getStringByCode("LiveWaitSTitleNoName");
+        ltError.text += "<br><font size=\"-1\">" + dict.getStringByCode("LiveWaitDesc").replace("%1", 5) + "</font>";
+        dMainItem.countdownTill = l_data.battle_data.live_till;
+        bbAction.text = dict.getStringByCode("KeepWaiting");
+        bbAction.visible = true;
+        bbSkipAction.text = dict.getStringByCode("Leave");
+        bbSkipAction.visible = true;
+        return;
+    }
+    ltError.text += "<br><font size=\"-1\">" + dict.getStringByCode(spectator ? 'SpectatorNotStartDesc' : 'DefNotStartDesc') + "</font>";
+    bbAction.text = dict.getStringByCode(spectator ? "Back" : "KeepWaiting");
     bbAction.visible = true;
     bbSkipAction.text = dict.getStringByCode("Leave");
-    bbSkipAction.visible = true;
+    bbSkipAction.visible = !spectator;
 }
 
 function prepareDataType11(l_data, dict) {
@@ -132,6 +150,14 @@ function prepareDataType9(l_data, dict) {
 function prepareDataOrderSubmitted(l_data, dict) {
     ltTitle.text = dict.getStringByCode("OrdersSubmittedTitle");
     ltShortDesc.text = dict.getStringByCode("OrdersSubmittedSDesc");
+    if (l_data.spectator) {
+        // somebody else's battle in progress (https://github.com/Pz1c/WavingHands/issues/121)
+        ltTitle.text = l_data.t;
+        ltShortDesc.text = dict.getStringByCode("BattleTitle").replace("%1", l_data.id);
+        // the news of a whole turn: it ends above the button
+        svMain.anchors.bottom = bbAction.top;
+        svMain.anchors.bottomMargin = 12 * mainWindow.ratioObject;
+    }
     ltError.text = l_data.d;
     bbAction.text = dict.getStringByCode("View");
     bbAction.visible = true;
@@ -273,6 +299,21 @@ function prepareBattleHistory(l_data, dict) {
 }
 
 function preparePersonalChallenge(l_data, dict) {
+    if ((l_data.s === 3) && (l_data.live === 1)) {
+        // a live match (https://github.com/Pz1c/WavingHands/issues/287): its rules instead of
+        // the site's description, and the time left to accept
+        var challenger = JSON.parse(mainWindow.gameCore.getWarlockStats(l_data.el));
+        ltTitle.text = dict.getStringByCode("LiveInviteTitle").replace("%1", l_data.el);
+        ltShortDesc.text = dict.getStringByCode("LiveInviteDesc").replace("%1", l_data.el).replace("%2", Math.round(l_data.lt / 60)).replace("%3", l_data.le);
+        ltError.text = dict.getStringByCode("StatScore") + challenger.elo + "<br>" + dict.getStringByCode("StatPlayed") + challenger.played + "<br>"
+                + dict.getStringByCode("StatWon") + challenger.won + "<br>" + dict.getStringByCode("StatDied") + challenger.died;
+        dMainItem.countdownTill = l_data.till;
+        bbAction.visible = true;
+        bbAction.text = dict.getStringByCode("PersonalChalengeAccept");
+        bbSkipAction.visible = true;
+        bbSkipAction.text = dict.getStringByCode("PersonalChalengeReject");
+        return;
+    }
     ltTitle.text =  dict.getStringByCode(l_data.s !== 4 ? "PersonalChalengeTitle" : "OpenChalengeTitle");
     ltShortDesc.text = dict.getStringByCode(l_data.s === 5 ? "NewChalengeSDesc" : (l_data.s === 3 ? "PersonalChalengeSDesc" : "OpenChalengeSDesc")) + l_data.el;
 

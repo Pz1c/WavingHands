@@ -36,7 +36,7 @@ class QRosterLink : public QObject {
     Q_OBJECT
 public:
     enum State { Disabled, Down, Connecting, Handshaking, Ready };
-    enum Pending { PNone, PAuth, PLogin, PWho, PPing, PLogout, PTurn, PPush, PUnpush };
+    enum Pending { PNone, PAuth, PLogin, PWho, PPing, PLogout, PTurn, PPush, PUnpush, PCaps, PLive };
 
     explicit QRosterLink(QObject *parent = nullptr);
     ~QRosterLink() override;
@@ -87,6 +87,16 @@ public:
     void sendUnpush(const QString &token);
     bool isPushUnsupported() const      { return _pushUnsupported; }   // this connection refused PUSH / UNPUSH
     static bool validPushToken(const QString &token);   // 20..4096 bytes of [A-Za-z0-9_:.-]
+
+    // Live matches (https://github.com/Pz1c/WavingHands/issues/287). Every connection
+    // declares the app's "live" capability first (CAPS), which is what marks the player
+    // as invitable in the other apps' rosters and lets the server push LIVEINVITE here.
+    // sendLive(): "I have just invited <opponent> to the live match <battleId>", so the
+    // server tells their app (or their phone) now. Best effort with the TURN discipline:
+    // queued until the link is Ready and idle, dropped once the invite is older than a
+    // minute, on an identity change, or by a server that knows no live matches.
+    void sendLive(const QString &opponent, int battleId);
+    bool isLiveSupported() const        { return _state == Ready && _liveSupported; }
     static QString redact(const QString &secret);       // "<163B:dXkaQ2Pq...>", the only way a token is logged
 
 signals:
@@ -105,6 +115,10 @@ signals:
     void pushUnsupported();
     // Any other ERR to a PUSH / UNPUSH: the request is dropped, reason = "<code>: <text>".
     void pushFailed(const QString &token, const QString &reason);
+    // LIVEINVITE: <byName> invited this player to the live match <battleId>.
+    void liveInvite(const QString &byName, int battleId);
+    // The server's answer to a LIVE: delivered | pushed | offline | busy | <ERR code>.
+    void liveSent(const QString &opponent, int battleId, const QString &result);
 
 private slots:
     void onEncrypted();
@@ -128,6 +142,7 @@ private:
     void flushTurns();              // sends the oldest queued TURN if Ready and idle
     int  queuedTurnIndex(const QString &name) const;   // case-insensitive, -1 if absent
     void flushPush();               // sends the wanted UNPUSH, else the wanted PUSH, if Ready and idle
+    void flushLive();               // sends the wanted CAPS, else the oldest queued LIVE, if Ready and idle
     void handleLine(const QByteArray &line);
     void handleOk(const QList<QByteArray> &f);
     void handleErr(const QList<QByteArray> &f);
@@ -159,6 +174,18 @@ private:
     QString _unpushWanted;
     QString _pushInFlight;
     bool    _pushUnsupported = false;   // bad-request to PUSH/UNPUSH on this connection
+    // Live matches. _capsWanted: this connection has not declared "live" yet;
+    // _liveSupported: the server took it (cleared with the connection, like
+    // _pushUnsupported). sendLive() backlog and the LIVE in flight (valid while PLive).
+    struct LiveInvite {
+        QString opponent;
+        int     battleId = 0;
+        qint64  queued = 0;         // secs since epoch
+    };
+    bool    _capsWanted = false;
+    bool    _liveSupported = false;
+    QList<LiveInvite> _liveQueue;
+    LiveInvite _liveInFlight;
 
     QByteArray  _rx;
     bool        _inBlock = false;

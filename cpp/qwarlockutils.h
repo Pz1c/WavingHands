@@ -17,6 +17,20 @@ class QWarlock;
 class QMonster;
 class QBattleInfo;
 
+// A private challenge waiting for the player's answer ("Challenged to battles:" of the
+// player page) and its row of the game list. The page does not show the challenge's
+// description, so whether it is a live match, and by which rules, is for the caller to
+// find out (QWarloksDuelCore::liveCheckInvites).
+struct QPersonalChallenge {
+    int id = 0;
+    QString from;
+    QString row;
+    bool live = false;
+    qint64 validBy = 0;
+    int total = 0;
+    int extra = 0;
+};
+
 class QWarlockUtils
 {
 public:
@@ -41,7 +55,18 @@ public:
     static QString parseChallengePart1(QString &Data);
     static QString parseChallengeDescription(QString &Data);
     static QString parseChallengePart3(QString &Data);
-    static void parsePersonalChallenge(const QString &Data, QStringList &result);
+    // Parsed: the same challenges in the same order, for a caller that needs more than
+    // the rows.
+    static void parsePersonalChallenge(const QString &Data, QStringList &result, QList<QPersonalChallenge> *Parsed = nullptr);
+    // Live matches (https://github.com/Pz1c/WavingHands/issues/287). The rules of one
+    // travel in the description of its challenge on the site, which is all both apps
+    // share: who reads "Live match ... Valid by UTC <epoch> - Total:<mm>:<ss>m -
+    // Extra:<n>s" plays by them. ValidBy is when the invite expires (secs since epoch),
+    // Total each player's time for the whole game and Extra the least a turn gets, in
+    // seconds. parseLiveDescription() is false for any other description; a rule cut off
+    // by the site falls back to the app's own.
+    static QString liveDescription(qint64 ValidBy, int Total, int Extra);
+    static bool parseLiveDescription(const QString &Description, qint64 *ValidBy, int *Total, int *Extra);
     static QString getFinishedBattleDescription(const QString &Data);
     static QString getBattleShortTitle(const QString &Title, int State, int BattleID);
     static int strValueToInt(QString val);
