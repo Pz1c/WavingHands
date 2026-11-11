@@ -11,6 +11,49 @@ import "qrc:/js/spell_gui_utils.js" as SGU
 InfoWindow {
     id: dMainItem
 
+    // Live matches (https://github.com/Pz1c/WavingHands/issues/287): the clock of an invite,
+    // counting down to countdownTill (seconds since epoch, 0 = no clock). At zero a
+    // challenge to the player closes; the player's own invite waits for the core, which
+    // withdraws the game.
+    property real countdownTill: 0
+    property int countdownLeft: 0
+
+    function countdownTick() {
+        if (countdownTill <= 0) {
+            return;
+        }
+        countdownLeft = Math.max(0, Math.ceil(countdownTill - (new Date()).getTime() / 1000));
+        if ((countdownLeft <= 0) && visible && l_data && (l_data.type === 17)) {
+            countdownTill = 0;
+            mainWindow.processEscape();
+            mainWindow.gameCore.scanState(1);
+        }
+    }
+
+    onCountdownTillChanged: countdownTick()
+
+    Timer {
+        id: tCountdown
+        interval: 250
+        repeat: true
+        running: dMainItem.visible && (dMainItem.countdownTill > 0)
+        onTriggered: dMainItem.countdownTick()
+    }
+
+    Text {
+        id: ltClock
+        z: 20
+        anchors.top: parent.top
+        anchors.topMargin: 18 * mainWindow.ratioObject
+        anchors.right: parent.right
+        anchors.rightMargin: 24 * mainWindow.ratioObject
+        visible: dMainItem.countdownTill > 0
+        font.pixelSize: 56 * mainWindow.ratioFont
+        color: "#FEE2D6"
+        text: (dMainItem.countdownLeft >= 600 ? "" : "0") + Math.floor(dMainItem.countdownLeft / 60) + ":"
+              + (dMainItem.countdownLeft % 60 < 10 ? "0" : "") + (dMainItem.countdownLeft % 60)
+    }
+
     Item {
         id: dialogWindow
         anchors.fill: content_item
@@ -281,6 +324,7 @@ InfoWindow {
 
     function hideWnd() {
         visible = false;
+        countdownTill = 0;
     }
 
     function replaceAll(str, find, replace) {

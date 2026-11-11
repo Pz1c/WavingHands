@@ -38,6 +38,9 @@
 #define GAME_SERVER_URL_GET_BATTLE GAME_SERVER_URL "warlocks?num=%1"
 // The complete turn log, not just the newest block the plain battle page carries.
 #define GAME_SERVER_URL_GET_BATTLE_HISTORY GAME_SERVER_URL "warlocks?num=%1&full=1"
+// The page of a battle the player is challenged to, read for its description only (is it a
+// live match?). "probe" means nothing to the site: it tells this request's reply apart.
+#define GAME_SERVER_URL_GET_BATTLE_PROBE GAME_SERVER_URL "warlocks?num=%1&probe=1"
 #define GAME_SERVER_URL_GET_PROFILE GAME_SERVER_URL "player/%1.html"
 #define GAME_SERVER_URL_NEW_CHALLENGE GAME_SERVER_URL "newchallenge"
 #define GAME_SERVER_URL_NEW_PLAYER GAME_SERVER_URL "newplayer?action=new"
@@ -156,6 +159,19 @@
 // Keep me On / auto matching (https://github.com/Pz1c/WavingHands/issues/149, /issues/216):
 // no new game once the player has this many.
 #define KEEP_ME_ON_MAX_GAMES 3
+
+// Live matches (https://github.com/Pz1c/WavingHands/issues/287): a private duel between two
+// players who are in the app right now. Each has LIVE_MATCH_TOTAL_SEC for the whole game and
+// at least LIVE_MATCH_EXTRA_SEC for a turn once that is spent; the invite is good for
+// LIVE_MATCH_INVITE_SEC. A turn's clock starts when the player opens the battle, or
+// LIVE_MATCH_NOTICE_SEC after the app learned of the turn, whichever comes first.
+#define LIVE_MATCH_TOTAL_SEC (30 * 60)
+#define LIVE_MATCH_EXTRA_SEC 45
+#define LIVE_MATCH_INVITE_SEC (5 * 60)
+#define LIVE_MATCH_NOTICE_SEC 60
+// How long past its deadline the challenger keeps an unanswered invite: the invited phone's
+// clock may run a little behind.
+#define LIVE_MATCH_INVITE_GRACE_SEC 15
 
 //#define SECONDS_AT_20210901 1630454400
 static QStringList POSSIBLE_GESTURES {"C", "W", "S", "D", "F", "P", ">"};

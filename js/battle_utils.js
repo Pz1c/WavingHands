@@ -340,7 +340,9 @@ function prepareBattle(raw_battle) {
         battle_chat: raw_battle.battle_chat, with_bot: raw_battle.with_bot, read_only: raw_battle.read_only, maladroit: raw_battle.maladroit,
         // https://github.com/Pz1c/WavingHands/issues/315: true while the site offers its SUICIDE checkbox.
         // battleInfo() sends 1/0; a battle prepared once already holds the bool. Note "0" is truthy in JS.
-        suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true)};
+        suicide: (raw_battle.suicide === 1) || (raw_battle.suicide === "1") || (raw_battle.suicide === true),
+        // https://github.com/Pz1c/WavingHands/issues/287: 1 for a live match, the battle window then shows the player's clock
+        live: raw_battle.live === 1 ? 1 : 0};
     // L left  obj
     // R Right obj
     // C Chat  text

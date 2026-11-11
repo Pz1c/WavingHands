@@ -219,7 +219,8 @@ InfoWindow {
                             color: "#FEE2D6"
                             horizontalAlignment: Text.AlignLeft
                             verticalAlignment: Text.AlignVCenter
-                            text: dict.getStringByCode("OnlineLabel")
+                            // "mob": the warlock can be invited to a live match right now (issue #287)
+                            text: dict.getStringByCode("OnlineLabel") + (lvSpellList.model[index].mob === 1 ? " \u00b7 " + dict.getStringByCode("LiveLabel").toLowerCase() : "")
                             font.italic: true
                             visible: lvSpellList.model[index].a
                         }

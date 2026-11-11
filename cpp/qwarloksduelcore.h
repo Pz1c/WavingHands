@@ -20,6 +20,7 @@
 #endif
 #include <QTimer>
 #include <QThread>
+#include <QSet>
 #include <QtQml/qqmlregistration.h>
 
 #include <qcore.h>
@@ -169,6 +170,16 @@ signals:
     // A background "&full=1" fetch finished: history is the complete, printable turn
     // log for that battle (only emitted when the log was actually upgraded).
     void battleHistoryReady(int battle_id, QString history);
+    // Live matches (https://github.com/Pz1c/WavingHands/issues/287).
+    // A live challenge to the player turned up: invite is its row of the game list.
+    void liveInviteReceived(QString invite);
+    // Nobody took the player's own live challenge in time: the game was withdrawn.
+    void liveInviteExpired(int battle_id, QString warlock);
+    // A live match has a turn for the player (the first one: the challenge was accepted).
+    void liveBattleReady(int battle_id);
+    // The player's time for this turn is out. QML answers with liveSurrender(), unless
+    // the player is in the middle of another battle's orders.
+    void liveTimeExpired(int battle_id);
 
 public slots:
 
@@ -257,6 +268,12 @@ public slots:
     // https://github.com/Pz1c/WavingHands/issues/366
     void setFastGesture(bool On);
     void setFastTarget(bool On);
+    // Live matches (https://github.com/Pz1c/WavingHands/issues/287): the seconds the player
+    // has left for the turn of a live match (0 or less: out of time), 1000000 for a battle
+    // without a running clock; and what answers liveTimeExpired(): the turn is submitted
+    // as a surrender (P with both hands).
+    int liveTimeLeft(int battle_id);
+    void liveSurrender(int battle_id);
     // "Send notification token" in Settings: registers this install's FCM token with the
     // caster server now, confirmed or not, connecting and logging the link in first when it
     // is down, and reports through pushTokenStatus.
@@ -285,6 +302,10 @@ protected slots:
     void onPushUnsupported();
     void onPushFailed(const QString &token, const QString &reason);
     void onPushForceTimeout();
+    // LIVEINVITE over the caster link, and the answer to the LIVE the app sent.
+    void onLinkLiveInvite(const QString &by, int battle_id);
+    void onLinkLiveSent(const QString &opponent, int battle_id, const QString &result);
+    void liveTick();
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -301,6 +322,7 @@ protected:
     // so it opens nothing but the result itself.
     bool finishGetFinishedBattle(QString &Data, bool Announce = false);
     void finishBattleHistory(QString &Data, int StatusCode, const QString &url);
+    void finishLiveProbe(QString &Data, int StatusCode, const QString &url);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
     bool butifyTurnMessage(QString &str, bool CleanGestures = false);
@@ -410,6 +432,16 @@ protected:
     bool hasUnstartedBattle();
     int findChallengeToJoin();
     void releaseKeepMeOn(const QString &url);
+
+    // Live matches (https://github.com/Pz1c/WavingHands/issues/287), see the .cpp.
+    void liveCheckInvites();
+    bool liveAfterScan(const QList<int> &OldReady, QList<int> &NewReady);
+    void liveAfterInvite();
+    void liveSubmitSurrender();
+    void liveCheckTimer();
+    bool liveWatch() const;
+    QString liveRow(const QBattleInfo *bi) const;
+    void liveReset();
 private:
     // user login
     bool _isLogined;
@@ -481,6 +513,41 @@ private:
     bool _uiBusy;
     QString _finishedBattle;
     QStringList _challenge;
+    // Live matches. The challenges of the last scan as parsed; the live ones among them
+    // that are still good, by battle; the ones already announced, and the expired ones
+    // already refused.
+    QList<QPersonalChallenge> _personalChallenges;
+    // What the battle page of a challenge said (finishLiveProbe), by battle: asked when,
+    // how often, and once it is known (done) whether it is a live match and its rules.
+    struct QChallengeProbe {
+        bool done = false;
+        int tries = 0;
+        qint64 sent = 0;
+        bool live = false;
+        qint64 validBy = 0;
+        int total = 0;
+        int extra = 0;
+    };
+    QMap<int, QChallengeProbe> _challengeProbes;
+    QMap<int, QPersonalChallenge> _liveInvites;
+    QSet<int> _liveInvitesSeen;
+    QSet<int> _liveRefused;
+    // The live invite LIVEINVITE announced and the scans left to find it on the site.
+    int _liveExpectInvite;
+    int _liveExpectTries;
+    // The player's own live challenge just made: once the site has the invite, the other
+    // app is told and the waiting window opens. And the ones withdrawn after their time.
+    int _liveNewBattle;
+    QString _liveNewWarlock;
+    QSet<int> _liveLeaving;
+    qint64 _liveExpiryScan;
+    // The battle whose ready page is being loaded to post the surrender of a time-out,
+    // since when, and when each battle's time-out was last announced.
+    int _liveSurrenderBattle;
+    qint64 _liveSurrenderStarted;
+    QMap<int, qint64> _liveTimeoutSaid;
+    // One second, while a live clock or a live invite of the player's runs.
+    QTimer _liveTimer;
     int _win_vs_bot;
     int _win_vs_warlock;
     int _play_training_game;

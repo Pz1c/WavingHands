@@ -94,10 +94,19 @@ ApplicationWindow {
         onNeedLogin: getLoginFromUser()
         onErrorOccurred: showErrorMessage()
         onIsLoadingChanged: GUI.isLoadingChanged()
-        onBattleListChanged: GUI.newBattleList()
+        onBattleListChanged: {
+            GUI.newBattleList();
+            closeStaleLiveInvite();
+        }
         onFinishedBattleChanged: showFinishedBattle()
         onReadyBattleChanged: showReadyBattle();
         onOpponentTurnReady: function(by) { refreshAfterOpponentTurn(by); }
+        // live matches, https://github.com/Pz1c/WavingHands/issues/287 (the handlers must not be
+        // named like the signals: in here those names are the core's own)
+        onLiveInviteReceived: function(invite) { showLiveInvite(invite); }
+        onLiveInviteExpired: function(battle_id, warlock) { liveInviteWithdrawn(battle_id, warlock); }
+        onLiveBattleReady: function(battle_id) { openLiveBattle(battle_id); }
+        onLiveTimeExpired: function(battle_id) { liveTimeIsOut(battle_id); }
         onBattleHistoryReady: function(battle_id, history) { applyBattleHistory(battle_id, history); }
         onRegisterNewUserChanged: GUI.newUserRegistered()
         //onTimerStateChanged: changeTimerState()
@@ -762,9 +771,10 @@ ApplicationWindow {
                                     color: "#2DA0A5"
                                     font.italic: true
                                     horizontalAlignment: Text.AlignLeft
-                                    visible: lvActiveBattle.model[index].online
+                                    // a live match (issue #287) says so instead
+                                    visible: lvActiveBattle.model[index].online || (lvActiveBattle.model[index].live === 1)
 
-                                    text: "ONLINE"
+                                    text: lvActiveBattle.model[index].live === 1 ? warlockDictionary.getStringByCode("LiveLabel") : "ONLINE"
                                 }
 
                                 Rectangle {
@@ -1093,7 +1103,113 @@ ApplicationWindow {
                 turnRefreshPending = false;
                 core.scanState(1);
             }
+            showPendingLiveInvite();
         });
+    }
+
+    // Live matches (https://github.com/Pz1c/WavingHands/issues/287).
+    // A live challenge that came while some window was up: shown once the game list is back.
+    property var pendingLiveInvite: null
+    // The battle whose time-out the player has been told about.
+    property int liveTimeoutShown: 0
+
+    function liveNow() {
+        return Math.floor((new Date()).getTime() / 1000);
+    }
+
+    // the window of wnd_spell.qml is up with the unstarted battle battle_id
+    function isWaitingWndOf(battle_id) {
+        var w = WNDU.arr_wnd_instance[WNDU.wnd_spell];
+        return !!(w && w.visible && w.l_data && (w.l_data.type === 12) && (w.l_data.id === battle_id));
+    }
+
+    function showLiveInvite(invite) {
+        var obj;
+        try {
+            obj = JSON.parse(invite);
+        } catch (e) {
+            console.log("showLiveInvite", "row is not JSON", e);
+            return;
+        }
+        obj.type = 17;
+        obj.action = "private_challenge";
+        logEvent("Live_Invite_Received", {Id:obj.id});
+        if (WNDU.isSomeWndOpenned()) {
+            pendingLiveInvite = obj;
+            if (Qt.platform.os === "android") {
+                core.showNotification(warlockDictionary.getStringByCode("LiveInviteToast").replace("%1", obj.el));
+            }
+            return;
+        }
+        showErrorWnd(obj);
+    }
+
+    // The live challenge on screen is gone from the list (withdrawn, or past its time): so is its window.
+    function closeStaleLiveInvite() {
+        var w = WNDU.arr_wnd_instance[WNDU.wnd_spell];
+        if (!w || !w.visible || !w.l_data || (w.l_data.type !== 17) || (w.l_data.live !== 1)) {
+            return;
+        }
+        var rows = GUI.G_BATTLE_LIST[0];
+        for (var i = 0, Ln = rows.length; i < Ln; ++i) {
+            if ((rows[i].id === w.l_data.id) && (rows[i].s === 3)) {
+                return;
+            }
+        }
+        console.log("closeStaleLiveInvite", w.l_data.id);
+        WNDU.closeChild();
+    }
+
+    function showPendingLiveInvite() {
+        if (!pendingLiveInvite || WNDU.isSomeWndOpenned()) {
+            return;
+        }
+        var obj = pendingLiveInvite;
+        pendingLiveInvite = null;
+        if (obj.till > liveNow()) {
+            showErrorWnd(obj);
+        }
+    }
+
+    function liveInviteWithdrawn(battle_id, warlock) {
+        if (isWaitingWndOf(battle_id)) {
+            WNDU.closeChild();
+        }
+        if (!WNDU.isSomeWndOpenned()) {
+            showErrorWnd({type: 1, title: warlockDictionary.getStringByCode("LiveMatch"), text: warlock ? warlockDictionary.getStringByCode("LiveInviteWithdrawn").replace("%1", warlock)
+                                        : warlockDictionary.getStringByCode("LiveInviteWithdrawnNoName")});
+        }
+    }
+
+    // A live match has a turn to play: it opens by itself, so the game goes on without the list.
+    function openLiveBattle(battle_id) {
+        liveTimeoutShown = 0;
+        if (isWaitingWndOf(battle_id)) {
+            WNDU.closeChild();
+        }
+        if (!WNDU.isSomeWndOpenned()) {
+            logEvent("Live_Turn_Opened", {Id:battle_id});
+            core.getBattle(battle_id, 1);
+        } else if (Qt.platform.os === "android") {
+            core.showNotification(warlockDictionary.getStringByCode("LiveBattleStarted"));
+        }
+    }
+
+    // The player's time in a live match is out: the core surrenders the turn, unless the
+    // player is in the middle of another battle's orders (it asks again in a while).
+    function liveTimeIsOut(battle_id) {
+        if (WNDU.isWndVisible(WNDU.wnd_battle) && gBattle && !gBattle.read_only && (gBattle.id !== battle_id)) {
+            console.log("liveTimeIsOut", "deferred, another battle is open", battle_id, gBattle.id);
+            return;
+        }
+        WNDU.closeChilds();
+        turnRefreshPending = false;
+        core.liveSurrender(battle_id);
+        if (liveTimeoutShown !== battle_id) {
+            liveTimeoutShown = battle_id;
+            logEvent("Live_Timeout", {Id:battle_id});
+            showErrorWnd({type: 1, title: warlockDictionary.getStringByCode("LiveMatch"), text: warlockDictionary.getStringByCode("LiveTimeOut")});
+        }
     }
 
     function openBattleOnline() {
@@ -1561,7 +1677,7 @@ ApplicationWindow {
 
     function showOnlineGameStart(Warlock, Level) {
         console.log("main.qml.showOnlineGameStart", Warlock, Level);
-        showErrorWnd({id:-1,type:102,warlock:Warlock,Level,close_all:0,close_current:0});
+        showErrorWnd({id:-1,type:102,warlock:Warlock,level:Level,close_all:0,close_current:0});
     }
 
     function startWarlockGame(WarlockName, FriendlyLevel, OnlineGame) {
@@ -1595,6 +1711,7 @@ ApplicationWindow {
         WNDU.processEscape();
         if (!WNDU.isSomeWndOpenned()) {
             processAfterClose();
+            showPendingLiveInvite();
         }
     }
 

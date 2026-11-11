@@ -71,6 +71,33 @@ BaseWindow {
             }
         }
 
+        // https://github.com/Pz1c/WavingHands/issues/287
+        // The player's clock in a live match: what is left for this turn (QWarloksDuelCore::liveTimeLeft).
+        Rectangle {
+            id: rLiveClock
+            z: 950
+            anchors.top: parent.top
+            anchors.topMargin: 6 * mainWindow.ratioObject
+            anchors.right: parent.right
+            anchors.rightMargin: 12 * mainWindow.ratioObject
+            width: tLiveClock.implicitWidth + 24 * mainWindow.ratioObject
+            height: 44 * mainWindow.ratioObject
+            radius: 12 * mainWindow.ratioObject
+            color: "#210430"
+            border.width: 2 * mainWindow.ratioObject
+            border.color: battleItem.liveLeft <= 60 ? "#E7FFFF" : "#544653"
+            visible: battleItem.liveClock
+
+            Text {
+                id: tLiveClock
+                anchors.centerIn: parent
+                font.pixelSize: 30 * mainWindow.ratioFont
+                color: battleItem.liveLeft <= 60 ? "#FF6666" : "#FEE2D6"
+                text: (battleItem.liveLeft >= 600 ? "" : "0") + Math.floor(Math.max(0, battleItem.liveLeft) / 60) + ":"
+                      + (Math.max(0, battleItem.liveLeft) % 60 < 10 ? "0" : "") + (Math.max(0, battleItem.liveLeft) % 60)
+            }
+        }
+
         // https://github.com/Pz1c/WavingHands/issues/227
         // What the turn news plays over the board, above the overlay that dims it: the icon of a cast
         // spell on its way from the gestures to the tile it leaves, the big result icon of an attack.
@@ -614,6 +641,31 @@ BaseWindow {
         }
     }
 
+    // live match (issue #287): whether this battle is played against the clock, and the
+    // seconds the player has left for the turn
+    property bool liveClock: false
+    property int liveLeft: 0
+
+    function liveClockTick() {
+        var b = mainWindow.gBattle;
+        if (!b || !b.id || (b.live !== 1) || b.read_only) {
+            liveClock = false;
+            return;
+        }
+        var left = mainWindow.gameCore.liveTimeLeft(b.id);
+        // 1000000: no clock runs for this battle (the turn is in, the battle is over)
+        liveClock = left < 1000000;
+        liveLeft = left;
+    }
+
+    Timer {
+        id: tLiveClockTick
+        interval: 250
+        repeat: true
+        running: battleItem.visible && battleItem.liveClock
+        onTriggered: battleItem.liveClockTick()
+    }
+
     Timer {
         id: tHintDelay
         interval: 10
@@ -927,6 +979,7 @@ BaseWindow {
         title_text = dict.getStringByCode("BattleTitle").replace("%1", mainWindow.gBattle.id);
         rTT.visible = false;
         BU.applyBattle();
+        liveClockTick();
         battleChanged();
         if (/*true || */!mainWindow.gBattle.with_bot) {
             iiChat.visible = true;

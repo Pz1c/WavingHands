@@ -67,6 +67,103 @@ void QBattleInfo::init() {
     _app_version = 0;
     _inviteRejected = false;
     _isOnline = false;
+    _liveTotal = 0;
+    _liveExtra = 0;
+    _liveValidBy = 0;
+    _liveUsed = 0;
+    _liveNotified = 0;
+    _liveStart = 0;
+}
+
+bool QBattleInfo::live() const {
+    return _liveTotal > 0;
+}
+
+void QBattleInfo::setLive(int Total, int Extra, qint64 ValidBy) {
+    _liveTotal = qMax(0, Total);
+    _liveExtra = qMax(1, Extra);
+    _liveValidBy = ValidBy;
+}
+
+qint64 QBattleInfo::liveValidBy() const {
+    return _liveValidBy;
+}
+
+int QBattleInfo::liveTotal() const {
+    return _liveTotal;
+}
+
+int QBattleInfo::liveExtra() const {
+    return _liveExtra;
+}
+
+int QBattleInfo::liveUsed() const {
+    return _liveUsed;
+}
+
+void QBattleInfo::liveTurnNoticed(qint64 Now) {
+    if (live() && (_liveNotified == 0)) {
+        _liveNotified = Now;
+    }
+}
+
+void QBattleInfo::liveTurnEntered(qint64 Now) {
+    if (!live() || (_liveStart != 0)) {
+        return;
+    }
+    liveTurnNoticed(Now);
+    // not later than the notice rule had started it already
+    _liveStart = qMin(Now, _liveNotified + LIVE_MATCH_NOTICE_SEC);
+}
+
+bool QBattleInfo::liveTurnOpen() const {
+    return live() && ((_liveNotified != 0) || (_liveStart != 0));
+}
+
+int QBattleInfo::liveBudget() const {
+    return qMax(_liveTotal - _liveUsed, _liveExtra);
+}
+
+qint64 QBattleInfo::liveClockStart(qint64 Now) const {
+    if (_liveStart != 0) {
+        return _liveStart;
+    }
+    if ((_liveNotified != 0) && (Now >= _liveNotified + LIVE_MATCH_NOTICE_SEC)) {
+        return _liveNotified + LIVE_MATCH_NOTICE_SEC;
+    }
+    return 0;
+}
+
+int QBattleInfo::liveLeft(qint64 Now) const {
+    qint64 start = liveClockStart(Now);
+    if (start == 0) {
+        return liveBudget();
+    }
+    return static_cast<int>(qMax<qint64>(liveBudget() - (Now - start), -1));
+}
+
+qint64 QBattleInfo::liveDeadline(qint64 Now) const {
+    if (!liveTurnOpen()) {
+        return 0;
+    }
+    qint64 start = liveClockStart(Now);
+    if (start == 0) {
+        start = _liveNotified + LIVE_MATCH_NOTICE_SEC;
+    }
+    return start + liveBudget();
+}
+
+void QBattleInfo::liveTurnDone(qint64 Now) {
+    if (!liveTurnOpen()) {
+        return;
+    }
+    qint64 start = liveClockStart(Now);
+    if (start != 0) {
+        // a turn costs what it took, and never more than it was given
+        _liveUsed += static_cast<int>(qBound<qint64>(qint64(0), Now - start, qint64(liveBudget())));
+    }
+    _liveNotified = 0;
+    _liveStart = 0;
 }
 
 QBattleInfo::~QBattleInfo() {
@@ -247,6 +344,14 @@ void QBattleInfo::setDescription(const QString &newDescription)
 {
     _description = newDescription;
     _for_bot = newDescription.indexOf("TRANING BOT ONLY") != -1;
+    if (!live()) {
+        // a live match seen on the site: the rules come with its description
+        qint64 valid_by = 0;
+        int total = 0, extra = 0;
+        if (QWarlockUtils::parseLiveDescription(newDescription, &valid_by, &total, &extra)) {
+            setLive(total, extra, valid_by);
+        }
+    }
 }
 
 bool QBattleInfo::with_bot() const
@@ -362,6 +467,11 @@ QString QBattleInfo::getInListStatus(const QString &Login) const {
 
 bool QBattleInfo::isInviteRejected() {
     return _inviteRejected;
+}
+
+QString QBattleInfo::challengedWarlock() const {
+    // "name:id" while the invite is open, see QWarlockUtils::parseUnstartedBattle
+    return _challenged.isEmpty() ? QString() : _challenged.first().section(':', 0, 0);
 }
 
 void QBattleInfo::checkRejection() {
@@ -635,11 +745,11 @@ QString QBattleInfo::toJSON(const QString &Login) const {
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
                    ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15,"
                    "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"need\":%20,\"player\":\"%21\",\"challenged\":\"%22\",\"rejected\":\"%23\""
-                   ",\"invite_rejected\":%24}")
+                   ",\"invite_rejected\":%24,\"live\":%25,\"live_till\":%26,\"live_total\":%27,\"live_extra\":%28}")
         .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
         .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
         .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login, _challenged.join(","), _rejected.join(","))
-        .arg(boolToStr(_inviteRejected));
+        .arg(boolToStr(_inviteRejected), boolToIntS(live()), intToStr(_liveValidBy), intToStr(_liveTotal), intToStr(_liveExtra));
 }
 
 QString QBattleInfo::toString(bool Short) const {
@@ -650,11 +760,15 @@ QString QBattleInfo::toString(bool Short) const {
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
                    "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21^^^"
-                   "full_battle_json#=#%22^^^app_version#=#%23^^^rejected#=#%24^^^invite_rejected#=#%25")
+                   "full_battle_json#=#%22^^^app_version#=#%23^^^rejected#=#%24^^^invite_rejected#=#%25^^^live#=#%26")
             .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
             .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), tmp_chat, tmp_hist, _winner, intToStr(_hint))
             .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","))
-            .arg(json.toBase64(QByteArray::Base64UrlEncoding), APPLICATION_VERSION, _rejected.join(","), boolToIntS(_inviteRejected));
+            .arg(json.toBase64(QByteArray::Base64UrlEncoding), APPLICATION_VERSION, _rejected.join(","), boolToIntS(_inviteRejected),
+                 // empty for any other battle; else total,extra,valid by,used,notified,start
+                 live() ? QString("%1,%2,%3,%4,%5,%6").arg(intToStr(_liveTotal), intToStr(_liveExtra), intToStr(_liveValidBy),
+                                                           intToStr(_liveUsed), intToStr(_liveNotified), intToStr(_liveStart))
+                        : QString());
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -717,6 +831,14 @@ void QBattleInfo::parseString(const QString &battle_info) {
             _rejected = value.split(",");
         } else if (key.compare("invite_rejected") == 0) {
             _inviteRejected = value.toInt() == 1;
+        } else if (key.compare("live") == 0) {
+            QStringList lv = value.split(",");
+            if (lv.size() == 6) {
+                setLive(lv.at(0).toInt(), lv.at(1).toInt(), lv.at(2).toLongLong());
+                _liveUsed = qMax(0, lv.at(3).toInt());
+                _liveNotified = lv.at(4).toLongLong();
+                _liveStart = lv.at(5).toLongLong();
+            }
         }
     }
 }

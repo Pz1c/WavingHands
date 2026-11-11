@@ -89,7 +89,7 @@ InfoWindow {
                 text: dict.getStringByCode("LiveMatch")
                 border.width: 0
                 radius: 30
-                visible: false
+                visible: true
                 z: 30
                 font.pixelSize: 49 * mainWindow.ratioFont
                 gradient: gDef

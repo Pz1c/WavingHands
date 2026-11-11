@@ -438,6 +438,29 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("SpectatorResultTitleLose", "%1 lost the game.", "%1 hat das Spiel verloren.", "%1 ha perdido la partida.");
     fillDictionary("SpectatorNotStartDesc", "You are not in this battle.", "Du nimmst an diesem Kampf nicht teil.", "No participas en esta batalla.");
     fillDictionary("ChallengedBy", "Challenged by %1", "Herausgefordert von %1", "Desafío de %1");
+    // live matches, https://github.com/Pz1c/WavingHands/issues/287
+    fillDictionary("LiveLabel", "Live", "Live", "En vivo");
+    fillDictionary("LiveInviteTitle", "Live challenge by %1", "Live-Herausforderung von %1", "Desafío en vivo de %1");
+    fillDictionary("LiveInviteDesc", "Accept and start a duel with %1.<br>In a live match you have %2 minutes to play the whole game (+%3 seconds per turn afterwards).",
+                   "Nimm an und beginne ein Duell mit %1.<br>In einem Live-Spiel hast du %2 Minuten für das ganze Spiel (danach +%3 Sekunden pro Zug).",
+                   "Acepta y empieza un duelo con %1.<br>En una partida en vivo tienes %2 minutos para toda la partida (después, +%3 segundos por turno).");
+    fillDictionary("LiveInviteGone", "This live challenge has expired.", "Diese Live-Herausforderung ist abgelaufen.", "Este desafío en vivo ha caducado.");
+    fillDictionary("LiveInviteToast", "%1 challenges you to a live match!", "%1 fordert dich zu einem Live-Spiel heraus!", "¡%1 te desafía a una partida en vivo!");
+    fillDictionary("LiveWaitSTitle", "Live match: waiting for %1 to accept.", "Live-Spiel: Warten auf die Annahme durch %1.", "Partida en vivo: esperando a que %1 acepte.");
+    fillDictionary("LiveWaitSTitleNoName", "Live match: waiting for your opponent to accept.", "Live-Spiel: Warten auf die Annahme durch deinen Gegner.", "Partida en vivo: esperando a que tu oponente acepte.");
+    fillDictionary("LiveWaitDesc", "The challenge is good for %1 minutes. If it is not accepted by then, the game is cancelled.",
+                   "Die Herausforderung gilt %1 Minuten. Wird sie bis dahin nicht angenommen, wird das Spiel abgebrochen.",
+                   "El desafío es válido durante %1 minutos. Si no se acepta en ese tiempo, la partida se cancela.");
+    fillDictionary("LiveInviteWithdrawn", "%1 did not accept your live challenge in time. The game was cancelled.",
+                   "%1 hat deine Live-Herausforderung nicht rechtzeitig angenommen. Das Spiel wurde abgebrochen.",
+                   "%1 no aceptó tu desafío en vivo a tiempo. La partida se ha cancelado.");
+    fillDictionary("LiveInviteWithdrawnNoName", "Your live challenge was not accepted in time. The game was cancelled.",
+                   "Deine Live-Herausforderung wurde nicht rechtzeitig angenommen. Das Spiel wurde abgebrochen.",
+                   "Tu desafío en vivo no se aceptó a tiempo. La partida se ha cancelado.");
+    fillDictionary("LiveTimeOut", "Your time in the live match is out: your surrender has been submitted.",
+                   "Deine Zeit im Live-Spiel ist abgelaufen: Deine Kapitulation wurde übermittelt.",
+                   "Se te ha acabado el tiempo en la partida en vivo: se ha enviado tu rendición.");
+    fillDictionary("LiveBattleStarted", "Your live match has a new turn!", "Dein Live-Spiel hat einen neuen Zug!", "¡Tu partida en vivo tiene un nuevo turno!");
     fillDictionary("ChallengeListOpen", "Open challenge by %1", "Offene Herausforderung von %1", "Desafío abierto de %1");
     fillDictionary("ChallengeListPractice", "Practice challenge by %1", "Übungsherausforderung von %1", "Desafío de práctica de %1");
     fillDictionary("NewMatchDesc", "Players we match you with have played recently and are around your level", "Die Spieler, die wir dir zuordnen, haben kürzlich gespielt und sind etwa auf deinem Niveau", "Los jugadores con los que te emparejamos han jugado hace poco y tienen más o menos tu nivel");

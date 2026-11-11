@@ -23,6 +23,7 @@ const int kPingDeadlineMs       = 2500;
 const int kLogoutDeadlineMs     = 2000;
 const int kTurnDeadlineMs       = 2500;
 const int kPushDeadlineMs       = 2500;    // PUSH / UNPUSH: a map update server side
+const int kLiveDeadlineMs       = 2500;    // CAPS / LIVE: the same
 
 const int kKeepaliveMs          = 240000;
 const int kKeepaliveSeconds     = 240;
@@ -38,6 +39,8 @@ const int kMaxMalformed         = 3;
 const int kMaxWrongPlayer       = 2;
 const int kMaxQueuedTurns       = 16;
 const int kTurnMaxAgeSeconds    = 600;     // past this a "just moved" hint is noise
+const int kMaxQueuedLives       = 4;
+const int kLiveMaxAgeSeconds    = 60;      // an invite lives 5 minutes: later than this is no "now"
 const int kMinPushTokenBytes    = 20;      // the server's rule for PUSH / UNPUSH
 const int kMaxPushTokenBytes    = 4096;
 
@@ -114,6 +117,7 @@ void QRosterLink::start(const QString &login, const QString &cookieHeader, const
     if (key != _loginKey) {                                 // row 2
         resetSocket(Down, QStringLiteral("transport"));
         _turnQueue.clear();                                 // moves of the previous account
+        _liveQueue.clear();                                 // and its live invites
         _pushWanted.clear();                                // and its push registration
         _unpushWanted.clear();
         _deltaCapable = false;
@@ -162,6 +166,7 @@ void QRosterLink::clearIdentity() {
     }
     _deltaCapable = false;
     _turnQueue.clear();
+    _liveQueue.clear();
     _pushWanted.clear();        // no UNPUSH needed: LOGOUT drops the binding server side
     _unpushWanted.clear();
     _pushInFlight.clear();
@@ -180,6 +185,7 @@ void QRosterLink::disableForSession(const QString &reason) {
     _reconnect.stop();
     resetSocket(Disabled, QStringLiteral("transport"));
     _turnQueue.clear();                     // after resetSocket, which re-queues a TURN in flight
+    _liveQueue.clear();
     _pushWanted.clear();
     _unpushWanted.clear();
     emit protocolMismatch(reason);
@@ -394,6 +400,68 @@ void QRosterLink::flushPush() {
     }
 }
 
+void QRosterLink::sendLive(const QString &opponent, int battleId) {
+    if (_stickyDisabled || _loginKey.isEmpty() || (battleId <= 0)) {
+        return;
+    }
+    // The name rule of sendTurn(): a LIVE the server refuses is a strike.
+    const QString name = opponent.trimmed();
+    if (!QRosterWire::validWireName(name) || name.contains(QLatin1Char(',')) ||
+        (name.toLower() == _loginKey)) {
+        qDebug() << "QRosterLink::sendLive skipped, unusable name" << name;
+        return;
+    }
+    for (const LiveInvite &queued : std::as_const(_liveQueue)) {
+        if (queued.battleId == battleId) {
+            return;
+        }
+    }
+    if (_liveQueue.size() >= kMaxQueuedLives) {
+        _liveQueue.removeFirst();
+    }
+    LiveInvite invite;
+    invite.opponent = name;
+    invite.battleId = battleId;
+    invite.queued = QDateTime::currentSecsSinceEpoch();
+    _liveQueue.append(invite);
+    flushLive();
+}
+
+void QRosterLink::flushLive() {
+    // The TURN discipline again. CAPS first: a LIVE means nothing to a server that
+    // has not heard this connection declare the capability.
+    if (_state != Ready || !_deltaCapable || _pending != PNone || !_sock) {
+        return;
+    }
+    if (_capsWanted) {
+        _capsWanted = false;                // once per connection, whatever the answer
+        _pending = PCaps;
+        _deadline.start(kLiveDeadlineMs);
+        sendLine("CAPS\tlive");
+        return;
+    }
+    if (!_liveSupported) {
+        _liveQueue.clear();                 // nobody to tell: the site still carries the invite
+        return;
+    }
+    const qint64 now = QDateTime::currentSecsSinceEpoch();
+    while (!_liveQueue.isEmpty()) {
+        const LiveInvite invite = _liveQueue.takeFirst();
+        if (now - invite.queued > kLiveMaxAgeSeconds) {
+            continue;
+        }
+        _pending = PLive;
+        _liveInFlight = invite;             // resetSocket() re-queues it if no reply comes
+        _deadline.start(kLiveDeadlineMs);
+        QByteArray line = "LIVE\t";
+        line += invite.opponent.toUtf8();
+        line += '\t';
+        line += QByteArray::number(invite.battleId);
+        sendLine(line);
+        return;
+    }
+}
+
 void QRosterLink::openSocket() {
     _state = Connecting;
     _sock = new QSslSocket(this);
@@ -425,6 +493,12 @@ void QRosterLink::resetSocket(State next, const QString &failCode) {
         _turnQueue.prepend(_turnInFlight);
     }
     _turnInFlight = QPair<QString, qint64>();
+    if ((_pending == PLive) && (_liveInFlight.battleId > 0)) {
+        _liveQueue.prepend(_liveInFlight);  // as for a TURN; flushLive() drops it once stale
+    }
+    _liveInFlight = LiveInvite();
+    _capsWanted = false;                    // the next handshake asks again
+    _liveSupported = false;
     _pushInFlight.clear();                  // the wanted slot stays: sent again after the reconnect
     _pushUnsupported = false;               // per connection: the next one may be a newer server
     _pending = PNone;                       // cleared BEFORE anything can re-enter
@@ -524,6 +598,7 @@ void QRosterLink::onReadyRead() {
     // wanted UNPUSH / PUSH.
     flushTurns();
     flushPush();
+    flushLive();
 }
 
 // Rows 7, 28 and E.2 #2/#3/#5/#6/#21/#22.
@@ -670,6 +745,17 @@ void QRosterLink::handleLine(const QByteArray &line) {
         }
         return;
     }
+    // Only ever sent to a connection that declared "live" (CAPS), and like TURNREADY
+    // at any time.
+    if (verb == "LIVEINVITE") {
+        if (f.size() == 3) {
+            const int battleId = f.at(2).toInt();
+            if (battleId > 0) {
+                emit liveInvite(QString::fromUtf8(f.at(1)), battleId);
+            }
+        }
+        return;
+    }
     // Row 30.
     if (verb == "PONG") {
         if (_pending == PPing) {
@@ -796,6 +882,23 @@ void QRosterLink::handleOk(const QList<QByteArray> &f) {
         }
         return;
     }
+    if (_pending == PCaps) {                                // OK<TAB>caps<TAB>live | OK<TAB>caps<TAB>-
+        _liveSupported = (f.size() > 2) && f.at(2).split(',').contains("live");
+        qDebug() << "QRosterLink::handleOk caps, live" << _liveSupported;
+        _pending = PNone;
+        _deadline.stop();
+        return;
+    }
+    if (_pending == PLive) {                                // OK<TAB>delivered | pushed | offline
+        const LiveInvite invite = _liveInFlight;
+        const QString result = f.size() > 1 ? QString::fromUtf8(f.at(1)) : QString();
+        qDebug() << "QRosterLink::handleOk live" << invite.battleId << result;
+        _pending = PNone;
+        _liveInFlight = LiveInvite();
+        _deadline.stop();
+        emit liveSent(invite.opponent, invite.battleId, result);
+        return;
+    }
     if (_pending == PLogout) {                              // OK<TAB>bye
         qDebug() << "QRosterLink::handleOk logout acknowledged";
         resetSocket(Down, QString());
@@ -831,6 +934,7 @@ void QRosterLink::handleOk(const QList<QByteArray> &f) {
     _keepalive.start(kKeepaliveMs);
     qDebug() << "QRosterLink::handleOk ready as" << _canonical << "delta" << _deltaCapable
              << "token" << redact(_token);
+    _capsWanted = _deltaCapable;        // goes out with the next flushLive()
     emit authenticated(_canonical, _token);
     if (!_deltaCapable) {                                   // row 9
         emit protocolMismatch(QStringLiteral("server has no delta WHO"));
@@ -930,6 +1034,38 @@ void QRosterLink::handleErr(const QList<QByteArray> &f) {
             _unpushWanted.clear();
         }
         emit pushFailed(token, text.isEmpty() ? code : code + QLatin1String(": ") + text);
+        return;
+    }
+    if (_pending == PCaps || _pending == PLive) {
+        const bool caps = (_pending == PCaps);
+        const LiveInvite invite = _liveInFlight;
+        _pending = PNone;
+        _liveInFlight = LiveInvite();
+        _deadline.stop();
+        if (code == QLatin1String("need-auth")) {           // as for TURN, row 25
+            if (!caps) {
+                _liveQueue.prepend(invite);
+            }
+            if (!_reauthedThisConn) {
+                _reauthedThisConn = true;
+                sendHandshake();                            // its OK asks for CAPS again
+            } else {
+                resetSocket(Down, QString());
+                bumpBackoff();
+                scheduleReconnect();
+            }
+            return;
+        }
+        if (caps) {
+            // An old server: "unknown command", and a strike. No live matches over
+            // this connection; WHO, TURN and PUSH are not affected.
+            qDebug() << "QRosterLink::handleErr no live support on this connection" << code;
+            _liveSupported = false;
+            _liveQueue.clear();
+            return;
+        }
+        // busy (invited a moment ago) or a refused name: this one invite is dropped.
+        emit liveSent(invite.opponent, invite.battleId, code);
         return;
     }
     if (_pending == PLogout) {
