@@ -876,7 +876,11 @@ void QWarloksDuelCore::applyRosterBlock(const QRosterBlock &block) {
         ws->setDied(r.died);
         ws->setElo(r.elo);
         ws->setColor(r.color);
-        ws->setLastActivity(now - r.idleSeconds);
+        // Never back in time: a warlock's last activity only moves forward, and a caster
+        // whose scan of the site has stalled keeps sending the idle time of its last good
+        // scan, which would wipe the fresher one the HTTP roster or a profile page gave
+        // (the Active tab of the Hall of Fame went empty that way).
+        ws->setLastActivity(qMin(now, qMax(ws->lastActivity(), now - r.idleSeconds)));
         if (r.mobile) {
             // A site scan can never observe this, so the wire 0 is structural
             // rather than authoritative.
