@@ -283,7 +283,7 @@ function prepareMonster(m) {
     }
 
     if ((m.name.indexOf(":") !== -1) && (m.strength > 0)) {
-        m.icon = BGU.getMonsterIconBySummonHP(m.strength);
+        m.icon = BGU.getNewMonsterIcon(BGU.getMonsterIconBySummonHP(m.strength));
     } else {
         m.icon = BGU.getMonsterIconByName(m.name);
     }

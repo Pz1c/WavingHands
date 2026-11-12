@@ -181,6 +181,12 @@ function getMonsterIconBySummonHP(HP) {
     }
 }
 
+// a monster that only possibly appears has its own icons, res/new_<monster>.png: the "LH:Name" / "RH:Name"
+// one a summon of that hand would bring this turn, and in the turn news a summon that brought nobody
+function getNewMonsterIcon(icon) {
+    return icon === "summon" ? icon : "new_" + icon;
+}
+
 function getMonsterDamageByName(name) {
     if (name.indexOf("Goblin") !== -1) {
         return 1;
@@ -1437,7 +1443,7 @@ function prepareNewsMonsters(rows, battle) {
         strength = SUMMON_SPELL_TYPES.indexOf(rec.type) + 1;
         rec.key = rec.name !== "" ? rec.name : ("New " + rec.type + " of " + rec.owner);
         if (!battle.temp_monsters[rec.key]) {
-            addTempNewsMonster(battle, rec.owner, {name:rec.key,icon:getMonsterIconByName(rec.name !== "" ? rec.name : rec.type),
+            addTempNewsMonster(battle, rec.owner, {name:rec.key,icon:rec.name !== "" ? getMonsterIconByName(rec.name) : getNewMonsterIcon(getMonsterIconByName(rec.type)),
                                                    text:strength,hp:strength,strength:strength,damage:strength});
         }
     }
