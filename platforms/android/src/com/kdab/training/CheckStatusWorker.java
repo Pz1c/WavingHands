@@ -29,9 +29,10 @@ public class CheckStatusWorker extends Worker {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // Always chain the next check. A failed poll just waits for the normal schedule
-        // instead of burning WorkManager's retry backoff, which would drift the ladder.
-        CheckScheduler.schedule(context, false);
+        // Chain the next check, when there is one to wait for. A failed poll just waits for
+        // the normal schedule instead of burning WorkManager's retry backoff, which would
+        // drift the ladder.
+        CheckScheduler.schedule(context);
         return Result.success();
     }
 }

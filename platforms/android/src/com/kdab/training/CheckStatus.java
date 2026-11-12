@@ -58,9 +58,21 @@ public class CheckStatus {
                     Log.d(TAG, "app in foreground, no check");
                     return;
                 }
+                // Nothing could be shown: the page is not worth a request.
+                if (!CheckScheduler.canPostNotifications(context)) {
+                    Log.d(TAG, "notifications not allowed, no check");
+                    return;
+                }
                 int last_sent_notif = sharedPreferences.getInt("last_notification", 0);
                 int app_last_activity = sharedPreferences.getInt("app_last_activity", 0);
                 int last_notification = Math.round(System.currentTimeMillis()/1000L);
+                // Likewise while the last notification is still up, unanswered: whatever the
+                // page says waits for the end of that silence (CheckScheduler queues a check
+                // for it), a battle finished meanwhile included.
+                if (CheckScheduler.muted(last_notification, app_last_activity, last_sent_notif)) {
+                    Log.d(TAG, "last notification not answered yet, no check");
+                    return;
+                }
 
                 String data;
                 try {
@@ -81,14 +93,12 @@ public class CheckStatus {
                 String[] arr_finished_clean;
                 Log.d(TAG, "r=" + arr_ready_str + ", c=" + arr_challenge_str + ", fn=" + finished_new + ", fo=" + arr_finished_old_str);
                 Log.d(TAG, "last_sent_notif=" + last_sent_notif + ", app_last_activity=" + app_last_activity + ", last_notification=" + last_notification);
-                boolean need_send = (last_sent_notif == 0) || (last_sent_notif < app_last_activity) ||
-                                    ((last_sent_notif > 0) && ((last_notification - last_sent_notif) > 60 * 60 * 8));
                 boolean app_inactive = ((last_notification - app_last_activity) >= 60);
-                boolean ready = need_send && (arr_ready.length > 0) && (!(arr_ready[0]).isEmpty()) && app_inactive;
-                boolean challenge = need_send && (arr_challenge.length > 0) && (!arr_challenge[0].isEmpty());
+                boolean ready = (arr_ready.length > 0) && (!(arr_ready[0]).isEmpty()) && app_inactive;
+                boolean challenge = (arr_challenge.length > 0) && (!arr_challenge[0].isEmpty());
                 boolean finished = false;
                 int finished_id = 0;
-                if (app_inactive && need_send) {
+                if (app_inactive) {
                     for (String battleId : arr_finished) {
                        if(java.util.Arrays.asList(arr_finished_old).indexOf(battleId) == -1) {
                            finished = true;
@@ -153,6 +163,9 @@ public class CheckStatus {
                 URL url=new URL(path);
                 connection =(HttpsURLConnection)url.openConnection();
                 connection.setRequestMethod("GET");
+                // Without it a server that does not answer keeps the check, and with it the
+                // phone, up for minutes.
+                connection.setConnectTimeout(10000);
                 connection.setReadTimeout(10000);
                 connection.connect();
                 stream = connection.getInputStream();
