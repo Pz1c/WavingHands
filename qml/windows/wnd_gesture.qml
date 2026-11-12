@@ -873,6 +873,19 @@ BaseWindow {
     // Go for the player's own gesture: the chosen spell, through the target window when it needs one
     function sendGesture() {
         var spell = arrSpell[mainWindow.gBattle.spellIdx], s;
+        // If the selected row is the Default placeholder, use the real
+        // completed spell from the list when there is one.
+        if (spell.n === "Default") {
+            for (var di = 0; di < arrSpell.length; ++di) {
+                s = arrSpell[di];
+                if ((s.n !== "Default") &&
+                        ((s.cast_type === 1) || (s.n === "Stab"))) {
+                    spell = s;
+                    mainWindow.gBattle.spellIdx = di;
+                    break;
+                }
+            }
+        }
         console.log("choose spell", mainWindow.gBattle.spellIdx, JSON.stringify(spell));
 
         var need_targeting = (spell.gp !== "None");
