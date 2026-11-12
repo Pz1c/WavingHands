@@ -461,7 +461,8 @@ BaseWindow {
             return null;
         }
         var action = battle.actions ? battle.actions[battle.currentHand] : null;
-        if (action && action.target) {
+        // "Default" is the initial placeholder, not a chosen target.
+        if (action && action.target && (action.target !== "Default")) {
             return null;
         }
         var dt = currentSpell.dt;
