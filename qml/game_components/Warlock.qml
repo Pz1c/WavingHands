@@ -407,6 +407,35 @@ Item {
         checked: false
         l_data: ({action:"banked",value:l_warlock.banked_spell,checked:false})
 
+        // the turn news lights the bank up when a spell is put into it
+        ParallelAnimation {
+            id: paBankedHighlight
+
+            ColorAnimation {
+                id: caBankedHighlight
+                target: iiBanked
+                property: "color"
+                duration: 350
+            }
+
+            SequentialAnimation {
+                NumberAnimation { target: iiBanked; property: "scale"; to: 1.15; duration: 150; easing.type: Easing.OutQuad }
+                NumberAnimation { target: iiBanked; property: "scale"; to: 1; duration: 200; easing.type: Easing.InOutQuad }
+            }
+        }
+
+        function highlightNews(news_color) {
+            visible = true;
+            caBankedHighlight.to = news_color;
+            paBankedHighlight.restart();
+        }
+
+        function restoreNews() {
+            paBankedHighlight.stop();
+            scale = 1;
+            color = checked ? bg_color_checked : bg_color;
+        }
+
         onClicked: {
             if (l_warlock.player) {
                 l_data.action = "banked";
@@ -1095,6 +1124,8 @@ Item {
             if (si) {
                 si.highlightNews(a.color ? a.color : "#10C9F5");
             }
+        } else if (a.object_type === "banked") {
+            iiBanked.highlightNews(a.color ? a.color : "#10C9F5");
         }
     }
 
@@ -1126,6 +1157,8 @@ Item {
             if (sr) {
                 sr.restoreNews();
             }
+        } else if (a.object_type === "banked") {
+            iiBanked.restoreNews();
         }
     }
 

@@ -762,7 +762,7 @@ function parseSimpleAttack(txt, stop_word) {
 }
 
 function parseStrangeAttack(txt, battle) {
-    var res = {aggressor:"",target:"",spell:"",damage:0,shield:false,mirror:false,counter_spell:false};
+    var res = {aggressor:"",target:"",spell:"",damage:0,shield:false,mirror:false,counter_spell:false,banked:false};
     if (txt.indexOf("fizzles slightly") !== -1) {
         res.counter_spell = true;
         txt = txt.replace("shield fizzles slightly", "is hit by a Anti-spell");
@@ -792,6 +792,9 @@ function parseStrangeAttack(txt, battle) {
         if (fireball) {
             txt = fireball[1] + " is hit by a Fireball for " + fireball[2] + " damage";
         }
+    } else if (/\bbanks? a spell for later\b/i.test(txt)) {
+        // The completed spell goes to the target's bank instead of being cast.
+        res.banked = true;
     } else if (txt.indexOf(" disappears!") !== -1) {
         var disappeared = /and (.+?) disappears!$/.exec(txt);
         if (disappeared) {
@@ -1045,18 +1048,28 @@ function getMessageActionByOther(obj, battle) {
                     obj.spell = battle.warlocks[i].arr_distruption.shift();
                 }
             }
-            // https://github.com/Pz1c/WavingHands/issues/227
-            // An effect row only lights the status card that is already there.
-            // It must not re-create or refresh the status: a carried status is
-            // still decremented at the end of this turn.
-            var status_code = ((obj.damage > 0) || obj.cured) ? "" : getNewsStatusCode(obj, w);
-            if (status_code) {
-                var status_action = {action:"highlight",warlock_name:w.name,object_type:"status",object:status_code,
-                                     icon:getNewsStatusIcon(status_code),data:[],role:"target",
-                                     color:isHarmfulNews(obj) ? "#FEE2D6" : "#10C9F5"};
-                res.push(status_action);
+            if (obj.banked) {
+                // Turn news runs on the turn-start board: the bank icon is not
+                // filled yet, while the delay status it consumes is still listed.
+                res.push({action:"status_remove",warlock_name:w.name,object_type:"status",object:"delay"});
+                res.push({action:"highlight",warlock_name:w.name,object_type:"banked",object:"banked",
+                          value:w.banked_spell,data:[],role:"target",color:"#10C9F5"});
+                icon_action.large_icon = "banked_spell";
+                icon_action.text = "";
             } else {
-                res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
+                // https://github.com/Pz1c/WavingHands/issues/227
+                // An effect row only lights the status card that is already there.
+                // It must not re-create or refresh the status: a carried status is
+                // still decremented at the end of this turn.
+                var status_code = ((obj.damage > 0) || obj.cured) ? "" : getNewsStatusCode(obj, w);
+                if (status_code) {
+                    var status_action = {action:"highlight",warlock_name:w.name,object_type:"status",object:status_code,
+                                         icon:getNewsStatusIcon(status_code),data:[],role:"target",
+                                         color:isHarmfulNews(obj) ? "#FEE2D6" : "#10C9F5"};
+                    res.push(status_action);
+                } else {
+                    res.push({action:"highlight",warlock_name:w.name,object_type:"warlock",object:"hp",data:[],color:"#FEE2D6"});
+                }
             }
             target_found = true;
             //break;

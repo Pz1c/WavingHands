@@ -405,7 +405,8 @@ function playHintActions(actions, row_type) {
         // a monster that acts lights up before the icon pops, one that is hit after it, with the hearts;
         // a status icon (the shield that took the blow, the enchantment that landed) after it too
         if ((a.action === "highlight") && ((a.object_type === "monster") ||
-                (a.object_type === "status") || (a.object_type === "elemental"))) {
+                (a.object_type === "status") || (a.object_type === "banked") ||
+                (a.object_type === "elemental"))) {
             if (a.role === "actor") {
                 actors.push(a);
             } else {
