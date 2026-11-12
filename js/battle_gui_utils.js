@@ -784,6 +784,14 @@ function parseStrangeAttack(txt, battle) {
         txt = txt.replace("Holes open up in ", "").replace("shield, but then close up again.", "is hit by a Cause Light Wounds for 2 damage");
     } else if (txt.indexOf("Wounds appear") !== -1) {
         txt = txt.replace("Wounds appear all over ", "").replace("body!", "is hit by a Cause Light Wounds for 2 damage");
+    } else if (/^A fireball strikes /i.test(txt)) {
+        // The server names the effect first here: "A fireball strikes Bob,
+        // burning him for 5 damage." Rewrite it to the "is hit by a" form
+        // the parser below understands.
+        var fireball = /^A fireball strikes (.+?), burning (?:him|her|it|them) for (\d+) damage\.?$/i.exec(txt);
+        if (fireball) {
+            txt = fireball[1] + " is hit by a Fireball for " + fireball[2] + " damage";
+        }
     } else if (txt.indexOf(" disappears!") !== -1) {
         var disappeared = /and (.+?) disappears!$/.exec(txt);
         if (disappeared) {
