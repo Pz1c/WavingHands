@@ -1205,6 +1205,10 @@ function addTurnNewsDamage(cause, damage_row, target, amount, defer_to_target) {
 }
 
 function getTurnNewsSpellAliases(spell) {
+    // Both spells produce "hit by a bolt of lightning".
+    if ((spell === "Lightning Bolt") || (spell === "Clap of Lightning")) {
+        return {"Lightning Bolt":true, "Clap of Lightning":true};
+    }
     if ((spell === "Cause Light Wounds") || (spell === "Cause Heavy Wounds")) {
         return {"Cause Light Wounds":true, "Cause Heavy Wounds":true};
     }
