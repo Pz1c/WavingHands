@@ -147,12 +147,6 @@ ApplicationWindow {
         }
     }
 
-    /*AnalyticItem {
-        id: analytics
-        userId: //take uuid
-            core.uuid
-    }*/
-
     Item {
         id: iWndContainer
         anchors.fill: parent

@@ -4,14 +4,14 @@ var icon_status_code_to_icon = {"confused":"maladroit","time_stop":"time_stop"};
 var icon_status_spell = {"scared":"SWD","confused":"DSF","charmed":"PSDF","paralized":"FFF","shield":"WWP","coldproof":"SSFP","fireproof":"WWFP","poison":"DWWFWD","disease":"DSFFFc",
                          "amnesia":"DPP","maladroit":"DSF","mshield":"WWS","delay":"DWSSSP","time_stop":"SPPc","haste":"PWPWWc","permanency":"SPFPSDW","blindness":"DWFFd","invisibility":"PPws"};
 
-var map_spell_to_icon = {"SWD":"scared","DSF":"confused","PSDF":"charmed","FFF":"paralized","WWP":"shield","SSFP":"coldproof","WWFP":"fireproof",
+var map_spell_to_icon = {"SWD":"scared","PSDF":"charmed","FFF":"paralized","WWP":"shield","SSFP":"coldproof","WWFP":"fireproof",
             "DWWFWD":"poison","DSFFFc":"disease","DPP":"amnesia","DSF":"maladroit","WWS":"mshield","WPP":"mshield","DWSSSP":"delay","PWPWWc":"haste",
             "SPFPSDW":"permanency","DWFFd":"blindness","DFWFd":"blindness","PPws":"invisibility","cWSSW":"elemental_fire","cSWWS":"elemental_ice",
             "WFPSFW":"giant","FPSFW":"troll","PSFW":"ogre","SFW":"goblin","P":"shield","SPPc":"time_stop","SPPFD":"time_stop",
             "cDPW":"dispel_magic","cw":"magic_mirror", "DFFDD":"lightning_bolt","DFPW":"cure_heavy_wounds","DFW":"cure_light_wounds",
             "FSSDD":"fireball","PDWP":"remove_enchantment","PSDD":"charm_monster","PWPFSSSD":"finger_of_death",
             "SD":"magic_missile","SPFP":"anti_spell","SWWc":"fire_storm","WDDc":"clap_of_lightning","WFP":"cause_light_wounds",
-            "WPFD":"cause_heavy_wounds","WSSc":"ice_storm", "p":"RIP2",">":"stab","DSFDFc":"disease","FDF":"paralysis","FDFD":"paralysis"};
+            "WPFD":"cause_heavy_wounds","WSSc":"ice_storm", "p":"RIP2",">":"stab","DSFDFc":"disease","FDF":"paralized","FDFD":"paralized"};
 
 var map_spell_name_to_gesture = {"Dispel Magic":["cDPW"],"Counter Spell":["WPP", "WWS"],"Magic Mirror":["cw"],"Summon Goblin":["SFW"],"Summon Ogre":["PSFW"],
     "Summon Troll":["FPSFW"],"Summon Giant":["WFPSFW"],"Summon Fire Elemental":["cWSSW"],"Summon Ice Elemental":["cSWWS"],
@@ -153,7 +153,7 @@ function preparePrintGestures(GL, GR, mscL, mscR, maxLength) {
     return res;
 }
 
-function getMonsterIconByNameEx(name) {
+function getMonsterIconByName(name) {
     if (name.indexOf("Goblin") !== -1) {
         return "goblin";
     } else if (name.indexOf("Ogre") !== -1) {
@@ -169,15 +169,6 @@ function getMonsterIconByNameEx(name) {
     } else {
         return "summon";
     }
-}
-
-function getMonsterIconByName(name) {
-    var res = getMonsterIconByNameEx(name);
-    if ((res !== "summon") && (name.indexOf("(") !== -1)) {
-        res = "new_" + res;
-    }
-
-    return res;
 }
 
 function getMonsterIconBySummonHP(HP) {
@@ -913,7 +904,7 @@ function getMessageActionByAttack(attack_obj, battle) {
             }
         }
 
-        icon_action.small_icon = getMonsterIconByNameEx(attack_obj.aggressor);
+        icon_action.small_icon = getMonsterIconByName(attack_obj.aggressor);
         if (icon_action.small_icon === "summon") {
             icon_action.small_icon = "sword";
         }
@@ -927,7 +918,7 @@ function getMessageActionByAttack(attack_obj, battle) {
         } else if (icon_action.large_icon === "heart") {
             applyDamageIcon(icon_action, attack_obj.damage);
         } else if (icon_action.large_icon === "") {
-            icon_action.large_icon = getMonsterIconByNameEx(attack_obj.target);
+            icon_action.large_icon = getMonsterIconByName(attack_obj.target);
         }
         applyBigIcon(icon_action, attack_obj.damage, attack_obj.shield ? icon_action.large_icon : "");
         res.push(icon_action);
@@ -1019,7 +1010,7 @@ function getMessageActionByOther(obj, battle) {
     }
 
     if (!target_found) {
-        icon_action.large_icon = getMonsterIconByNameEx(obj.target);
+        icon_action.large_icon = getMonsterIconByName(obj.target);
         // https://github.com/Pz1c/WavingHands/issues/227
         // "The Fire Elemental runs amok!": it serves nobody, the news shows its tile for this step
         if (battle.elemental && (battle.elemental.hp > 0) && (obj.target.indexOf("Elemental") !== -1)) {
@@ -1068,7 +1059,7 @@ function parseDeathMessage(msg) {
 
 function getMessageActionByDeath(obj, battle) {
     var res = [];
-    var icon = getMonsterIconByNameEx(obj.target);
+    var icon = getMonsterIconByName(obj.target);
     if (icon === "summon") {
         icon = "";
     }
@@ -1446,7 +1437,7 @@ function prepareNewsMonsters(rows, battle) {
         strength = SUMMON_SPELL_TYPES.indexOf(rec.type) + 1;
         rec.key = rec.name !== "" ? rec.name : ("New " + rec.type + " of " + rec.owner);
         if (!battle.temp_monsters[rec.key]) {
-            addTempNewsMonster(battle, rec.owner, {name:rec.key,icon:rec.name !== "" ? getMonsterIconByName(rec.name) : "new_" + rec.type.toLowerCase(),
+            addTempNewsMonster(battle, rec.owner, {name:rec.key,icon:getMonsterIconByName(rec.name !== "" ? rec.name : rec.type),
                                                    text:strength,hp:strength,strength:strength,damage:strength});
         }
     }
