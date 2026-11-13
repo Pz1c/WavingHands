@@ -383,6 +383,9 @@ function findTurnNewsArrival(news_summons, row) {
 // Effect rows whose meaning is not carried by obj.spell.
 function getTurnNewsEffectSpells(row) {
     var res = [];
+    if (row.obj && row.obj.kind === "result") {
+        return res;
+    }
     if (row.obj && row.obj.spell && !row.obj.failed) {
         res.push(row.obj.spell);
         // Poison-looking lines are currently parsed as Disease.
@@ -1538,7 +1541,8 @@ function prepareTurnActionInfo(last_turn_hist) {
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         //new_action = BGU.getMessageActionByRow(real_actions[i], battle); // before change color
-        if (real_actions[i].turn_news_hidden || isTurnNewsFizzle(real_actions[i]) ||
+        if ((real_actions[i].obj && real_actions[i].obj.kind === "result") ||
+                real_actions[i].turn_news_hidden || isTurnNewsFizzle(real_actions[i]) ||
                 isMonsterDirectMessage(real_actions[i])) {
             continue;
         }

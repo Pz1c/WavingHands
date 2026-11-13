@@ -858,6 +858,7 @@ function applyStrangeRule(txt, rule, battle) {
         res.damage = parseInt(damage, 10) || 0;
     }
 
+    res.kind = rule.kind || "apply";
     if (rule.flags) {
         for (var key in rule.flags) {
             res[key] = rule.flags[key];
@@ -919,7 +920,7 @@ var EFFECT_RULES = [
     {targetBefore: "'s shield blurs for a moment.", spell: "Distruption", flags: {counter_spell:true}},
     {targetBefore: "'s shield fizzles slightly.", spell: "Anti-spell", flags: {counter_spell:true}},
     {targetBefore: "'s shield flickers, but remains firm.", flags: {counter_spell:true}},
-    {targetBefore: "'s shield intensifies momentarily."},
+    {targetBefore: "'s shield intensifies momentarily.", kind: "result"},
     {
         targetBetween: ["Tiny holes in ", "'s shield are sealed up."],
         spell: "Cure Light Wounds",
@@ -1001,12 +1002,12 @@ var EFFECT_RULES = [
         }
     },
     {targetBefore: "'s hands start to stiffen.", spell: "Paralysis"},
-    {targetBefore: "'s right hand is paralysed.", spell: "Paralysis"},
-    {targetBefore: "'s left hand is paralysed.", spell: "Paralysis"},
-    {targetBefore: " can't move to attack.", spell: "Paralysis"},
+    {targetBefore: "'s right hand is paralysed.", spell: "Paralysis", kind: "result"},
+    {targetBefore: "'s left hand is paralysed.", spell: "Paralysis", kind: "result"},
+    {targetBefore: " can't move to attack.", spell: "Paralysis", kind: "result"},
     {targetBefore: " cringes in fear.", spell: "Fear"},
     {targetBefore: " quakes in fear!", spell: "Fear"},
-    {targetBefore: " is too scared to attack.", spell: "Fear"},
+    {targetBefore: " is too scared to attack.", spell: "Fear", kind: "result"},
     {targetBefore: " starts to look blank.", spell: "Amnesia"},
     {targetBefore: " forgets ", spell: "Amnesia"},
     {targetBefore: " starts to look sick.", spell: "Disease"},
@@ -1021,17 +1022,18 @@ var EFFECT_RULES = [
         targetBetween: ["Scales start to grow over ", "'s eyes!"],
         spell: "Blindness"
     },
-    {targetBefore: "'s eyes are covered with scales!", spell: "Blindness"},
+    {targetBefore: "'s eyes are covered with scales!", spell: "Blindness", kind: "result"},
     {
         targetBetween: ["The scales are removed from ", "'s eyes."],
-        spell: "Blindness"
+        spell: "Blindness",
+        kind: "result"
     },
     {targetBefore: " begins to shimmer.", spell: "Invisibility"},
     {
         targetBetween: ["There is a flash, and ", " disappears!"],
         spell: "Invisibility"
     },
-    {targetBefore: " fades back into visibility.", spell: "Invisibility"},
+    {targetBefore: " fades back into visibility.", spell: "Invisibility", kind: "result"},
     {targetBefore: " speeds up.", spell: "Haste"},
     {targetBefore: " flickers out of time!", spell: "Time Stop"},
 
@@ -1422,6 +1424,9 @@ function prepareAndSortRealAction(actions, battle) {
 
             for (j = i + 1; j < Ln; ++j) {
                 console.log("sortRealAction", i, j, JSON.stringify(actions[j].obj));
+                if (actions[j].obj && actions[j].obj.kind === "result") {
+                    continue;
+                }
                 if (((spellsPair(actions[i].obj.spell, actions[j].obj.spell)) && (actions[i].obj.target === actions[j].obj.target))
                         || (actions[i].summon_id && (actions[i].summon_id === actions[j].summoned_id))) {
                     actions[j].depends_on.push(actions[i].id);
