@@ -1740,6 +1740,15 @@ function prepareBattle(raw_battle) {
         battle.warlocks.unshift(w);
         ++battle.size;
     }
+    // The turn snapshot and the current page can list participants in
+    // different orders. Normalize them so the cards cannot swap between
+    // the turn news and the board that replaces it.
+    battle.warlocks.sort(function(a, b) {
+        if (a.player !== b.player) {
+            return a.player ? -1 : 1;
+        }
+        return (a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0);
+    });
     battle.actions.L.target = battle.player_target_L;
     battle.actions.L.g = battle.player_gesture_L;
     battle.actions.L.s = {n:battle.player_spell_L, gp: "", g:battle.player_gesture_L};
