@@ -998,6 +998,29 @@ function moveMonsterToOwner(name, new_owner) {
     return true;
 }
 
+// The monster card pulses before it leaves; drop it from the maps once the
+// icon is really gone from the board.
+function processPulseMonsterRemoved(name) {
+    removeDeadMonsterTarget(name);
+}
+
+// A charmed monster pulses on its old side first; this finishes the move.
+function processPulseMonsterMoved(name, new_owner) {
+    if (!moveMonsterToOwner(name, new_owner)) {
+        return;
+    }
+    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
+        var ww = iWarlocks.children[i];
+        var live = ww && ww.l_warlock;
+        if (live && battle.monsters && battle.monsters[live.name]) {
+            live.monsters = battle.monsters[live.name];
+        }
+        if (ww && ww.refreshMonsters) {
+            ww.refreshMonsters();
+        }
+    }
+}
+
 // A death removes the monster from every roster and index.
 function removeDeadMonsterTarget(name) {
     if (!name || !battle) {
@@ -2121,6 +2144,8 @@ function finishPrepareWarlockList() {
         sprite.clicked.connect(iconClick);
         sprite.doubleClicked.connect(iconDoubleClick);
         sprite.gestureClicked.connect(iconGestureClick);
+        sprite.monsterRemoved.connect(processPulseMonsterRemoved);
+        sprite.monsterMoved.connect(processPulseMonsterMoved);
         // createObject() copies initial JS object properties on Qt 6. Bind the
         // card to the live battle object before running its initialization.
         sprite.l_warlock = arr_m;

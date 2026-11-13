@@ -24,6 +24,56 @@ Item {
     signal clicked(var data)
     signal doubleClicked(var data)
     signal gestureClicked(var data)
+    // A monster card pulses, then leaves; the targeting maps drop it on this.
+    signal monsterRemoved(string name)
+    // A charmed monster pulses on its old side, then changes owner.
+    signal monsterMoved(string name, string new_owner)
+
+    // Icons pulse before they leave the board, so the eye can follow the change.
+    property var l_pending_status_removals: []
+    property var l_pending_monster_removals: []
+    property var l_pending_monster_moves: []
+    property bool l_banked_removal_pending: false
+
+    Timer {
+        id: tStatusRemove
+        interval: 350
+        repeat: false
+        onTriggered: flushStatusRemovals()
+    }
+
+    Timer {
+        id: tMonsterRemove
+        interval: 350
+        repeat: false
+        onTriggered: flushMonsterRemovals()
+    }
+
+    Timer {
+        id: tBankedRemove
+        interval: 350
+        repeat: false
+        onTriggered: hideBankedNow()
+    }
+
+    function hideBankedNow() {
+        l_banked_removal_pending = false;
+        l_warlock.banked_spell = "";
+        iiBanked.visible = false;
+    }
+
+    // All pending removals belong to the event that scheduled them: apply them
+    // before the next news step changes the board.
+    function flushRemovals() {
+        tStatusRemove.stop();
+        flushStatusRemovals();
+        tMonsterRemove.stop();
+        flushMonsterRemovals();
+        if (l_banked_removal_pending) {
+            tBankedRemove.stop();
+            hideBankedNow();
+        }
+    }
 
     // Mirror the shared gesture-strip offset owned by the battle window.
     Connections {
@@ -200,22 +250,79 @@ Item {
     }
 
     function showMonsterDeath(name) {
-        // Remove from this owner's live array as well. The JS death handler
-        // already scans battle.monsters; this guarantees the visible roster is
-        // updated even if the arrays ever diverge.
+        return removeMonster(name);
+    }
+
+    // A dead or otherwise departing monster lights up first; the roster and the
+    // targeting maps change when the pulse has played.
+    function removeMonster(name) {
         var monsters = l_warlock.monsters || [];
-        for (var i = monsters.length - 1; i >= 0; --i) {
+        var known = false;
+        for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
             if (monsters[i] && (monsters[i].name === name)) {
-                monsters.splice(i, 1);
+                known = true;
+                break;
             }
         }
-        refreshMonsters();
+        if (!known) {
+            return false;
+        }
+        var item = findMonsterItem(name);
+        if (item && item.highlightNews) {
+            item.highlightNews("#FEE2D6", "");
+        }
+        if (l_pending_monster_removals.indexOf(name) === -1) {
+            l_pending_monster_removals.push(name);
+        }
+        tMonsterRemove.restart();
+        return true;
+    }
+
+    function flushMonsterRemovals() {
+        var names = l_pending_monster_removals;
+        var moves = l_pending_monster_moves;
+        l_pending_monster_removals = [];
+        l_pending_monster_moves = [];
+        if ((names.length === 0) && (moves.length === 0)) {
+            return;
+        }
+        var i, k, m, monsters = l_warlock.monsters || [];
+        for (k = 0; k < names.length; ++k) {
+            for (i = monsters.length - 1; i >= 0; --i) {
+                if (monsters[i] && (monsters[i].name === names[k])) {
+                    monsters.splice(i, 1);
+                }
+            }
+        }
+        if (names.length > 0) {
+            refreshMonsters();
+        }
+        for (k = 0; k < names.length; ++k) {
+            monsterRemoved(names[k]);
+        }
+        for (k = 0; k < moves.length; ++k) {
+            m = moves[k];
+            monsterMoved(m.name, m.owner);
+        }
+    }
+
+    // Charm moves the monster to the other side: pulse it here first.
+    function pulseMonsterMove(name, new_owner) {
+        if (findMonster(name) === null) {
+            return false;
+        }
+        var item = findMonsterItem(name);
+        if (item && item.highlightNews) {
+            item.highlightNews("#FEE2D6", "");
+        }
+        l_pending_monster_moves.push({name:name, owner:new_owner});
+        tMonsterRemove.restart();
+        return true;
     }
 
     function showDeath(object_type, object_name) {
         if (object_type === "monster") {
-            showMonsterDeath(object_name);
-            return;
+            return showMonsterDeath(object_name);
         }
         paHPHighlight.stop();
         iiHP.scale = 1;
@@ -223,6 +330,7 @@ Item {
         l_dead = true;
         l_hpDisplay = 0;
         l_warlock.hp = 0;
+        return true;
     }
 
     function showDamage(amount, object_type, object_name) {
@@ -931,21 +1039,55 @@ Item {
         refreshStatuses();
     }
 
+    // A status that leaves the board lights up first; the model drops it on the
+    // timer so the pulse is visible.
     function removeStatus(code) {
         var statuses = l_warlock.statusIcons || [];
+        var known = false;
         for (var i = 0, Ln = statuses.length; i < Ln; ++i) {
             if (statuses[i] && (statuses[i].action === code)) {
-                statuses.splice(i, 1);
-                l_warlock.statusIcons = statuses;
-                refreshStatuses();
-                return;
+                known = true;
+                break;
             }
         }
+        if (!known) {
+            return;
+        }
+        var item = findStatusItem(code);
+        if (item && item.highlightNews) {
+            item.highlightNews("#FEE2D6");
+        }
+        if (l_pending_status_removals.indexOf(code) === -1) {
+            l_pending_status_removals.push(code);
+        }
+        tStatusRemove.restart();
+    }
+
+    function flushStatusRemovals() {
+        var codes = l_pending_status_removals;
+        l_pending_status_removals = [];
+        if (codes.length === 0) {
+            return;
+        }
+        var statuses = l_warlock.statusIcons || [];
+        var kept = [];
+        for (var i = 0, Ln = statuses.length; i < Ln; ++i) {
+            if (statuses[i] && (codes.indexOf(statuses[i].action) === -1)) {
+                kept.push(statuses[i]);
+            }
+        }
+        l_warlock.statusIcons = kept;
+        refreshStatuses();
     }
 
     function removeBanked() {
-        l_warlock.banked_spell = "";
-        iiBanked.visible = false;
+        if (!iiBanked.visible) {
+            l_warlock.banked_spell = "";
+            return;
+        }
+        l_banked_removal_pending = true;
+        iiBanked.highlightNews("#FEE2D6");
+        tBankedRemove.restart();
     }
 
     // A replay board is rebuilt from the final page, where the bank is already
@@ -960,19 +1102,16 @@ Item {
     function clearEnchantments(name) {
         var i, Ln;
         if (!name || (name === l_warlock.name)) {
-            var statuses = l_warlock.statusIcons || [];
-            var kept = [];
+            var statuses = (l_warlock.statusIcons || []).slice();
             for (i = 0, Ln = statuses.length; i < Ln; ++i) {
                 var status = statuses[i];
                 if (!status) {
                     continue;
                 }
-                if ((status.action === "dispel") || (status.action === "mirror")) {
-                    kept.push(status);
+                if ((status.action !== "dispel") && (status.action !== "mirror")) {
+                    removeStatus(status.action);
                 }
             }
-            l_warlock.statusIcons = kept;
-            refreshStatuses();
         }
 
         var monsters = l_warlock.monsters || [];

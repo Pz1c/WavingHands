@@ -225,20 +225,13 @@ function processCharmMonsterHintAction(a, restore) {
     if (restore) {
         return;
     }
-    if (!a.warlock_name || !BU.moveMonsterToOwner ||
-            !BU.moveMonsterToOwner(a.object, a.warlock_name)) {
+    // Pulse the monster on its old side, then hand it to the new owner.
+    var owner = iWarlocks.children[getHintWarlockIdx({object_type:"monster", object:a.object})];
+    if (owner && owner.pulseMonsterMove &&
+            owner.pulseMonsterMove(a.object, a.warlock_name)) {
         return;
     }
-    for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
-        var ww = iWarlocks.children[i];
-        var live = ww && ww.l_warlock;
-        if (live && BU.battle && BU.battle.monsters[live.name]) {
-            live.monsters = BU.battle.monsters[live.name];
-        }
-        if (ww && ww.refreshMonsters) {
-            ww.refreshMonsters();
-        }
-    }
+    BU.processPulseMonsterMoved(a.object, a.warlock_name);
 }
 
 function processDeathHintAction(a, restore) {
@@ -248,16 +241,11 @@ function processDeathHintAction(a, restore) {
     var warlock_idx = getHintWarlockIdx(a);
     var ww = iWarlocks.children[warlock_idx];
     console.log("processDeathHintAction", a.object_type, a.object, a.warlock_name, warlock_idx);
-    // Remove the dead monster before refreshing the board.
-    if ((a.object_type === "monster") && BU.removeDeadMonsterTarget) {
+    // The card pulses the icon and drops it when the pulse ends, then reports
+    // back so the targeting maps drop the dead monster too.
+    var handled = (ww && ww.showDeath) ? (ww.showDeath(a.object_type, a.object) === true) : false;
+    if ((a.object_type === "monster") && !handled && BU.removeDeadMonsterTarget) {
         BU.removeDeadMonsterTarget(a.object);
-    }
-    if (ww && ww.showDeath) {
-        ww.showDeath(a.object_type, a.object);
-    }
-    if (a.object_type === "monster") {
-        // The owner may be missing from the hint index; refresh every board so
-        // no ListView keeps a delegate whose source was just removed.
         for (var i = 0, Ln = iWarlocks.children.length; i < Ln; ++i) {
             var item = iWarlocks.children[i];
             if (item && item.refreshMonsters) {
@@ -528,6 +516,11 @@ function prepareWarockToHint(restore) {
         }
         if (ww.restoreAllNews) {
             ww.restoreAllNews();
+        }
+        // A pending pulse belongs to the event that scheduled it: the next
+        // step must start from the board with those icons already gone.
+        if (ww.flushRemovals) {
+            ww.flushRemovals();
         }
         ww.hintOnOff(restore);
     }

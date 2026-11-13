@@ -720,6 +720,16 @@ BaseWindow {
         }
     }
 
+    // A silent death step hides the banner; hold it long enough for the dying
+    // icon to pulse before the next event replaces it.
+    Timer {
+        id: tSilentAdvance
+        interval: 400
+        repeat: false
+        running: false
+        onTriggered: playNextTurnNewsStep(1, true)
+    }
+
     property int readyWarlocks: 0
     property int readyWindow: 0
     // Blocks a second submit while the board waits for TURNREADY.
@@ -756,6 +766,7 @@ BaseWindow {
     }
 
     function playNextTurnNewsStep(diff, skip_restore) {
+        tSilentAdvance.stop();
         // Hide the banner before the silent step is processed, so the death
         // message never flashes.
         var nextHint = ltTutorial.tutorialData[ltTutorial.tutorialDataIdx + diff];
@@ -769,12 +780,10 @@ BaseWindow {
         }
 
         if (hint.turn_news_silent) {
-            // Death actions are already applied. Advance immediately instead
-            // of waiting for the two-second auto-play timer.
+            // Death actions are already applied. Hold the hidden step for the
+            // departing icon's pulse instead of advancing in the same tick.
             ltTutorial.visible = false;
-            Qt.callLater(function() {
-                playNextTurnNewsStep(1, true);
-            });
+            tSilentAdvance.restart();
             return;
         }
 
@@ -799,6 +808,7 @@ BaseWindow {
     onCancel: {
         tHintAuto.stop();
         tReplayDelay.stop();
+        tSilentAdvance.stop();
         mainWindow.processEscape();
     }
 
@@ -1121,6 +1131,7 @@ BaseWindow {
     function cancelReplayPlayback() {
         tHintAuto.stop();
         tReplayDelay.stop();
+        tSilentAdvance.stop();
         BWU.stopHintAnimation();
         ltTutorial.visible = false;
     }
@@ -1149,6 +1160,7 @@ BaseWindow {
         waitingForTurn = false;
         tHintAuto.stop();
         tReplayDelay.stop();
+        tSilentAdvance.stop();
         visible = false;
         mainWindow.battleWindowHidden();
     }
