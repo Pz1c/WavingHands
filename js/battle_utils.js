@@ -383,7 +383,7 @@ function findTurnNewsArrival(news_summons, row) {
 // Effect rows whose meaning is not carried by obj.spell.
 function getTurnNewsEffectSpells(row) {
     var res = [];
-    if (row.obj && row.obj.spell) {
+    if (row.obj && row.obj.spell && !row.obj.charm_failed) {
         res.push(row.obj.spell);
         // Poison-looking lines are currently parsed as Disease.
         if (row.obj.spell === "Disease") {
@@ -587,7 +587,8 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
         // and the "looks, glassy-eyed" result row. Put one ownership change on
         // the cast row so it happens before the success text and the attack.
         if ((row.row_type === "other") && row.obj &&
-                (row.obj.spell === "Charm Monster") && row.obj.target) {
+                (row.obj.spell === "Charm Monster") && row.obj.target &&
+                !row.obj.charm_failed) {
             var monster = normalizeTurnNewsName(row.obj.target);
             var charm_cast = active_casts["Charm Monster|" + monster];
             if (charm_cast) {
@@ -597,6 +598,28 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                             {action:"charm_monster", object_type:"monster",
                              object:monster, warlock_name:cast_owner});
                 }
+            }
+        }
+
+        // Delay Effect and Permanency share the "begins glowing faintly" line.
+        // Resolve it against the casts in this turn instead of guessing.
+        if (row.obj && row.obj.glow) {
+            var glow_cast = null, glow_spell = "";
+            var glow_target = normalizeTurnNewsName(row.obj.target || "");
+            var glow_spells = ["Delay Effect", "Permanency"];
+            for (var gs = 0; gs < glow_spells.length; ++gs) {
+                var glow_name = glow_spells[gs];
+                var glow_candidate = active_casts[glow_name + "|" + glow_target] ||
+                        active_casts_by_spell[glow_name];
+                if (glow_candidate &&
+                        (!glow_cast || (glow_candidate.index > glow_cast.index))) {
+                    glow_cast = glow_candidate;
+                    glow_spell = glow_name;
+                }
+            }
+            if (glow_cast) {
+                row.obj.spell = glow_spell;
+                row.obj.target = glow_target;
             }
         }
 

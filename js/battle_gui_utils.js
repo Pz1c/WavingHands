@@ -762,7 +762,36 @@ function parseSimpleAttack(txt, stop_word) {
 }
 
 function parseStrangeAttack(txt, battle) {
-    var res = {aggressor:"",target:"",spell:"",damage:0,shield:false,mirror:false,counter_spell:false,banked:false};
+    var res = {aggressor:"",target:"",spell:"",damage:0,shield:false,mirror:false,counter_spell:false,banked:false,charm_failed:false,glow:false};
+    var m;
+
+    if ((m = /^Lightning sparks all around (.+?)'s shield\.?$/i.exec(txt))) {
+        res.counter_spell = true;
+        res.target = m[1];
+        return res;
+    }
+    if ((m = /^(.+?)'s half-done spells fizzle and die\.?$/i.exec(txt))) {
+        res.spell = "Anti-spell";
+        res.target = m[1];
+        return res;
+    }
+    if ((m = /^(.+?) ignores (.+?)'s appeal to (?:his|her|its|their) baser instincts\.?$/i.exec(txt))) {
+        res.spell = "Charm Monster";
+        res.target = m[1];
+        res.charm_failed = true;
+        return res;
+    }
+    if ((m = /^(.+?) begins glowing faintly\.?$/i.exec(txt))) {
+        res.glow = true;
+        res.target = m[1];
+        return res;
+    }
+    if ((m = /^(.+?) attempts to make the spell permanent!$/i.exec(txt))) {
+        res.spell = "Permanency";
+        res.target = m[1];
+        return res;
+    }
+
     if (txt.indexOf("fizzles slightly") !== -1) {
         res.counter_spell = true;
         txt = txt.replace("shield fizzles slightly", "is hit by a Anti-spell");
