@@ -415,6 +415,8 @@ function moveTurnNewsStatusToReflection(cast_row, reflection_row, target) {
                 (actions[i].object_type === "status")) {
             var action = actions.splice(i, 1)[0];
             action.warlock_name = target;
+            // The mirror pulse plays first; the reflected result follows it.
+            action.after_mirror = true;
             moved.push(action);
         }
     }
@@ -463,7 +465,8 @@ function mergeDefendedCastIntoEffect(counter_row, cast_row, target) {
     for (i = 0, Ln = merged.length; i < Ln; ++i) {
         a = merged[i];
         if ((a.action === "highlight") && (a.object_type === "status") &&
-                ((a.object === "mshield") || (a.object === "shield"))) {
+                ((a.object === "mshield") || (a.object === "shield") ||
+                 (a.object === "mirror") || (a.object === "dispel"))) {
             has_defense = true;
             break;
         }
@@ -488,6 +491,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
     var elemental_summoned = false, i, Ln, row;
     var mergeable = {}, active_casts = {}, active_casts_by_spell = {};
     var reflected_casts = {};
+    var reflection_merges = [];
     var handled_summons = {};
     for (var merge_name in BGU.map_spell_name_to_status) {
         mergeable[merge_name] = true;
@@ -592,6 +596,10 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                     target: reflected_target
                 };
                 moveTurnNewsStatusToReflection(reflection_cast.row, row, reflected_target);
+                // The mirror row is this spell's event: carry the cast payload
+                // there, after the reflected result has been attached.
+                reflection_merges.push({row:row, cast:reflection_cast.row,
+                                        target:reflected_target});
             }
         }
 
@@ -866,6 +874,14 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                          object:target, warlock_name:owner || target});
             }
         }
+    }
+
+    // A reflected cast belongs to its mirror row, but only after that row got
+    // the reflected result actions (damage, status, enchantment removal).
+    for (i = 0, Ln = reflection_merges.length; i < Ln; ++i) {
+        mergeDefendedCastIntoEffect(reflection_merges[i].row,
+                                    reflection_merges[i].cast,
+                                    reflection_merges[i].target);
     }
 }
 

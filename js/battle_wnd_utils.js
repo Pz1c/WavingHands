@@ -294,6 +294,7 @@ function processHintAction(a, restore) {
 const HINT_FIRST_FRAME_DELAY = 150;
 const HINT_LETTER_DELAY = 200;
 const HINT_TARGET_DELAY = 300; // lets the icon pop finish first
+const HINT_MIRROR_RESULT_DELAY = 350; // the mirror pulse ends before the reflected status starts
 
 var hint_frames = [];
 
@@ -366,6 +367,7 @@ function isDeferredHintAction(row_type, action) {
 
 function playHintActions(actions, row_type) {
     var letters = [], actors = [], targets = [], apply_actions = [], finish_actions = [];
+    var after_targets = [];
     var icon = null, a, lf, i, j, Ln, frame_actions;
     stopHintAnimation();
     for (i = 0, Ln = actions.length; i < Ln; ++i) {
@@ -410,6 +412,12 @@ function playHintActions(actions, row_type) {
         }
         if (a.action === "status_remove") {
             targets.push(a);
+            continue;
+        }
+        if ((a.action === "highlight") && (a.object_type === "status") && a.after_mirror) {
+            // The reflected spell's status follows the mirror pulse instead of
+            // lighting up together with it.
+            after_targets.push(a);
             continue;
         }
         // https://github.com/Pz1c/WavingHands/issues/227
@@ -482,6 +490,11 @@ function playHintActions(actions, row_type) {
 
     if (targets.length > 0) {
         hint_frames.push({delay:delay,actions:targets});
+        delay = 0;
+    }
+
+    if (after_targets.length > 0) {
+        hint_frames.push({delay:HINT_MIRROR_RESULT_DELAY,actions:after_targets});
         delay = 0;
     }
 
