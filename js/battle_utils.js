@@ -474,6 +474,11 @@ function mergeCounteredCastIntoCounter(counter_row, cast_row, target) {
                      icon:BGU.getNewsStatusIcon("mshield"),data:[],
                      role:"target",color:"#FEE2D6"});
     }
+    counter_row.txt = cast_row.txt;
+    counter_row.color = cast_row.color;
+    if (cast_row.font_size) {
+        counter_row.font_size = cast_row.font_size;
+    }
     counter_row.new_action = merged;
     counter_row.turn_news_force_show = true;
     cast_row.turn_news_hidden = true;
