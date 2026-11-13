@@ -449,6 +449,10 @@ function mergeCounteredCastIntoCounter(counter_row, cast_row, target) {
         if ((a.action === "highlight") && (a.object_type === "status")) {
             continue;
         }
+        if ((a.action === "highlight") && (a.object_type === "warlock") &&
+                (a.object === "hp")) {
+            continue;
+        }
         if ((a.action === "summon") ||
                 ((a.action === "highlight") && (a.object_type === "monster"))) {
             continue;
@@ -587,6 +591,19 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             }
             if (countered_cast) {
                 mergeCounteredCastIntoCounter(row, countered_cast.row, countered_target);
+            }
+        }
+        if (row.obj && row.obj.counter_spell &&
+                (row.obj.spell === "Lightning Bolt")) {
+            var bolt_target = normalizeTurnNewsName(row.obj.target || "");
+            var bolt_cast = active_casts["Lightning Bolt|" + bolt_target];
+            var clap_cast = active_casts["Clap of Lightning|" + bolt_target];
+            if (clap_cast &&
+                    (!bolt_cast || (clap_cast.index > bolt_cast.index))) {
+                bolt_cast = clap_cast;
+            }
+            if (bolt_cast) {
+                mergeCounteredCastIntoCounter(row, bolt_cast.row, bolt_target);
             }
         }
         if (row.obj && row.obj.countered_summon) {
