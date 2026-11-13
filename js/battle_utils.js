@@ -426,10 +426,10 @@ function moveTurnNewsStatusToReflection(cast_row, reflection_row, target) {
     }
 }
 
-// A countered cast still belongs in the turn-news queue, but its effect row is
-// the counter event. Play the cast payload there and pulse mshield instead of
-// creating the spell's own result.
-function mergeCounteredCastIntoCounter(counter_row, cast_row, target) {
+// A blocked or countered cast still belongs in the turn-news queue, but its
+// effect row is the defense event. Play the cast payload there and pulse the
+// shield that stopped it instead of creating the spell's own result.
+function mergeDefendedCastIntoEffect(counter_row, cast_row, target) {
     if (!counter_row || !cast_row || !target) {
         return;
     }
@@ -459,16 +459,16 @@ function mergeCounteredCastIntoCounter(counter_row, cast_row, target) {
         }
         merged.push(a);
     }
-    var has_mshield = false;
+    var has_defense = false;
     for (i = 0, Ln = merged.length; i < Ln; ++i) {
         a = merged[i];
         if ((a.action === "highlight") && (a.object_type === "status") &&
-                (a.object === "mshield")) {
-            has_mshield = true;
+                ((a.object === "mshield") || (a.object === "shield"))) {
+            has_defense = true;
             break;
         }
     }
-    if (!has_mshield) {
+    if (!has_defense && BGU.isWarlockName(battle, target)) {
         merged.push({action:"highlight",warlock_name:target,
                      object_type:"status",object:"mshield",
                      icon:BGU.getNewsStatusIcon("mshield"),data:[],
@@ -602,34 +602,31 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                 countered_cast = active_casts_by_spell[row.obj.countered_spell];
             }
             if (countered_cast) {
-                mergeCounteredCastIntoCounter(row, countered_cast.row, countered_target);
+                mergeDefendedCastIntoEffect(row, countered_cast.row, countered_target);
             }
         }
-        if (row.obj && row.obj.counter_spell &&
-                (row.obj.spell === "Lightning Bolt")) {
-            var bolt_target = normalizeTurnNewsName(row.obj.target || "");
-            var bolt_cast = active_casts["Lightning Bolt|" + bolt_target];
-            var clap_cast = active_casts["Clap of Lightning|" + bolt_target];
-            if (clap_cast &&
-                    (!bolt_cast || (clap_cast.index > bolt_cast.index))) {
-                bolt_cast = clap_cast;
+        if (row.obj && row.obj.absorbed) {
+            // "bounces off" and "sparks around" name the spell they stopped;
+            // the cast itself is merged into this defense row. Aliases cover
+            // Clap of Lightning sharing the Lightning Bolt line.
+            var absorbed_target = normalizeTurnNewsName(row.obj.target || "");
+            var absorbed_names = [row.obj.spell];
+            if (row.obj.absorbed_aliases) {
+                absorbed_names = absorbed_names.concat(row.obj.absorbed_aliases);
             }
-            if (bolt_cast) {
-                mergeCounteredCastIntoCounter(row, bolt_cast.row, bolt_target);
-            }
-        }
-        if (row.obj && row.obj.shield && (row.obj.spell === "Magic Missile")) {
-            // Counter Spell also acts as a Shield: the same "bounces off"
-            // line is a counter event when it was the counter that stopped
-            // the missile.
-            var missile_warlock = findTurnNewsWarlockTarget(row);
-            if (missile_warlock && (missile_warlock.defended_by === "counter")) {
-                var missile_target = normalizeTurnNewsName(row.obj.target || "");
-                var missile_cast = active_casts["Magic Missile|" + missile_target] ||
-                        active_casts_by_spell["Magic Missile"];
-                if (missile_cast) {
-                    mergeCounteredCastIntoCounter(row, missile_cast.row, missile_target);
+            var absorbed_cast = null;
+            for (var an = 0, LnA = absorbed_names.length; an < LnA; ++an) {
+                var absorbed_candidate =
+                        active_casts[absorbed_names[an] + "|" + absorbed_target] ||
+                        active_casts_by_spell[absorbed_names[an]];
+                if (absorbed_candidate &&
+                        (!absorbed_cast ||
+                         (absorbed_candidate.index > absorbed_cast.index))) {
+                    absorbed_cast = absorbed_candidate;
                 }
+            }
+            if (absorbed_cast) {
+                mergeDefendedCastIntoEffect(row, absorbed_cast.row, absorbed_target);
             }
         }
         if (row.obj && row.obj.countered_summon) {
@@ -646,7 +643,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             if (summon_cast) {
                 var summon_target = normalizeTurnNewsName(summon_cast.row.obj.target || "");
                 row.obj.target = summon_target;
-                mergeCounteredCastIntoCounter(row, summon_cast.row, summon_target);
+                mergeDefendedCastIntoEffect(row, summon_cast.row, summon_target);
             }
         }
 

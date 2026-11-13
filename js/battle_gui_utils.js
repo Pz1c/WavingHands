@@ -915,7 +915,8 @@ var EFFECT_RULES = [
     {
         targetBetween: ["Lightning sparks all around ", "'s shield."],
         spell: "Lightning Bolt",
-        flags: {counter_spell:true}
+        flags: {counter_spell:true, absorbed:true,
+                absorbed_aliases:["Clap of Lightning"]}
     },
     {targetBefore: "'s half-done spells fizzle and die.", spell: "Anti-spell"},
     {
@@ -945,7 +946,7 @@ var EFFECT_RULES = [
     {
         targetBetween: ["A magic missile bounces off ", "'s shield."],
         spell: "Magic Missile",
-        flags: {shield:true}
+        flags: {shield:true, absorbed:true}
     },
     {targetBefore: " is hit by Remove Enchantment", spell: "Remove Enchantment"},
     {targetBefore: "'s surrounding magical energies are grounded.", spell: "Remove Enchantment"},
