@@ -854,6 +854,18 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             }
         }
 
+        if (row.obj && row.obj.annihilated) {
+            // Blindness destroys a blinded monster where it stands.
+            var annihilated_target = normalizeTurnNewsName(row.obj.target || "");
+            var annihilated_cast = active_casts["Blindness|" + annihilated_target] ||
+                    active_casts_by_spell["Blindness"];
+            addTurnNewsTransitionAction(real_actions,
+                    annihilated_cast ? annihilated_cast.index : i,
+                    {action:"death", object_type:"monster",
+                     object:annihilated_target, defer_to_target:true,
+                     warlock_name:getMonsterOwnerName(annihilated_target) || annihilated_target});
+        }
+
         if (row.row_type === "death") {
             var target = normalizeTurnNewsName(row.obj ? row.obj.target : "");
             // "Azi surrenders." is colored like a death row but nobody dies.

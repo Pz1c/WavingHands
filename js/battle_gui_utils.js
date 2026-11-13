@@ -961,6 +961,11 @@ var EFFECT_RULES = [
     },
     {targetBefore: " is hit by Remove Enchantment", spell: "Remove Enchantment"},
     {targetBefore: "'s surrounding magical energies are grounded.", spell: "Remove Enchantment"},
+    {
+        targetBefore: " is hit by a Blindness spell, and is annihilated by the magical overload.",
+        spell: "Blindness",
+        flags: {annihilated: true}
+    },
 
     // Damage and healing
     {
@@ -1331,6 +1336,11 @@ function getMessageActionByDeath(obj, battle) {
     return res;
 }
 
+// A blinded monster is destroyed outright; the line is the spell's result,
+// not the generic death row.
+var re_blindness_annihilation =
+        / is hit by a Blindness spell, and is annihilated by the magical overload\.?$/i;
+
 function getMessageTypeByRow(row) {
     if (row.color === "#CCCCCC") {
         return "gesture";
@@ -1338,6 +1348,9 @@ function getMessageTypeByRow(row) {
         // process spell casting
         return "spell";
     } else if (row.color === "#FF6666") {
+        if (re_blindness_annihilation.test(row.txt)) {
+            return "other";
+        }
         return "death";
     } else if (((row.txt.indexOf(" attack") !== -1) || (row.txt.indexOf(" swing ") !== -1) ||
                 (row.txt.indexOf(" stabs ") !== -1)) &&

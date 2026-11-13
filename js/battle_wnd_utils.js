@@ -384,6 +384,12 @@ function playHintActions(actions, row_type) {
             targets.push(a);
             continue;
         }
+        if ((a.action === "death") && a.defer_to_target) {
+            // The doomed icon pulses with the target highlight, after the
+            // cast gestures and the event banner icon.
+            targets.push(a);
+            continue;
+        }
         if ((a.action === "highlight") && (a.object_type === "warlock") &&
                 (a.object === "caster")) {
             // The caster portrait pulses first, while the gesture/icon
