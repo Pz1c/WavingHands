@@ -361,13 +361,17 @@ function playNextHintFrame() {
 }
 
 function isDeferredHintAction(row_type, action) {
+    if (action === "banked_remove") {
+        // The emptied bank belongs to the cast event, even when the merged
+        // counter/effect row carries the cast.
+        return true;
+    }
     if (row_type === "spell") {
         return (action === "damage") ||
                 (action === "heal") ||
                 (action === "hp") ||
                 (action === "summon") ||
-                (action === "charm_monster") ||
-                (action === "banked_remove");
+                (action === "charm_monster");
     }
     return (row_type === "attack") && (action === "damage");
 }

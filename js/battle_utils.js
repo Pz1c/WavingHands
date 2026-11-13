@@ -1621,6 +1621,25 @@ function prepareTurnNewsDamage(real_actions) {
     }
 }
 
+// A banked cast names the spell the bank held, but a replay or bot board is
+// built from the final page and no longer lists the bank. Mark the bank there
+// so the icon is up from the turn start and the cast event empties it.
+function rememberTurnNewsBank(real_actions, battle) {
+    var i, Ln, j, LnJ, row, w;
+    for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        row = real_actions[i];
+        if ((row.row_type !== "spell") || !row.obj || !row.obj.banked) {
+            continue;
+        }
+        for (j = 0, LnJ = battle.warlocks.length; j < LnJ; ++j) {
+            w = battle.warlocks[j];
+            if ((w.name === row.obj.warlock) && !w.banked_spell) {
+                w.banked_spell = row.obj.spell;
+            }
+        }
+    }
+}
+
 function prepareTurnActionInfo(last_turn_hist) {
     // A finished battle is a static record: opening it must not pop the turn news of its last
     // turn again. Only a battle in progress has something new to announce.
@@ -1674,6 +1693,7 @@ function prepareTurnActionInfo(last_turn_hist) {
     BGU.prepareAndSortRealAction(real_actions, battle);
     prepareTurnNewsDamage(real_actions);
     prepareTurnNewsTransitions(real_actions, news_summons);
+    rememberTurnNewsBank(real_actions, battle);
     var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
@@ -2126,6 +2146,14 @@ function prepareHint() {
     // A finished battle opened for viewing has nothing to click through: no turn news.
     if (battle.read_only && !battle.replay) {
         return;
+    }
+    // The cards were created before this turn's rows were parsed (replay), so
+    // apply the bank the rows named before the first news step runs.
+    for (var wi = 0; wi < iWarlocks.children.length; ++wi) {
+        var ww = iWarlocks.children[wi];
+        if (ww && ww.syncBanked) {
+            ww.syncBanked();
+        }
     }
     if (battle.hint && battle.hint.length > 0) {
         ltTutorial.tutorialData = battle.hint;

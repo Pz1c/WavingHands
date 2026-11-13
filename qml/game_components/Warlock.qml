@@ -948,6 +948,15 @@ Item {
         iiBanked.visible = false;
     }
 
+    // A replay board is rebuilt from the final page, where the bank is already
+    // empty. The turn's cast row still names the banked spell: keep the icon
+    // up until the cast event removes it.
+    function syncBanked() {
+        if (l_warlock.banked_spell !== "") {
+            iiBanked.visible = true;
+        }
+    }
+
     function clearEnchantments(name) {
         var i, Ln;
         if (!name || (name === l_warlock.name)) {
