@@ -383,7 +383,7 @@ function findTurnNewsArrival(news_summons, row) {
 // Effect rows whose meaning is not carried by obj.spell.
 function getTurnNewsEffectSpells(row) {
     var res = [];
-    if (row.obj && row.obj.spell && !row.obj.charm_failed) {
+    if (row.obj && row.obj.spell && !row.obj.failed) {
         res.push(row.obj.spell);
         // Poison-looking lines are currently parsed as Disease.
         if (row.obj.spell === "Disease") {
@@ -588,7 +588,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
         // the cast row so it happens before the success text and the attack.
         if ((row.row_type === "other") && row.obj &&
                 (row.obj.spell === "Charm Monster") && row.obj.target &&
-                !row.obj.charm_failed) {
+                !row.obj.failed) {
             var monster = normalizeTurnNewsName(row.obj.target);
             var charm_cast = active_casts["Charm Monster|" + monster];
             if (charm_cast) {
@@ -603,7 +603,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
 
         // Delay Effect and Permanency share the "begins glowing faintly" line.
         // Resolve it against the casts in this turn instead of guessing.
-        if (row.obj && row.obj.glow) {
+        if (row.obj && row.obj.ambiguous) {
             var glow_cast = null, glow_spell = "";
             var glow_target = normalizeTurnNewsName(row.obj.target || "");
             var glow_spells = ["Delay Effect", "Permanency"];
@@ -1039,7 +1039,7 @@ function setTurnNewsElementalIcon(row, type) {
                   background_color:"#210430", border_color:"#FEE2D6"});
 }
 
-// The server's reflection row has the spell name in the text. parseStrangeAttack
+// The server's reflection row has the spell name in the text. parseSpellEffect
 // keeps it in obj.mirror_spell; this fallback covers the "reflects" wording too.
 function findTurnNewsSpellName(txt) {
     var best = "";
@@ -1429,7 +1429,7 @@ function prepareTurnNewsDamage(real_actions) {
             continue;
         }
 
-        // parseStrangeAttack can stop at the first lower-case word ("an Ice
+        // parseSpellEffect can stop at the first lower-case word ("an Ice
         // Storm", "Clap of Lightning"), so prefer the full name found in the text.
         var damage_spell = findTurnNewsSpellName(row.txt || "");
         if (!damage_spell && row.obj && row.obj.spell) {

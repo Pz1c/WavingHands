@@ -761,190 +761,305 @@ function parseSimpleAttack(txt, stop_word) {
     return res;
 }
 
-function parseStrangeAttack(txt, battle) {
-    var res = {aggressor:"",target:"",spell:"",damage:0,shield:false,mirror:false,counter_spell:false,banked:false,charm_failed:false,glow:false};
-    var m;
+function newStrangeResult() {
+    return {target:"", spell:"", damage:0};
+}
 
-    if ((m = /^Lightning sparks all around (.+?)'s shield\.?$/i.exec(txt))) {
-        res.counter_spell = true;
-        res.target = m[1];
-        return res;
+function targetBefore(txt, marker) {
+    var i = txt.indexOf(marker);
+    return (i > 0) ? txt.slice(0, i).trim() : null;
+}
+
+function targetBetween(txt, start, end) {
+    var i = txt.indexOf(start);
+    if (i === -1) {
+        return null;
     }
-    if ((m = /^(.+?)'s half-done spells fizzle and die\.?$/i.exec(txt))) {
-        res.spell = "Anti-spell";
-        res.target = m[1];
-        return res;
+    i += start.length;
+    var j = txt.indexOf(end, i);
+    return (j === -1) ? null : txt.slice(i, j).trim();
+}
+
+function applyStrangeRule(txt, rule, battle) {
+    if ((rule.exact !== undefined) && (txt !== rule.exact)) {
+        return null;
     }
-    if ((m = /^(.+?) ignores (.+?)'s appeal to (?:his|her|its|their) baser instincts\.?$/i.exec(txt))) {
-        res.spell = "Charm Monster";
-        res.target = m[1];
-        res.charm_failed = true;
-        return res;
+    if (rule.startsWith && !txt.startsWith(rule.startsWith)) {
+        return null;
     }
-    if ((m = /^(.+?) begins glowing faintly\.?$/i.exec(txt))) {
-        res.glow = true;
-        res.target = m[1];
-        return res;
+    if (rule.endsWith && !txt.endsWith(rule.endsWith)) {
+        return null;
     }
-    if ((m = /^(.+?) attempts to make the spell permanent!$/i.exec(txt))) {
-        res.spell = "Permanency";
-        res.target = m[1];
-        return res;
+    if (rule.contains) {
+        for (var i = 0, Ln = rule.contains.length; i < Ln; ++i) {
+            if (txt.indexOf(rule.contains[i]) === -1) {
+                return null;
+            }
+        }
     }
 
-    if (txt.indexOf("fizzles slightly") !== -1) {
-        res.counter_spell = true;
-        txt = txt.replace("shield fizzles slightly", "is hit by a Anti-spell");
-    } else if (txt.indexOf("Tiny holes in") !== -1) {
-        res.counter_spell = true;
-        txt = txt.replace("Tiny holes in ", "").replace("shield are sealed up", "is hit by a Cure Light Wounds");
-    } else if (txt.indexOf("Scales start to grow over") !== -1) {
-        txt = txt.replace("Scales start to grow over ", "").replace("eyes!", "is hit by a Blindness");
-    } else if (txt.indexOf("is healed") !== -1) {
-        txt = txt.replace("is healed.", "is hit by a Cure Light Wounds");
-    } else if (txt.indexOf("shield blurs for a moment") !== -1) {
-        res.counter_spell = true;
-        txt = txt.replace("shield blurs for a moment", "is hit by a Distruption");
-    } else if (txt.indexOf("A magic missile") !== -1) {
-        res.shield = true;
-        txt = txt.replace("A magic missile bounces off ", "").replace("shield", "is hit by a Magic Missile");
-    } else if (txt.indexOf("Holes open up in") !== -1) {
-        res.counter_spell = true;
-        txt = txt.replace("Holes open up in ", "").replace("shield, but then close up again.", "is hit by a Cause Light Wounds for 2 damage");
-    } else if (txt.indexOf("Wounds appear") !== -1) {
-        txt = txt.replace("Wounds appear all over ", "").replace("body!", "is hit by a Cause Light Wounds for 2 damage");
-    } else if (/^A fireball strikes /i.test(txt)) {
-        // The server names the effect first here: "A fireball strikes Bob,
-        // burning him for 5 damage." Rewrite it to the "is hit by a" form
-        // the parser below understands.
-        var fireball = /^A fireball strikes (.+?), burning (?:him|her|it|them) for (\d+) damage\.?$/i.exec(txt);
-        if (fireball) {
-            txt = fireball[1] + " is hit by a Fireball for " + fireball[2] + " damage";
+    var res = newStrangeResult();
+    var caster = null;
+
+    if (rule.casterBefore !== undefined) {
+        caster = targetBefore(txt, rule.casterBefore);
+        if (caster === null) {
+            return null;
         }
-    } else if (/\bbanks? a spell for later\b/i.test(txt)) {
-        // The completed spell goes to the target's bank instead of being cast.
-        res.banked = true;
-    } else if (txt.indexOf(" disappears!") !== -1) {
-        var disappeared = /and (.+?) disappears!$/.exec(txt);
-        if (disappeared) {
-            txt = disappeared[1] + " is hit by a Invisibility";
+    }
+
+    if (rule.targetBefore !== undefined) {
+        res.target = targetBefore(txt, rule.targetBefore);
+        if (res.target === null) {
+            return null;
         }
-    } else if (txt.indexOf("reflected") !== -1) {
-        var idx1 = txt.indexOf(" spell");
-        res.spell = txt.substr(4, idx1 - 4).trim();
-        //console.log("parseStrangeAttack magic mirror", res.spell);
-        idx1 = txt.indexOf("from") + 5;
-        var idx2 = txt.indexOf("'s", idx1);
-        txt = txt.substr(idx1, idx2 - idx1) + " is hit by a " + res.spell;
+    } else if (rule.targetBetween !== undefined) {
+        res.target = targetBetween(txt, rule.targetBetween[0], rule.targetBetween[1]);
+        if (res.target === null) {
+            return null;
+        }
+    } else if (rule.targetAfter !== undefined) {
+        var at = txt.indexOf(rule.targetAfter);
+        if (at === -1) {
+            return null;
+        }
+        at += rule.targetAfter.length;
+        var stop = txt.indexOf(".", at);
+        res.target = ((stop === -1) ? txt.slice(at) : txt.slice(at, stop)).trim();
+        if (rule.selfTarget &&
+                ((res.target === "himself") || (res.target === "herself") ||
+                 (res.target === "itself"))) {
+            res.target = caster;
+        }
+        if (!res.target) {
+            return null;
+        }
+    }
+
+    if (rule.spell !== undefined) {
+        res.spell = (typeof rule.spell === "function") ? rule.spell(battle) : rule.spell;
+    }
+    if (rule.spellBetween !== undefined) {
+        var spell = targetBetween(txt, rule.spellBetween[0], rule.spellBetween[1]);
+        if (spell === null) {
+            return null;
+        }
+        res.spell = (rule.spellAliases && rule.spellAliases[spell]) || spell;
+    }
+
+    if (rule.damage !== undefined) {
+        res.damage = rule.damage;
+    }
+    if (rule.damageBetween !== undefined) {
+        var damage = targetBetween(txt, rule.damageBetween[0], rule.damageBetween[1]);
+        if (damage === null) {
+            return null;
+        }
+        res.damage = parseInt(damage, 10) || 0;
+    }
+
+    if (rule.flags) {
+        for (var key in rule.flags) {
+            res[key] = rule.flags[key];
+        }
+    }
+    if (rule.mirrorSpell) {
         res.mirror_spell = res.spell;
-        res.spell = "";
-        res.mirror = true;
     }
-
-
-    var arr = replaceAll(txt, ",", " semicolon").replace(".", " dot").replace("is hit by a", "attack_spell")
-            .replace("!", " !").replace("'s", " ").split(" ");
-    //console.log("parseStrangeAttack", arr);
-    var target_finished = false, spell_started = false, spell_finished = false;
-    for(var i = 0, Ln = arr.length; i < Ln; ++i) {
-        if (arr[i] === "") {
-            continue;
-        }
-
-        var word_not_upper = arr[i].charAt(0).toUpperCase() !== arr[i].charAt(0);
-        target_finished = target_finished || word_not_upper;
-        if (!target_finished || (i === 0)) {
-            res.target += " " + arr[i];
-            continue;
-        }
-        if (arr[i] === "attack_spell") {
-            spell_started = true;
-            continue;
-        }
-        spell_finished = spell_started && (spell_finished || word_not_upper);
-        if (spell_started && !spell_finished) {
-            res.spell += " " + arr[i];
-            continue;
-        }
-
-        if ((arr[i] === "damage") && (arr[i - 2] === "for")) {
-            res.damage = arr[i - 1];
-        }
-
-        if (!spell_started && ((arr[i] === "coordination") || (arr[i] === "maladroit"))) {
-            res.spell = "Maladroitness";
-        } else if (!spell_started && (arr[i] === "trips")) {
-            res.spell = battle.maladroit ? "Maladroitness" : "Confusion";
-        } else if (!spell_started && (arr[i] === "confused")) {
-            res.spell = "Confusion";
-        }
-
-        if (!spell_started && ((arr[i] === "intrigued") || (arr[i] === "charmed"))) {
-            res.spell = "Charm Person";
-        }
-
-        if (!spell_started && ((arr[i] === "glassy-eyed") || ((arr[i] === "instincts") && (arr[i - 1] === "baser")))) {
-            res.spell = "Charm Monster";
-        }
-
-        if (!spell_started && ((arr[i] === "stiffen") || (arr[i] === "paralysed") ||
-                               ((arr[i] === "move") && (arr[i - 1] === "can't")))) {
-            res.spell = "Paralysis";
-        }
-
-        if (!spell_started && ((arr[i] === "fear") || (arr[i] === "scared"))) {
-            res.spell = "Fear";
-        }
-
-        if (!spell_started && ((arr[i] === "blank") || (arr[i] === "forgets"))) {
-            res.spell = "Amnesia";
-        }
-
-        if (!spell_started && ((arr[i] === "sick") || (arr[i] === "nauseous") || (arr[i] === "pale")
-                               || (arr[i] === "breathing") || (arr[i] === "feverishly") || (arr[i] === "weakly")
-                               || (arr[i] === "coughing"))) {
-            res.spell = "Disease";
-        }
-
-        if (!spell_started && ((arr[i] === "shimmering") && (arr[i - 1] === "thick"))) {
-            res.spell = "Protection";
-        }
-
-        if (!spell_started && ((arr[i] === "shimmering") && (arr[i - 1] !== "thick"))) {
-            res.spell = "Shield";
-        }
-
-        if (!spell_started && ((arr[i] === "glowing") || (arr[i] === "par alysed"))) {
-            res.spell = "Counter Spell";
-        }
-
-        if (!spell_started && ((arr[i] === "shimmer") || (arr[i] === "par alysed"))) {
-            res.spell = "Invisibility";
-        }
-
-        if (!spell_started && (((arr[i] === "sparkling") && (arr[i + 1] === "frost")) )) {
-            res.spell = "Resist Heat";
-        }
-
-        if (!spell_started && (((arr[i] === "warm") && (arr[i + 1] === "glow")) )) {
-            res.spell = "Resist Cold";
-        }
-
-        if (!spell_started && (((arr[i] === "grounded") && (arr[i - 2] === "energies")) )) {
-            res.spell = "Remove Enchantment";
-            //res.counter_spell = true;
-        }
-
-        if (!spell_started && (((arr[i] === "banked") && (arr[i - 2] === "cast")) )) {
-            res.spell = "Delay Effect";
-            //res.counter_spell = true;
-        }
-    }
-
-    res.target = res.target.trim();
-    res.spell = res.spell.trim();
-
     return res;
+}
+
+var EFFECT_RULES = [
+    // Reflection
+    {
+        targetBetween: [" spell is reflected from ", "'s Magic Mirror."],
+        spellBetween: ["The ", " spell is reflected from "],
+        flags: {mirror:true},
+        mirrorSpell: true
+    },
+    {
+        targetBetween: [" spell is reflected from ", "'s magic mirror."],
+        spellBetween: ["The ", " spell is reflected from "],
+        flags: {mirror:true},
+        mirrorSpell: true
+    },
+
+    // Whole-turn / non-spell rows
+    {exact: "This turn took place outside of time."},
+    {exact: "No Warlocks remaining. An ignominious end to a battle."},
+    {exact: "The haze of an enchantment spell drifts aimlessly over the circle, and dissipates."},
+    {exact: "A Fire Storm rages through the circle!", spell: "Fire Storm"},
+    {exact: "An Ice Storm rages through the circle!", spell: "Ice Storm"},
+    {exact: "All magical effects are erased! All other spells fail!", spell: "Dispel Magic"},
+
+    // Bank and spell-specific outcomes
+    {targetBefore: " banks a spell for later.", flags: {banked:true}},
+    {
+        casterBefore: " casts his banked ",
+        spellBetween: [" casts his banked ", " at "],
+        targetAfter: " at ",
+        selfTarget: true
+    },
+    {
+        targetBetween: ["Lightning sparks all around ", "'s shield."],
+        spell: "Lightning Bolt",
+        flags: {counter_spell:true}
+    },
+    {targetBefore: "'s half-done spells fizzle and die.", spell: "Anti-spell"},
+    {
+        targetBefore: " ignores ",
+        contains: ["'s appeal to ", " baser instincts"],
+        spell: "Charm Monster",
+        flags: {failed:true}
+    },
+    {targetBefore: " begins glowing faintly.", flags: {ambiguous:true}},
+    {targetBefore: " attempts to make the spell permanent!", spell: "Permanency"},
+
+    // Counters and blocked spells
+    {targetBefore: "'s shield blurs for a moment.", spell: "Distruption", flags: {counter_spell:true}},
+    {targetBefore: "'s shield fizzles slightly.", spell: "Anti-spell", flags: {counter_spell:true}},
+    {targetBefore: "'s shield flickers, but remains firm.", flags: {counter_spell:true}},
+    {targetBefore: "'s shield intensifies momentarily."},
+    {
+        targetBetween: ["Tiny holes in ", "'s shield are sealed up."],
+        spell: "Cure Light Wounds",
+        flags: {counter_spell:true}
+    },
+    {
+        targetBetween: ["Holes open up in ", "'s shield, but then close up again."],
+        spell: "Cause Light Wounds",
+        flags: {counter_spell:true}
+    },
+    {
+        targetBetween: ["A magic missile bounces off ", "'s shield."],
+        spell: "Magic Missile",
+        flags: {shield:true}
+    },
+    {targetBefore: " is hit by Remove Enchantment", spell: "Remove Enchantment"},
+    {targetBefore: "'s surrounding magical energies are grounded.", spell: "Remove Enchantment"},
+
+    // Damage and healing
+    {
+        targetBetween: ["A fireball strikes ", ", burning "],
+        spell: "Fireball",
+        damageBetween: [" for ", " damage."]
+    },
+    {
+        targetBefore: " is hit by a bolt of lightning, for ",
+        spell: "Lightning Bolt",
+        damageBetween: [" is hit by a bolt of lightning, for ", " damage."]
+    },
+    {
+        targetBefore: " is burnt in the raging Fire Storm, for ",
+        spell: "Fire Storm",
+        damageBetween: [" is burnt in the raging Fire Storm, for ", " damage."]
+    },
+    {
+        targetBefore: " is frozen by the raging Ice Storm, for ",
+        spell: "Ice Storm",
+        damageBetween: [" is frozen by the raging Ice Storm, for ", " damage."]
+    },
+    {
+        targetBetween: ["Wounds appear all over ", "'s body!"],
+        spell: "Cause Light Wounds",
+        damage: 2
+    },
+    {targetBefore: " is healed.", spell: "Cure Light Wounds"},
+    {
+        targetBefore: " is hit by a ",
+        spellBetween: [" is hit by a ", ", for "],
+        damageBetween: [", for ", " damage."],
+        spellAliases: {"bolt of lightning":"Lightning Bolt"}
+    },
+    {
+        targetBefore: " is burnt for ",
+        damageBetween: [" is burnt for ", " damage."]
+    },
+    {
+        targetBefore: " is frozen for ",
+        damageBetween: [" is frozen for ", " damage."]
+    },
+    {targetBefore: " basks in the heat of the Fire Storm.", spell: "Fire Storm"},
+    {targetBefore: " basks in the fiery heat."},
+    {targetBefore: " basks in the freezing cold.", spell: "Ice Storm"},
+    {targetBefore: " basks in the bitter cold.", spell: "Ice Storm"},
+
+    // Enchantments and statuses
+    {targetBefore: " is covered by a shimmering shield.", spell: "Shield"},
+    {targetBefore: " is surrounded by a thick shimmering shield.", spell: "Protection"},
+    {targetBefore: " is covered by a magical glowing shield.", spell: "Counter Spell"},
+    {targetBefore: " is covered by a reflective shield.", spell: "Magic Mirror"},
+    {targetBefore: " is covered in a coat of sparkling frost.", spell: "Resist Heat"},
+    {targetBefore: " is covered in a warm glow.", spell: "Resist Cold"},
+    {targetBefore: " starts to lose coordination.", spell: "Maladroitness"},
+    {targetBefore: " is rendered maladroit!", spell: "Maladroitness"},
+    {targetBefore: " looks a bit confused.", spell: "Confusion"},
+    {
+        targetBefore: " trips on its feet.",
+        spell: function(battle) {
+            return (battle && battle.maladroit) ? "Maladroitness" : "Confusion";
+        }
+    },
+    {targetBefore: "'s hands start to stiffen.", spell: "Paralysis"},
+    {targetBefore: "'s right hand is paralysed.", spell: "Paralysis"},
+    {targetBefore: "'s left hand is paralysed.", spell: "Paralysis"},
+    {targetBefore: " can't move to attack.", spell: "Paralysis"},
+    {targetBefore: " cringes in fear.", spell: "Fear"},
+    {targetBefore: " quakes in fear!", spell: "Fear"},
+    {targetBefore: " is too scared to attack.", spell: "Fear"},
+    {targetBefore: " starts to look blank.", spell: "Amnesia"},
+    {targetBefore: " forgets ", spell: "Amnesia"},
+    {targetBefore: " starts to look sick.", spell: "Disease"},
+    {targetBefore: " looks nauseous.", spell: "Disease"},
+    {targetBefore: " looks pale.", spell: "Disease"},
+    {targetBefore: " breathes feverishly.", spell: "Disease"},
+    {targetBefore: " staggers weakly.", spell: "Disease"},
+    {targetBefore: " coughs weakly.", spell: "Disease"},
+    {targetBefore: " looks intrigued by ", spell: "Charm Person"},
+    {targetBefore: " looks, glassy-eyed, at ", spell: "Charm Monster"},
+    {
+        targetBetween: ["Scales start to grow over ", "'s eyes!"],
+        spell: "Blindness"
+    },
+    {targetBefore: "'s eyes are covered with scales!", spell: "Blindness"},
+    {
+        targetBetween: ["The scales are removed from ", "'s eyes."],
+        spell: "Blindness"
+    },
+    {targetBefore: " begins to shimmer.", spell: "Invisibility"},
+    {
+        targetBetween: ["There is a flash, and ", " disappears!"],
+        spell: "Invisibility"
+    },
+    {targetBefore: " fades back into visibility.", spell: "Invisibility"},
+    {targetBefore: " speeds up.", spell: "Haste"},
+    {targetBefore: " flickers out of time!", spell: "Time Stop"},
+
+    // Forced-gesture and other rows with no spell action
+    {targetBefore: " confusedly makes the wrong gesture with his left hand."},
+    {targetBefore: " confusedly makes the wrong gesture with his right hand."},
+    {targetBefore: " makes a confused gesture, but luckily it's what he intended anyway!"},
+    {targetBefore: " is charmed into making the wrong gesture with his left hand."},
+    {targetBefore: " is charmed into making the wrong gesture with his right hand."},
+    {targetBefore: " is charmed, but ends up making the gestures he intended anyway!"},
+    {targetBefore: " is victorious!"},
+    {targetBefore: " surrenders."},
+    {targetBefore: " is summoned to serve "},
+    {targetBefore: " tries to cast Clap of Lightning, but doesn't have the charge for it."},
+    {targetBefore: " swings wildly for the monster "},
+    {targetBefore: "'s right hand stab is wasted at a monster which wasn't summoned."},
+    {targetBefore: " shakes his head and regains control, as enchantments cancel each other out."}
+];
+
+function parseSpellEffect(txt, battle) {
+    for (var i = 0, Ln = EFFECT_RULES.length; i < Ln; ++i) {
+        var res = applyStrangeRule(txt, EFFECT_RULES[i], battle);
+        if (res) {
+            return res;
+        }
+    }
+    console.log("parseSpellEffect: unknown effect", txt);
+    return newStrangeResult();
 }
 
 function parseAttackByText(txt) {
@@ -960,7 +1075,7 @@ function parseAttackByText(txt) {
     } else {
         // message like "Galbarad starts to lose coordination" or "Smelly Goblin is hit by a Magic Missile, for 1 damage."
         // moved to getMessageActionByOther
-        // res = parseStrangeAttack(txt);
+        // res = parseSpellEffect(txt);
     }
 
     //res = {aggressor:aggressor,target:target,success:txt.indexOf("damage") !== -1 ? 1 : 0};
@@ -1044,7 +1159,7 @@ function getMessageActionByAttack(attack_obj, battle) {
 
 function getMessageActionByOther(obj, battle) {
     var res = [];
-    //var obj = parseStrangeAttack(msg);
+    //var obj = parseSpellEffect(msg);
     //console.log("getMessageActionByOther", JSON.stringify(obj));
     var icon_action = {action:"icon",large_icon:"",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#FEE2D6"};
     var target_found = false;
@@ -1217,7 +1332,7 @@ function parseHistoryMessage(obj, battle) {
     case "spell":   return parseSpellByText(obj.txt);
     case "death":   return parseDeathMessage(obj.txt);
     case "attack":  return parseAttackByText(obj.txt);
-    case "other":   return parseStrangeAttack(obj.txt, battle);
+    case "other":   return parseSpellEffect(obj.txt, battle);
     }
 }
 
@@ -1231,6 +1346,25 @@ function getActionByHistoryMessage(obj, battle) {
     }
 }
 
+
+function spellsPair(cast_spell, effect_spell) {
+    if (cast_spell === effect_spell) {
+        return true;
+    }
+    if ((cast_spell === "Clap of Lightning") &&
+            (effect_spell === "Lightning Bolt")) {
+        return true;
+    }
+    if ((cast_spell === "Cure Heavy Wounds") &&
+            (effect_spell === "Cure Light Wounds")) {
+        return true;
+    }
+    if ((cast_spell === "Cause Heavy Wounds") &&
+            (effect_spell === "Cause Light Wounds")) {
+        return true;
+    }
+    return (cast_spell === "Poison") && (effect_spell === "Disease");
+}
 
 function prepareAndSortRealAction(actions, battle) {
     var i, Ln, j, LnJ, tmp;
@@ -1288,7 +1422,7 @@ function prepareAndSortRealAction(actions, battle) {
 
             for (j = i + 1; j < Ln; ++j) {
                 console.log("sortRealAction", i, j, JSON.stringify(actions[j].obj));
-                if (((actions[i].obj.spell === actions[j].obj.spell) && (actions[i].obj.target === actions[j].obj.target))
+                if (((spellsPair(actions[i].obj.spell, actions[j].obj.spell)) && (actions[i].obj.target === actions[j].obj.target))
                         || (actions[i].summon_id && (actions[i].summon_id === actions[j].summoned_id))) {
                     actions[j].depends_on.push(actions[i].id);
                     actions[i].checked = true;
