@@ -682,6 +682,11 @@ function getMessageActionBySpell(obj, battle) {
                 if (!spell_obj.fail) {
                     cast_status.value = getNewsStatusValue(status_code, spell_obj.spell);
                 }
+                if (spell_obj.spell === "Counter Spell") {
+                    // The counter effect row pulses this status; creating it
+                    // must not light it up on its own.
+                    cast_status.pulse = false;
+                }
                 res.push(cast_status);
             } else if (!obj.summon) {
                 res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:"#10C9F5"});
@@ -801,6 +806,19 @@ function applyStrangeRule(txt, rule, battle) {
     var res = newStrangeResult();
     var caster = null;
 
+    if (rule.summonAbsorbed) {
+        var owner = targetBefore(txt, "'s ");
+        var monster = targetBetween(txt, "'s ", " is absorbed into ");
+        if ((owner === null) || (monster === null) || !txt.endsWith(" glow.")) {
+            return null;
+        }
+        res.summoner = owner;
+        res.spell = "Summon " + monster;
+        res.countered_summon = true;
+        res.kind = "apply";
+        return res;
+    }
+
     if (rule.casterBefore !== undefined) {
         caster = targetBefore(txt, rule.casterBefore);
         if (caster === null) {
@@ -871,6 +889,9 @@ function applyStrangeRule(txt, rule, battle) {
 }
 
 var EFFECT_RULES = [
+    // Countered summon
+    {summonAbsorbed: true},
+
     // Reflection
     {
         targetBetween: [" spell is reflected from ", "'s Magic Mirror."],
@@ -1191,7 +1212,7 @@ function getMessageActionByOther(obj, battle) {
                 }
             } else if (obj.spell === "Distruption") {
                 if (w.arr_distruption) {
-                    obj.spell = battle.warlocks[i].arr_distruption.shift();
+                    obj.countered_spell = w.arr_distruption.shift();
                 }
             }
             if (obj.banked) {
@@ -1228,7 +1249,7 @@ function getMessageActionByOther(obj, battle) {
             var m = findMonsterByName(battle, obj.target);
             if (m && (obj.spell === "Distruption")) {
                 if (m.arr_distruption) {
-                    obj.spell = m.arr_distruption.shift();
+                    obj.countered_spell = m.arr_distruption.shift();
                 }
                 target_found = true;
             }

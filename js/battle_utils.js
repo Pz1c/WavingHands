@@ -426,6 +426,55 @@ function moveTurnNewsStatusToReflection(cast_row, reflection_row, target) {
     }
 }
 
+// A countered cast still belongs in the turn-news queue, but its effect row is
+// the counter event. Play the cast payload there and pulse mshield instead of
+// creating the spell's own result.
+function mergeCounteredCastIntoCounter(counter_row, cast_row, target) {
+    if (!counter_row || !cast_row || !target) {
+        return;
+    }
+    var merged = [], i, Ln, a;
+    var effect_actions = counter_row.new_action || [];
+    for (i = 0, Ln = effect_actions.length; i < Ln; ++i) {
+        a = effect_actions[i];
+        if ((a.action === "highlight") && (a.object_type === "warlock") &&
+                (a.object === "gestures")) {
+            continue;
+        }
+        merged.push(a);
+    }
+    var cast_actions = cast_row.new_action || [];
+    for (i = 0, Ln = cast_actions.length; i < Ln; ++i) {
+        a = cast_actions[i];
+        if ((a.action === "highlight") && (a.object_type === "status")) {
+            continue;
+        }
+        if ((a.action === "summon") ||
+                ((a.action === "highlight") && (a.object_type === "monster"))) {
+            continue;
+        }
+        merged.push(a);
+    }
+    var has_mshield = false;
+    for (i = 0, Ln = merged.length; i < Ln; ++i) {
+        a = merged[i];
+        if ((a.action === "highlight") && (a.object_type === "status") &&
+                (a.object === "mshield")) {
+            has_mshield = true;
+            break;
+        }
+    }
+    if (!has_mshield) {
+        merged.push({action:"highlight",warlock_name:target,
+                     object_type:"status",object:"mshield",
+                     icon:BGU.getNewsStatusIcon("mshield"),data:[],
+                     role:"target",color:"#FEE2D6"});
+    }
+    counter_row.new_action = merged;
+    counter_row.turn_news_force_show = true;
+    cast_row.turn_news_hidden = true;
+}
+
 function prepareTurnNewsTransitions(real_actions, news_summons) {
     var elemental_summoned = false, i, Ln, row;
     var mergeable = {}, active_casts = {}, active_casts_by_spell = {};
@@ -436,6 +485,44 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
     }
     mergeable["Charm Monster"] = true;
     mergeable["Remove Enchantment"] = true;
+
+    // An enchantment cast creates its status only when its application row is
+    // in this turn. Otherwise the spell was countered.
+    var applied = {}, applied_by_spell = {};
+    for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        var applied_row = real_actions[i];
+        if (!applied_row.obj || (applied_row.obj.kind !== "apply") ||
+                !applied_row.obj.spell) {
+            continue;
+        }
+        var applied_target = normalizeTurnNewsName(applied_row.obj.target || "");
+        if (applied_target) {
+            applied[applied_row.obj.spell + "|" + applied_target] = true;
+        } else {
+            applied_by_spell[applied_row.obj.spell] = true;
+        }
+    }
+    for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        var cast_row = real_actions[i];
+        if ((cast_row.row_type !== "spell") || !cast_row.obj) {
+            continue;
+        }
+        var cast_spell = cast_row.obj.spell;
+        if (!BGU.map_spell_name_to_status[cast_spell] ||
+                (cast_spell === "Dispel Magic")) {
+            continue;
+        }
+        var cast_target = normalizeTurnNewsName(cast_row.obj.target || "");
+        if (applied[cast_spell + "|" + cast_target] ||
+                applied_by_spell[cast_spell] ||
+                ((cast_spell === "Poison") && applied["Disease|" + cast_target])) {
+            continue;
+        }
+        var cast_actions = cast_row.new_action || [];
+        cast_row.new_action = cast_actions.filter(function(a) {
+            return !((a.action === "highlight") && (a.object_type === "status"));
+        });
+    }
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         if (getTurnNewsElementalAppearance(real_actions[i])) {
@@ -489,6 +576,34 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                     target: reflected_target
                 };
                 moveTurnNewsStatusToReflection(reflection_cast.row, row, reflected_target);
+            }
+        }
+
+        if (row.obj && row.obj.countered_spell) {
+            var countered_target = normalizeTurnNewsName(row.obj.target || "");
+            var countered_cast = active_casts[row.obj.countered_spell + "|" + countered_target];
+            if (!countered_cast) {
+                countered_cast = active_casts_by_spell[row.obj.countered_spell];
+            }
+            if (countered_cast) {
+                mergeCounteredCastIntoCounter(row, countered_cast.row, countered_target);
+            }
+        }
+        if (row.obj && row.obj.countered_summon) {
+            var summon_cast = null;
+            for (var summon_key in active_casts) {
+                var summon_candidate = active_casts[summon_key];
+                if (summon_candidate.row.obj &&
+                        (summon_candidate.row.obj.spell === row.obj.spell) &&
+                        (summon_candidate.row.obj.warlock === row.obj.summoner) &&
+                        (!summon_cast || (summon_candidate.index > summon_cast.index))) {
+                    summon_cast = summon_candidate;
+                }
+            }
+            if (summon_cast) {
+                var summon_target = normalizeTurnNewsName(summon_cast.row.obj.target || "");
+                row.obj.target = summon_target;
+                mergeCounteredCastIntoCounter(row, summon_cast.row, summon_target);
             }
         }
 

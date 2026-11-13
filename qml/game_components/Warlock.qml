@@ -1121,7 +1121,7 @@ Item {
             }
         } else if (a.object_type === "status") {
             var si = findStatusItem(a.object);
-            if (si) {
+            if (si && (a.pulse !== false)) {
                 si.highlightNews(a.color ? a.color : "#10C9F5");
             }
         } else if (a.object_type === "banked") {
