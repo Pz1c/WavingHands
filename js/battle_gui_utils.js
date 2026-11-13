@@ -435,6 +435,15 @@ function parseSpellByText(txt) {
     }
 
     spell_name = spell_name.trim();
+    var lower_spell = spell_name.toLowerCase();
+    var banked_prefixes = ["his banked ", "her banked ",
+                           "its banked ", "their banked "];
+    for (var b = 0; b < banked_prefixes.length; ++b) {
+        if (lower_spell.indexOf(banked_prefixes[b]) === 0) {
+            spell_name = spell_name.substring(banked_prefixes[b].length);
+            break;
+        }
+    }
     var spell_fail = "";
     if (txt.indexOf("but misses due to invisibility") !== -1) {
         spell_fail = "Invisibility";
@@ -807,7 +816,6 @@ function applyStrangeRule(txt, rule, battle) {
     }
 
     var res = newStrangeResult();
-    var caster = null;
 
     if (rule.summonAbsorbed) {
         var owner = targetBefore(txt, "'s ");
@@ -822,13 +830,6 @@ function applyStrangeRule(txt, rule, battle) {
         return res;
     }
 
-    if (rule.casterBefore !== undefined) {
-        caster = targetBefore(txt, rule.casterBefore);
-        if (caster === null) {
-            return null;
-        }
-    }
-
     if (rule.targetBefore !== undefined) {
         res.target = targetBefore(txt, rule.targetBefore);
         if (res.target === null) {
@@ -837,22 +838,6 @@ function applyStrangeRule(txt, rule, battle) {
     } else if (rule.targetBetween !== undefined) {
         res.target = targetBetween(txt, rule.targetBetween[0], rule.targetBetween[1]);
         if (res.target === null) {
-            return null;
-        }
-    } else if (rule.targetAfter !== undefined) {
-        var at = txt.indexOf(rule.targetAfter);
-        if (at === -1) {
-            return null;
-        }
-        at += rule.targetAfter.length;
-        var stop = txt.indexOf(".", at);
-        res.target = ((stop === -1) ? txt.slice(at) : txt.slice(at, stop)).trim();
-        if (rule.selfTarget &&
-                ((res.target === "himself") || (res.target === "herself") ||
-                 (res.target === "itself"))) {
-            res.target = caster;
-        }
-        if (!res.target) {
             return null;
         }
     }
@@ -919,12 +904,6 @@ var EFFECT_RULES = [
 
     // Bank and spell-specific outcomes
     {targetBefore: " banks a spell for later.", flags: {banked:true}},
-    {
-        casterBefore: " casts his banked ",
-        spellBetween: [" casts his banked ", " at "],
-        targetAfter: " at ",
-        selfTarget: true
-    },
     {
         targetBetween: ["Lightning sparks all around ", "'s shield."],
         spell: "Lightning Bolt",
@@ -1335,7 +1314,7 @@ function getMessageActionByDeath(obj, battle) {
 function getMessageTypeByRow(row) {
     if (row.color === "#CCCCCC") {
         return "gesture";
-    } else if ((row.txt.indexOf(" casts ") !== -1) && (row.txt.indexOf(" banked ") === -1)) {
+    } else if (row.txt.indexOf(" casts ") !== -1) {
         // process spell casting
         return "spell";
     } else if (row.color === "#FF6666") {
@@ -1641,12 +1620,12 @@ function findSummonRecord(summons, caster, hand) {
 function collectNewsSummons(rows, battle) {
     var i, Ln, j, LnJ, m, txt, rec, owner;
     var casts = [], arrivals = [], byId = {};
-    var re_cast = /^(\S+) casts Summon (Goblin|Ogre|Troll|Giant) at ([^,.]+)/;
+    var re_cast = /^(\S+) casts (?:his |her |its |their )?(?:banked )?Summon (Goblin|Ogre|Troll|Giant) at ([^,.]+)/;
     var re_summoned = /^(.+?) is summoned to serve ([^.]+)\.?$/;
     var re_summoning = /the monster (\S+) is summoning with (?:his|her|its|their) (left|right) hand/;
     for (i = 0, Ln = rows.length; i < Ln; ++i) {
         txt = rows[i].txt;
-        if ((txt.indexOf(" banked ") === -1) && (m = re_cast.exec(txt))) {
+        if ((m = re_cast.exec(txt))) {
             owner = m[3].trim();
             if ((owner === "himself") || (owner === "herself") || (owner === "itself")) {
                 owner = m[1];
