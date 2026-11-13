@@ -1102,6 +1102,7 @@ Item {
         if (a.object_type === "warlock") {
             switch(a.object) {
             case "hp":
+            case "caster":
                 caHPHighlight.to = a.color ? a.color : iiHP.bg_color_checked;
                 paHPHighlight.restart();
                 break;
@@ -1134,6 +1135,7 @@ Item {
         if (a.object_type === "warlock") {
             switch(a.object) {
             case "hp":
+            case "caster":
                 paHPHighlight.stop();
                 iiHP.scale = 1;
                 iiHP.color = iiHP.bg_color;

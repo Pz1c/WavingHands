@@ -642,6 +642,9 @@ function getMessageActionBySpell(obj, battle) {
         obj.font_size = 28;
     }
 
+    res.push({action:"highlight",warlock_name:spell_obj.warlock,
+              object_type:"warlock",object:"caster",role:"actor",
+              data:[],color:"#10C9F5"});
     res.push(getSpellIconActionBySpell(spell_obj));
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].name === spell_obj.warlock) {

@@ -378,6 +378,13 @@ function playHintActions(actions, row_type) {
             targets.push(a);
             continue;
         }
+        if ((a.action === "highlight") && (a.object_type === "warlock") &&
+                (a.object === "caster")) {
+            // The caster portrait pulses first, while the gesture/icon
+            // frames are still waiting for their first delay.
+            processHintAction(a, false);
+            continue;
+        }
         if (isDeferredHintAction(row_type, a.action)) {
             // Apply spell/attack results after the gesture and icon frames,
             // before the final target highlight.
