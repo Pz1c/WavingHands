@@ -1110,9 +1110,12 @@ ApplicationWindow {
     function refreshAfterOpponentTurn(by) {
         if (WNDU.isWndVisible(WNDU.wnd_battle)) {
             // TURNREADY while the board is open: load the new ready page and
-            // let showReadyBattle() rebuild the open board.
+            // let showReadyBattle() rebuild the open board. A finished or
+            // replayed board is not waiting for anyone, and reloading it as a
+            // ready battle would hand the finished page to the result window.
             turnRefreshPending = false;
-            if (gBattle && gBattle.id) {
+            if (gBattle && gBattle.id && !gBattle.read_only &&
+                    !gBattle.replay && !gBattle.finished) {
                 core.getBattle(gBattle.id, 0, false);
             }
             return;

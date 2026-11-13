@@ -1583,6 +1583,15 @@ int QWarloksDuelCore::parseBattleDescription(QString &Data) {
             int last_found = 0;
             int need = QWarlockUtils::getIntFromPlayerData(Data, "Battle for", " ", "<HR>", last_found);
             battleInfo->setSize(need);
+        } else if ((idx_wait == -1) && (idx_action == -1)) {
+            if (Data.indexOf(QString("Battle %1 does not exist.").arg(intToStr(_loadedBattleID))) != -1) {
+                return -2;
+            }
+            // Neither the order form nor the waiting line: the battle ended
+            // before this load, so this is the finished page.
+            res = 2;
+            QString winner = QWarlockUtils::getFinishedBattleDescription(Data);
+            battleInfo->setWinner(winner);
         } else {
             // wait
             res = 0;
