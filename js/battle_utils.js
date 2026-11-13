@@ -528,7 +528,8 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             continue;
         }
         var cast_spell = cast_row.obj.spell;
-        if (!BGU.map_spell_name_to_status[cast_spell] ||
+        if (cast_row.obj.fail ||
+                !BGU.map_spell_name_to_status[cast_spell] ||
                 (cast_spell === "Dispel Magic")) {
             continue;
         }

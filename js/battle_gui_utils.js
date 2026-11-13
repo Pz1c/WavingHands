@@ -426,7 +426,11 @@ function parseSpellByText(txt) {
         } else if (!at_found) {
             spell_name += arr[i] + " ";
         } else if (at_found) {
-            target_name += arr[i].replace(".", "") + " ";
+            // A trailing clause is not part of the target name.
+            if (arr[i] === "but") {
+                break;
+            }
+            target_name += arr[i].replace(/[.,]/g, "") + " ";
         }
     }
     target_name = target_name.trim();
@@ -641,6 +645,7 @@ function applyDamageIcon(icon_action, damage) {
 function getMessageActionBySpell(obj, battle) {
     var res = [];
     var spell_obj = obj.obj;
+    var missed = spell_obj.fail !== "";
     var target_found = false;
     // https://github.com/Pz1c/WavingHands/issues/227
     // an enchantment lights the target's status icon up, a summon the new monster (prepareNewsMonsters
@@ -648,10 +653,6 @@ function getMessageActionBySpell(obj, battle) {
     var status_code = map_spell_name_to_status[spell_obj.spell];
     obj.txt = spell_obj.spell;
     obj.font_size = 42;
-    if (spell_obj.fail !== "") {
-        obj.txt += " fail";
-        obj.font_size = 28;
-    }
 
     res.push({action:"highlight",warlock_name:spell_obj.warlock,
               object_type:"warlock",object:"caster",role:"actor",
@@ -680,18 +681,19 @@ function getMessageActionBySpell(obj, battle) {
             res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].pL, battle.warlocks[i].pR, 0, 0, 5)});
         }
         if (battle.warlocks[i].name === spell_obj.target) {
-            if (spell_obj.spell === "Cause Heavy Wounds") {
+            if (!missed && (spell_obj.spell === "Cause Heavy Wounds")) {
                 battle.warlocks[i].got_heavy_wounds = true;
             }
             noteDefense(battle.warlocks[i], spell_obj);
-            if (arr_distruption_spell.indexOf(spell_obj.spell) !== -1) {
+            if (!missed &&
+                    (arr_distruption_spell.indexOf(spell_obj.spell) !== -1)) {
                 if (!battle.warlocks[i].arr_distruption) {
                     battle.warlocks[i].arr_distruption = [];
                 }
                 battle.warlocks[i].arr_distruption.push(spell_obj.spell);
             }
 
-            if (status_code) {
+            if (!missed && status_code) {
                 // This is the cast row. A successful cast creates the status
                 // with its end-of-turn counter and marks it fresh so it is not
                 // decremented at the end of this turn.
@@ -699,23 +701,21 @@ function getMessageActionBySpell(obj, battle) {
                                    object_type:"status",object:status_code,
                                    icon:getNewsStatusIcon(status_code),
                                    data:[],role:"target",color:"#10C9F5"};
-                if (!spell_obj.fail) {
-                    cast_status.value = getNewsStatusValue(status_code, spell_obj.spell);
-                }
+                cast_status.value = getNewsStatusValue(status_code, spell_obj.spell);
                 if (spell_obj.spell === "Counter Spell") {
                     // The counter effect row pulses this status; creating it
                     // must not light it up on its own.
                     cast_status.pulse = false;
                 }
                 res.push(cast_status);
-            } else if (!obj.summon) {
+            } else if (!missed && !obj.summon) {
                 res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"hp",data:[],color:"#10C9F5"});
             }
             target_found = true;
         }
         if (!target_found) {
             var owner = findMonsterOwner(battle, spell_obj.target);
-            if (owner) {
+            if (owner && !missed) {
                 var m = findMonsterByName(battle, spell_obj.target);
                 if (m) {
                     if (spell_obj.spell === "Cause Heavy Wounds") {
@@ -738,8 +738,19 @@ function getMessageActionBySpell(obj, battle) {
         //}
     }
 
+    if (missed) {
+        // The reason is already the status key. The icon belongs to the
+        // target for invisibility and to the caster for blindness.
+        var fail_code = spell_obj.fail.toLowerCase();
+        var fail_owner = (spell_obj.fail === "Invisibility")
+                ? spell_obj.target : spell_obj.warlock;
+        res.push({action:"highlight",warlock_name:fail_owner,object_type:"status",
+                  object:fail_code,icon:getNewsStatusIcon(fail_code),data:[],
+                  role:"target",
+                  color:isHarmfulNews({spell:spell_obj.fail}) ? "#FEE2D6" : "#10C9F5"});
+    }
 
-    if (obj.summon) {
+    if (obj.summon && !missed) {
         // the monster this cast brings
         res.push({action:"highlight",warlock_name:obj.summon.owner,object_type:"monster",object:obj.summon.key,data:[],role:"target",color:"#10C9F5"});
     }
