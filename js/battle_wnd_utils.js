@@ -130,6 +130,16 @@ function processStatusRemoveHintAction(a, restore) {
     }
 }
 
+function processBankedRemoveHintAction(a, restore) {
+    if (restore) {
+        return;
+    }
+    var ww = iWarlocks.children[getHintWarlockIdx(a)];
+    if (ww && ww.removeBanked) {
+        ww.removeBanked();
+    }
+}
+
 function processDispelMagicHintAction(a, restore) {
     if (restore) {
         return;
@@ -276,6 +286,7 @@ function processHintAction(a, restore) {
     case "icon": return processHighlightIconAction(a, restore);
     case "pop": return processPopHintAction(a);
     case "status_remove": return processStatusRemoveHintAction(a, restore);
+    case "banked_remove": return processBankedRemoveHintAction(a, restore);
     case "dispel_magic": return processDispelMagicHintAction(a, restore);
     case "remove_enchantments": return processRemoveEnchantmentsHintAction(a, restore);
     case "damage": return processDamageHintAction(a, restore);
@@ -355,7 +366,8 @@ function isDeferredHintAction(row_type, action) {
                 (action === "heal") ||
                 (action === "hp") ||
                 (action === "summon") ||
-                (action === "charm_monster");
+                (action === "charm_monster") ||
+                (action === "banked_remove");
     }
     return (row_type === "attack") && (action === "damage");
 }

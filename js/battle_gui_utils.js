@@ -438,9 +438,11 @@ function parseSpellByText(txt) {
     var lower_spell = spell_name.toLowerCase();
     var banked_prefixes = ["his banked ", "her banked ",
                            "its banked ", "their banked "];
+    var banked = false;
     for (var b = 0; b < banked_prefixes.length; ++b) {
         if (lower_spell.indexOf(banked_prefixes[b]) === 0) {
             spell_name = spell_name.substring(banked_prefixes[b].length);
+            banked = true;
             break;
         }
     }
@@ -452,7 +454,7 @@ function parseSpellByText(txt) {
     }
 
     console.log("parseSpellByText", txt, walock_name, spell_name, target_name, spell_fail);
-    return {warlock:walock_name,spell:spell_name,target:target_name,fail:spell_fail};
+    return {warlock:walock_name,spell:spell_name,target:target_name,fail:spell_fail,banked:banked};
 }
 
 function checkIsSpellPossibeForWarlock(Gesture, Left, Right) {
@@ -655,6 +657,12 @@ function getMessageActionBySpell(obj, battle) {
               object_type:"warlock",object:"caster",role:"actor",
               data:[],color:"#10C9F5"});
     res.push(getSpellIconActionBySpell(spell_obj));
+    if (spell_obj.banked) {
+        // A banked cast empties the bank, so its icon has to go with this
+        // event instead of lingering from the turn-start board.
+        res.push({action:"banked_remove",warlock_name:spell_obj.warlock,
+                  object_type:"banked",object:"banked"});
+    }
     for (var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
         if (battle.warlocks[i].name === spell_obj.warlock) {
             // hightlight spell gestures

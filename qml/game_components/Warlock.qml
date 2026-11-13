@@ -943,6 +943,11 @@ Item {
         }
     }
 
+    function removeBanked() {
+        l_warlock.banked_spell = "";
+        iiBanked.visible = false;
+    }
+
     function clearEnchantments(name) {
         var i, Ln;
         if (!name || (name === l_warlock.name)) {
