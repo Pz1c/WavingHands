@@ -501,10 +501,17 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         var applied_row = real_actions[i];
         if (!applied_row.obj || (applied_row.obj.kind !== "apply") ||
-                !applied_row.obj.spell) {
+                (!applied_row.obj.spell && !applied_row.obj.ambiguous)) {
             continue;
         }
         var applied_target = normalizeTurnNewsName(applied_row.obj.target || "");
+        if (applied_row.obj.ambiguous && applied_target) {
+            // "begins glowing faintly" is the application of whichever of
+            // these two the caster finished; the cast row is resolved later.
+            applied["Delay Effect|" + applied_target] = true;
+            applied["Permanency|" + applied_target] = true;
+            continue;
+        }
         if (applied_target) {
             applied[applied_row.obj.spell + "|" + applied_target] = true;
         } else {
@@ -609,6 +616,20 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             }
             if (bolt_cast) {
                 mergeCounteredCastIntoCounter(row, bolt_cast.row, bolt_target);
+            }
+        }
+        if (row.obj && row.obj.shield && (row.obj.spell === "Magic Missile")) {
+            // Counter Spell also acts as a Shield: the same "bounces off"
+            // line is a counter event when it was the counter that stopped
+            // the missile.
+            var missile_warlock = findTurnNewsWarlockTarget(row);
+            if (missile_warlock && (missile_warlock.defended_by === "counter")) {
+                var missile_target = normalizeTurnNewsName(row.obj.target || "");
+                var missile_cast = active_casts["Magic Missile|" + missile_target] ||
+                        active_casts_by_spell["Magic Missile"];
+                if (missile_cast) {
+                    mergeCounteredCastIntoCounter(row, missile_cast.row, missile_target);
+                }
             }
         }
         if (row.obj && row.obj.countered_summon) {
