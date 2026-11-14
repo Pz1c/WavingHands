@@ -1425,14 +1425,20 @@ ApplicationWindow {
         return res;
     }
 
-    function isTwoHandedSpell(spell) {
-        return !!spell && /[a-z]/.test(spell.g || "");
+    // The checker marks the next needed gesture as shared in th and reports
+    // that gesture uppercased in ng. Only that step is made with both hands;
+    // the other gestures of the spell belong to the casting hand alone.
+    function isTwoHandedGesture(spell, gesture) {
+        if (!spell || (spell.th !== 1)) {
+            return false;
+        }
+        return !gesture || !spell.ng || (gesture === spell.ng);
     }
 
     function setGesture(gesture, spell, need_target) {
-        // Two-handed spells own both hands. Maladroit and C must not
+        // A shared gesture is made with both hands. Maladroit and C must not
         // overwrite the other hand while paralysis/charm forces it.
-        var is_two_handed = isTwoHandedSpell(spell);
+        var is_two_handed = isTwoHandedGesture(spell, gesture);
         var is_maladroit = !gBattle.player_under_control &&
                 ((gBattle.warlocks[0].maladroit > 0) || (gesture === "C"));
         console.log("setGesture", gesture, JSON.stringify(spell), is_maladroit);
@@ -1512,9 +1518,8 @@ ApplicationWindow {
         console.log("main.setSpellTarget", TargetName, lPermanent, lDelay, OperationType, gBattle.currentHand);
         if (OperationType === 1) {
             var spell = gBattle.actions[gBattle.currentHand].s;
-            var is_two_handed = isTwoHandedSpell(spell);
             gBattle.actions[gBattle.currentHand].target = TargetName;
-            if (is_two_handed) {
+            if (isTwoHandedGesture(spell, gBattle.actions[gBattle.currentHand].g)) {
                 var other = gBattle.otherHand ||
                         (gBattle.currentHand === "L" ? "R" : "L");
                 gBattle.actions[other].g = gBattle.actions[gBattle.currentHand].g;
