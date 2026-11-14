@@ -364,7 +364,7 @@ function isDeferredHintAction(row_type, action) {
         return true;
     }
     if (row_type === "spell") {
-        return (action === "summon") || (action === "charm_monster");
+        return (action === "charm_monster");
     }
     return false;
 }
@@ -378,6 +378,7 @@ function playHintActions(actions, row_type) {
         a = actions[i];
         if ((a.action === "dispel_magic") ||
                 (a.action === "remove_enchantments") ||
+                (a.action === "summon") ||
                 ((a.action === "status_remove") && a.defer_to_end)) {
             finish_actions.push(a);
             continue;
@@ -413,8 +414,7 @@ function playHintActions(actions, row_type) {
             apply_actions.push(a);
             continue;
         }
-        if ((a.action === "summon") || (a.action === "death") ||
-                (a.action === "elemental")) {
+        if ((a.action === "death") || (a.action === "elemental")) {
             // Change the board as soon as the event row appears; the target
             // highlight still follows the normal frames.
             processHintAction(a, false);
