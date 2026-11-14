@@ -1075,7 +1075,8 @@ var EFFECT_RULES = [
     {targetBefore: " is charmed into making the wrong gesture with his left hand.", flags: {status_ongoing:true, status_code:"charmed"}},
     {targetBefore: " is charmed into making the wrong gesture with his right hand.", flags: {status_ongoing:true, status_code:"charmed"}},
     {targetBefore: " is charmed, but ends up making the gestures he intended anyway!", flags: {status_ongoing:true, status_code:"charmed"}},
-    {targetBefore: " is victorious!"},
+    {targetBetween: ["<B>", " is victorious!</B>"], flags: {victory:true}},
+    {targetBefore: " is victorious!", flags: {victory:true}},
     {targetBefore: " surrenders."},
     {targetBefore: " is summoned to serve "},
     {targetBefore: " tries to cast Clap of Lightning, but doesn't have the charge for it."},
@@ -1208,8 +1209,14 @@ function getMessageActionByOther(obj, battle) {
         var w = battle.warlocks[i];
         res.push({action:"highlight",warlock_name:battle.warlocks[i].name,object_type:"warlock",object:"gestures",data:preparePrintGestures(battle.warlocks[i].pL, battle.warlocks[i].pR, 0, 0, 5)});
         if (w.name === obj.target) {
-            icon_action.large_icon = "heart";
-            icon_action.text = w.hp;
+            if (obj.victory) {
+                // The winner's portrait instead of the generic heart/monster icon.
+                icon_action.large_icon = "wizard_" + (w.color ? w.color : "grey");
+                icon_action.text = "";
+            } else {
+                icon_action.large_icon = "heart";
+                icon_action.text = w.hp;
+            }
             icon_action.title = w.name;
             target_found = true;
             if (obj.spell === "Disease") {
