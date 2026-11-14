@@ -4,6 +4,8 @@
 #include "qmonster.h"
 #include "qbattleinfo.h"
 
+#include <QRegularExpression>
+
 
 QWarlockUtils::QWarlockUtils()
 {
@@ -570,82 +572,103 @@ QString QWarlockUtils::getBattleShortTitle(const QString &Title, int State, int 
     }
 }
 
-void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int current_turn, bool last_turn) {
-    qDebug() << "QWarlockUtils::parseBattleTurn" << current_turn << last_turn;
-    QString result_c, result_h, line, def_color = "#FEE2D6", current_color = def_color, sub_line, ssln, sssline, last_line, red_desc;
-    int idx1;
-    // Tag names are normally uppercase, but be tolerant of pages that lower-case them.
-    turn_text.replace("<font", "<FONT", Qt::CaseInsensitive).replace("</font", "</FONT", Qt::CaseInsensitive);
-    QStringList lst = turn_text.split("<FONT "), sslines, ssslines;
-    for (int i = 0, Ln = lst.length(); i < Ln; ++i) {
-        line = lst.at(i).trimmed();
-        //console.log("wnd_spell.processTurnMessage", "main", line, i, Ln, curr_turn, last_turn);
-        if (line.isEmpty()) {
-            continue;
-        }
-        idx1 = line.indexOf("COLOR=\"", 0, Qt::CaseInsensitive);
-        if (idx1 != -1) {
-            idx1 += 16;
-            current_color = line.mid(idx1 - 9, 7);
-        } else {
-            // The game server sometimes drops the opening quote, e.g.
-            // <FONT COLOR=#88FFFF">. Read the colour anyway instead of keeping
-            // "COLOR=#..." as part of the message text.
-            int color_pos = line.indexOf("COLOR=", 0, Qt::CaseInsensitive);
-            int color_start = color_pos + 6;
-            int color_end = (color_pos == -1) ? -1 : line.indexOf('"', color_start);
-            if (color_end == -1) {
-                color_end = (color_pos == -1) ? -1 : line.indexOf('>', color_start);
-            }
-            if ((color_end > color_start) && (line.at(color_start) == '#')) {
-                current_color = line.mid(color_start, color_end - color_start).trimmed();
-                int content = line.indexOf('>', color_end);
-                idx1 = (content == -1) ? line.length() : content + 1;
-            } else {
-                idx1 = 0;
-                current_color = def_color;
-            }
-        }
-        sub_line = line.mid(idx1);
-        //console.log("wnd_spell.processTurnMessage", "sub", current_color, sub_line);
-        sslines = sub_line.split("</FONT>");
-        for(int j = 0, LnJ = sslines.length(); j < LnJ; ++j) {
-            ssln = sslines.at(j).trimmed();
-            if (ssln.isEmpty()) {
+void QWarlockUtils::splitColoredRows(const QString &html, QStringList &rows,
+                                     QStringList &colors,
+                                     const QString &default_color) {
+    rows.clear();
+    colors.clear();
+    static const QRegularExpression color_re(
+            "COLOR\\s*=\\s*\"?\\s*(#[0-9A-Fa-f]{6})",
+            QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression br_re(
+            "<br\\s*/?>", QRegularExpression::CaseInsensitiveOption);
+
+    QStringList stack;
+    auto emit_text = [&](const QString &text) {
+        const QString color = stack.isEmpty() ? default_color : stack.last();
+        const QStringList parts = text.split(br_re);
+        for (const QString &part : parts) {
+            const QString row = part.trimmed();
+            if (row.isEmpty()) {
                 continue;
             }
-            ssslines = ssln.split("<BR>");
-            for(int k = 0, LnK = ssslines.length(); k < LnK; ++k) {
-                sssline = ssslines.at(k).trimmed().replace("<p>", "").replace("</p>", "");
-                if (sssline.isEmpty()) {
-                    continue;
-                }
-                // Gestures are stored as well, so a parsed turn is never empty; the
-                // History window filters the #CCCCCC spans out again.
-                if (sssline.indexOf(" says ") != -1) {
-                    if (!result_c.isEmpty()) {
-                        result_c.append("<br>");
-                    }
-                    result_c.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
-                } else if (current_color.compare("#AAAAAA") == 0) {
-                    // "Your orders are in for this turn" — not a turn-news line.
-                    continue;
-                } else {
-                    if (!result_h.isEmpty()) {
-                        result_h.append("<br>");
-                    }
-                    result_h.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(current_color, sssline.replace('"', "&quot;")));
-                }
-                // A stored gesture must not become the result line for subtitle/winner.
-                if (last_turn && (current_color.compare("#CCCCCC") != 0)) {
-                    last_line = sssline;
-                }
-                if (last_turn && (current_color.compare("#FF6666") == 0) && !bi->containParticipant(sssline).isEmpty()) {
-                    red_desc.append(sssline);
-                    red_desc.append("<br>");
-                }
+            rows.append(row);
+            colors.append(color);
+        }
+    };
+
+    int pos = 0;
+    while (pos < html.length()) {
+        const int open = html.indexOf("<FONT", pos, Qt::CaseInsensitive);
+        const int close = html.indexOf("</FONT>", pos, Qt::CaseInsensitive);
+        int next = -1;
+        if ((open != -1) && ((close == -1) || (open < close))) {
+            next = open;
+        } else if (close != -1) {
+            next = close;
+        }
+        if (next == -1) {
+            emit_text(html.mid(pos));
+            break;
+        }
+        if (next > pos) {
+            emit_text(html.mid(pos, next - pos));
+        }
+        if (next == open) {
+            const int gt = html.indexOf('>', open);
+            if (gt == -1) {
+                break;
             }
-            current_color = def_color;
+            const QRegularExpressionMatch match =
+                    color_re.match(html.mid(open, gt - open + 1));
+            stack.append(match.hasMatch() ? match.captured(1).toUpper()
+                                          : (stack.isEmpty() ? default_color
+                                                             : stack.last()));
+            pos = gt + 1;
+        } else {
+            if (!stack.isEmpty()) {
+                stack.removeLast();
+            }
+            pos = close + 7;
+        }
+    }
+}
+
+void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int current_turn, bool last_turn) {
+    qDebug() << "QWarlockUtils::parseBattleTurn" << current_turn << last_turn;
+    QString result_c, result_h, last_line, red_desc;
+    QStringList rows, colors;
+    splitColoredRows(turn_text, rows, colors, "#FEE2D6");
+    for (int i = 0, Ln = rows.length(); i < Ln; ++i) {
+        QString row = rows.at(i);
+        row.replace("<p>", "").replace("</p>", "");
+        const QString color = colors.at(i);
+        if (row.isEmpty()) {
+            continue;
+        }
+        // Gestures are stored as well, so a parsed turn is never empty; the
+        // History window filters the #CCCCCC spans out again.
+        if (row.indexOf(" says ") != -1) {
+            if (!result_c.isEmpty()) {
+                result_c.append("<br>");
+            }
+            result_c.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(color, row.replace('"', "&quot;")));
+        } else if (color.compare("#AAAAAA") == 0) {
+            // "Your orders are in for this turn" — not a turn-news line.
+            continue;
+        } else {
+            if (!result_h.isEmpty()) {
+                result_h.append("<br>");
+            }
+            result_h.append(QString("<font color=&quot;%1&quot;>%2</font>").arg(color, row.replace('"', "&quot;")));
+        }
+        // A stored gesture must not become the result line for subtitle/winner.
+        if (last_turn && (color.compare("#CCCCCC") != 0)) {
+            last_line = row;
+        }
+        if (last_turn && (color.compare("#FF6666") == 0) && !bi->containParticipant(row).isEmpty()) {
+            red_desc.append(row);
+            red_desc.append("<br>");
         }
     }
     if (last_turn && !last_line.isEmpty()) {
@@ -660,7 +683,6 @@ void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int cur
     }
     bi->addChat(current_turn, result_c);
     bi->addHistory(current_turn, result_h);
-    //return result;
 }
 
 void QWarlockUtils::parseBattleHistory(QString &history, QBattleInfo* bi) {

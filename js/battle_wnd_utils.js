@@ -259,7 +259,15 @@ function processElementalHintAction(a, restore) {
     if (restore) {
         return;
     }
-    console.log("processElementalHintAction", a.visible, a.type, a.hp);
+    console.log("processElementalHintAction", a.visible, a.type, a.hp, a.storm);
+    if (a.storm) {
+        if (a.visible) {
+            BU.showTurnNewsStorm(a.type);
+        } else {
+            BU.hideTurnNewsStorm();
+        }
+        return;
+    }
     if (a.visible) {
         BU.showTurnNewsElemental(a.type, a.hp);
     } else {
@@ -583,6 +591,8 @@ function closeTutorial() {
     showWarockHands();
     showWarockFinalPlaceholders();
     prepareIconToHint();
+    // The storm tile lives for the whole news; remove it only now.
+    BU.hideTurnNewsStorm();
 
     // The board above is the snapshot used for the news. The news is over now:
     // rebuild from the current page, without replaying hint/last_turn_hist.

@@ -566,34 +566,18 @@ QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
     qDebug() << "QBattleInfo::getTurnInfo" << chm;
     chm = chm.replace("&quot;", "\"");
     if (!chm.isEmpty()) {
-        int idx1;
-        QString curr_color, def_color = "#FFFFFF";
-        QStringList sl1, sl2;
-        slcm = chm.split("<FONT COLOR=\"", Qt::KeepEmptyParts, Qt::CaseInsensitive);
-        foreach(QString m, slcm) {
-            idx1 = m.indexOf('"');
-            curr_color = m.mid(0, idx1);
-            idx1 = m.indexOf(">", idx1);
-            m = m.mid(idx1 + 1);
-            qDebug() << "QBattleInfo::getTurnInfo" << m;
-            sl1 = m.split("</FONT>", Qt::KeepEmptyParts, Qt::CaseInsensitive); // should be only two
-            foreach(QString ss1, sl1) {
-                sl2 = ss1.split("<br>");
-                foreach(QString ss2, sl2) {
-                    if (ss2.trimmed().isEmpty()) {
-                        continue;
-                    }
-                    if (!res.isEmpty()) {
-                        res.append(",");
-                    }
-                    int l_type = ARR_BATTLE_MSG_COLOR_INACTIVE.indexOf(curr_color) == -1 ? 1 : 2;
-                    if ((l_type == 2) && ((ss2.indexOf("attack") != -1) && (ss2.indexOf("directs") == -1))) {
-                        l_type = 1;
-                    }
-                    res.append(QString("{\"txt\":\"%1\",\"color\":\"%2\",\"type\":%3}").arg(prepareToPrint(ss2.trimmed()), curr_color, intToStr(l_type)));
-                }
-                curr_color = def_color;
+        QStringList rows, colors;
+        QWarlockUtils::splitColoredRows(chm, rows, colors);
+        for (int i = 0, Ln = rows.length(); i < Ln; ++i) {
+            const QString row = rows.at(i);
+            const QString curr_color = colors.at(i);
+            int l_type = ARR_BATTLE_MSG_COLOR_INACTIVE.indexOf(curr_color) == -1 ? 1 : 2;
+            if ((l_type == 2) && (row.indexOf("attack") != -1) && (row.indexOf("directs") == -1)) {
+                l_type = 1;
             }
+            res.append(QString("%1{\"txt\":\"%2\",\"color\":\"%3\",\"type\":%4}")
+                       .arg(res.isEmpty() ? "" : ",", prepareToPrint(row),
+                            curr_color, intToStr(l_type)));
         }
     }
 

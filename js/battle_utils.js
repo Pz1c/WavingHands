@@ -428,10 +428,9 @@ function moveTurnNewsStatusToReflection(cast_row, reflection_row, target) {
     }
 }
 
-// A blocked or countered cast still belongs in the turn-news queue, but its
-// effect row is the defense event. Play the cast payload there and pulse the
-// shield that stopped it instead of creating the spell's own result.
-function mergeDefendedCastIntoEffect(counter_row, cast_row, target) {
+// A cast can belong to an effect row instead of its own row: a defense event,
+// a mirror, or a storm summary. Play the cast payload there and hide the cast.
+function mergeCastIntoEffect(counter_row, cast_row, target, add_defense) {
     if (!counter_row || !cast_row || !target) {
         return;
     }
@@ -471,7 +470,8 @@ function mergeDefendedCastIntoEffect(counter_row, cast_row, target) {
             break;
         }
     }
-    if (!has_defense && BGU.isWarlockName(battle, target)) {
+    if ((add_defense !== false) && !has_defense &&
+            BGU.isWarlockName(battle, target)) {
         merged.push({action:"highlight",warlock_name:target,
                      object_type:"status",object:"mshield",
                      icon:BGU.getNewsStatusIcon("mshield"),data:[],
@@ -492,7 +492,11 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
     var mergeable = {}, active_casts = {}, active_casts_by_spell = {};
     var reflected_casts = {};
     var reflection_merges = [];
+    var storm_merges = [];
+    var storm_defense_rows = [];
     var handled_summons = {};
+    // A storm tile belongs to one turn's news; a replay step must not inherit it.
+    battle.turn_news_storm = null;
     for (var merge_name in BGU.map_spell_name_to_status) {
         mergeable[merge_name] = true;
     }
@@ -611,7 +615,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                 countered_cast = active_casts_by_spell[row.obj.countered_spell];
             }
             if (countered_cast) {
-                mergeDefendedCastIntoEffect(row, countered_cast.row, countered_target);
+                mergeCastIntoEffect(row, countered_cast.row, countered_target);
             }
         }
         if (row.obj && row.obj.absorbed) {
@@ -635,7 +639,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                 }
             }
             if (absorbed_cast) {
-                mergeDefendedCastIntoEffect(row, absorbed_cast.row, absorbed_target);
+                mergeCastIntoEffect(row, absorbed_cast.row, absorbed_target);
             }
         }
         if (row.obj && row.obj.countered_summon) {
@@ -652,7 +656,7 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             if (summon_cast) {
                 var summon_target = normalizeTurnNewsName(summon_cast.row.obj.target || "");
                 row.obj.target = summon_target;
-                mergeDefendedCastIntoEffect(row, summon_cast.row, summon_target);
+                mergeCastIntoEffect(row, summon_cast.row, summon_target);
             }
         }
 
@@ -737,12 +741,51 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                     row.turn_news_force_show = true;
                 }
             }
+            if (elemental.type !== "") {
+                if (!row.new_action) {
+                    row.new_action = [];
+                }
+                row.new_action.push({action:"highlight", object_type:"elemental",
+                                     object:elemental.type, role:"actor", color:"#10C9F5"});
+                setTurnNewsElementalIcon(row, elemental.type);
+            }
+        }
+
+        if (row.obj && (row.obj.resist || row.obj.protected)) {
+            // A storm target either resists its element or is shielded by the
+            // Counter Spell; the row keeps the icon that stopped the storm.
+            var storm_target = normalizeTurnNewsName(row.obj.target || "");
+            removeTurnNewsHpHighlight(row, storm_target);
+            if (row.obj.resist) {
+                var resist_code = (row.obj.resist === "ice") ? "coldproof" : "fireproof";
+                addTurnNewsStatusHighlight(row, {name:storm_target}, resist_code, "#10C9F5");
+                setTurnNewsEventIcon(row, resist_code);
+            } else {
+                addTurnNewsStatusHighlight(row, {name:storm_target}, "mshield", "#FEE2D6");
+                setTurnNewsEventIcon(row, "defense_by_counter");
+            }
+            row.turn_news_force_show = true;
+            storm_defense_rows.push(row);
+        }
+
+        if (row.obj && row.obj.summary) {
+            // Resolved after the loop: the cast may have been moved below this
+            // row when it paired with one of the target's damage rows.
+            storm_merges.push(row);
+        }
+
+        if (row.obj && (getTurnNewsDamage(row) > 0) &&
+                ((row.obj.spell === "Fire Storm") || (row.obj.spell === "Ice Storm"))) {
+            // The storm is this hit's attacker: pulse its tile before the icon
+            // and banner, like a mass elemental attack does.
+            var hit_storm = (row.obj.spell === "Ice Storm") ? "ice" : "fire";
             if (!row.new_action) {
                 row.new_action = [];
             }
             row.new_action.push({action:"highlight", object_type:"elemental",
-                                 object:elemental.type, role:"actor", color:"#10C9F5"});
-            setTurnNewsElementalIcon(row, elemental.type);
+                                 object:hit_storm, role:"actor", color:"#10C9F5"});
+            setTurnNewsEventIcon(row,
+                    (hit_storm === "ice") ? "elemental_ice" : "elemental_fire");
         }
 
         if (isTurnNewsElementalDestroyed(row)) {
@@ -889,12 +932,59 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
         }
     }
 
+    // The storm cast belongs to its summary row; the damage numbers stay on
+    // their own rows, exactly like a mass elemental attack.
+    for (i = 0, Ln = storm_merges.length; i < Ln; ++i) {
+        var storm_row = storm_merges[i];
+        var storm_type = (storm_row.obj.spell === "Ice Storm") ? "ice" : "fire";
+        for (var sc = 0, LnS = real_actions.length; sc < LnS; ++sc) {
+            var storm_cast = real_actions[sc];
+            if ((storm_cast.row_type === "spell") && storm_cast.obj &&
+                    !storm_cast.obj.fail &&
+                    (storm_cast.obj.spell === storm_row.obj.spell)) {
+                mergeCastIntoEffect(storm_row, storm_cast,
+                        normalizeTurnNewsName(storm_cast.obj.target || ""), false);
+                break;
+            }
+        }
+        // The storm tile stays up for the rest of the news; it is removed when
+        // the news closes.
+        if (!storm_row.new_action) {
+            storm_row.new_action = [];
+        }
+        storm_row.new_action.push({action:"elemental", visible:true,
+                                   type:storm_type, storm:true});
+    }
+
+    // Resisted and Counter-Spell-protected targets are still the storm's
+    // attacks, so the tile pulses for them too.
+    if (storm_defense_rows.length > 0) {
+        var defense_storm = "";
+        if (active_casts_by_spell["Ice Storm"]) {
+            defense_storm = "ice";
+        } else if (active_casts_by_spell["Fire Storm"]) {
+            defense_storm = "fire";
+        } else if (storm_merges.length > 0) {
+            defense_storm = (storm_merges[0].obj.spell === "Ice Storm") ? "ice" : "fire";
+        }
+        if (defense_storm) {
+            for (i = 0, Ln = storm_defense_rows.length; i < Ln; ++i) {
+                if (!storm_defense_rows[i].new_action) {
+                    storm_defense_rows[i].new_action = [];
+                }
+                storm_defense_rows[i].new_action.push({
+                    action:"highlight", object_type:"elemental",
+                    object:defense_storm, role:"actor", color:"#10C9F5"});
+            }
+        }
+    }
+
     // A reflected cast belongs to its mirror row, but only after that row got
     // the reflected result actions (damage, status, enchantment removal).
     for (i = 0, Ln = reflection_merges.length; i < Ln; ++i) {
-        mergeDefendedCastIntoEffect(reflection_merges[i].row,
-                                    reflection_merges[i].cast,
-                                    reflection_merges[i].target);
+        mergeCastIntoEffect(reflection_merges[i].row,
+                            reflection_merges[i].cast,
+                            reflection_merges[i].target);
     }
 }
 
@@ -1232,8 +1322,9 @@ function addTurnNewsStatusHighlight(row, target, code, color) {
                          role:"target", color:color});
 }
 
-function setTurnNewsElementalIcon(row, type) {
-    var icon = type === "ice" ? "elemental_ice" : "elemental_fire";
+// Replace the event banner icon (the default heart) with the icon of whatever
+// the row is about: the elemental tile, the resist status, the defense.
+function setTurnNewsEventIcon(row, icon) {
     if (!row.new_action) {
         row.new_action = [];
     }
@@ -1247,6 +1338,10 @@ function setTurnNewsElementalIcon(row, type) {
     }
     actions.push({action:"icon", large_icon:icon, small_icon:"", title:"", text:"",
                   background_color:"#210430", border_color:"#FEE2D6"});
+}
+
+function setTurnNewsElementalIcon(row, type) {
+    setTurnNewsEventIcon(row, type === "ice" ? "elemental_ice" : "elemental_fire");
 }
 
 // The server's reflection row has the spell name in the text. parseSpellEffect
@@ -1644,6 +1739,14 @@ function prepareTurnNewsDamage(real_actions) {
         var damage_spell = findTurnNewsSpellName(row.txt || "");
         if (!damage_spell && row.obj && row.obj.spell) {
             damage_spell = row.obj.spell;
+        }
+
+        // A storm hits every target separately: keep the number on its own
+        // row, like a mass elemental attack does.
+        if ((damage_spell === "Fire Storm") || (damage_spell === "Ice Storm")) {
+            addTurnNewsDamage(row, row, target, damage, true);
+            row.turn_news_force_show = true;
+            continue;
         }
 
         // Otherwise the damage row may still belong to a nearby reflection row.
@@ -2077,6 +2180,14 @@ function setReplayTurn(turn) {
 }
 
 function prepareElemental() {
+    if (battle.turn_news_storm) {
+        // The storm is the attacker while its damage plays; the tile has no HP.
+        iiElemental.text = "";
+        iiElemental.source = "qrc:/res/elemental_" + battle.turn_news_storm + ".png";
+        iiElemental.l_data = {name:"", hp:0, type:battle.turn_news_storm, action:"m"};
+        iiElemental.visible = true;
+        return;
+    }
     var el = (battle.turn_news_elemental !== undefined) ? battle.turn_news_elemental : battle.elemental;
     if (el && (parseInt(el.hp, 10) > 0)) {
         iiElemental.text = el.hp;
@@ -2086,6 +2197,18 @@ function prepareElemental() {
     } else {
         iiElemental.visible = false;
     }
+}
+
+function showTurnNewsStorm(type) {
+    battle.turn_news_storm = (type === "ice") ? "ice" : "fire";
+    // A storm always removes the elemental; there is nothing to restore.
+    battle.turn_news_elemental = null;
+    prepareElemental();
+}
+
+function hideTurnNewsStorm() {
+    battle.turn_news_storm = null;
+    prepareElemental();
 }
 
 function showTurnNewsElemental(type, hp) {
@@ -2105,6 +2228,7 @@ function hideTurnNewsElemental() {
 
 function resetTurnNewsElemental() {
     battle.turn_news_elemental = undefined;
+    battle.turn_news_storm = null;
     prepareElemental();
 }
 
@@ -2219,6 +2343,9 @@ function prepareHint() {
     if (battle.read_only && !battle.replay) {
         return;
     }
+    // Replay keeps the same battle object between turns, so sync the elemental
+    // strip with this turn's state before the first step runs.
+    prepareElemental();
     // The cards were created before this turn's rows were parsed (replay), so
     // apply the bank the rows named before the first news step runs.
     for (var wi = 0; wi < iWarlocks.children.length; ++wi) {

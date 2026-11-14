@@ -917,8 +917,8 @@ var EFFECT_RULES = [
     {exact: "This turn took place outside of time."},
     {exact: "No Warlocks remaining. An ignominious end to a battle."},
     {exact: "The haze of an enchantment spell drifts aimlessly over the circle, and dissipates."},
-    {exact: "A Fire Storm rages through the circle!", spell: "Fire Storm"},
-    {exact: "An Ice Storm rages through the circle!", spell: "Ice Storm"},
+    {exact: "A Fire Storm rages through the circle!", spell: "Fire Storm", flags: {summary:true}},
+    {exact: "An Ice Storm rages through the circle!", spell: "Ice Storm", flags: {summary:true}},
     {exact: "All magical effects are erased! All other spells fail!", spell: "Dispel Magic"},
 
     // Bank and spell-specific outcomes
@@ -959,6 +959,7 @@ var EFFECT_RULES = [
         spell: "Magic Missile",
         flags: {shield:true, absorbed:true}
     },
+    {targetBefore: " is protected by a magical shield.", flags: {protected:true}},
     {targetBefore: " is hit by Remove Enchantment", spell: "Remove Enchantment"},
     {targetBefore: "'s surrounding magical energies are grounded.", spell: "Remove Enchantment"},
     {
@@ -1008,7 +1009,8 @@ var EFFECT_RULES = [
         targetBefore: " is frozen for ",
         damageBetween: [" is frozen for ", " damage."]
     },
-    {targetBefore: " basks in the heat of the Fire Storm.", spell: "Fire Storm"},
+    {targetBefore: " basks in the heat of the Fire Storm.", spell: "Fire Storm",
+     flags: {resist:"fire"}},
     {targetBefore: " basks in the fiery heat."},
     {targetBefore: " basks in the freezing cold.", spell: "Ice Storm"},
     {targetBefore: " basks in the bitter cold.", spell: "Ice Storm"},

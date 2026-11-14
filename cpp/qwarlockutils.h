@@ -48,6 +48,12 @@ public:
     static void appendSeparatedList(QString &list, const QString &data, const QString &separator = ",");
     static void parseBattleHistory(QString &history, QBattleInfo* bi);
     static void parseBattleTurn(QString &turn_text, QBattleInfo* bi, int current_turn, bool last_turn);
+    // Splits a turn's HTML into text rows with the colour of the enclosing FONT
+    // span. Nested spans (a result line inside a storm block) keep the outer
+    // colour after the inner span closes.
+    static void splitColoredRows(const QString &html, QStringList &rows,
+                                 QStringList &colors,
+                                 const QString &default_color = "#FFFFFF");
     static int getStrengthByMonsterName(QString val);
     static void parseUnstartedBattle(QString &Data, QBattleInfo *bi);
     static int getRand(int Min, int Max);
