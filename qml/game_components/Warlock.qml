@@ -253,13 +253,13 @@ Item {
         return removeMonster(name);
     }
 
-    // A dead or otherwise departing monster lights up first; the roster and the
-    // targeting maps change when the pulse has played.
+    // A dead monster switches to RIP and leaves; there is no pulse.
     function removeMonster(name) {
         var monsters = l_warlock.monsters || [];
         var known = false;
         for (var i = 0, Ln = monsters.length; i < Ln; ++i) {
             if (monsters[i] && (monsters[i].name === name)) {
+                monsters[i].icon = "RIP2";
                 known = true;
                 break;
             }
@@ -267,10 +267,7 @@ Item {
         if (!known) {
             return false;
         }
-        var item = findMonsterItem(name);
-        if (item && item.highlightNews) {
-            item.highlightNews("#FEE2D6", "");
-        }
+        refreshMonsters();
         if (l_pending_monster_removals.indexOf(name) === -1) {
             l_pending_monster_removals.push(name);
         }

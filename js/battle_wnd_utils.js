@@ -241,7 +241,7 @@ function processDeathHintAction(a, restore) {
     var warlock_idx = getHintWarlockIdx(a);
     var ww = iWarlocks.children[warlock_idx];
     console.log("processDeathHintAction", a.object_type, a.object, a.warlock_name, warlock_idx);
-    // The card pulses the icon and drops it when the pulse ends, then reports
+    // The card switches to RIP and drops after the removal timer, then reports
     // back so the targeting maps drop the dead monster too.
     var handled = (ww && ww.showDeath) ? (ww.showDeath(a.object_type, a.object) === true) : false;
     if ((a.object_type === "monster") && !handled && BU.removeDeadMonsterTarget) {

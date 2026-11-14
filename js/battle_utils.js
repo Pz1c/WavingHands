@@ -368,6 +368,38 @@ function addTurnNewsTransitionAction(real_actions, idx, action) {
     row.turn_news_force_show = true;
 }
 
+// A dead monster must not pulse before it is removed. The death row still
+// shows the RIP banner; the card itself simply leaves.
+function removeMonsterDeathPulses(real_actions) {
+    var names = {}, death_rows = [], i, j, row, actions, kept, a;
+    for (i = 0; i < real_actions.length; ++i) {
+        actions = real_actions[i].new_action || [];
+        for (j = 0; j < actions.length; ++j) {
+            a = actions[j];
+            if ((a.action === "death") && (a.object_type === "monster")) {
+                names[a.object] = true;
+                if (death_rows.indexOf(real_actions[i]) === -1) {
+                    death_rows.push(real_actions[i]);
+                }
+            }
+        }
+    }
+    for (i = 0; i < death_rows.length; ++i) {
+        row = death_rows[i];
+        actions = row.new_action || [];
+        kept = [];
+        for (j = 0; j < actions.length; ++j) {
+            a = actions[j];
+            if ((a.action === "highlight") && (a.object_type === "monster") &&
+                    names[a.object]) {
+                continue;
+            }
+            kept.push(a);
+        }
+        row.new_action = kept;
+    }
+}
+
 function findTurnNewsArrival(news_summons, row) {
     if (!news_summons || !news_summons.arrivals) {
         return null;
@@ -2145,6 +2177,7 @@ function prepareTurnActionInfo(last_turn_hist) {
     prepareTurnNewsDamage(real_actions);
     rememberOngoingStatusText(real_actions);
     prepareTurnNewsTransitions(real_actions, news_summons);
+    removeMonsterDeathPulses(real_actions);
     addOngoingStatusRemovals(real_actions);
     rememberTurnNewsBank(real_actions, battle);
     var beginner = mainWindow.playerSpellbookLevel < 5;
