@@ -364,13 +364,9 @@ function isDeferredHintAction(row_type, action) {
         return true;
     }
     if (row_type === "spell") {
-        return (action === "damage") ||
-                (action === "heal") ||
-                (action === "hp") ||
-                (action === "summon") ||
-                (action === "charm_monster");
+        return (action === "summon") || (action === "charm_monster");
     }
-    return (row_type === "attack") && (action === "damage");
+    return false;
 }
 
 function playHintActions(actions, row_type) {
@@ -398,6 +394,12 @@ function playHintActions(actions, row_type) {
             targets.push(a);
             continue;
         }
+        if ((a.action === "damage") || (a.action === "heal") || (a.action === "hp")) {
+            // The hit/heal number and the HP change belong to the end of the
+            // event, after the gestures, icon and target highlight.
+            finish_actions.push(a);
+            continue;
+        }
         if ((a.action === "highlight") && (a.object_type === "warlock") &&
                 (a.object === "caster")) {
             // The caster portrait pulses first, while the gesture/icon
@@ -411,12 +413,10 @@ function playHintActions(actions, row_type) {
             apply_actions.push(a);
             continue;
         }
-        if ((a.action === "damage") || (a.action === "heal") || (a.action === "hp") ||
-                (a.action === "summon") || (a.action === "death") ||
+        if ((a.action === "summon") || (a.action === "death") ||
                 (a.action === "elemental")) {
-            // Show the number / change the life points / change the board as
-            // soon as the event row appears; the target highlight still follows
-            // the normal frames.
+            // Change the board as soon as the event row appears; the target
+            // highlight still follows the normal frames.
             processHintAction(a, false);
             continue;
         }

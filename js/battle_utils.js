@@ -428,38 +428,87 @@ function moveTurnNewsStatusToReflection(cast_row, reflection_row, target) {
     }
 }
 
-// A cast can belong to an effect row instead of its own row: a defense event,
-// a mirror, or a storm summary. Play the cast payload there and hide the cast.
+// The effect row owns the event. The cast row only contributes the caster,
+// the spell name and the gesture/icon metadata.
+function attachCastMeta(effect_row, cast_row, create_status) {
+    if (!effect_row || !cast_row || !cast_row.obj) {
+        return;
+    }
+    effect_row.obj = effect_row.obj || {};
+    effect_row.obj.warlock = cast_row.obj.warlock || effect_row.obj.warlock;
+    effect_row.obj.spell = effect_row.obj.spell || cast_row.obj.spell;
+    effect_row.obj.banked = cast_row.obj.banked;
+    // The event message names the spell; the effect row's own text describes
+    // the outcome, but the spell name is what the turn news announces.
+    if (cast_row.obj.spell) {
+        effect_row.txt = cast_row.obj.spell;
+    }
+    effect_row.new_action = (effect_row.new_action || []).filter(function(a) {
+        return !((a.action === "highlight") && (a.object_type === "warlock") &&
+                 (a.object === "gestures") && (a.warlock_name === cast_row.obj.warlock));
+    });
+
+    if (cast_row.obj.warlock) {
+        effect_row.new_action.push({
+            action:"highlight", warlock_name:cast_row.obj.warlock,
+            object_type:"warlock", object:"caster", role:"actor",
+            data:[], color:"#10C9F5"
+        });
+        var caster = BGU.findWarlockByName(battle, cast_row.obj.warlock);
+        if (caster) {
+            var hga = BGU.higlightWarlockGestureBySpell(caster, cast_row.obj, battle);
+            if (hga.action !== "none") {
+                effect_row.new_action.push(hga);
+            }
+        }
+    }
+
+    effect_row.new_action.push(BGU.getSpellIconActionBySpell(cast_row.obj));
+
+    if (cast_row.obj.banked) {
+        effect_row.new_action.push({
+            action:"banked_remove", warlock_name:cast_row.obj.warlock,
+            object_type:"banked", object:"banked"
+        });
+    }
+
+    // A successful cast creates its status on the effect row. A countered,
+    // absorbed or reflected effect row keeps the status actions it already has.
+    var status_code = BGU.map_spell_name_to_status[cast_row.obj.spell];
+    if ((create_status !== false) && status_code &&
+            BGU.isWarlockName(battle, effect_row.obj.target)) {
+        var value = BGU.getNewsStatusValue(status_code, cast_row.obj.spell);
+        var found = false;
+        for (var i = 0; i < effect_row.new_action.length; ++i) {
+            var a = effect_row.new_action[i];
+            if ((a.action === "highlight") && (a.object_type === "status") &&
+                    (a.object === status_code)) {
+                a.value = value;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            effect_row.new_action.push({
+                action:"highlight", warlock_name:effect_row.obj.target,
+                object_type:"status", object:status_code,
+                icon:BGU.getNewsStatusIcon(status_code), value:value,
+                data:[], role:"target", color:"#10C9F5"
+            });
+        }
+    }
+
+    effect_row.turn_news_force_show = true;
+    effect_row.turn_news_hidden = false;
+    cast_row.turn_news_hidden = true;
+}
+
 function mergeCastIntoEffect(counter_row, cast_row, target, add_defense) {
     if (!counter_row || !cast_row || !target) {
         return;
     }
-    var merged = [], i, Ln, a;
-    var effect_actions = counter_row.new_action || [];
-    for (i = 0, Ln = effect_actions.length; i < Ln; ++i) {
-        a = effect_actions[i];
-        if ((a.action === "highlight") && (a.object_type === "warlock") &&
-                (a.object === "gestures")) {
-            continue;
-        }
-        merged.push(a);
-    }
-    var cast_actions = cast_row.new_action || [];
-    for (i = 0, Ln = cast_actions.length; i < Ln; ++i) {
-        a = cast_actions[i];
-        if ((a.action === "highlight") && (a.object_type === "status")) {
-            continue;
-        }
-        if ((a.action === "highlight") && (a.object_type === "warlock") &&
-                (a.object === "hp")) {
-            continue;
-        }
-        if ((a.action === "summon") ||
-                ((a.action === "highlight") && (a.object_type === "monster"))) {
-            continue;
-        }
-        merged.push(a);
-    }
+    attachCastMeta(counter_row, cast_row, false);
+    var merged = counter_row.new_action || [], i, Ln, a;
     var has_defense = false;
     for (i = 0, Ln = merged.length; i < Ln; ++i) {
         a = merged[i];
@@ -477,14 +526,68 @@ function mergeCastIntoEffect(counter_row, cast_row, target, add_defense) {
                      icon:BGU.getNewsStatusIcon("mshield"),data:[],
                      role:"target",color:"#FEE2D6"});
     }
-    counter_row.txt = cast_row.txt;
-    counter_row.color = cast_row.color;
-    if (cast_row.font_size) {
-        counter_row.font_size = cast_row.font_size;
-    }
     counter_row.new_action = merged;
     counter_row.turn_news_force_show = true;
+    counter_row.turn_news_hidden = false;
     cast_row.turn_news_hidden = true;
+}
+
+// A cast row is consumed by the first matching effect row. Scanning for an
+// unpaired cast keeps two casts of the same spell at the same target distinct.
+function findUnpairedCast(real_actions, spell, target) {
+    var target_name = normalizeTurnNewsName(target || "");
+    for (var i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        var row = real_actions[i];
+        if ((row.row_type !== "spell") || !row.obj || row.obj.fail ||
+                row.turn_news_hidden) {
+            continue;
+        }
+        if (!BGU.spellsPair(row.obj.spell, spell)) {
+            continue;
+        }
+        var cast_target = normalizeTurnNewsName(row.obj.target || "");
+        if (target_name && cast_target && (cast_target !== target_name)) {
+            continue;
+        }
+        if (!target_name && cast_target && (spell !== "Dispel Magic")) {
+            continue;
+        }
+        return row;
+    }
+    return null;
+}
+
+// A spell may have several effect rows (Invisibility: shimmer, then
+// disappear). When the cast is already consumed, fold the follow-up effect
+// rows into the event that already names the same spell and target.
+function mergeEffectIntoPreviousEvent(real_actions, index, row) {
+    if (!row.obj || !row.obj.spell) {
+        return false;
+    }
+    var target = normalizeTurnNewsName(row.obj.target || "");
+    for (var i = index - 1; i >= 0; --i) {
+        var prev = real_actions[i];
+        if (prev.turn_news_hidden || (prev.type >= 2 && !prev.turn_news_force_show) ||
+                (prev.row_type === "spell") || !prev.obj) {
+            continue;
+        }
+        if (!BGU.spellsPair(prev.obj.spell, row.obj.spell)) {
+            continue;
+        }
+        if (normalizeTurnNewsName(prev.obj.target || "") !== target) {
+            continue;
+        }
+        prev.new_action = (prev.new_action || []).concat(row.new_action || []);
+        // Invisibility's final row describes what the player sees: the
+        // shimmer is the lead-in, the flash and disappearance are the event.
+        if ((row.obj.spell === "Invisibility") && row.txt) {
+            prev.txt = row.txt;
+        }
+        prev.turn_news_force_show = true;
+        row.turn_news_hidden = true;
+        return true;
+    }
+    return false;
 }
 
 function prepareTurnNewsTransitions(real_actions, news_summons) {
@@ -532,8 +635,13 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             continue;
         }
         var cast_spell = cast_row.obj.spell;
-        if (cast_row.obj.fail ||
-                !BGU.map_spell_name_to_status[cast_spell] ||
+        if (cast_row.obj.fail) {
+            // A failed cast has no effect row: the cast row is the event.
+            cast_row.turn_news_force_show = true;
+            cast_row.turn_news_failed = true;
+            continue;
+        }
+        if (!BGU.map_spell_name_to_status[cast_spell] ||
                 (cast_spell === "Dispel Magic")) {
             continue;
         }
@@ -690,23 +798,41 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                                  warlock_name:summon.owner,
                                  icon:summon_icon, hp:summon_hp};
 
-            // Attach the summon to the visible cast row. The arrival row is
-            // hidden, and the cast may already have been moved next to it.
-            var transition_idx = -1;
-            if ((row.type < 2) && !row.turn_news_hidden) {
+            // The arrival row is the event; the summon cast row is metadata.
+            var transition_row = (arrival && arrival.row) ? arrival.row : row;
+            var transition_idx = real_actions.indexOf(transition_row);
+            if ((transition_idx === -1) || transition_row.turn_news_hidden ||
+                    (transition_row.row_type === "spell")) {
+                transition_idx = -1;
+            }
+            if ((transition_idx === -1) && (row.type < 2) && !row.turn_news_hidden &&
+                    (row.row_type !== "spell")) {
+                transition_row = row;
                 transition_idx = i;
-            } else if (summon.rec) {
-                for (var ci = 0, LnC = real_actions.length; ci < LnC; ++ci) {
-                    if (real_actions[ci].summon === summon.rec &&
-                            (real_actions[ci].type < 2) &&
-                            !real_actions[ci].turn_news_hidden) {
-                        transition_idx = ci;
+            }
+            if (summon.rec) {
+                var summon_cast = null;
+                for (var sc_key in active_casts) {
+                    var sc = active_casts[sc_key];
+                    if (sc.row.obj && (sc.row.obj.warlock === summon.rec.caster) &&
+                            (sc.row.obj.spell === "Summon " + summon.rec.type)) {
+                        summon_cast = sc;
                         break;
                     }
+                }
+                if (summon_cast && (transition_idx !== -1)) {
+                    attachCastMeta(transition_row, summon_cast.row);
                 }
             }
 
             if (transition_idx !== -1) {
+                // Arrival rows are #FF88FF, i.e. type 2 and normally inactive.
+                // When the arrival row owns the event, make it an active row.
+                transition_row.type = 1;
+                transition_row.turn_news_force_show = true;
+                if (summon.rec && summon.rec.type) {
+                    transition_row.txt = "Summon " + summon.rec.type;
+                }
                 addTurnNewsTransitionAction(real_actions, transition_idx, summon_action);
                 if (summon.rec) {
                     handled_summons[summon.rec.id] = true;
@@ -718,11 +844,11 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
         if (appearance) {
             var summon_spell = (appearance === "ice") ? "Summon Ice Elemental" : "Summon Fire Elemental";
             var summon_cast = active_casts_by_spell[summon_spell];
-            addTurnNewsTransitionAction(real_actions, summon_cast ? summon_cast.index : i,
-                    {action:"elemental", visible:true, type:appearance, hp:3});
             if (summon_cast) {
-                row.turn_news_hidden = true;
+                attachCastMeta(row, summon_cast.row);
             }
+            addTurnNewsTransitionAction(real_actions, i,
+                    {action:"elemental", visible:true, type:appearance, hp:3});
         }
 
         var elemental = getTurnNewsElementalAction(row);
@@ -804,7 +930,8 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             if (charm_cast) {
                 var cast_owner = charm_cast.row.obj.warlock;
                 if (cast_owner) {
-                    addTurnNewsTransitionAction(real_actions, charm_cast.index,
+                    attachCastMeta(row, charm_cast.row);
+                    addTurnNewsTransitionAction(real_actions, i,
                             {action:"charm_monster", object_type:"monster",
                              object:monster, warlock_name:cast_owner});
                 }
@@ -840,6 +967,31 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                 !row.turn_news_hidden && !(row.obj && row.obj.mirror) &&
                 !(getTurnNewsDamage(row) > 0) &&
                 !isTurnNewsHeal(row)) {
+            // Two disruption enchantments cancel each other out. The
+            // cancellation is the result of the last application, not a
+            // third spell event: fold its actions into the previous event.
+            if ((row.txt || "").indexOf("shakes his head") !== -1) {
+                for (var pi = i - 1; pi >= 0; --pi) {
+                    var prev_row = real_actions[pi];
+                    if (prev_row.turn_news_hidden ||
+                            (prev_row.type >= 2 && !prev_row.turn_news_force_show) ||
+                            (prev_row.row_type === "spell")) {
+                        continue;
+                    }
+                    if (prev_row.obj && prev_row.obj.spell &&
+                            (BGU.arr_distruption_spell.indexOf(prev_row.obj.spell) !== -1) &&
+                            (normalizeTurnNewsName(prev_row.obj.target || "") ===
+                             normalizeTurnNewsName(row.obj.target || ""))) {
+                        prev_row.new_action = (prev_row.new_action || []).concat(row.new_action || []);
+                        prev_row.turn_news_force_show = true;
+                        row.turn_news_hidden = true;
+                        break;
+                    }
+                }
+                if (row.turn_news_hidden) {
+                    continue;
+                }
+            }
             var effect_spells = getTurnNewsEffectSpells(row);
             var effect_target = normalizeTurnNewsName(row.obj ? row.obj.target : "");
             var effect_cast = null, effect_reflection = null;
@@ -859,33 +1011,37 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                     }
                     continue;
                 }
-                var candidate = active_casts[effect_spell + "|" + effect_target];
-                if (!candidate && (!effect_target || (effect_spell === "Dispel Magic"))) {
-                    candidate = active_casts_by_spell[effect_spell];
+                var candidate_row = findUnpairedCast(real_actions, effect_spell, effect_target);
+                if (!candidate_row && (!effect_target || (effect_spell === "Dispel Magic"))) {
+                    candidate_row = findUnpairedCast(real_actions, effect_spell, "");
                 }
+                var candidate = candidate_row
+                        ? {row:candidate_row, index:real_actions.indexOf(candidate_row)}
+                        : null;
                 if (candidate &&
                         (!effect_cast || (candidate.index > effect_cast.index))) {
                     effect_cast = candidate;
                 }
             }
+            if (!effect_cast && mergeEffectIntoPreviousEvent(real_actions, i, row)) {
+                continue;
+            }
             if (effect_cast) {
                 if (effect_reflection) {
                     delete reflected_casts[effect_reflection_spell];
+                } else {
+                    attachCastMeta(row, effect_cast.row);
                 }
                 if (effect_spells.indexOf("Dispel Magic") !== -1) {
-                    if (!effect_cast.row.new_action) {
-                        effect_cast.row.new_action = [];
-                    }
-                    effect_cast.row.new_action.push({action:"dispel_magic"});
+                    row.new_action = row.new_action || [];
+                    row.new_action.push({action:"dispel_magic"});
                 } else if (effect_spells.indexOf("Remove Enchantment") !== -1) {
                     var remove_target = effect_target ||
-                            (effect_cast.row.obj ? normalizeTurnNewsName(effect_cast.row.obj.target) : "");
+                            (row.obj ? normalizeTurnNewsName(row.obj.target) : "");
                     var remove_info = getTurnNewsTargetInfo(remove_target);
                     if (remove_info) {
-                        if (!effect_cast.row.new_action) {
-                            effect_cast.row.new_action = [];
-                        }
-                        effect_cast.row.new_action.push({
+                        row.new_action = row.new_action || [];
+                        row.new_action.push({
                             action:"remove_enchantments",
                             object_type:remove_info.type,
                             object:remove_info.name,
@@ -893,7 +1049,59 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
                         });
                     }
                 }
-                row.turn_news_hidden = true;
+                row.turn_news_force_show = true;
+            } else if (row.obj && (row.obj.kind === "apply") &&
+                       !row.obj.shield && !row.obj.counter_spell && !row.obj.mirror &&
+                       !row.obj.absorbed && !row.obj.failed) {
+                // No cast row: the effect row is the event.
+                row.turn_news_force_show = true;
+                if (row.obj.spell) {
+                    row.txt = row.obj.spell;
+                }
+                if (effect_spells.indexOf("Dispel Magic") !== -1) {
+                    row.new_action = row.new_action || [];
+                    row.new_action.push({action:"dispel_magic"});
+                } else if (effect_spells.indexOf("Remove Enchantment") !== -1) {
+                    var effect_remove_info = getTurnNewsTargetInfo(effect_target);
+                    if (effect_remove_info) {
+                        row.new_action = row.new_action || [];
+                        row.new_action.push({
+                            action:"remove_enchantments",
+                            object_type:effect_remove_info.type,
+                            object:effect_remove_info.name,
+                            warlock_name:effect_remove_info.owner
+                        });
+                    }
+                }
+                var status_target = BGU.findWarlockByName(battle, row.obj.target || "");
+                if (status_target) {
+                    var status_code = BGU.getNewsStatusCode(row.obj, status_target);
+                    if (status_code) {
+                        var status_value = BGU.getNewsStatusValue(status_code,
+                                                                 row.obj.spell || "");
+                        var status_action = null;
+                        row.new_action = row.new_action || [];
+                        for (var sai = 0; sai < row.new_action.length; ++sai) {
+                            if ((row.new_action[sai].action === "highlight") &&
+                                    (row.new_action[sai].object_type === "status") &&
+                                    (row.new_action[sai].object === status_code)) {
+                                status_action = row.new_action[sai];
+                                break;
+                            }
+                        }
+                        if (status_action) {
+                            status_action.value = status_value;
+                        } else {
+                            row.new_action.push({
+                                action:"highlight", warlock_name:status_target.name,
+                                object_type:"status", object:status_code,
+                                icon:BGU.getNewsStatusIcon(status_code),
+                                value:status_value, data:[], role:"target",
+                                color:"#10C9F5"
+                            });
+                        }
+                    }
+                }
             }
         }
 
@@ -902,8 +1110,10 @@ function prepareTurnNewsTransitions(real_actions, news_summons) {
             var annihilated_target = normalizeTurnNewsName(row.obj.target || "");
             var annihilated_cast = active_casts["Blindness|" + annihilated_target] ||
                     active_casts_by_spell["Blindness"];
-            addTurnNewsTransitionAction(real_actions,
-                    annihilated_cast ? annihilated_cast.index : i,
+            if (annihilated_cast) {
+                attachCastMeta(row, annihilated_cast.row);
+            }
+            addTurnNewsTransitionAction(real_actions, i,
                     {action:"death", object_type:"monster",
                      object:annihilated_target, defer_to_target:true,
                      warlock_name:getMonsterOwnerName(annihilated_target) || annihilated_target});
@@ -1635,9 +1845,6 @@ function prepareTurnNewsDamage(real_actions) {
             continue;
         }
 
-        if (isTurnNewsElementalSummary(row)) {
-            row.turn_news_hidden = true;
-        }
 
         var reflection = getTurnNewsReflection(row);
         if (reflection) {
@@ -1692,11 +1899,17 @@ function prepareTurnNewsDamage(real_actions) {
             }
             cause = findTurnNewsHealCause(target.name, heal_causes);
             if (cause) {
-                var heal_amount = getTurnNewsHealAmount(cause.spell);
-                addTurnNewsHeal(cause.row, row, target, heal_amount);
+                attachCastMeta(row, cause.row);
+                addTurnNewsHeal(row, row, target, getTurnNewsHealAmount(cause.spell));
                 continue;
             }
-            console.log("prepareTurnNewsHeal: no cause for", row.txt, JSON.stringify(row.obj));
+            // No cast row: the effect row is the event.
+            if (row.obj && row.obj.spell) {
+                row.txt = row.obj.spell;
+            }
+            addTurnNewsHeal(row, row, target,
+                            getTurnNewsHealAmount(row.obj ? row.obj.spell : ""));
+            row.turn_news_force_show = true;
             continue;
         }
 
@@ -1761,7 +1974,8 @@ function prepareTurnNewsDamage(real_actions) {
         if (damage_spell) {
             cause = findTurnNewsSpellCause(damage_spell, target.name, spell_causes);
             if (cause) {
-                addTurnNewsDamage(cause.row, row, target, damage);
+                attachCastMeta(row, cause.row);
+                addTurnNewsDamage(row, row, target, damage);
                 continue;
             }
         }
@@ -1789,8 +2003,26 @@ function prepareTurnNewsDamage(real_actions) {
             continue;
         }
 
-        console.log("prepareTurnNewsDamage: no cause for", row.txt, JSON.stringify(row.obj));
-        addTurnNewsHpAction(row, target, -damage);
+        if (damage_spell) {
+            row.txt = damage_spell;
+            row.new_action = row.new_action || [];
+            var spell_icon = BGU.getSpellIconActionBySpell({spell:damage_spell, fail:""});
+            var has_spell_icon = false;
+            for (var si = 0, LnSi = row.new_action.length; si < LnSi; ++si) {
+                var sa = row.new_action[si];
+                if ((sa.action === "icon") && (sa.large_icon === spell_icon.large_icon)) {
+                    has_spell_icon = true;
+                    break;
+                }
+            }
+            if (!has_spell_icon) {
+                row.new_action.push(spell_icon);
+            }
+            addTurnNewsDamage(row, row, target, damage);
+            row.turn_news_force_show = true;
+        } else {
+            addTurnNewsHpAction(row, target, -damage);
+        }
     }
 }
 
@@ -1809,6 +2041,52 @@ function rememberTurnNewsBank(real_actions, battle) {
             if ((w.name === row.obj.warlock) && !w.banked_spell) {
                 w.banked_spell = row.obj.spell;
             }
+        }
+    }
+}
+
+// The cast/effect pass may rename an ongoing status row to its spell name.
+function rememberOngoingStatusText(real_actions) {
+    for (var i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        if (real_actions[i].obj && real_actions[i].obj.status_ongoing) {
+            real_actions[i].turn_news_ongoing_txt = real_actions[i].txt;
+        }
+    }
+}
+
+// An ongoing status row closes the status it names: the card has done its job.
+function addOngoingStatusRemovals(real_actions) {
+    for (var i = 0, Ln = real_actions.length; i < Ln; ++i) {
+        var row = real_actions[i];
+        if (!row.obj || !row.obj.status_ongoing) {
+            continue;
+        }
+        if (row.turn_news_ongoing_txt !== undefined) {
+            row.txt = row.turn_news_ongoing_txt;
+        }
+        var target = normalizeTurnNewsName(row.obj.target || "");
+        var w = BGU.findWarlockByName(battle, target);
+        if (!w) {
+            continue;
+        }
+        var code = row.obj.status_code || BGU.getNewsStatusCode(row.obj, w);
+        if (!code) {
+            continue;
+        }
+        row.new_action = row.new_action || [];
+        var exists = false;
+        for (var a = 0, LnA = row.new_action.length; a < LnA; ++a) {
+            var action = row.new_action[a];
+            if ((action.action === "status_remove") &&
+                    (action.object === code) &&
+                    (action.warlock_name === target)) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            row.new_action.push({action:"status_remove", object_type:"status",
+                                 object:code, warlock_name:target});
         }
     }
 }
@@ -1837,7 +2115,7 @@ function prepareTurnActionInfo(last_turn_hist) {
         new_action = [];
         if ((last_turn_hist[i].type === 0)) {
             // chat message
-            if (battle.with_bot) {
+            if (battle.with_bot || battle.replay) {
                 continue;
             }
             new_action.push({action:"icon",large_icon:"chat",small_icon:"",title:"",text:"",background_color:"#210430",border_color:"#E7FFFF"});
@@ -1865,13 +2143,16 @@ function prepareTurnActionInfo(last_turn_hist) {
     var news_summons = BGU.prepareNewsMonsters(real_actions, battle);
     BGU.prepareAndSortRealAction(real_actions, battle);
     prepareTurnNewsDamage(real_actions);
+    rememberOngoingStatusText(real_actions);
     prepareTurnNewsTransitions(real_actions, news_summons);
+    addOngoingStatusRemovals(real_actions);
     rememberTurnNewsBank(real_actions, battle);
     var beginner = mainWindow.playerSpellbookLevel < 5;
 
     for (i = 0, Ln = real_actions.length; i < Ln; ++i) {
         //new_action = BGU.getMessageActionByRow(real_actions[i], battle); // before change color
-        if ((real_actions[i].obj && real_actions[i].obj.kind === "result") ||
+        if ((real_actions[i].obj && (real_actions[i].obj.kind === "result" &&
+                !real_actions[i].obj.status_ongoing)) ||
                 real_actions[i].turn_news_hidden || isTurnNewsFizzle(real_actions[i]) ||
                 isMonsterDirectMessage(real_actions[i])) {
             continue;
@@ -1892,7 +2173,10 @@ function prepareTurnActionInfo(last_turn_hist) {
             real_actions[i].color = "#10C9F5";
         }
         if (!real_actions[i].font_size) {
-            real_actions[i].font_size = 21;
+            // Spell names are the event banner and keep the cast row's large
+            // font; full-sentence effect messages use the normal size.
+            real_actions[i].font_size =
+                    BGU.map_spell_name_to_gesture[real_actions[i].txt] ? 42 : 21;
         }
 
         //BGU.replaceAll(real_actions[i].txt, '&quot;', '"')
