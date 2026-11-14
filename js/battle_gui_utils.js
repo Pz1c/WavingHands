@@ -1105,6 +1105,14 @@ function parseAttackByText(txt) {
         res = parseSimpleAttack(txt.replace(" stabs ", " attacks "));
     } else if (txt.indexOf("tries to attack") !== -1) {
         res = parseSimpleAttack(txt, "tries to attack");
+    } else if (/\bdoes\s+\d+\s+damage\s+to\b/i.test(txt)) {
+        // Extra attack granted by Time Stop: "Outside time, Gaunt Giant does
+        // 4 damage to Azi."
+        var m = txt.match(/^(?:Outside time,\s*)?(.+?)\s+does\s+(\d+)\s+damage\s+to\s+(.+)\.$/i);
+        if (m) {
+            res = {aggressor:m[1].trim(), target:m[3].trim(),
+                   damage:m[2], success:1, shield:0};
+        }
     } else {
         // message like "Galbarad starts to lose coordination" or "Smelly Goblin is hit by a Magic Missile, for 1 damage."
         // moved to getMessageActionByOther
@@ -1356,7 +1364,8 @@ function getMessageTypeByRow(row) {
         }
         return "death";
     } else if (((row.txt.indexOf(" attack") !== -1) || (row.txt.indexOf(" swing ") !== -1) ||
-                (row.txt.indexOf(" stabs ") !== -1)) &&
+                (row.txt.indexOf(" stabs ") !== -1) ||
+                /\bdoes\s+\d+\s+damage\s+to\b/i.test(row.txt)) &&
                (row.txt.indexOf("too scared") === -1) &&
                (row.txt.indexOf("can't move to attack") === -1)&&
                (row.txt.indexOf("trips on its feet") === -1)) {
