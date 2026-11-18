@@ -89,6 +89,10 @@ class QWarloksDuelCore : public QGameCore
     // its length, for the unread mark of the main menu and the banner of the game list.
     Q_PROPERTY(QString messages READ messages NOTIFY messagesChanged)
     Q_PROPERTY(int messageCount READ messageCount NOTIFY messagesChanged)
+    // What the player wrote, for the answers of the Messages window: a JSON list of
+    // {to, ts, text, after}, oldest first. The site keeps no outbox, so this is the device's
+    // own record, see addSentMessage.
+    Q_PROPERTY(QString sentMessages READ sentMessages NOTIFY sentMessagesChanged)
 
 public:
     explicit QWarloksDuelCore(QObject *parent = nullptr, bool AsService = false);
@@ -127,6 +131,7 @@ public:
     bool fastTarget();
     QString messages();
     int messageCount();
+    QString sentMessages();
 
 signals:
     void needLogin();
@@ -160,6 +165,7 @@ signals:
     void fastGestureChanged();
     void fastTargetChanged();
     void messagesChanged();
+    void sentMessagesChanged();
     // A message went out to the warlock named (issue #320).
     void messageSent(QString to);
     void needAIAnswer(QString Login, int MagicBookLevel);
@@ -199,6 +205,8 @@ public slots:
     bool aiAcceptChallenge(int battle_id, bool changeAI = true);
     void rejectChallenge(int battle_id);
     void deleteMsg(QString msg_from);
+    // A message of sentMessages, by its ts: nothing to ask the site for.
+    void deleteSentMsg(QString key);
     void forceSurrender(int battle_id, int turn, bool Silent = false);
     void sendOrders(QString orders);
     void setLogin(QString Login, QString Password);
@@ -352,6 +360,11 @@ protected:
     QString messageRecipientId(const QString &Login);
     void releasePendingMessage(const QString &url);
     void clearMessages();
+    void addSentMessage(const QString &To, const QString &Msg);
+    void sentMessagesUpdated(bool Save = true);
+    void clearSentMessages();
+    void saveSentMessages();
+    void loadSentMessages();
 
     //void setOrganization() override;
     void saveGameParameters() override;
@@ -582,7 +595,8 @@ private:
     QStringList _msg;
     // Messages (issue #320): the inbox of parseMessages (_msg above keeps its HTML for
     // playerInfo), as JSON for QML and as a list for the sender -> id lookup; the message
-    // waiting for its recipient's profile page; who the send in flight is addressed to.
+    // waiting for its recipient's profile page; who the send in flight is addressed to, and
+    // what it says.
     struct QPlayerMessage {
         QString from;
         QString id;
@@ -594,6 +608,17 @@ private:
     QString _pendingMsgTo;
     QString _pendingMsgText;
     QString _msgSentTo;
+    QString _msgSentText;
+    // What the player wrote (sentMessages): "after" is the text of the recipient's own
+    // message the inbox held at the time, ts (msec) doubles as the key of deleteSentMsg.
+    struct QSentMessage {
+        QString to;
+        QString text;
+        QString after;
+        qint64 ts = 0;
+    };
+    QList<QSentMessage> _outbox;
+    QString _sentMessages = "[]";
     QList<QValueName> _accounts;
     qint64 _lastPlayersScan;
     // Caster link: the roster source when it is up, plus the delta watermark.

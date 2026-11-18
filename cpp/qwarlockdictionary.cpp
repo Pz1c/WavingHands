@@ -138,6 +138,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("MessageDelete", "Delete", "Löschen", "Eliminar");
     fillDictionary("MessageView", "View", "Ansehen", "Ver");
     fillDictionary("MessageSent", "Message sent to %1", "Nachricht an %1 gesendet", "Mensaje enviado a %1");
+    // the player's own message heading a group of the list: who wrote it, and to whom
+    fillDictionary("MessageFromTo", "%1 to %2", "%1 an %2", "%1 para %2");
     fillDictionary("DialogStartBattle", "Start battle #ID #FL with #LOGINS", "Kampf #ID #FL mit #LOGINS starten", "Empezar la batalla #ID #FL con #LOGINS");
     fillDictionary("DialogJoinBattle", "Join battle #ID #FL with #LOGINS, need #NEED more besides you", "Kampf #ID #FL mit #LOGINS beitreten, außer dir werden noch #NEED benötigt", "Unirse a la batalla #ID #FL con #LOGINS, faltan #NEED además de ti");
     fillDictionary("DialogJoinBattle", "Join battle #ID #FL with #LOGINS, need #NEED more besides you", "Kampf #ID #FL mit #LOGINS beitreten, außer dir werden noch #NEED benötigt", "Unirse a la batalla #ID #FL con #LOGINS, faltan #NEED además de ti");

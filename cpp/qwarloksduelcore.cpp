@@ -32,6 +32,8 @@ static const int kResultAnnounceDelayMs = 1500;
 // How long the Settings window's "Send notification token" waits for the server's answer
 // (connect 5 s + AUTH 20 s or LOGIN 10 s + PUSH 2.5 s at worst) before "Not connected".
 static const int kPushForceTimeoutMs = 20000;
+// The player's own messages the device keeps (sentMessages); past it the oldest are dropped.
+static const int kSentMessagesMax = 50;
 
 // The FCM token's way from Java to the core (issue #336): NotificationClient.pushTokenChanged,
 // a native the core binds in registerPushNatives(). Java calls it from its own threads (the
@@ -402,6 +404,7 @@ QString QWarloksDuelCore::messageRecipientId(const QString &Login) {
 void QWarloksDuelCore::postMessage(const QString &Login, const QString &RecipientId, const QString &Msg) {
     setIsLoading(true);
     _msgSentTo = Login;
+    _msgSentText = Msg;
 
     QString postData;
     postData.append(QString("rcpt=%1&message=").arg(RecipientId));
@@ -437,8 +440,9 @@ bool QWarloksDuelCore::finishMessageRecipient(QString &Data) {
 // The /sendmess reply: a page or a redirect. A session that expired meanwhile gets the
 // login form instead of the page's "Log out" link, the one failure the body shows.
 bool QWarloksDuelCore::finishSendMessage(QString &Data, int StatusCode) {
-    QString to = _msgSentTo;
+    QString to = _msgSentTo, msg = _msgSentText;
     _msgSentTo.clear();
+    _msgSentText.clear();
     bool login_form = (Data.indexOf("ACTION=\"/login\"") != -1) && (Data.indexOf("HREF=\"/logout\"") == -1);
     qDebug() << "QWarloksDuelCore::finishSendMessage" << to << StatusCode << login_form;
     if ((StatusCode >= 400) || login_form) {
@@ -450,6 +454,7 @@ bool QWarloksDuelCore::finishSendMessage(QString &Data, int StatusCode) {
         emit errorOccurred();
         return false;
     }
+    addSentMessage(to, msg);
     emit messageSent(to);
     return true;
 }
@@ -463,6 +468,7 @@ void QWarloksDuelCore::releasePendingMessage(const QString &url) {
     }
     if (url.indexOf("/sendmess") != -1) {
         _msgSentTo.clear();
+        _msgSentText.clear();
     }
 }
 
@@ -472,11 +478,118 @@ void QWarloksDuelCore::clearMessages() {
     _pendingMsgTo.clear();
     _pendingMsgText.clear();
     _msgSentTo.clear();
+    _msgSentText.clear();
     if (_messageCount > 0) {
         _messages = "[]";
         _messageCount = 0;
         emit messagesChanged();
     }
+    clearSentMessages();
+}
+
+// The answers of the Messages window (https://github.com/Pz1c/WavingHands/issues/320): the
+// site shows a player only what others wrote, so a message that went out is noted here, on
+// the device, and saved with the account's settings (gone with a logout or another account).
+// "after" tells an answer from a message written first: while the inbox still holds the
+// recipient's message of that moment the row belongs under it, and above whatever they
+// write later.
+void QWarloksDuelCore::addSentMessage(const QString &To, const QString &Msg) {
+    if (To.isEmpty() || Msg.isEmpty()) {
+        return;
+    }
+    QSentMessage m;
+    m.to = To;
+    m.text = Msg;
+    // the name as the site spells it, not as it was typed
+    QWarlockStat *ws = _playerStats.value(To.toLower(), nullptr);
+    if (ws && (ws->name().compare(To, Qt::CaseInsensitive) == 0)) {
+        m.to = ws->name();
+    }
+    foreach (const QPlayerMessage &im, _inbox) {
+        if (im.from.compare(To, Qt::CaseInsensitive) == 0) {
+            m.to = im.from;
+            m.after = im.text;
+        }
+    }
+    m.ts = QDateTime::currentMSecsSinceEpoch();
+    if (!_outbox.isEmpty() && (m.ts <= _outbox.last().ts)) {
+        m.ts = _outbox.last().ts + 1;
+    }
+    _outbox.append(m);
+    while (_outbox.size() > kSentMessagesMax) {
+        _outbox.removeFirst();
+    }
+    sentMessagesUpdated();
+}
+
+void QWarloksDuelCore::deleteSentMsg(QString key) {
+    qint64 ts = key.toLongLong();
+    for (int i = 0; i < _outbox.size(); ++i) {
+        if (_outbox.at(i).ts == ts) {
+            _outbox.removeAt(i);
+            sentMessagesUpdated();
+            return;
+        }
+    }
+}
+
+void QWarloksDuelCore::sentMessagesUpdated(bool Save) {
+    QString json = "[";
+    foreach (const QSentMessage &m, _outbox) {
+        if (json.size() > 1) {
+            json.append(",");
+        }
+        json.append(QString("{\"to\":\"%1\",\"ts\":%2,\"text\":\"%3\",\"after\":\"%4\"}")
+                    .arg(QWarlockUtils::jsonEscape(m.to), QString::number(m.ts), QWarlockUtils::jsonEscape(m.text),
+                         QWarlockUtils::jsonEscape(m.after)));
+    }
+    json.append("]");
+    if (Save) {
+        saveParameters(false, false, true);
+    }
+    if (json != _sentMessages) {
+        _sentMessages = json;
+        emit sentMessagesChanged();
+    }
+}
+
+void QWarloksDuelCore::clearSentMessages() {
+    if (!_outbox.isEmpty()) {
+        _outbox.clear();
+        sentMessagesUpdated(false);
+    }
+}
+
+void QWarloksDuelCore::saveSentMessages() {
+    // a deleted message must not stay behind as an entry past the new size
+    settings->remove("sent_messages");
+    settings->beginWriteArray("sent_messages", _outbox.size());
+    for (int i = 0; i < _outbox.size(); ++i) {
+        settings->setArrayIndex(i);
+        settings->setValue("to", _outbox.at(i).to);
+        settings->setValue("text", _outbox.at(i).text);
+        settings->setValue("after", _outbox.at(i).after);
+        settings->setValue("ts", _outbox.at(i).ts);
+    }
+    settings->endArray();
+}
+
+void QWarloksDuelCore::loadSentMessages() {
+    _outbox.clear();
+    int size = settings->beginReadArray("sent_messages");
+    for (int i = 0; i < size; ++i) {
+        settings->setArrayIndex(i);
+        QSentMessage m;
+        m.to = settings->value("to").toString();
+        m.text = settings->value("text").toString();
+        m.after = settings->value("after").toString();
+        m.ts = settings->value("ts").toLongLong();
+        if (!m.to.isEmpty() && !m.text.isEmpty() && (m.ts > 0)) {
+            _outbox.append(m);
+        }
+    }
+    settings->endArray();
+    sentMessagesUpdated(false);
 }
 
 void QWarloksDuelCore::regNewUser(const QString &Login, const QString &Email, const QString &Pass) {
@@ -4294,6 +4407,10 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     _pushForceTimer.stop();
     setServerPushActive(false);
 
+    if (_login.compare(Login, Qt::CaseInsensitive) != 0) {
+        // what the previous account wrote is not this one's to read
+        clearSentMessages();
+    }
     _login = Login;
     _password = Password;
     _finished_battles.clear();
@@ -4478,6 +4595,8 @@ void QWarloksDuelCore::saveGameParameters() {
         settings->setValue("t", cti.value());
     }
     settings->endArray();
+
+    saveSentMessages();
 }
 
 void QWarloksDuelCore::loadGameParameters() {
@@ -4491,6 +4610,8 @@ void QWarloksDuelCore::loadGameParameters() {
     _pushNotifications = settings->value("push_notifications", "true").toBool();
     _fastGesture = settings->value("fast_gesture", "false").toBool();
     _fastTarget = settings->value("fast_target", "false").toBool();
+    // Likewise what the player wrote to others (issue #320): the site cannot give it back.
+    loadSentMessages();
     _exp_lv = settings->value("exp_lv", "1").toInt();
     if (_exp_lv < 1) {
         _exp_lv = 1;
@@ -4625,6 +4746,10 @@ QString QWarloksDuelCore::messages() {
 
 int QWarloksDuelCore::messageCount() {
     return _messageCount;
+}
+
+QString QWarloksDuelCore::sentMessages() {
+    return _sentMessages;
 }
 
 QString QWarloksDuelCore::playerJson() {
