@@ -43,6 +43,11 @@ void QWarlockStat::init(QString Name, bool Registered, int Ladder, int Melee, in
 
 void QWarlockStat::parseSiteAndInit(QString Raw) {
     QStringList data = Raw.split(",");
+    if (data.size() < 12) {
+        // not a whole row: no name, and whoever reads the roster drops it
+        init("", false, 0, 0, 0, 0, 0, 0, "", 0, false);
+        return;
+    }
     bool Registered = data.at(0).compare("1") == 0;
     QString Name = data.at(1);
     int Ladder = data.at(2).toInt();
@@ -69,6 +74,12 @@ void QWarlockStat::parseSiteAndInit(QString Raw) {
 
 void QWarlockStat::parseIniAndInit(QString Raw) {
     QStringList data = Raw.split(",");
+    if (data.size() < 10) {
+        // A damaged row: no name, and loadGameParameters drops it. One written before the
+        // row got its last two fields is good, they read as "not mobile, id unknown".
+        init("", false, 0, 0, 0, 0, 0, 0, "", 0, false);
+        return;
+    }
     bool Registered = data.at(0).compare("1") == 0;
     QString Name = data.at(1);
     int Ladder = data.at(2).toInt();
@@ -78,9 +89,9 @@ void QWarlockStat::parseIniAndInit(QString Raw) {
     int Died = data.at(6).toInt();
     int Elo = data.at(7).toInt();
     QString Color = data.at(8);
-    qint64 la = data.at(9).toInt();
-    bool Mobile = data.at(10).toInt() == 1;
-    int id = data.at(11).toInt();
+    qint64 la = data.at(9).toLongLong();
+    bool Mobile = data.value(10).toInt() == 1;
+    int id = data.value(11).toInt();
     qDebug() << "QWarlockStat::parseIniAndInit" << Raw << Registered << Name << Ladder << Melee << Played << Won << Died << Elo << la << id;
 
     init(Name, Registered, Ladder, Melee, Played, Won, Died, Elo, Color, la, Mobile, id);

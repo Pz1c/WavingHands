@@ -88,6 +88,9 @@ public:
     void setDescription(const QString &newDescription);
 
     QString containParticipant(const QString& line);
+    // The participant a result line ("<B>Danny is victorious!</B>") names, by the whole name:
+    // Dan is not the winner of that battle. Empty when it names none of them.
+    QString victoriousParticipant(const QString &line) const;
 
     void setSubTitle(const QString &newSub_title);
 
@@ -110,6 +113,9 @@ public:
     // (liveTurnEntered) or LIVE_MATCH_NOTICE_SEC after the app learned of it
     // (liveTurnNoticed), whichever comes first, and stops when the orders are in
     // (liveTurnDone). Every Now is in seconds since epoch.
+    // Only setLive() makes a battle a live match, and only the app's own live challenge and
+    // the live invite the player accepted call it: a description that reads as live-match
+    // rules does not (setDescription), any warlock can write one on a public challenge.
     bool live() const;
     void setLive(int Total, int Extra, qint64 ValidBy);
     qint64 liveValidBy() const;

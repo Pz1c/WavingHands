@@ -4,6 +4,9 @@
 // site answers with the player page, so the list follows messagesChanged). The New Message
 // form posts through sendMessageTo, which finds the recipient by name; tapping a sender's
 // name fills its "To:" field. What a send came to is written beside the form's title.
+// What the player wrote shows in the list too, under the message it answers, with the
+// player's own name (plain, not a link): QWarloksDuelCore::sentMessages, kept on the device
+// as the site has no outbox, so its Delete is deleteSentMsg. See buildRows.
 // https://github.com/Pz1c/WavingHands/issues/374: a left drawer like the main menu (same
 // width and brown background) over the dimmed game list. It is still a window of wnd_utils,
 // so Back and the error windows opened above it work as before; a tap on the dimmed part
@@ -23,6 +26,8 @@ Item {
     property string code: "wnd_messages"
     // the parsed core.messages: [{from, id, text}]
     property var inbox: []
+    // the list: the inbox and the player's own messages, see buildRows
+    property var rows: []
     // what the last send came to
     property string status: ""
     property bool canSend: (tiTo.text.trim().length > 0) && (teSay.text.trim().length > 0)
@@ -118,7 +123,7 @@ Item {
                 color: "#E7FFFF"
                 horizontalAlignment: Text.AlignLeft
                 wrapMode: Text.WordWrap
-                visible: dMainItem.inbox.length === 0
+                visible: dMainItem.rows.length === 0
                 text: dict.getStringByCode("NoIncomingMessages")
             }
 
@@ -131,29 +136,43 @@ Item {
                 anchors.bottom: iNewMessage.top
                 anchors.bottomMargin: 12 * mainWindow.ratioObject
                 clip: true
-                model: dMainItem.inbox
+                model: dMainItem.rows
                 ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
+                // a sender's name is a link (tap to answer), the player's own is not; the
+                // messages of one exchange stay close, the line comes under the last of them
                 delegate: Item {
                     id: idRow
                     width: lvInbox.width
-                    height: tRowFrom.height + tRowText.height + 42 * mainWindow.ratioObject
+                    height: tRowFrom.height + tRowText.height + (modelData.tail ? 42 : 26) * mainWindow.ratioObject
 
                     Text {
                         id: tRowFrom
                         anchors.top: parent.top
                         anchors.topMargin: 12 * mainWindow.ratioObject
                         anchors.left: parent.left
+                        width: Math.min(implicitWidth, parent.width - tRowColon.width)
                         font.pixelSize: 28 * mainWindow.ratioFont
-                        font.underline: true
-                        color: "#A8F4F4"
-                        text: modelData.from + ":"
+                        font.underline: !modelData.mine
+                        color: modelData.mine ? "#E7FFFF" : "#A8F4F4"
+                        elide: Text.ElideRight
+                        text: modelData.title
 
                         MouseArea {
                             id: maRowFrom
                             anchors.fill: parent
-                            onClicked: dMainItem.replyTo(modelData.from)
+                            enabled: !modelData.mine
+                            onClicked: dMainItem.replyTo(modelData.name)
                         }
+                    }
+
+                    Text {
+                        id: tRowColon
+                        anchors.left: tRowFrom.right
+                        anchors.baseline: tRowFrom.baseline
+                        font.pixelSize: tRowFrom.font.pixelSize
+                        color: tRowFrom.color
+                        text: ":"
                     }
 
                     Text {
@@ -193,6 +212,7 @@ Item {
                         height: 1
                         color: "#E7FFFF"
                         opacity: 0.3
+                        visible: modelData.tail
                     }
                 }
             }
@@ -383,6 +403,9 @@ Item {
         function onMessagesChanged() {
             dMainItem.refreshInbox();
         }
+        function onSentMessagesChanged() {
+            dMainItem.refreshInbox();
+        }
         // only a send of this form: the profile window's form sends through the same core
         function onMessageSent(to) {
             if (!dMainItem.visible) {
@@ -390,6 +413,7 @@ Item {
             }
             teSay.text = "";
             dMainItem.status = dict.getStringByCode("MessageSent").replace("%1", to);
+            dMainItem.showLastSent();
         }
     }
 
@@ -407,13 +431,88 @@ Item {
     }
 
     function refreshInbox() {
-        var arr = [];
+        var arr = [], sent = [];
         try {
             arr = JSON.parse(mainWindow.gameCore.messages);
+            sent = JSON.parse(mainWindow.gameCore.sentMessages);
         } catch (e) {
             console.log("wnd_messages.refreshInbox", e);
         }
         inbox = arr;
+        rows = buildRows(arr, sent);
+    }
+
+    // The list: the inbox in the site's order with the player's own messages (oldest first)
+    // put in. One written while the recipient's message was in the inbox (its "after" is
+    // that message's text) is an answer and goes under it; any other goes above the
+    // recipient's messages, which came later, or to the end when there are none. Rows of
+    // one warlock in a run make an exchange: "tail" ends it, and an own message at its head
+    // names the recipient, there being no message above to tell.
+    function buildRows(msgs, sent) {
+        var res = [], above = [], under = [], first = {}, rest = {}, rest_order = [];
+        var me = mainWindow.gameCore.login, i, j, peer, at, list;
+        for (i = 0; i < msgs.length; ++i) {
+            peer = msgs[i].from.toLowerCase();
+            if (first[peer] === undefined) {
+                first[peer] = i;
+            }
+            above.push([]);
+            under.push([]);
+        }
+        for (j = 0; j < sent.length; ++j) {
+            peer = sent[j].to.toLowerCase();
+            at = -1;
+            for (i = 0; i < msgs.length; ++i) {
+                if ((msgs[i].from.toLowerCase() === peer) && (msgs[i].text === sent[j].after)) {
+                    at = i;
+                }
+            }
+            if (at !== -1) {
+                list = under[at];
+            } else if (first[peer] !== undefined) {
+                list = above[first[peer]];
+            } else {
+                // nothing of this warlock's in the inbox: one exchange for each of them
+                if (rest[peer] === undefined) {
+                    rest[peer] = [];
+                    rest_order.push(peer);
+                }
+                list = rest[peer];
+            }
+            list.push({mine: true, peer: peer, name: sent[j].to, id: sent[j].ts, text: sent[j].text});
+        }
+        for (i = 0; i < msgs.length; ++i) {
+            res = res.concat(above[i]);
+            res.push({mine: false, peer: msgs[i].from.toLowerCase(), name: msgs[i].from, id: msgs[i].id, text: msgs[i].text});
+            res = res.concat(under[i]);
+        }
+        for (i = 0; i < rest_order.length; ++i) {
+            res = res.concat(rest[rest_order[i]]);
+        }
+        for (i = 0; i < res.length; ++i) {
+            res[i].tail = (i === res.length - 1) || (res[i + 1].peer !== res[i].peer);
+            if (!res[i].mine) {
+                res[i].title = res[i].name;
+            } else if ((i === 0) || (res[i - 1].peer !== res[i].peer)) {
+                res[i].title = dict.getStringByCode("MessageFromTo").replace("%1", me).replace("%2", res[i].name);
+            } else {
+                res[i].title = me;
+            }
+        }
+        return res;
+    }
+
+    // the message just sent may have landed below the visible part of the list
+    function showLastSent() {
+        var idx = -1, i;
+        for (i = 0; i < rows.length; ++i) {
+            if (rows[i].mine && ((idx === -1) || (rows[i].id > rows[idx].id))) {
+                idx = i;
+            }
+        }
+        if (idx !== -1) {
+            lvInbox.positionViewAtIndex(idx, ListView.Contain);
+        }
     }
 
     function replyTo(name) {
@@ -424,6 +523,11 @@ Item {
 
     function deleteMessage(msg) {
         console.log("wnd_messages.deleteMessage", JSON.stringify(msg));
+        if (msg.mine) {
+            mainWindow.logEvent("Messages_Delete", {Source:"sent"});
+            mainWindow.gameCore.deleteSentMsg("" + msg.id);
+            return;
+        }
         mainWindow.logEvent("Messages_Delete", {});
         mainWindow.gameCore.deleteMsg("" + msg.id);
     }

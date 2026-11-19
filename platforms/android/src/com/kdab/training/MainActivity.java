@@ -34,13 +34,6 @@ public class MainActivity extends QtActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         appMainActivity = this;
-        // prepare service
-        try {
-            CheckScheduler.schedule(this, true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            //return "";
-        }
         int need_check_ref = 0;
         try {
             Context context = getApplicationContext();
@@ -146,9 +139,9 @@ public class MainActivity extends QtActivity {
         super.onResume();
         isForeground = true;
         try {
-            // The user may have changed the notification setting while we were away, and
-            // the poll cadence depends on when they were last active - re-queue on resume.
-            CheckScheduler.schedule(this, true);
+            // On screen there is nothing to check: this puts the pending background check
+            // off, onPause queues the real one.
+            CheckScheduler.schedule(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -192,6 +185,13 @@ public class MainActivity extends QtActivity {
     @Override
     public void onPause() {
         isForeground = false;
+        try {
+            // The player is leaving: from here on the background check is what tells them
+            // the news the caster server's push does not, so the chain starts now.
+            CheckScheduler.schedule(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         super.onPause();
     }
 
@@ -201,8 +201,9 @@ public class MainActivity extends QtActivity {
         Log.d(TAG, "onRequestPermissionsResult: " + requestCode);
         if (requestCode == NOTIFICATION_PERMISSION_CODE) {
             boolean granted = (grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED);
+            // Nothing to queue: the dialog paused the activity, onResume and the next
+            // onPause read the permission again (CheckScheduler).
             Log.d(TAG, "POST_NOTIFICATIONS granted: " + granted);
-            CheckScheduler.schedule(this, true);
         }
     }
 
@@ -215,9 +216,7 @@ public class MainActivity extends QtActivity {
                 ActivityCompat.requestPermissions(this,
                                     new String[]{Manifest.permission.POST_NOTIFICATIONS},
                                     NOTIFICATION_PERMISSION_CODE);
-                return;
             }
-            CheckScheduler.schedule(this, true);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -90,6 +90,10 @@ protected:
     // A retry of a request that does not depend on the logged-in account
     // survives an account change (see _sessionEpoch).
     virtual bool retryOutlivesSession(const QString &url) const;
+    // Whether a request to this URL keeps the certificate checks of TLS: an error of theirs
+    // then ends it like any other network error. Without (the default, as every request
+    // went out before) the errors are ignored.
+    virtual bool verifiesTls(const QUrl &url) const;
 
     void saveParameters(bool user = false, bool proxy = false, bool game = false, bool stats = false, bool options = false);
     virtual void loadParameters();

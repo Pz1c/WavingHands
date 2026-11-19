@@ -200,6 +200,11 @@ bool QGameCore::retryRequest(QNetworkReply *reply) {
     return true;
 }
 
+bool QGameCore::verifiesTls(const QUrl &url) const {
+    Q_UNUSED(url)
+    return false;
+}
+
 QNetworkReply *QGameCore::sendPostRequest(const QString &url, const QByteArray &data, bool Background) {
     return startRequest("POST", url, data, Background, 0, false);
 }
@@ -225,7 +230,9 @@ QNetworkReply *QGameCore::startRequest(const QString &Verb, const QString &Url, 
     request.setTransferTimeout(kRequestTimeoutMs);
     _reply = is_post ? _nam.post(request, Data) : _nam.get(request);
     //_reply->ignoreSslErrors(ignoredSslErrors);
-    _reply->ignoreSslErrors();
+    if (!verifiesTls(request.url())) {
+        _reply->ignoreSslErrors();
+    }
     _reply->setProperty(kPropBackground, Background);
     _reply->setProperty(kPropVerb, _lastRequestType);
     _reply->setProperty(kPropBody, Data);

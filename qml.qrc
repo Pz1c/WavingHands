@@ -1,18 +1,14 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>js/ai_utils.js</file>
         <file>js/user_profile_utils.js</file>
         <file>js/wnd_utils.js</file>
-        <file>qml/windows/wnd_new_user.qml</file>
         <file>qml/windows/wnd_error.qml</file>
         <file>qml/components/BaseWindow.qml</file>
         <file>qml/components/BtnBig.qml</file>
         <file>qml/components/BtnWithIcon.qml</file>
         <file>qml/components/LargeText.qml</file>
         <file>qml/components/LabeledTextInput.qml</file>
-        <file>qml/windows/wnd_login.qml</file>
-        <file>qml/windows/wnd_profile.qml</file>
         <file>js/gui_utils.js</file>
         <file>res/background.png</file>
         <file>res/menu.png</file>
@@ -109,7 +105,6 @@
         <file>res/chat_pimple.png</file>
         <file>res/scroll.png</file>
         <file>qml/windows/wnd_search_warlock.qml</file>
-        <file>qml/components/TitledTextInput.qml</file>
         <file>qml/windows/wnd_popup.qml</file>
         <file>qml/windows/wnd_spell_popup.qml</file>
         <file>res/stars_purple.png</file>

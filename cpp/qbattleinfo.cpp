@@ -303,6 +303,28 @@ QString QBattleInfo::containParticipant(const QString& line) {
     return "";
 }
 
+QString QBattleInfo::victoriousParticipant(const QString &line) const {
+    int idx = line.indexOf(" is victorious");
+    if (idx == -1) {
+        return "";
+    }
+    static const QRegularExpression reTag("<[^>]*>");
+    QString before = line.left(idx).remove(reTag).trimmed();
+    QString res;
+    foreach(QString lp, _participant) {
+        // the name right in front of " is victorious", and all of it: the longest one that
+        // ends there and does not start in the middle of a word
+        if (lp.isEmpty() || (lp.length() <= res.length()) || !before.endsWith(lp, Qt::CaseInsensitive)) {
+            continue;
+        }
+        int at = before.length() - lp.length();
+        if ((at == 0) || !before.at(at - 1).isLetterOrNumber()) {
+            res = lp;
+        }
+    }
+    return res;
+}
+
 QString QBattleInfo::getEnemy(const QString &Login, bool All) const {
     QString tmp = Login.toLower();
     QString res = "";
@@ -344,14 +366,9 @@ void QBattleInfo::setDescription(const QString &newDescription)
 {
     _description = newDescription;
     _for_bot = newDescription.indexOf("TRANING BOT ONLY") != -1;
-    if (!live()) {
-        // a live match seen on the site: the rules come with its description
-        qint64 valid_by = 0;
-        int total = 0, extra = 0;
-        if (QWarlockUtils::parseLiveDescription(newDescription, &valid_by, &total, &extra)) {
-            setLive(total, extra, valid_by);
-        }
-    }
+    // Not a word on live matches here. This runs for every row of the public challenge
+    // list, and a description that read as live-match rules used to switch the clock on:
+    // whoever joined such a challenge, Keep me On included, had the app surrender for them.
 }
 
 bool QBattleInfo::with_bot() const
@@ -668,7 +685,9 @@ QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
             if (!res.isEmpty()) {
                 res.append(",");
             }
-            res.append(QString("{\"txt\":\"%1\",\"color\":\"#E7FFFF\",\"type\":0}").arg(prepareToPrint(m)));
+            // prepareToPrint() sees to quotes and backslashes; a tab or another control
+            // character left in a chat line still made the whole battle unreadable as JSON
+            res.append(QString("{\"txt\":\"%1\",\"color\":\"#E7FFFF\",\"type\":0}").arg(QWarlockUtils::jsonEscape(prepareToPrint(m))));
         }
     }
     chm = _history.at(Turn);
@@ -699,7 +718,8 @@ QString QBattleInfo::getTurnInfo(int Turn, const QString &Login) const {
                     if ((l_type == 2) && ((ss2.indexOf("attack") != -1) && (ss2.indexOf("directs") == -1))) {
                         l_type = 1;
                     }
-                    res.append(QString("{\"txt\":\"%1\",\"color\":\"%2\",\"type\":%3}").arg(prepareToPrint(ss2.trimmed()), curr_color, intToStr(l_type)));
+                    res.append(QString("{\"txt\":\"%1\",\"color\":\"%2\",\"type\":%3}").arg(QWarlockUtils::jsonEscape(prepareToPrint(ss2.trimmed())),
+                                                                                                 QWarlockUtils::jsonEscape(curr_color), intToStr(l_type)));
                 }
                 curr_color = def_color;
             }
@@ -742,14 +762,20 @@ QString QBattleInfo::getFullHist(const QString& Login) const {
 }
 
 QString QBattleInfo::toJSON(const QString &Login) const {
+    // One arg() call, as in QWarlockStat::toString(): a second pass would also substitute a
+    // %N that the first one inserted with the description or the chat. And every text of
+    // the site escaped for JSON on top of prepareToPrint(), which leaves control characters.
     return QString("{\"id\":%1,\"status\":%2,\"size\":%3,\"level\":%4,\"turn\":%5,\"wait_from\":%6,\"maladroit\":%7,\"parafc\":%8,\"parafdf\":%9"
                    ",\"description\":\"%10\",\"participant\":\"%11\",\"chat\":\"%12\",\"history\":\"%13\",\"winner\":\"%14\",\"hint\":%15,"
                    "\"fast\":%16,\"with_bot\":%17,\"for_bot\":%18,\"active\":%19,\"need\":%20,\"player\":\"%21\",\"challenged\":\"%22\",\"rejected\":\"%23\""
                    ",\"invite_rejected\":%24,\"live\":%25,\"live_till\":%26,\"live_total\":%27,\"live_extra\":%28}")
-        .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
-        .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), prepareToPrint(_chat.join("#END_TURN#")), prepareToPrint(_history.join("#END_TURN#")), _winner, intToStr(_hint))
-        .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()), Login, _challenged.join(","), _rejected.join(","))
-        .arg(boolToStr(_inviteRejected), boolToIntS(live()), intToStr(_liveValidBy), intToStr(_liveTotal), intToStr(_liveExtra));
+        .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf), // 1-9
+             QWarlockUtils::jsonEscape(prepareToPrint(_description)), QWarlockUtils::jsonEscape(prepareToPrint(_participant.join(","))),
+             QWarlockUtils::jsonEscape(prepareToPrint(_chat.join("#END_TURN#"))), QWarlockUtils::jsonEscape(prepareToPrint(_history.join("#END_TURN#"))),
+             QWarlockUtils::jsonEscape(_winner), intToStr(_hint), // 10-15
+             boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(active(Login)), intToStr(_size - _participant.size()),
+             QWarlockUtils::jsonEscape(Login), QWarlockUtils::jsonEscape(_challenged.join(",")), QWarlockUtils::jsonEscape(_rejected.join(",")), // 16-23
+             boolToStr(_inviteRejected), boolToIntS(live()), intToStr(_liveValidBy), intToStr(_liveTotal), intToStr(_liveExtra)); // 24-28
 }
 
 QString QBattleInfo::toString(bool Short) const {
@@ -757,18 +783,20 @@ QString QBattleInfo::toString(bool Short) const {
     QString tmp_hist = Short ? "" : prepareToPrint(_history.join("#END_TURN#"));
     QByteArray json = _fullJSON.toUtf8();
     //_app_version = APPLICATION_VERSION_INT;
+    // empty for any other battle; else total,extra,valid by,used,notified,start and the
+    // version of this field (see parseString)
+    QString tmp_live = live() ? QString("%1,%2,%3,%4,%5,%6,%7").arg(intToStr(_liveTotal), intToStr(_liveExtra), intToStr(_liveValidBy),
+                                                                    intToStr(_liveUsed), intToStr(_liveNotified), intToStr(_liveStart), intToStr(BATTLE_INFO_LIVE_RECORD))
+                              : QString();
+    // one arg() call, see toJSON()
     return QString("id#=#%1^^^status#=#%2^^^size#=#%3^^^level#=#%4^^^turn#=#%5^^^wait_from#=#%6^^^maladroit#=#%7^^^parafc#=#%8^^^"
                    "parafdf#=#%9^^^description#=#%10^^^participant#=#%11^^^chat#=#%12^^^history#=#%13^^^winner#=#%14^^^hint#=#%15^^^"
                    "fast#=#%16^^^with_bot#=#%17^^^for_bot#=#%18^^^full_parsed#=#%19^^^sub_title#=#%20^^^challenged#=#%21^^^"
                    "full_battle_json#=#%22^^^app_version#=#%23^^^rejected#=#%24^^^invite_rejected#=#%25^^^live#=#%26")
-            .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf))
-            .arg(prepareToPrint(_description), prepareToPrint(_participant.join(",")), tmp_chat, tmp_hist, _winner, intToStr(_hint))
-            .arg(boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","))
-            .arg(json.toBase64(QByteArray::Base64UrlEncoding), APPLICATION_VERSION, _rejected.join(","), boolToIntS(_inviteRejected),
-                 // empty for any other battle; else total,extra,valid by,used,notified,start
-                 live() ? QString("%1,%2,%3,%4,%5,%6").arg(intToStr(_liveTotal), intToStr(_liveExtra), intToStr(_liveValidBy),
-                                                           intToStr(_liveUsed), intToStr(_liveNotified), intToStr(_liveStart))
-                        : QString());
+            .arg(intToStr(_battleID),intToStr(_status),intToStr(_size),intToStr(_level),intToStr(_turn),intToStr(_wait_from),boolToStr(_maladroit),boolToStr(_parafc),boolToStr(_parafdf), // 1-9
+                 prepareToPrint(_description), prepareToPrint(_participant.join(",")), tmp_chat, tmp_hist, _winner, intToStr(_hint), // 10-15
+                 boolToStr(_fast), boolToStr(_with_bot), boolToStr(_for_bot), boolToStr(_fullParsed), _sub_title, _challenged.join(","), // 16-21
+                 QString::fromLatin1(json.toBase64(QByteArray::Base64UrlEncoding)), APPLICATION_VERSION, _rejected.join(","), boolToIntS(_inviteRejected), tmp_live); // 22-26
 }
 
 void QBattleInfo::parseString(const QString &battle_info) {
@@ -832,8 +860,13 @@ void QBattleInfo::parseString(const QString &battle_info) {
         } else if (key.compare("invite_rejected") == 0) {
             _inviteRejected = value.toInt() == 1;
         } else if (key.compare("live") == 0) {
+            // Only a record of this version is taken at its word. The ones before it (six
+            // fields, no version) were written when setDescription() made a live match of
+            // any battle whose description read like one, a public challenge that Keep me On
+            // joined included, and nothing in them tells such a battle from a real live
+            // match: all of them lose the clock here.
             QStringList lv = value.split(",");
-            if (lv.size() == 6) {
+            if ((lv.size() == 7) && (lv.at(6).toInt() == BATTLE_INFO_LIVE_RECORD)) {
                 setLive(lv.at(0).toInt(), lv.at(1).toInt(), lv.at(2).toLongLong());
                 _liveUsed = qMax(0, lv.at(3).toInt());
                 _liveNotified = lv.at(4).toLongLong();
@@ -854,6 +887,11 @@ void QBattleInfo::parseUnits(QString &Data, QString &Login) {
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
         idx2 = Data.indexOf(search2, idx1);
+        if (idx2 == -1) {
+            // A page cut inside a unit's table: with -1 the search went back to the top of
+            // the page, and round again for ever.
+            break;
+        }
         QString data = Data.mid(idx1, idx2 - idx1);
         if (data.indexOf("/player") != -1) {
             if (!QWarlockUtils::parseWarlock(data, _Warlock, _errorMsg, Login.toLower())) {
@@ -937,10 +975,11 @@ void QBattleInfo::generateJSON(QString &Login) {
                         "\"rg\":\"%8\",\"lg\":\"%9\",\"prg\":\"%10\",\"plg\":\"%11\",\"monster_cmd\":\"%12\",\"monsters\":%13,\"warlocks\":%14,"
                         "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
                         "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25}")
-                     .arg(intToStr(_battleID), boolToStr(_parafdf), "", "0", "0") // 1-5
-        .arg("", "", "", "", "", "") // 6-11
-        .arg("", _MonstersHtml, _WarlockHtml, "", "0",  boolToStr(_parafc), "[]", "[]", "") // 12 - 20
-                     .arg(getHistory(), getChat(), intToStr(_turn), boolToStr(_with_bot), getTurnInfo(_turn, Login)); // 21-25
+                     // one arg() call and the site's text escaped, see toJSON()
+                     .arg(intToStr(_battleID), boolToStr(_parafdf), "", "0", "0", // 1-5
+                          "", "", "", "", "", "", // 6-11
+                          "", _MonstersHtml, _WarlockHtml, "", "0",  boolToStr(_parafc), "[]", "[]", "", // 12 - 20
+                          QWarlockUtils::jsonEscape(getHistory()), QWarlockUtils::jsonEscape(getChat()), intToStr(_turn), boolToStr(_with_bot), getTurnInfo(_turn, Login)); // 21-25
 }
 
 QString QBattleInfo::fullJSON() const

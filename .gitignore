@@ -9,5 +9,5 @@
 # Written by qmake with this checkout's absolute paths (see WarlocksDuel.pro)
 /.qmllint.ini
 /.qmlls.ini
-
+/.local/*
 /qmltypes/ua/sp/warloksduel/warloksduel.qmltypes

@@ -688,11 +688,26 @@ BaseWindow {
     }
 
     property int readyWarlocks: 0
+    // The rows BU.finishPrepareWarlockList made, -1 while it is still making them. Not
+    // gBattle.size: a warlock who is out of a melee gets no row, and the turn news that
+    // waited for one row per warlock never started.
+    property int createdWarlocks: -1
     property int readyWindow: 0
     function prepareHintWithCheck() {
-        console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
-        if (++readyWarlocks >= mainWindow.gBattle.size) {
+        ++readyWarlocks;
+        startHintWhenReady();
+    }
+
+    function warlocksCreated(count) {
+        createdWarlocks = count;
+        startHintWhenReady();
+    }
+
+    function startHintWhenReady() {
+        console.log("battle.startHintWhenReady", readyWarlocks, createdWarlocks);
+        if ((createdWarlocks >= 0) && (readyWarlocks >= createdWarlocks)) {
             readyWarlocks = 0;
+            createdWarlocks = -1;
             BWU.prepareHintBoard();
             tHintDelay.start();
         }
@@ -906,9 +921,10 @@ BaseWindow {
     }
 
     function setGesture(gesture, is_maladroit) {
-        iWarlocks.children[0].setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture), gesture);
-        if (is_maladroit || (gesture === "C")) {
-            iWarlocks.children[0].setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture), gesture);
+        var ww = iWarlocks.children[0];
+        ww.setGesture(mainWindow.gBattle.currentHand, 'g_' + BU.getIconByGesture(gesture), gesture);
+        if ((is_maladroit || (gesture === "C")) && !ww.l_warlock.control_paralyze && !ww.l_warlock.control_charmed) {
+            ww.setGesture(mainWindow.gBattle.otherHand, 'g_' + BU.getIconByGesture(gesture), gesture, true);
         }
     }
 
@@ -917,7 +933,7 @@ BaseWindow {
             console.log(BU.battle.currentCharm.warlock_idx, "try to find", JSON.stringify(BU.battle.currentCharm));
             var ww = iWarlocks.children[BU.battle.currentCharm.warlock_idx];
             if (ww && ww.l_warlock) {
-                ww.setGesture(hand.substr(0, 1), "g_" + BU.getIconByGesture(gesture));
+                ww.setGesture(hand.substr(0, 1), "g_" + BU.getIconByGesture(gesture), gesture, true);
             } else {
                 console.log(BU.battle.currentCharm.warlock_idx, "now found warlock");
             }
@@ -973,6 +989,7 @@ BaseWindow {
             return;
         }
         readyWarlocks = 0;
+        createdWarlocks = -1;
         // the turn news of the battle shown before is over: its frames must not touch the new warlocks,
         // its bar and what it plays over the board must not stay when this battle has no news
         BWU.closeTutorial();

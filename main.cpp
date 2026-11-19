@@ -45,7 +45,11 @@ int main(int argc, char *argv[])
 
         // Must come after the QGuiApplication is constructed: Qt 6.11 loads the TLS backend
         // through an application static that asserts if there is no QCoreApplication yet.
-        bool add_cert = QSslConfiguration::defaultConfiguration().addCaCertificates(":/res/certs/isrgrootx1.pem");
+        // defaultConfiguration() hands out a copy: the root goes into it, and the copy back as
+        // the default (added to the copy alone, it was in no request's configuration).
+        QSslConfiguration ssl_conf = QSslConfiguration::defaultConfiguration();
+        bool add_cert = ssl_conf.addCaCertificates(":/res/certs/isrgrootx1.pem");
+        QSslConfiguration::setDefaultConfiguration(ssl_conf);
         QString s1 = QString("QSslSocket::sslLibraryBuildVersionString() %1 QSslSocket::sslLibraryVersionString() %2").arg(QSslSocket::sslLibraryBuildVersionString(), QSslSocket::sslLibraryVersionString());
         QString s2 = QString("loading embedded \"ISRG Root X1\" CA cert: %1").arg(add_cert);
         qDebug() << s1;

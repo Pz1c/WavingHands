@@ -138,6 +138,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("MessageDelete", "Delete", "Löschen", "Eliminar");
     fillDictionary("MessageView", "View", "Ansehen", "Ver");
     fillDictionary("MessageSent", "Message sent to %1", "Nachricht an %1 gesendet", "Mensaje enviado a %1");
+    // the player's own message heading a group of the list: who wrote it, and to whom
+    fillDictionary("MessageFromTo", "%1 to %2", "%1 an %2", "%1 para %2");
     fillDictionary("DialogStartBattle", "Start battle #ID #FL with #LOGINS", "Kampf #ID #FL mit #LOGINS starten", "Empezar la batalla #ID #FL con #LOGINS");
     fillDictionary("DialogJoinBattle", "Join battle #ID #FL with #LOGINS, need #NEED more besides you", "Kampf #ID #FL mit #LOGINS beitreten, außer dir werden noch #NEED benötigt", "Unirse a la batalla #ID #FL con #LOGINS, faltan #NEED además de ti");
     fillDictionary("DialogJoinBattle", "Join battle #ID #FL with #LOGINS, need #NEED more besides you", "Kampf #ID #FL mit #LOGINS beitreten, außer dir werden noch #NEED benötigt", "Unirse a la batalla #ID #FL con #LOGINS, faltan #NEED además de ti");
@@ -468,6 +470,8 @@ void QWarlockDictionary::fillGameDictionary() {
     fillDictionary("WarlockNotFound", "Warlock %1 not found", "Hexer %1 nicht gefunden", "No se encontró al brujo %1");
     fillDictionary("ErrSendMessage", "Can't send the message, please try again", "Die Nachricht konnte nicht gesendet werden, bitte versuche es erneut", "No se pudo enviar el mensaje, inténtalo de nuevo");
     fillDictionary("ErrWrongLoginPassword", "Wrong login or password", "Falscher Login oder falsches Passwort", "Usuario o contraseña incorrectos");
+    fillDictionary("ErrLoginAnswer", "The game server did not answer the login as expected, please try again later", "Der Spielserver hat auf die Anmeldung nicht wie erwartet geantwortet, bitte versuche es später erneut", "El servidor del juego no respondió al inicio de sesión como se esperaba, inténtalo más tarde");
+    fillDictionary("ErrPageIncomplete", "The game server's answer was cut off, please try again", "Die Antwort des Spielservers wurde abgeschnitten, bitte versuche es erneut", "La respuesta del servidor del juego llegó incompleta, inténtalo de nuevo");
     fillDictionary("ErrSendOrders", "Something went wrong, can't send battle orders", "Etwas ist schiefgelaufen, die Kampfbefehle konnten nicht gesendet werden", "Algo ha ido mal, no se pudieron enviar las órdenes de batalla");
     fillDictionary("ErrRegistrationUnknown1", "Unknown error during registration", "Unbekannter Fehler bei der Registrierung", "Error desconocido durante el registro");
     fillDictionary("ErrRegistrationUnknown2", "Unknown error during registration.", "Unbekannter Fehler bei der Registrierung.", "Error desconocido durante el registro.");
