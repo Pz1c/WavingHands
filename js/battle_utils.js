@@ -461,6 +461,7 @@ function finishPrepareWarlockList() {
     }
     var curr_y = 0;
     var total_height = 0;
+    var created = 0;
     map_warlock_name_to_idx = {};
     map_monster_name_to_idx = {};
     for(var i = 0, Ln = battle.warlocks.length; i < Ln; ++i) {
@@ -494,16 +495,18 @@ function finishPrepareWarlockList() {
         console.log("svWarlocks.h: " + iWarlocks.height);
         curr_y += sprite.height;
         total_height += sprite.height;
+        ++created;
     }
     iWarlocks.height = total_height;
+    // the turn news waits for these rows, not for battle.size: an eliminated warlock has none
+    warlocksCreated(created);
 }
 
 function prepareChat() {
     var with_msg = battle.chat > 0;
     console.log("prepareChat", with_msg, battle.chat);
-    if (with_msg) {
-        iiChat.source = "qrc:/res/chat_pimple.png";
-    }
+    // set both ways: the window is cached, and the mark of the battle shown before would stay
+    iiChat.source = with_msg ? "qrc:/res/chat_pimple.png" : "qrc:/res/chat.png";
 }
 
 function prepareHint() {
@@ -536,7 +539,8 @@ function prepareOrder() {
     var actions = battle.actions;
     var post_request = "say$";
     if (actions.C !== "") {
-        post_request += actions.C.replace("$", "sign:dollar").replace("#", "sign:pos_number");
+        // every one of them: the core splits the orders on both characters (sendOrders)
+        post_request += actions.C.replace(/\$/g, "sign:dollar").replace(/#/g, "sign:pos_number");
     }
     post_request += "#";
     console.log("prepareOrder", "point1", post_request);
@@ -673,7 +677,7 @@ function getOrdersForReview(dictionary) {
     }
     if (actions.R.target === "Nobody") {
         res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_nobody"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
-    } else if (checkSummonHint(actions.L)) {
+    } else if (checkSummonHint(actions.R)) {
         res.push({row_type:"1",type:"H",v:dictionary.getStringByCode("TitleActionHint_summon"),c:"red",icon:"lightning_notice",icon_text:"",icon_visible:true,icon_width:60});
     }
     console.log("getOrdersForReview", "point3", JSON.stringify(res));

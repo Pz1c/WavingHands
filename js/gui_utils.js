@@ -13,7 +13,7 @@ var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, {c:"top",t:"TopLi
                      {c:"messages",t:"Messages"}, {c:"feedback",t:"Feedback"},
                      //{c:"battle_with_friend",t:"DuelWithFriend"}, /*{c:"switch_account",t:"SwitchAccount"},*/
                      {c:"rateus",t:"RateUs"}, {c:"rules",t:"miRulesTitle"}, {c:"settings",t:"Settings"},
-                     {c:"logout",t:"miLogoutTitle"}/*, {c:"refresh",t:"Refresh"}*/ ,{c:"enable_notif", t:"Notification"}
+                     {c:"logout",t:"miLogoutTitle"}, {c:"enable_notif", t:"Notification"}
         ];
 // language buttons under the main menu, c = WarlockDictionary.lang
 var ARR_LANG_MENU = [{c:"en",t:"LangEN"}, {c:"de",t:"LangDE"}, {c:"es",t:"LangES"}];
@@ -32,7 +32,6 @@ function mainMenuActionEx(code) {
     logEvent("menu_action", {action:code});
     var def_type = 1013;
     switch(code) {
-    case "refresh": return core.scanState(false);
     case "spellbook": return showWndSpellbook();
     case "rules": return Qt.openUrlExternally("https://games.ravenblack.net/rules");
     case "feedback": return showFeedbackWnd();
@@ -88,7 +87,13 @@ function fixActivBattleDesc(arr) {
 function newBattleList() {
     var bl = core.battleList;
     console.log("newBattleList.1", bl);
-    G_BATTLE_LIST = JSON.parse(bl);
+    try {
+        G_BATTLE_LIST = JSON.parse(bl);
+    } catch (e) {
+        // the list on screen stays as it is, rather than an exception on every scan
+        console.log("newBattleList", "list is not JSON", e);
+        return;
+    }
     console.log("newBattleList.2", JSON.stringify(G_BATTLE_LIST));
     fixActivBattleDesc(G_BATTLE_LIST[0]);
     console.log("newBattleList.3", JSON.stringify(G_BATTLE_LIST[0]));
@@ -127,7 +132,14 @@ function loadBattleList(filter) {
 function loadChallengeList() {
     var str = core.challengeList, i, Ln;
     console.log("loadChallengeList", core.isAI, str);
-    var arr = JSON.parse(str);
+    var arr;
+    try {
+        arr = JSON.parse(str);
+    } catch (e) {
+        // the challenges known so far stay
+        console.log("loadChallengeList", "list is not JSON", e);
+        return;
+    }
     var first_call = !(G_CHALLENGE_LIST.length > 0);
     G_CHALLENGE_LIST = [];
     for(i = 0, Ln = arr.length; i < Ln; ++i) {
@@ -163,10 +175,6 @@ function loadChallengeList() {
     } else {
         core.aiLogin();
     }
-}
-
-function autoLogin(idx) {
-    core.autoLogin(idx);
 }
 
 function prepareNewGameBtn(ELO) {
@@ -290,14 +298,6 @@ function startGameWithPlayer(WarlockName, FriendlyLevel, OnlineGame) {
     } else {
         // OnlineGame: a live match (https://github.com/Pz1c/WavingHands/issues/287), the core writes its description
         core.createNewChallenge(1, 1, 1, 1, 2, FriendlyLevel, "Welcome to fight", WarlockName, OnlineGame ? 1 : 0);
-    }
-}
-
-function joinBattleDialogResult(accept) {
-    if (accept && V_BEST_BATTLE_ID) {
-        core.acceptChallenge(V_BEST_BATTLE_ID);
-    } else {
-        core.createNewChallenge(1, 0, 1, 1, 2, 2, "Welcome to fight");
     }
 }
 

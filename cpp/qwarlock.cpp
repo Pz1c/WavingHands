@@ -349,15 +349,22 @@ QString QWarlock::separatedString() {
                    "\"lgL\":\"%35\",\"lgR\":\"%36\",\"smcL\":%37,\"smcR\":%38,\"changed_mind\":%39,"
                    "\"pgL\":\"%40\",\"pgR\":\"%41\",\"ptL\":\"%42\",\"ptR\":\"%43\",\"psL\":\"%44\",\"psR\":\"%45\",\"id\":\"%46\",\"fh\":%47,\"bank\":\"%48\",\"fg\":\"%49\","
                    "\"is_bot\":%50}").
-            arg(_name, _status, _leftGestures, _rightGestures, res, boolToStr(_player), sbsL, sbsR, intToStr(_hp)).
-            arg(intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield),
-                intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_disease)).
-            arg(intToStr(_amnesia), intToStr(_maladroit), intToStr(summon_left), intToStr(summon_right), _active ? "1" : "0").
-            arg(intToStr(_mshield), intToStr(_delay), intToStr(_time_stop), intToStr(_haste), intToStr(_permanency), intToStr(_blindness), intToStr(_invisibility),
-                _possibleLeftGestures, _possibleRightGestures, boolToStr(charmL), boolToStr(charmR)).
-            arg(_leftGestures.trimmed().right(1), _rightGestures.trimmed().right(1), intToStr(spell_max_pass_left), intToStr(spell_max_pass_right), changed_mind).
-            arg(_gestureL, _gestureR, _targetL, _targetR, _spellL, _spellR, _id, intToStr(_forcedHand), _banked_spell, _forcedGesture).
-            arg(_AI ? "1" : "0");
+            // One arg() call: a second pass would also substitute a %N that the first one
+            // inserted with a name or a status. Those are text of the site's page, escaped
+            // for the JSON this goes into (QWarloksDuelCore::battleInfo).
+            arg(QWarlockUtils::jsonEscape(_name), QWarlockUtils::jsonEscape(_status), QWarlockUtils::jsonEscape(_leftGestures),
+                QWarlockUtils::jsonEscape(_rightGestures), res, boolToStr(_player), sbsL, sbsR, intToStr(_hp), // 1-9
+                intToStr(_scared), intToStr(_confused), intToStr(_charmed), intToStr(_paralized), intToStr(_shield),
+                intToStr(_coldproof), intToStr(_fireproof), intToStr(_poison), intToStr(_disease), // 10-18
+                intToStr(_amnesia), intToStr(_maladroit), intToStr(summon_left), intToStr(summon_right), _active ? "1" : "0", // 19-23
+                intToStr(_mshield), intToStr(_delay), intToStr(_time_stop), intToStr(_haste), intToStr(_permanency), intToStr(_blindness), intToStr(_invisibility),
+                QWarlockUtils::jsonEscape(_possibleLeftGestures), QWarlockUtils::jsonEscape(_possibleRightGestures), boolToStr(charmL), boolToStr(charmR), // 24-34
+                QWarlockUtils::jsonEscape(_leftGestures.trimmed().right(1)), QWarlockUtils::jsonEscape(_rightGestures.trimmed().right(1)),
+                intToStr(spell_max_pass_left), intToStr(spell_max_pass_right), changed_mind, // 35-39
+                QWarlockUtils::jsonEscape(_gestureL), QWarlockUtils::jsonEscape(_gestureR), QWarlockUtils::jsonEscape(_targetL), QWarlockUtils::jsonEscape(_targetR),
+                QWarlockUtils::jsonEscape(_spellL), QWarlockUtils::jsonEscape(_spellR), QWarlockUtils::jsonEscape(_id), intToStr(_forcedHand),
+                QWarlockUtils::jsonEscape(_banked_spell), QWarlockUtils::jsonEscape(_forcedGesture), // 40-49
+                _AI ? "1" : "0"); // 50
 }
 
 bool QWarlock::player() const
@@ -988,11 +995,14 @@ void QWarlock::analyzeEnemy(QWarlock *enemy, const QString &paralyzed, const QSt
     if (enemy->_bestSpellR && (!enemy->_bestSpellL || (enemy->_bestSpellR->realPriority() > enemy->_bestSpellL->realPriority()))) {
         danger_hand = WARLOCK_HAND_RIGHT;
     }
-    if (paralyzed.indexOf(enemy->id()) != -1) {
+    // Whole ids of the "id;id;" lists, and never an empty one: indexOf("") is 0 for any list,
+    // the empty one of the call below included, which a bot then made again without end.
+    const QString enemy_id = enemy->id();
+    if (!enemy_id.isEmpty() && paralyzed.split(";", Qt::SkipEmptyParts).contains(enemy_id)) {
         enemy->setParalyzedHand(danger_hand, "", _AI);
         gesture_changed = true;
     }
-    if (charmed.indexOf(enemy->id()) != -1) {
+    if (!enemy_id.isEmpty() && charmed.split(";", Qt::SkipEmptyParts).contains(enemy_id)) {
         enemy->setParalyzedHand(danger_hand, "-", _AI);
         gesture_changed = true;
     }
@@ -1509,7 +1519,7 @@ QString QWarlock::getTargetForSpell(const QSpell *spell, const QWarlock *enemy, 
         bool left_confusion = enemy->_bestSpellL && (enemy->_bestSpellL->spellType() == SPELL_TYPE_CONFUSION) && (enemy->_bestSpellL->turnToCast() == 1) && (enemy->_bestSpellL->spellID() != SPELL_ANTI_SPELL);
         bool left_paralyze = left_confusion && (ARR_PARALYZES.indexOf(enemy->_bestSpellL->spellID()) != -1);
         bool right_confusion = enemy->_bestSpellR && (enemy->_bestSpellR->spellType() == SPELL_TYPE_CONFUSION) && (enemy->_bestSpellR->turnToCast() == 1) && (enemy->_bestSpellR->spellID() != SPELL_ANTI_SPELL);
-        bool right_paralyze = right_confusion && (ARR_PARALYZES.indexOf(enemy->_bestSpellR->spellID()) == -1);
+        bool right_paralyze = right_confusion && (ARR_PARALYZES.indexOf(enemy->_bestSpellR->spellID()) != -1);
         if ((left_confusion || right_confusion) && !left_paralyze && !right_paralyze) {
             return _name;
         }

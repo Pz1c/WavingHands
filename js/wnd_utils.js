@@ -1,8 +1,5 @@
 var wnd_error = "wnd_error.qml";
-//var wnd_battle_result = "wnd_battle_result.qml";
-var wnd_new_user = "wnd_new_user.qml";
 var wnd_register = "wnd_register.qml";
-var wnd_profile = "wnd_profile.qml";
 var wnd_spellbook = "wnd_spellbook.qml";
 var wnd_battle = "wnd_battle.qml";
 var wnd_chat = "wnd_chat.qml";
@@ -245,14 +242,6 @@ function prepareGameWindows() {
 
 }
 
-function showBattleResult() {
-    showWnd(wnd_battle_result, 0, 0, 1);
-}
-
-function showProfileWindow() {
-    showWnd(wnd_profile, 0, 0, 1);
-}
-
 function showTopWindow() {
     showWnd(wnd_top, 0, 1, 1);
 }
@@ -326,10 +315,6 @@ function showErrorWnd(error, chat) {
     }
     console.log(JSON.stringify(error));
     showWnd(wnd_name, error.close_current, error.close_all, 1);
-}
-
-function showNewUserMenu() {
-    showWnd(wnd_new_user, 1, 0, 1);
 }
 
 function showRegisterFlow() {

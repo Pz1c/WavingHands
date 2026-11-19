@@ -1,17 +1,14 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>js/ai_utils.js</file>
         <file>js/user_profile_utils.js</file>
         <file>js/wnd_utils.js</file>
-        <file>qml/windows/wnd_new_user.qml</file>
         <file>qml/windows/wnd_error.qml</file>
         <file>qml/components/BaseWindow.qml</file>
         <file>qml/components/BtnBig.qml</file>
         <file>qml/components/BtnWithIcon.qml</file>
         <file>qml/components/LargeText.qml</file>
         <file>qml/components/LabeledTextInput.qml</file>
-        <file>qml/windows/wnd_profile.qml</file>
         <file>js/gui_utils.js</file>
         <file>res/background.png</file>
         <file>res/menu.png</file>

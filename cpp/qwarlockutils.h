@@ -63,8 +63,11 @@ public:
     // share: who reads "Live match ... Valid by UTC <epoch> - Total:<mm>:<ss>m -
     // Extra:<n>s" plays by them. ValidBy is when the invite expires (secs since epoch),
     // Total each player's time for the whole game and Extra the least a turn gets, in
-    // seconds. parseLiveDescription() is false for any other description; a rule cut off
-    // by the site falls back to the app's own.
+    // seconds. parseLiveDescription() is false for any other description, and for rules no
+    // app would write (LIVE_MATCH_TOTAL_MIN_SEC and the lines after it); a rule cut off by
+    // the site falls back to the app's own. Reading the rules makes no battle a live match:
+    // any warlock can write such a description, so that is for the caller to decide (the
+    // invite the player accepts, QWarloksDuelCore::finishLiveProbe).
     static QString liveDescription(qint64 ValidBy, int Total, int Extra);
     static bool parseLiveDescription(const QString &Description, qint64 *ValidBy, int *Total, int *Extra);
     static QString getFinishedBattleDescription(const QString &Data);

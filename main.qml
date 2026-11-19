@@ -76,15 +76,8 @@ ApplicationWindow {
                 logEvent("app_closed", {});
                 return Qt.quit();
             case 1: return confirmOrdersEx();
-            case 2: return GUI.joinBattleDialogResult(true);
             case 3: return core.logout();
             case 4: return confirmSuicideEx();
-            }
-        }
-
-        onRejected: {
-            if (dialogType == 2) {
-                GUI.joinBattleDialogResult(false);
             }
         }
     }
@@ -114,15 +107,8 @@ ApplicationWindow {
         onAllowedAcceptChanged: {
             console.log("onAllowedAcceptChanged");
         }
-        onWarlockInfoChanged: {
-            console.log("onWarlockInfoChanged");
-            showUserProfile(true);
-        }
         onPlayerInfoChanged: GUI.userProfileChanged()
-        onLoginChanged: {
-            closeChild(true);
-            //showAfterRegWnd();
-        }
+        onLoginChanged: loginFinished()
         onTopListChanged: {
                 if (needTopList === 1) {
                     needTopList = 0;
@@ -140,7 +126,8 @@ ApplicationWindow {
                 //showAfterRegWnd();
             } else {
                 //core.scanState();
-                logEvent("auto_login_start", {});
+                // mainWindow's: a bare logEvent in here is the core's own slot
+                mainWindow.logEvent("auto_login_start", {});
                 core.setTimerInterval(1, 0);
                 GUI.prepareLoginMenu(core.accountMenu);
             }
@@ -964,19 +951,8 @@ ApplicationWindow {
         }
     }
 
-    function refreshData() {
-        console.log("user start scanning");
-        core.scanState()
-    }
-
     function showMainMenu() {
         dMenu.open();
-    }
-
-    function showUserProfile(other) {
-        console.log("showUserProfile", other);
-        gERROR.show_info_self = other === true ? false : true;
-        WNDU.showProfileWindow();
     }
 
     property int startRegisterFlowIndex: 0
@@ -1009,10 +985,19 @@ ApplicationWindow {
         var err_msg = core.errorMsg;
         console.log("Error: ", err_msg);
         if (!core.isAI) {
-            if (err_msg.indexOf("{") === -1) {
+            // JSON only when it starts like JSON: a page text or a network error may hold a
+            // brace anywhere, and what does not parse is shown as the text it is
+            var obj = null;
+            if (err_msg.indexOf("{") === 0) {
+                try {
+                    obj = JSON.parse(err_msg);
+                } catch (e) {
+                    console.log("showErrorMessage", "message is not JSON", e);
+                }
+            }
+            if (!obj || (typeof obj !== "object")) {
                 showErrorWnd({text:err_msg});
             } else {
-                var obj = JSON.parse(err_msg);
                 if (obj.type === 14) {
                     // rate us action
                     afterCloseAction = "rateus";
@@ -1082,9 +1067,25 @@ ApplicationWindow {
 
         var battle_str = core.battleInfo();
         console.log("showReadyBattle", battle_str);
-        gBattle = JSON.parse(battle_str);
+        var battle = parseBattleJson(battle_str, "showReadyBattle");
+        if (!battle) {
+            return;
+        }
+        gBattle = battle;
         gBattle.read_only = false;
         WNDU.showBattle();
+    }
+
+    // The battle the core hands over as JSON. One that does not parse leaves gBattle as it
+    // was and is reported, instead of an exception that showed nothing at all.
+    function parseBattleJson(battle_str, caller) {
+        try {
+            return JSON.parse(battle_str);
+        } catch (e) {
+            console.log(caller, "battle is not JSON", e);
+            showErrorWnd({text:warlockDictionary.getStringByCode("BattleProblemContact")});
+            return null;
+        }
     }
 
     // An opponent moved (TURNREADY from the caster link). The battle window is
@@ -1209,14 +1210,26 @@ ApplicationWindow {
             console.log("liveTimeIsOut", "deferred, another battle is open", battle_id, gBattle.id);
             return;
         }
+        if (isLiveTimeoutWndOf(battle_id)) {
+            // The core says it again every now and then until the surrender is in. With the
+            // notice of this battle on screen there is nothing to close and nothing to send
+            // again: closing took the notice itself away after 20 seconds.
+            return;
+        }
         WNDU.closeChilds();
         turnRefreshPending = false;
         core.liveSurrender(battle_id);
         if (liveTimeoutShown !== battle_id) {
             liveTimeoutShown = battle_id;
             logEvent("Live_Timeout", {Id:battle_id});
-            showErrorWnd({type: 1, title: warlockDictionary.getStringByCode("LiveMatch"), text: warlockDictionary.getStringByCode("LiveTimeOut")});
+            showErrorWnd({type: 1, title: warlockDictionary.getStringByCode("LiveMatch"), text: warlockDictionary.getStringByCode("LiveTimeOut"), live_timeout: battle_id});
         }
+    }
+
+    // the notice of liveTimeIsOut() for this battle is the window on top
+    function isLiveTimeoutWndOf(battle_id) {
+        var top = WNDU.arr_wnd_stack.length > 0 ? WNDU.arr_wnd_stack[WNDU.arr_wnd_stack.length - 1] : null;
+        return !!(top && (top.code === WNDU.wnd_error) && top.item && top.item.visible && (top.item.liveTimeout === battle_id));
     }
 
     function openBattleOnline() {
@@ -1512,8 +1525,9 @@ ApplicationWindow {
         console.log("main.setSpellTarget", TargetName, lPermanent, lDelay, OperationType, gBattle.currentHand);
         if (OperationType === 1) {
             var spell = gBattle.actions[gBattle.currentHand].s;
+            var is_two_handed = isTwoHandedGesture(spell, gBattle.actions[gBattle.currentHand].g);
             gBattle.actions[gBattle.currentHand].target = TargetName;
-            if (isTwoHandedGesture(spell, gBattle.actions[gBattle.currentHand].g)) {
+            if (is_two_handed) {
                 var other = gBattle.otherHand ||
                         (gBattle.currentHand === "L" ? "R" : "L");
                 gBattle.actions[other].g = gBattle.actions[gBattle.currentHand].g;
@@ -1739,7 +1753,11 @@ ApplicationWindow {
             return;
         }
 
-        gBattle = JSON.parse(battle_str);
+        var battle = parseBattleJson(battle_str, "showBattleReadOnly");
+        if (!battle) {
+            return;
+        }
+        gBattle = battle;
         gBattle.read_only = true;
         WNDU.showBattle();
     }
@@ -1769,11 +1787,19 @@ ApplicationWindow {
         WNDU.storeWnd(wnd);
     }
 
-    function closeChild(from_login) {
-        if (from_login) {
-            logEvent("login_finish");
-        }
+    function closeChild() {
         WNDU.closeChild();
+    }
+
+    // Every login ends here, the silent one after an expired session too. Only the window
+    // the login flow itself opened is closed: whatever else the player has open (a battle,
+    // the error window of a message that did not go out) stays.
+    function loginFinished() {
+        logEvent("login_finish");
+        var top = WNDU.arr_wnd_stack.length > 0 ? WNDU.arr_wnd_stack[WNDU.arr_wnd_stack.length - 1] : null;
+        if (top && (top.code === WNDU.wnd_register)) {
+            WNDU.closeChild();
+        }
     }
 
     function linkActivated(link) {

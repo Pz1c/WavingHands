@@ -149,6 +149,9 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _defTarget = Spell->_defTarget;
     _damage = Spell->_damage;
     _basic = Spell->_basic;
+    // before calcPriority(), which reads it: assigned after, the priority of every per-hand
+    // spell depended on what was in memory
+    _twoHand = Spell->_twoHand;
     _priority = calcPriority(Enemy);
     // Was never assigned here, so every per-hand spell carried an uninitialised _active.
     // getSpellByFilter() gates on `!s->active()`, so the bot included or skipped each
@@ -158,7 +161,6 @@ QSpell::QSpell(QSpell *Spell, int Hand, int TurnToCast, bool Enemy) {
     _realPriority = Spell->_realPriority;
     _spellGroup = Spell->_spellGroup;
     _spellBookLevel = Spell->_spellBookLevel;
-    _twoHand = Spell->_twoHand;
 }
 
 int QSpell::spellID() const

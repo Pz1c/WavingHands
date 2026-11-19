@@ -12,6 +12,10 @@ BaseWindow {
     with_apply: false
     body_height_prc: 60
 
+    // the battle whose live-match time-out this window reports (main.qml, liveTimeIsOut),
+    // 0 for any other message
+    property int liveTimeout: 0
+
     // This rectangle is the actual popup
     Item {
         id: dialogWindow
@@ -69,6 +73,7 @@ BaseWindow {
             return;
         }
         ltError.text = mainWindow.gERROR.text;
+        liveTimeout = mainWindow.gERROR.live_timeout ? mainWindow.gERROR.live_timeout : 0;
         switch(mainWindow.gERROR.type) {
         case 1:
             title_text = dict.getStringByCode("WndInfoTitle");

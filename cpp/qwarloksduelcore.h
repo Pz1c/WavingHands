@@ -223,12 +223,10 @@ public slots:
     // plain battle page only carries the newest turn.
     QString requestBattleHistory(int battle_id);
     void getWarlockInfo(const QString &Login);
-    void sendMessage(const QString &Msg);
     // Messages (issue #320): the New Message form. The site addresses a message by the
     // recipient's player id; for a warlock the app has no id of, their profile page is
     // fetched first (finishMessageRecipient). deleteMsg above takes the sender id of the inbox.
     void sendMessageTo(const QString &Login, const QString &Msg);
-    void autoLogin(int Idx);
     void aiLogin();
     void logout();
     void leaveBattle(int battle_id, int warlock_id = 0, bool Silent = false);
@@ -323,6 +321,7 @@ protected slots:
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
+    QString redirectUrl(const QUrl &NewUrl) const;
     bool finishLogin(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishRegistration(QString &Data, int StatusCode, QUrl NewUrl);
     bool finishOrderSubmit(QString &Data, int StatusCode, QUrl NewUrl);
@@ -375,6 +374,7 @@ protected:
     void setCredentialToAuth(QAuthenticator *authenticator);
 
     void processNewLogin(bool Silent = false);
+    void forgetAccountData();
     QString accountToString();
     void accountsFromString(QString acc);
 
@@ -395,6 +395,7 @@ protected:
     bool loadingHeld() const override;
     void releaseAiBusy(const QString &url);
     bool retryOutlivesSession(const QString &url) const override;
+    bool verifiesTls(const QUrl &url) const override;
 
     QString getHintArray(int hint_id);
     QString getBattleHint(QBattleInfo *battle_info);

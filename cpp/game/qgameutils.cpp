@@ -41,7 +41,8 @@ QString QGameUtils::rand(int Ln) {
     QString randomString;
     for(int i = 0; i < Ln; ++i)
     {
-        int index = rand(0, possibleCharacters.length());
+        // rand(min, max) includes max
+        int index = rand(0, possibleCharacters.length() - 1);
         QChar nextChar = possibleCharacters.at(index);
         randomString.append(nextChar);
     }

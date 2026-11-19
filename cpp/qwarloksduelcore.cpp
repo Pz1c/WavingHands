@@ -55,9 +55,56 @@ static void jniPushTokenChanged(JNIEnv * /*env*/, jclass /*clazz*/, jstring jtok
 }
 #endif
 
+// What a request was for is told by the host and the path of its URL, never by a substring
+// of the whole of it: the profile of a warlock named "login..." is /player/login....html,
+// and was taken for the answer to a login (as that of "sendmess..." was for a message sent,
+// and that of "chalplayer..." for an invite made).
+// sitePath(): the path of a page of the game server, empty for any other host.
+static QString sitePath(const QString &url) {
+    static const QString site_host = QUrl(GAME_SERVER_URL).host();
+    const QUrl u(url);
+    return (u.host().compare(site_host, Qt::CaseInsensitive) == 0) ? u.path() : QString();
+}
+
+// A page of the game server by its path: "/login", "/player", "/warlocks", ...
+static bool isSitePage(const QString &url, const char *Page) {
+    return sitePath(url) == QLatin1String(Page);
+}
+
+// A warlock's profile: /player/<name>.html
+static bool isProfileUrl(const QString &url) {
+    const QString path = sitePath(url);
+    return path.startsWith("/player/") && path.endsWith(".html");
+}
+
+// The pages the app reads its lists and battles from. Each is whole only with its </BODY>,
+// see slotReadyRead.
+static bool isParsedSitePage(const QString &url) {
+    const QString path = sitePath(url);
+    return (path == "/player") || (path == "/warlocks") || (path == "/challenges") || isProfileUrl(url);
+}
+
+// A script of the gateway: "top.php", "index.php", "warlock_get.php", "warlock_put.php"
+static bool isGatewayScript(const QString &url, const char *Script) {
+    static const QString gateway_host = QUrl(GAME_VW_URL).host();
+    const QUrl u(url);
+    return (u.host().compare(gateway_host, Qt::CaseInsensitive) == 0) &&
+           (u.path() == QString("/robot_gateway/wh/") + QLatin1String(Script));
+}
+
+static bool urlHasQueryItem(const QString &url, const QString &Key, const QString &Value = QString()) {
+    QUrlQuery query{QUrl(url)};
+    return query.hasQueryItem(Key) && (Value.isEmpty() || (query.queryItemValue(Key) == Value));
+}
+
 // The archived result of a battle, the request behind every Win/Lose/Draw window.
 static bool isResultUrl(const QString &url) {
-    return (url.indexOf("robot_gateway/wh/index.php") != -1) && (url.indexOf("show_data=1") != -1);
+    return isGatewayScript(url, "index.php") && urlHasQueryItem(url, "show_data", "1");
+}
+
+// A finished battle handed to the archive (storeFullParsedBattle).
+static bool isStoreUrl(const QString &url) {
+    return isGatewayScript(url, "index.php") && urlHasQueryItem(url, "store_json");
 }
 
 // The battle a result or battle-page request is for; 0 when the URL names none.
@@ -66,10 +113,17 @@ static int battleIdFromUrl(const QString &url) {
     if (isResultUrl(url)) {
         return query.queryItemValue("battle_id").toInt();
     }
-    if (url.indexOf("/warlocks?") != -1) {
+    if (isSitePage(url, "/warlocks")) {
         return query.queryItemValue("num").toInt();
     }
     return 0;
+}
+
+// A warlock's name as a part of a URL. Put in raw, a name with a space or another reserved
+// character made a malformed request of every background check of the Java side
+// (java.net.URL encodes nothing), and "#", "?" or "&" in one cut the URL short for Qt too.
+static QString urlName(const QString &Name) {
+    return QString::fromLatin1(QUrl::toPercentEncoding(Name));
 }
 
 QWarloksDuelCore::QWarloksDuelCore(QObject *parent, bool AsService) :
@@ -326,9 +380,11 @@ void QWarloksDuelCore::createNewChallenge(bool Fast, bool Private, bool ParaFC, 
     // https://github.com/Pz1c/WavingHands/issues/287: a live match is a private duel whose
     // description carries the rules, for the app of the invited warlock to read.
     if ((IsOnline != 0) && l_p && (Count == 2) && !_isAI && !_isAsService) {
-        Description = QWarlockUtils::liveDescription(QDateTime::currentSecsSinceEpoch() + LIVE_MATCH_INVITE_SEC,
-                                                     LIVE_MATCH_TOTAL_SEC, LIVE_MATCH_EXTRA_SEC);
-        _newBattle->setDescription(Description);    // which makes it a live match
+        qint64 valid_by = QDateTime::currentSecsSinceEpoch() + LIVE_MATCH_INVITE_SEC;
+        Description = QWarlockUtils::liveDescription(valid_by, LIVE_MATCH_TOTAL_SEC, LIVE_MATCH_EXTRA_SEC);
+        _newBattle->setDescription(Description);
+        // A live match because the app made it one, not for what its description says.
+        _newBattle->setLive(LIVE_MATCH_TOTAL_SEC, LIVE_MATCH_EXTRA_SEC, valid_by);
         _liveNewWarlock = _inviteToBattle;
     }
 
@@ -361,12 +417,6 @@ void QWarloksDuelCore::storeFullParsedBattle(QBattleInfo *bi) {
     sendPostRequest(QString(GAME_SERVER_URL_STORE_FINISHED_BATTLE).arg(intToStr(bi->battleID())), p_data.toUtf8(), true);
 }
 
-// To the warlock whose profile page was loaded last (the profile window's form).
-void QWarloksDuelCore::sendMessage(const QString &Msg) {
-    qDebug() << "QWarloksDuelCore::sendMessage to" << _warlockId;
-    postMessage(QString(), _warlockId, Msg);
-}
-
 // Messages (https://github.com/Pz1c/WavingHands/issues/320): the New Message form. The id of
 // a warlock whose profile page the app has loaded (QWarlockStat::warlockId), or who wrote to
 // the player (the inbox), is at hand; for anyone else the profile page is fetched first, see
@@ -385,7 +435,7 @@ void QWarloksDuelCore::sendMessageTo(const QString &Login, const QString &Msg) {
     _pendingMsgTo = login;
     _pendingMsgText = msg;
     setIsLoading(true);
-    sendGetRequest(QString(GAME_SERVER_URL_GET_PROFILE).arg(login));
+    sendGetRequest(QString(GAME_SERVER_URL_GET_PROFILE).arg(urlName(login)));
 }
 
 QString QWarloksDuelCore::messageRecipientId(const QString &Login) {
@@ -462,11 +512,11 @@ bool QWarloksDuelCore::finishSendMessage(QString &Data, int StatusCode) {
 // A profile fetch for sendMessageTo, or the send itself, that got no reply: nothing is
 // waiting any more (else the next profile opened would be posted to).
 void QWarloksDuelCore::releasePendingMessage(const QString &url) {
-    if (!_pendingMsgTo.isEmpty() && (url.indexOf(".html") != -1)) {
+    if (!_pendingMsgTo.isEmpty() && isProfileUrl(url)) {
         _pendingMsgTo.clear();
         _pendingMsgText.clear();
     }
-    if (url.indexOf("/sendmess") != -1) {
+    if (isSitePage(url, "/sendmess")) {
         _msgSentTo.clear();
         _msgSentText.clear();
     }
@@ -689,31 +739,40 @@ void QWarloksDuelCore::accountsFromString(QString acc) {
 QString QWarloksDuelCore::accountMenu() {
     QString result = "{\"lst\":[";
     for(int i = 0, Ln = _accounts.size(); i < Ln; ++i) {
-        result.append(QString("\"%1\",").arg(_accounts.at(i).first));
+        result.append(QString("\"%1\",").arg(QWarlockUtils::jsonEscape(_accounts.at(i).first)));
     }
     result.append("\" \"]}");
     return result;
 }
 
-void QWarloksDuelCore::autoLogin(int Idx) {
-    if ((Idx < 0) || (Idx >= _accounts.size())) {
-        return;
-    }
-
-    QValueName lp = _accounts.at(Idx);
-    setLogin(lp.first, lp.second);
+// Where the redirect the reply in hand answered with leads. The Location may be relative
+// ("player") or a whole URL, and is resolved against the URL that was asked for, as a
+// browser does it: nothing is glued to the site's address, and nothing is lower-cased.
+QString QWarloksDuelCore::redirectUrl(const QUrl &NewUrl) const {
+    const QUrl base = _currentReply ? _currentReply->url() : QUrl(GAME_SERVER_URL);
+    return base.resolved(NewUrl).toString(QUrl::FullyEncoded);
 }
 
 bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
-    if (StatusCode == 200) {
-        // perhapse bad login
-        if (Data.indexOf("Failed Login</TITLE>") != 0) {
+    if (NewUrl.isEmpty()) {
+        if ((StatusCode == 200) && (Data.indexOf("Failed Login</TITLE>") != -1)) {
+            // the site's own word for it
             _errorMsg = GameDictionary->getStringByCode("ErrWrongLoginPassword");
             releaseLoading();
             emit needLogin();
             emit errorOccurred();
             return false;
         }
+        // Any other page where the redirect of a login was due (the site in trouble, a page
+        // this app does not know). Not a wrong password: the player keeps the login and is
+        // not sent to the login screen, the next scan logs in again. Said only to a player
+        // who is waiting for this login.
+        qDebug() << "finishLogin" << "neither a redirect nor a failed login" << StatusCode;
+        if (!isBackground(_currentReply)) {
+            _errorMsg = GameDictionary->getStringByCode("ErrLoginAnswer");
+            emit errorOccurred();
+        }
+        return false;
     }
 
     if (!NewUrl.isEmpty()) {
@@ -721,16 +780,12 @@ bool QWarloksDuelCore::finishLogin(QString &Data, int StatusCode, QUrl NewUrl) {
         emit loginChanged();
         processNewLogin();
         _isAI = _lstAI.indexOf(_login.toUpper()) != -1;
-        QString url = NewUrl.toString().toLower();
+        QString url = redirectUrl(NewUrl);
         qDebug() << "login sucessfull redirect to " << url;
-        if (url.indexOf("https://") == -1) {
-            url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
-        }
         if (!_isAI && !_reg_in_app) {
             _exp_lv = 5;
         }
-        qDebug() << "final url " << url;
-        setCheckUrl(QString(GAME_SERVER_URL_GET_PROFILE).arg(_login));
+        setCheckUrl(QString(GAME_SERVER_URL_GET_PROFILE).arg(urlName(_login)));
         // Same standing as the login it follows.
         sendGetRequest(url, isBackground(_currentReply));
         processRefferer();
@@ -962,7 +1017,7 @@ void QWarloksDuelCore::releaseAiBusy(const QString &url) {
     // processed must not leave it busy for good: the main core's next scan calls
     // callAI again. warlock_put and store_json have no follow-up and go out next
     // to a running chain, so they must not clear it.
-    if (_isAsService && (url.indexOf("warlock_put") == -1) && (url.indexOf("store_json") == -1)) {
+    if (_isAsService && !isGatewayScript(url, "warlock_put.php") && !isStoreUrl(url)) {
         _isAiBusy = false;
     }
 }
@@ -970,8 +1025,14 @@ void QWarloksDuelCore::releaseAiBusy(const QString &url) {
 bool QWarloksDuelCore::retryOutlivesSession(const QString &url) const {
     // The gateway's archive and snapshot posts name their subject in the URL,
     // carry their own body, use no site session, and nothing reads their reply.
-    return (url.indexOf("robot_gateway/wh/") != -1) &&
-           ((url.indexOf("store_json") != -1) || (url.indexOf("warlock_put") != -1));
+    return isStoreUrl(url) || isGatewayScript(url, "warlock_put.php");
+}
+
+bool QWarloksDuelCore::verifiesTls(const QUrl &url) const {
+    // The game server: the player's name and password go there, and its certificate is
+    // one the device can check. The gateway's is still taken as it comes.
+    static const QString site_host = QUrl(GAME_SERVER_URL).host();
+    return url.host().compare(site_host, Qt::CaseInsensitive) == 0;
 }
 
 bool QWarloksDuelCore::loadingHeld() const {
@@ -985,7 +1046,7 @@ void QWarloksDuelCore::httpTopList(bool ForceFull) {
     // gate the caller just stamped and quietly make no request at all.
     // Always background: a roster request's overlay belongs to the request
     // (loadingHeld), not to whichever transport serves it.
-    QNetworkReply *reply = sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(_login, ForceFull ? "1" : "0"), true);
+    QNetworkReply *reply = sendGetRequest(QString(GAME_SERVER_URL_PLAYERS).arg(urlName(_login), ForceFull ? "1" : "0"), true);
     reply->setProperty("wh_roster_seq", _rosterReqSeq);
 }
 
@@ -1181,7 +1242,7 @@ bool QWarloksDuelCore::finishCreateChallenge(QString &Data, int StatusCode, QUrl
                 _liveNewBattle = bid;
                 logEvent("Live_Game_Created", QString("Id;%1;With;%2;Warlock;%3;").arg(created_id, _liveNewWarlock, _login));
             }
-            sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(_inviteToBattle, created_id));
+            sendGetRequest(QString(GAME_SERVER_URL_INVITE_TO_CHALLENGE).arg(urlName(_inviteToBattle), created_id));
             invite_sent = true;
         } else if (!_isAsService && battle_info->for_bot()) {
             qDebug() << "emit needAIAnswer";
@@ -1250,12 +1311,8 @@ bool QWarloksDuelCore::finishAccept(QString &Data, int StatusCode, QUrl NewUrl) 
         return false;
     }
     if (!NewUrl.isEmpty()) {
-        QString url = NewUrl.toString().toLower();
+        QString url = redirectUrl(NewUrl);
         qDebug() << "accept sucessfull redirect to " << url;
-        if (url.indexOf("http://") == -1) {
-            url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
-        }
-        qDebug() << "final url " << url;
         sendGetRequest(url);
         if (_rosterLink && _liveInvites.contains(_loadedBattleID)) {
             // the challenger's app need not wait for its next scan to see the match begin
@@ -1300,12 +1357,8 @@ bool QWarloksDuelCore::finishOrderSubmit(QString &Data, int StatusCode, QUrl New
         qDebug() << "Data not empty";
     }
 
-    QString url = NewUrl.toString().toLower();
-    qDebug() << "finishOrderSubmit sucessfull redirect to" << url;
-    if (url.indexOf("http://") == -1) {
-        url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
-    }
-    qDebug() << "final url" << url << _loadedBattleID;
+    QString url = redirectUrl(NewUrl);
+    qDebug() << "finishOrderSubmit sucessfull redirect to" << url << _loadedBattleID;
     if (_loadedBattleID > 0) {
         QBattleInfo *bi = getBattleInfo(_loadedBattleID);
         qDebug() << "QWarloksDuelCore::finishOrderSubmit" << bi->getEnemy(_login) << bi->toJSON(_login);
@@ -1366,12 +1419,8 @@ bool QWarloksDuelCore::finishRegistration(QString &Data, int StatusCode, QUrl Ne
 
     if (!NewUrl.isEmpty()) {
         _isLogined = true;
-        QString url = NewUrl.toString().toLower();
+        QString url = redirectUrl(NewUrl);
         qDebug() << "register sucessfull redirect to " << url;
-        if ((url.indexOf("https://") == -1) && (url.indexOf("http://") == -1)) {
-            url.prepend(GAME_SERVER_URL).replace("//", "/").replace(":/", "://");
-        }
-        qDebug() << "final url " << url;
         sendGetRequest(url);
         _allowedAccept = false;
         _allowedAdd = false;
@@ -1728,7 +1777,7 @@ void QWarloksDuelCore::getWarlockInfo(const QString & Login) {
     qDebug() << "getWarlockInfo" << Login;
     setIsLoading(true);
 
-    sendGetRequest(QString(GAME_SERVER_URL_GET_PROFILE).arg(Login));
+    sendGetRequest(QString(GAME_SERVER_URL_GET_PROFILE).arg(urlName(Login)));
 }
 
 QBattleInfo *QWarloksDuelCore::getBattleInfo(int battleId) {
@@ -2084,7 +2133,8 @@ bool QWarloksDuelCore::finishGetFinishedBattle(QString &Data, bool Announce) {
             idx += 33;
             _finishedBattle = _finishedBattle.mid(idx, _finishedBattle.length() - idx).replace("<FONT COLOR=\"#AAAAAA\">", "").replace("</FONT>", "")
                     .replace("<BR><BR>", "").replace("\n", " ").replace("RH:", "Right hand:").replace("LH:", "Left hand:");
-            _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":%2,\"id\":%3}").arg(_finishedBattle, ForceSurrenderTurn, intToStr(_loadedBattleID));
+            _finishedBattle = QString("{\"type\":8,\"d\":\"%1\",\"fst\":%2,\"id\":%3}").arg(QWarlockUtils::jsonEscape(_finishedBattle),
+                                                                                         intToStr(ForceSurrenderTurn.toInt()), intToStr(_loadedBattleID));
             battleInfo->parseAllTurns(Data, _login, false);
             // listed as the player's turn, but the orders are in (given on the site)
             list_stale = _ready_in_battles.indexOf(_loadedBattleID) != -1;
@@ -2467,6 +2517,11 @@ bool QWarloksDuelCore::parseUnits(QString &Data) {
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
         idx2 = Data.indexOf(search2, idx1);
+        if (idx2 == -1) {
+            // A page cut inside a unit's table: with -1 the search went back to the top of
+            // the page, and round again for ever.
+            break;
+        }
         QString data = Data.mid(idx1, idx2 - idx1);
         if (data.indexOf("/player") != -1) {
             if (!QWarlockUtils::parseWarlock(data, _Warlock, _errorMsg, _login.toLower())) {
@@ -2541,7 +2596,8 @@ bool QWarloksDuelCore::parseSpecReadyBattleValues(QString &Data) {
             if (!_paralyzedHands.isEmpty()) {
                 _paralyzedHands.append(",");
             }
-            _paralyzedHands.append(QString("[%1,\"%2\"]").arg(par_name.mid(8), par_val));
+            // into the JSON of battleInfo(): the id as a number, the hand as a string
+            _paralyzedHands.append(QString("[%1,\"%2\"]").arg(intToStr(par_name.mid(8).toInt()), QWarlockUtils::jsonEscape(par_val)));
         }
     }
     _paralyzedHands.append("]").prepend("[");
@@ -2705,7 +2761,8 @@ void QWarloksDuelCore::generateBattleList() {
         }
         battle_info = getBattleInfo(bid);
         battle_info->setStatus(BATTLE_INFO_STATUS_READY);
-        _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"%4}").arg(intToStr(bid), battle_info->getInListDescription(_login), battle_info->getEnemy(_login), liveRow(battle_info)));
+        _battleList.append(QString("{\"id\":%1,\"s\":1,\"d\":\"%2\",\"el\":\"%3\"%4}").arg(intToStr(bid), QWarlockUtils::jsonEscape(battle_info->getInListDescription(_login)),
+                                                                                    QWarlockUtils::jsonEscape(battle_info->getEnemy(_login)), liveRow(battle_info)));
     }
 
     QString wait_str = "";
@@ -2715,14 +2772,14 @@ void QWarloksDuelCore::generateBattleList() {
         if (battle_info->status() != BATTLE_INFO_STATUS_NO_START) {
             battle_info->setStatus(BATTLE_INFO_STATUS_WAIT);
         }
-        d = battle_info->getInListDescription(_login);
+        d = QWarlockUtils::jsonEscape(battle_info->getInListDescription(_login));
         if (battle_info->status() == 0) {
             if (first) {
                 first = false;
             } else {
                 _battleList.append(",");
             }
-            _battleList.append(QString("{\"id\":%1,\"s\":0,\"d\":\"%2\",\"el\":\"%3\"%4}").arg(intToStr(bid), d, battle_info->getEnemy(_login), liveRow(battle_info)));
+            _battleList.append(QString("{\"id\":%1,\"s\":0,\"d\":\"%2\",\"el\":\"%3\"%4}").arg(intToStr(bid), d, QWarlockUtils::jsonEscape(battle_info->getEnemy(_login)), liveRow(battle_info)));
         } else {
            if (!wait_str.isEmpty()) {
                wait_str.append(",");
@@ -2772,8 +2829,11 @@ void QWarloksDuelCore::generateBattleList() {
                     .replace("ParaFC", "", Qt::CaseInsensitive)
                     .replace("Created with android app Warlock's Duel.", "", Qt::CaseInsensitive)
                     .replace("NO BOT", "", Qt::CaseInsensitive);
+            // The description is what its author typed (the site only turns quotes into
+            // &quot;): a backslash or a tab in anybody's open challenge used to break the list.
             chalenge_str.append(QString("{\"id\":%1,\"s\":4,\"d\":\"%2\",\"dt\":\"%3\",\"el\":\"%4\"}").
-                               arg(intToStr(bid), GameDictionary->getStringByCode(battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "ChallengeListOpen" : "ChallengeListPractice").arg(battle_info->getEnemy(_login)), ddd, battle_info->getEnemy(_login)));
+                               arg(intToStr(bid), QWarlockUtils::jsonEscape(GameDictionary->getStringByCode(battle_info->level() == BATTLE_INFO_LEVEL_FRIENDLY ? "ChallengeListOpen" : "ChallengeListPractice").arg(battle_info->getEnemy(_login))),
+                                   QWarlockUtils::jsonEscape(ddd), QWarlockUtils::jsonEscape(battle_info->getEnemy(_login))));
         }
     }
     if (/*with_any_challenge && */!with_challenge && (active_battle_cnt < 3)) {
@@ -2795,7 +2855,8 @@ void QWarloksDuelCore::generateBattleList() {
             }
             QString enemy = _playerStats[awailable_walocks.at(idx)]->name();
             _battleList.append(QString("{\"id\":0,\"s\":5,\"d\":\"%1\",\"dt\":\"%2\",\"el\":\"%3\"}").
-                               arg(GameDictionary->getStringByCode("NewChalengeSDesc") + enemy, GameDictionary->getStringByCode("NewMatchDesc"), enemy));
+                               arg(QWarlockUtils::jsonEscape(GameDictionary->getStringByCode("NewChalengeSDesc") + enemy),
+                                   QWarlockUtils::jsonEscape(GameDictionary->getStringByCode("NewMatchDesc")), QWarlockUtils::jsonEscape(enemy)));
         }
     }
     if (!chalenge_str.isEmpty()) {
@@ -2820,7 +2881,7 @@ void QWarloksDuelCore::generateBattleList() {
         if (battle_info->status() != BATTLE_INFO_STATUS_DELETED) {
             battle_info->setStatus(BATTLE_INFO_STATUS_FINISHED);
         }
-        d = battle_info->getInListDescription(_login);
+        d = QWarlockUtils::jsonEscape(battle_info->getInListDescription(_login));
         _battleList.append(QString("{\"id\":%1,\"s\":2,\"d\":\"%2\",\"w\":%3}").arg(intToStr(bid), d, intToStr(boolToInt((battle_info->status() == BATTLE_INFO_STATUS_FINISHED) && battle_info->isWinner(_login)))));
     }
     _battleList.append("]]");
@@ -3053,11 +3114,10 @@ void QWarloksDuelCore::parsePlayerInfo(QString &Data, bool ForceBattleList) {
     foreach(int bid, live_ready) {
         emit liveBattleReady(bid);
     }
-    saveParameters();
     if (shown_changed) {
-        // Explicit flags: the bare saveParameters() above defaults every group to false and
-        // writes nothing, and the destructor that would otherwise persist this is not
-        // guaranteed to run when Android kills the app.
+        // Explicit flags: a bare saveParameters() defaults every group to false and writes
+        // nothing, and the destructor that would otherwise persist this is not guaranteed
+        // to run when Android kills the app.
         saveParameters(false, false, true);
     }
 
@@ -3133,17 +3193,17 @@ void QWarloksDuelCore::releaseResultFetch(const QString &url) {
 
 void QWarloksDuelCore::releaseChallengeList(const QString &url) {
     // The open challenges did not come: the next scan asks for them again.
-    if (url.indexOf("/challenges") != -1) {
+    if (isSitePage(url, "/challenges")) {
         _lastChallengeScan = 0;
     }
 }
 
 void QWarloksDuelCore::releaseKeepMeOn(const QString &url) {
     // A Keep me On join or creation that got no answer: the next scan may try again.
-    if ((url.indexOf("/newchallenge") != -1) || (url.indexOf("/accept") != -1)) {
+    if (isSitePage(url, "/newchallenge") || isSitePage(url, "/accept")) {
         _keepMeOnBusy = false;
     }
-    if (url.indexOf("/newchallenge") != -1) {
+    if (isSitePage(url, "/newchallenge")) {
         _keepMeOnOfferSkip = false;
     }
 }
@@ -3661,12 +3721,12 @@ void QWarloksDuelCore::finishLiveProbe(QString &Data, int StatusCode, const QStr
     QChallengeProbe &probe = _challengeProbes[battle_id];
     probe.done = true;
     if (Data.indexOf("has not yet begun.") != -1) {
+        // The description of a challenge made to the player, asked for its rules here and
+        // nowhere else; the battle only becomes a live match when the player accepts it
+        // (acceptChallenge).
         QBattleInfo page;
         QWarlockUtils::parseUnstartedBattle(Data, &page);
-        probe.live = page.live();
-        probe.validBy = page.liveValidBy();
-        probe.total = page.liveTotal();
-        probe.extra = page.liveExtra();
+        probe.live = QWarlockUtils::parseLiveDescription(page.description(), &probe.validBy, &probe.total, &probe.extra);
     }
     QStringList before(_challenge);
     liveCheckInvites();
@@ -3874,6 +3934,11 @@ int QWarloksDuelCore::findChallengeToJoin() {
                 (battle_info->status() != BATTLE_INFO_STATUS_NO_START) ||
                 (battle_info->level() != BATTLE_INFO_LEVEL_FRIENDLY) ||
                 battle_info->for_bot() || battle_info->with_bot()) {
+            continue;
+        }
+        if (battle_info->description().contains("live match", Qt::CaseInsensitive)) {
+            // A live match is a private invite, never an open challenge: whatever this one
+            // is, it is not joined on the player's behalf.
             continue;
         }
         QStringList creators = battle_info->getEnemies(_login);
@@ -4115,25 +4180,29 @@ bool QWarloksDuelCore::finishScanWarlock(QString &Data) {
 bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, QString new_url) {
     qDebug() << "QWarloksDuelCore::processData" << statusCode << url << new_url;
 
-    if (url.indexOf("delmess?from") != -1) {
+    // Which reply this is: by the path of the page, see sitePath().
+    const QString page = sitePath(url);
+    const bool profile = isProfileUrl(url);
+
+    if (page == "/delmess") {
         scanState(false, false);
         return true;
     }
 
-    if (url.indexOf("/sendmess") != -1) {
+    if (page == "/sendmess") {
         return finishSendMessage(data, statusCode);
     }
 
-    if (url.indexOf("/login") != -1) {
+    if (page == "/login") {
         return finishLogin(data, statusCode, new_url);
     }
 
-    if (url.indexOf("robot_gateway/wh/top") != -1) {
+    if (isGatewayScript(url, "top.php")) {
         finishTopList(data, statusCode, new_url);
         return false;
     }
 
-    if (url.indexOf("/player") != -1) {
+    if ((page == "/player") || profile) {
         if (statusCode != 200) {
             // A background scan re-logs in quietly; only a refresh the user asked
             // for is reported.
@@ -4151,46 +4220,52 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
             }
             return false;
         }
-        if (url.indexOf(".html") != -1) {
+        if (profile) {
             if (!_pendingMsgTo.isEmpty()) {
                 finishMessageRecipient(data);
             } else {
                 finishScanWarlock(data);
             }
         } else {
-            finishScan(data, (url.indexOf("mess=Orders") != -1));
+            // ForceBattleList stays false, as it has been since the redirects of the site
+            // were lower-cased before being followed: the test here was for "mess=Orders" in
+            // the URL the order submit ends on, which never matched "mess=orders". It does
+            // now that the case is kept, and is left out on purpose: the flag raises the
+            // notification-permission window and skips the challenge pass of this scan,
+            // which a bot's chain of requests needs.
+            finishScan(data, false);
         }
         return true;
     }
 
-    if (url.indexOf("/warlocksubmit") != -1) {
+    if (page == "/warlocksubmit") {
         return !finishOrderSubmit(data, statusCode, new_url);
     }
 
-    if (url.indexOf("robot_gateway/wh/warlock_get") != -1) {
+    if (isGatewayScript(url, "warlock_get.php")) {
         processWarlockGet(data);
         return true;
     }
 
-    if ((url.indexOf("robot_gateway/wh/") != -1) && ((url.indexOf("store_json") != -1) || (url.indexOf("warlock_put") != -1))) {
+    if (isStoreUrl(url) || isGatewayScript(url, "warlock_put.php")) {
         return true;
     }
 
     // History backfill runs in the background while a battle window is open, so it
     // must not touch the shared battle slot the page loaders use.
-    if ((url.indexOf("/warlocks") != -1) && (url.indexOf("full=1") != -1)) {
+    if ((page == "/warlocks") && urlHasQueryItem(url, "full", "1")) {
         finishBattleHistory(data, statusCode, url);
         return true;
     }
 
     // Likewise the look at a challenge's page (issue #287).
-    if ((url.indexOf("/warlocks") != -1) && (url.indexOf("probe=1") != -1)) {
+    if ((page == "/warlocks") && urlHasQueryItem(url, "probe", "1")) {
         finishLiveProbe(data, statusCode, url);
         return true;
     }
 
     // battle parsing there
-    if ((url.indexOf("/warlocks") != -1) || (url.indexOf("/inf/spellcaster/") != -1) || (url.indexOf("robot_gateway/wh/") != -1)) {
+    if ((page == "/warlocks") || isResultUrl(url)) {
         int reply_id = battleIdFromUrl(url);
         bool is_result = isResultUrl(url);
         bool announce = is_result && _resultFetches.value(reply_id, false);
@@ -4212,25 +4287,25 @@ bool QWarloksDuelCore::processData(QString &data, int statusCode, QString url, Q
         return !finishGetFinishedBattle(data, announce);
     }
 
-    if (url.indexOf("/newchallenge") != -1) {
+    if (page == "/newchallenge") {
         return !finishCreateChallenge(data, statusCode, new_url);
     }
 
-    if (url.indexOf("/challenges") != -1) {
+    if (page == "/challenges") {
         finishChallengeList(data, statusCode, new_url);
         return false;
     }
 
-    if (url.indexOf("/accept") != -1) {
+    if (page == "/accept") {
         return finishAccept(data, statusCode, new_url);
     }
 
-    if (/*(url.indexOf("/refuse") != -1) ||*/ (url.indexOf("/leave") != -1)) {
+    if (/*(page == "/refuse") ||*/ (page == "/leave")) {
         scanState(isBackground(_currentReply), false);
         return false;
     }
 
-    if (url.indexOf("/newplayer") != -1) {
+    if (page == "/newplayer") {
         return !finishRegistration(data, statusCode, new_url);
     }
 
@@ -4272,7 +4347,7 @@ void QWarloksDuelCore::slotReadyRead() {
     QUrl new_url;
     // The best-effort roster is never retried: its 5xx goes on to finishTopList
     // like any other failure, and the next poll asks again.
-    bool is_roster = url.indexOf("robot_gateway/wh/top") != -1;
+    bool is_roster = isGatewayScript(url, "top.php");
     if ((_httpResponceCode >= 500) && (_httpResponceCode < 600) && !is_roster)  {
         // Retries this very request, never whatever went out last (that may be
         // an order POST), and gives up after a few attempts.
@@ -4290,7 +4365,7 @@ void QWarloksDuelCore::slotReadyRead() {
             _errorMsg = GameDictionary->getStringByCode("ErrServerHttp").arg(_httpResponceCode);
             emit errorOccurred();
         }
-        if (url.indexOf("/chalplayer") != -1) {
+        if (isSitePage(url, "/chalplayer")) {
             // The game the invite was for is made, and finishCreateChallenge left its scan
             // to this reply.
             scanState(true);
@@ -4308,18 +4383,32 @@ void QWarloksDuelCore::slotReadyRead() {
     // No HTTP response at all (host not found, refused, unreachable), or Qt gave
     // up mid-transfer and closed the reply (its status may already read 200).
     bool no_response = (reply_error != QNetworkReply::NoError) && (_httpResponceCode == 0);
-    if (!is_roster && (no_response || (reply_error == QNetworkReply::TimeoutError) || (reply_error == QNetworkReply::OperationCanceledError))) {
+    // The transfer broke off after the status line: what came is a part of the answer.
+    bool cut_short = (reply_error != QNetworkReply::NoError) && (_httpResponceCode >= 200) && (_httpResponceCode < 300);
+    // Or it ended without an error, and before the page did. A page the app reads its
+    // lists and battles from is whole only with its </BODY>: one cut before its battle rows
+    // read as "no games" (the list went empty, Keep me On joined or made a game), one cut
+    // inside a table sent the parsers round in circles.
+    bool incomplete = (_httpResponceCode == 200) && isParsedSitePage(url) && (data.indexOf("</BODY>", 0, Qt::CaseInsensitive) == -1);
+    if (!is_roster && (no_response || cut_short || incomplete || (reply_error == QNetworkReply::TimeoutError) ||
+                       (reply_error == QNetworkReply::OperationCanceledError))) {
         // The empty body says nothing about what the server did, and parsing it
         // would read as an empty battle list, a failed login or a wrong error
         // window. slotError has already told a foreground user. The roster is
         // exempt: finishTopList handles a failed reply safely.
+        qDebug() << "slotReadyRead" << "reply dropped" << url << reply_error << _httpResponceCode << cut_short << incomplete;
         releaseAiBusy(url);
         releaseResultFetch(url);
         releaseKeepMeOn(url);
         releasePendingMessage(url);
         releaseChallengeList(url);
-        if ((url.indexOf("/warlocksubmit") != -1) || (url.indexOf("/newchallenge") != -1) || (url.indexOf("/leave") != -1) ||
-                (url.indexOf("/chalplayer") != -1)) {
+        if ((reply_error == QNetworkReply::NoError) && !isBackground(reply)) {
+            // only the missing end of the page says so: slotError had nothing to report
+            _errorMsg = GameDictionary->getStringByCode("ErrPageIncomplete");
+            emit errorOccurred();
+        }
+        if (isSitePage(url, "/warlocksubmit") || isSitePage(url, "/newchallenge") || isSitePage(url, "/leave") ||
+                isSitePage(url, "/chalplayer")) {
             // The server may well have taken it: show what it actually recorded.
             // Silently: the failure is reported already, and a foreground scan
             // would cover that message with the overlay.
@@ -4328,12 +4417,12 @@ void QWarloksDuelCore::slotReadyRead() {
         return;
     }
 
-    if (!new_url.isEmpty() && (url.indexOf("/logout") != -1)) {
+    if (!new_url.isEmpty() && isSitePage(url, "/logout")) {
         emit needLogin();
         return;
     }
 
-    if (url.indexOf("/chalplayer") != -1) {
+    if (isSitePage(url, "/chalplayer")) {
         scanState(isBackground(reply), false);
         liveAfterInvite();
         return;
@@ -4365,8 +4454,17 @@ void QWarloksDuelCore::slotError(QNetworkReply::NetworkError error) {
 }
 
 void QWarloksDuelCore::slotSslErrors(QList<QSslError> error_list) {
-    // Every request already calls ignoreSslErrors(), so these never stop one; Qt
-    // reports them regardless. Log only: a modal here interrupted the user (and
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (reply && verifiesTls(reply->url())) {
+        // The game server's certificate did not pass, and the request ends as the network
+        // error it is (slotError, slotReadyRead). A warning rather than qDebug: what the
+        // list says is the first thing to know when a device cannot connect, so it has to
+        // be in the log of a release build too.
+        qWarning() << "TLS errors, request dropped:" << reply->url().host() << error_list;
+        return;
+    }
+    // A request to any other host calls ignoreSslErrors() (startRequest), so these never
+    // stop one; Qt reports them regardless. Log only: a modal here interrupted the user (and
     // dropped the overlay mid-request) for something that has no effect.
     qDebug() << "slotSslErrors" << error_list;
 }
@@ -4410,6 +4508,7 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     if (_login.compare(Login, Qt::CaseInsensitive) != 0) {
         // what the previous account wrote is not this one's to read
         clearSentMessages();
+        forgetAccountData();
     }
     _login = Login;
     _password = Password;
@@ -4421,8 +4520,22 @@ void QWarloksDuelCore::setLogin(QString Login, QString Password) {
     _shownBattlesKnown = false;
     _resultAttempts.clear();
     _resultFetches.clear();
-    saveParameters();
+    // Nothing is saved here: the login and the password are, once the site has taken them
+    // (finishLogin).
     loginToSite();
+}
+
+// The battles and the roster in memory are what the account that is leaving read: who it
+// played, what it waited for, a live clock, the ids of the warlocks it looked up. Left in
+// place, the next save wrote them into the settings of whoever logs in next.
+void QWarloksDuelCore::forgetAccountData() {
+    qDeleteAll(_battleInfo);
+    _battleInfo.clear();
+    qDeleteAll(_playerStats);
+    _playerStats.clear();
+    generateTopList();
+    // the next account's first scan asks for the roster at once
+    _lastPlayersScan = 0;
 }
 
 void QWarloksDuelCore::prepareSpellHtmlList(bool emit_signal, bool force_emit) {
@@ -4684,7 +4797,13 @@ void QWarloksDuelCore::loadGameParameters() {
             // save no longer writes it.
             continue;
         }
-        _playerStats[ps_name] = new QWarlockStat(settings->value("v").toString(), true);
+        QWarlockStat *ws = new QWarlockStat(settings->value("v").toString(), true);
+        if (ws->name().isEmpty()) {
+            // a damaged row (QWarlockStat::parseIniAndInit): the roster brings it again
+            delete ws;
+            continue;
+        }
+        _playerStats[ps_name] = ws;
     }
     settings->endArray();
     if (_playerStats.isEmpty()) {
@@ -4755,8 +4874,9 @@ QString QWarloksDuelCore::sentMessages() {
 QString QWarloksDuelCore::playerJson() {
     return QString("{\"name\":\"%1\",\"played\":%2,\"won\":%3,\"died\":%4,\"ladder\":%5,\"melee\":%6,\"elo\":%7,\"feedback\":%8,\"rate_us\":%9,"
                    "\"finished_game_count\":%10,\"sbl\":%11,\"win_vs_bot\":%12,\"win_vs_warlock\":%13}")
-            .arg(_login, intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_ladder), intToStr(_melee), intToStr(_elo), boolToStr(_feedback), boolToStr(_rateus))
-            .arg(intToStr(_play_training_game + _play_pvp_game), intToStr(_exp_lv), intToStr(_win_vs_bot), intToStr(_win_vs_warlock));
+            .arg(QWarlockUtils::jsonEscape(_login), intToStr(_played), intToStr(_won), intToStr(_died), intToStr(_ladder), intToStr(_melee), intToStr(_elo),
+                 boolToStr(_feedback), boolToStr(_rateus),
+                 intToStr(_play_training_game + _play_pvp_game), intToStr(_exp_lv), intToStr(_win_vs_bot), intToStr(_win_vs_warlock));
 }
 
 QString QWarloksDuelCore::playerInfo() {
@@ -5028,10 +5148,16 @@ QString QWarloksDuelCore::battleInfo() {
                    "\"targets\":\"%15\",\"chat\":%16,\"is_fc\":%17,\"paralyzed_hand\":%18,\"hint\":%19,\"msg\":\"%20\","
                    "\"battle_hist\":\"%21\",\"battle_chat\":\"%22\",\"turn_num\":%23,\"with_bot\":%24,\"last_turn_hist\":%25,"
                    "\"maladroit\":%26,\"suicide\":%27,\"live\":%28}")
-            .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), _fire, boolToIntS(_isPermanent), boolToIntS(_isDelay)) // 1-5
-            .arg(_paralyzeList, _charmPersonList, _rightGestures, _leftGestures, _possibleRightGestures, _possibleLeftGestures) // 6-11
-            .arg(_monsterCommandList, _MonstersHtml, _WarlockHtml, tmp_trg, _chat,  boolToStr(_isParaFC), _paralyzedHands, hint, msg) // 12 - 20
-            .arg(tmpBH, tmpBC, intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT, boolToStr(_isMaladroit), // 21-26
+            // One arg() call: a second pass would also substitute a %N that the first one
+            // inserted with the chat or a name. And what the site's page gave is escaped: one
+            // tab in a chat line, and the battle could not be opened again.
+            .arg(intToStr(_loadedBattleID), boolToIntS(_isParaFDF), QWarlockUtils::jsonEscape(_fire), boolToIntS(_isPermanent), boolToIntS(_isDelay), // 1-5
+                 QWarlockUtils::jsonEscape(_paralyzeList), QWarlockUtils::jsonEscape(_charmPersonList), QWarlockUtils::jsonEscape(_rightGestures),
+                 QWarlockUtils::jsonEscape(_leftGestures), QWarlockUtils::jsonEscape(_possibleRightGestures), QWarlockUtils::jsonEscape(_possibleLeftGestures), // 6-11
+                 QWarlockUtils::jsonEscape(_monsterCommandList), _MonstersHtml, _WarlockHtml, QWarlockUtils::jsonEscape(tmp_trg),
+                 _chat.isEmpty() ? QString("0") : _chat, boolToStr(_isParaFC), _paralyzedHands, hint, QWarlockUtils::jsonEscape(msg), // 12 - 20
+                 QWarlockUtils::jsonEscape(tmpBH), QWarlockUtils::jsonEscape(tmpBC), intToStr(_loadedBattleTurn), boolToStr(battle_info->with_bot()), tmpLT,
+                 boolToStr(_isMaladroit), // 21-26
                  boolToIntS(_isSuicide), // 27: 1 while the site offers the SUICIDE checkbox (#315)
                  boolToIntS(battle_info->live())); // 28: a live match, its clock is liveTimeLeft() (#287)
 }
@@ -5222,6 +5348,7 @@ void QWarloksDuelCore::logout() {
     _login.clear();
     _password.clear();
     clearMessages();
+    forgetAccountData();
 
     _finished_battles.clear();
     _foreign_battles.clear();
@@ -5271,7 +5398,7 @@ void QWarloksDuelCore::logout() {
 
     setCheckUrl("");
 
-    saveParameters();
+    // Nothing to save: the group is gone from the settings, and what was in memory with it.
     sendGetRequest(GAME_SERVER_URL_LOGOUT);
 }
 
@@ -5338,7 +5465,7 @@ void QWarloksDuelCore::processServiceTimer() {
         _serviceTimer.stop();
         return;
     }
-    setCheckUrl(_isLogined ? QString(GAME_SERVER_URL_GET_PROFILE).arg(_login) : "");
+    setCheckUrl(_isLogined ? QString(GAME_SERVER_URL_GET_PROFILE).arg(urlName(_login)) : "");
     if (_isLogined) {
         processRefferer();
     }

@@ -156,6 +156,10 @@
 #define BATTLE_INFO_LEVEL_VERY_FRIENDLY 2
 #define BATTLE_INFO_LEVEL_FRIENDLY 1
 #define BATTLE_INFO_LEVEL_LADDER 0
+// The version of the "live" field of a saved battle (QBattleInfo::toString). 2: the battle is
+// a live match because the app made it one or the player accepted its invite. The field of
+// before had no version, and could come from the description of any challenge.
+#define BATTLE_INFO_LIVE_RECORD 2
 // Keep me On / auto matching (https://github.com/Pz1c/WavingHands/issues/149, /issues/216):
 // no new game once the player has this many.
 #define KEEP_ME_ON_MAX_GAMES 3
@@ -172,6 +176,18 @@
 // How long past its deadline the challenger keeps an unanswered invite: the invited phone's
 // clock may run a little behind.
 #define LIVE_MATCH_INVITE_GRACE_SEC 15
+// Anybody can write a description on the site, so the rules of one are taken only when an
+// app could have written them (QWarlockUtils::parseLiveDescription): a total between
+// LIVE_MATCH_TOTAL_MIN_SEC and LIVE_MATCH_TOTAL_MAX_SEC, LIVE_MATCH_EXTRA_MIN_SEC a turn at
+// least, and a deadline no further away than an invite lasts (plus LIVE_MATCH_CLOCK_SLACK_SEC
+// for a phone whose clock runs ahead) and no longer past than LIVE_MATCH_STALE_SEC. That one
+// is generous on purpose: an invite past its deadline is still a live invite, which the
+// invited app refuses for its challenger to see (QWarloksDuelCore::liveCheckInvites).
+#define LIVE_MATCH_TOTAL_MIN_SEC (5 * 60)
+#define LIVE_MATCH_TOTAL_MAX_SEC (3 * 60 * 60)
+#define LIVE_MATCH_EXTRA_MIN_SEC 15
+#define LIVE_MATCH_CLOCK_SLACK_SEC (2 * 60)
+#define LIVE_MATCH_STALE_SEC (30 * 24 * 60 * 60)
 
 //#define SECONDS_AT_20210901 1630454400
 static QStringList POSSIBLE_GESTURES {"C", "W", "S", "D", "F", "P", ">"};

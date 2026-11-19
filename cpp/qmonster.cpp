@@ -12,6 +12,8 @@ QMonster::QMonster(const QString &Name, const QString &Status, const QString &Ow
     _fireElemental = false;
     _iceElemental = false;
     _justCreated = Name.indexOf(":") != -1;
+    // never left to whatever was in memory: the bot reads hand() of every monster
+    _hand = WARLOCK_HAND_NONE;
     if (_justCreated) {
         _hand = Name.indexOf("LH:") == 0 ? WARLOCK_HAND_LEFT : WARLOCK_HAND_RIGHT;
     }
@@ -152,6 +154,8 @@ QString QMonster::json(const QString &user_login) {
 
     return QString("{\"under_control\":%1,\"name\":\"%2\",\"status\":\"%3\",\"owner\":\"%4\",\"target\":\"%5\",\"targeted\":%6,"
                    "\"strength\":%7,\"new_target\":\"%8\",\"hp\":%9,\"enchantment\":\"%10\"}")
-             .arg(boolToStr(is_owner(user_login)), _name, _status, _owner, _target, boolToStr(targeted),
-             intToStr(_strength), _newTarget, intToStr(_hp)).arg(_enchantment);
+             // one arg() call, and the names and the status are text of the site's page
+             .arg(boolToStr(is_owner(user_login)), QWarlockUtils::jsonEscape(_name), QWarlockUtils::jsonEscape(_status),
+                  QWarlockUtils::jsonEscape(_owner), QWarlockUtils::jsonEscape(_target), boolToStr(targeted),
+                  intToStr(_strength), QWarlockUtils::jsonEscape(_newTarget), intToStr(_hp), QWarlockUtils::jsonEscape(_enchantment));
 }

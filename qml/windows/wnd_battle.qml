@@ -688,11 +688,26 @@ BaseWindow {
     }
 
     property int readyWarlocks: 0
+    // The rows BU.finishPrepareWarlockList made, -1 while it is still making them. Not
+    // gBattle.size: a warlock who is out of a melee gets no row, and the turn news that
+    // waited for one row per warlock never started.
+    property int createdWarlocks: -1
     property int readyWindow: 0
     function prepareHintWithCheck() {
-        console.log("battle.prepareHintWithCheck", readyWarlocks, mainWindow.gBattle.size);
-        if (++readyWarlocks >= mainWindow.gBattle.size) {
+        ++readyWarlocks;
+        startHintWhenReady();
+    }
+
+    function warlocksCreated(count) {
+        createdWarlocks = count;
+        startHintWhenReady();
+    }
+
+    function startHintWhenReady() {
+        console.log("battle.startHintWhenReady", readyWarlocks, createdWarlocks);
+        if ((createdWarlocks >= 0) && (readyWarlocks >= createdWarlocks)) {
             readyWarlocks = 0;
+            createdWarlocks = -1;
             BWU.prepareHintBoard();
             tHintDelay.start();
         }
@@ -974,6 +989,7 @@ BaseWindow {
             return;
         }
         readyWarlocks = 0;
+        createdWarlocks = -1;
         // the turn news of the battle shown before is over: its frames must not touch the new warlocks,
         // its bar and what it plays over the board must not stay when this battle has no news
         BWU.closeTutorial();

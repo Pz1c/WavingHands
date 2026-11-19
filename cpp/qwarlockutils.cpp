@@ -41,9 +41,9 @@ QList<int> QWarlockUtils::getBattleList(QString &Data, QString Search) {
             if (a.isDigit()) {
                 battle_id.append(a);
             } else {
-                bool *ok = new bool();
-                int int_res = battle_id.toInt(ok, 10);
-                if (*ok) {
+                bool ok = false;
+                int int_res = battle_id.toInt(&ok, 10);
+                if (ok) {
                     res_list.append(int_res);
                 }
 
@@ -170,9 +170,17 @@ QList<QValueName> QWarlockUtils::getSelectOptionFromData(QString &Data, QString 
     while((idx3 = Data.indexOf(ValueBegin, idx3)) != -1 && idx3 < idx2) {
         idx3 += ValueBegin.length();
         idx4 = Data.indexOf('"', idx3);
+        if (idx4 == -1) {
+            break;
+        }
         value = Data.mid(idx3, idx4 - idx3);
         idx4 += 2;
         idx5 = Data.indexOf(ValueEnd, idx4);
+        if (idx5 == -1) {
+            // A page cut short: with -1 the search went back to the top of the list, and
+            // round again for ever.
+            break;
+        }
         name = Data.mid(idx4, idx5 - idx4);
 
         res.append(QValueName(value, name));
@@ -221,10 +229,19 @@ bool QWarlockUtils::parseMonsterCommad(QString &Data, QList<QMonster *> &result)
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
         idx2 = Data.indexOf(search2, idx1);
+        if (idx2 == -1) {
+            break;      // a page cut short, as in getSelectOptionFromData
+        }
         QString monster_name = Data.mid(idx1, idx2 - idx1);
         idx1 = Data.indexOf(search3, idx2);
+        if (idx1 == -1) {
+            break;
+        }
         idx1 += search3.length();
         idx2 = Data.indexOf("\"", idx1);
+        if (idx2 == -1) {
+            break;
+        }
         QString monster_id = Data.mid(idx1, idx2 - idx1), owner;
         bool just_created = (monster_name.indexOf("LH:") != -1) || (monster_name.indexOf("RH:") != -1);
         if (just_created) {
@@ -643,7 +660,12 @@ void QWarlockUtils::parseBattleTurn(QString &turn_text, QBattleInfo* bi, int cur
         }
         bi->setSubTitle(sub_title);
         if (last_line.indexOf("is victorious") != -1) {
-            bi->setWinner(bi->containParticipant(last_line));
+            // Not found among the participants: the winner the page's own result line gave
+            // (getFinishedBattleDescription) stays.
+            QString victor = bi->victoriousParticipant(last_line);
+            if (!victor.isEmpty()) {
+                bi->setWinner(victor);
+            }
         }
     }
     bi->addChat(current_turn, result_c);
@@ -722,14 +744,28 @@ bool QWarlockUtils::parseLiveDescription(const QString &Description, qint64 *Val
         return false;
     }
     qint64 valid_by = m.captured(1).toLongLong();
+    // Any warlock can write a description, and a challenge described as
+    // "Live match - Valid by UTC 1999999999 - Total:0:01m - Extra:1s" gave whoever played by
+    // it one second for the game. So only what an app would write is a rule: the deadline
+    // of an invite just made or lately expired, a clock one can play by.
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+    if ((valid_by > now + LIVE_MATCH_INVITE_SEC + LIVE_MATCH_CLOCK_SLACK_SEC) || (valid_by < now - LIVE_MATCH_STALE_SEC)) {
+        return false;
+    }
     int total = LIVE_MATCH_TOTAL_SEC, extra = LIVE_MATCH_EXTRA_SEC;
     m = reTotal.match(Description);
-    if (m.hasMatch() && (m.captured(1).toInt() * 60 + m.captured(2).toInt() > 0)) {
+    if (m.hasMatch()) {
         total = m.captured(1).toInt() * 60 + m.captured(2).toInt();
+        if ((total < LIVE_MATCH_TOTAL_MIN_SEC) || (total > LIVE_MATCH_TOTAL_MAX_SEC)) {
+            return false;
+        }
     }
     m = reExtra.match(Description);
-    if (m.hasMatch() && (m.captured(1).toInt() > 0)) {
+    if (m.hasMatch()) {
         extra = m.captured(1).toInt();
+        if (extra < LIVE_MATCH_EXTRA_MIN_SEC) {
+            return false;
+        }
     }
     if (ValidBy) {
         *ValidBy = valid_by;
@@ -788,7 +824,10 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
             QPersonalChallenge pc;
             pc.id = battle_id;
             pc.from = lg.at(0).trimmed();
-            pc.row = QString("{\"id\":%1,\"s\":3,\"d\":\"%2\",\"dt\":\"%3\",\"el\":\"%4\"}").arg(intToStr(battle_id), QWarlockDictionary::getInstance()->getStringByCode("ChallengedBy").arg(pc.from), desc, pc.from);
+            // text of the site's page: escaped, or a quote or a backslash in it breaks the game list
+            pc.row = QString("{\"id\":%1,\"s\":3,\"d\":\"%2\",\"dt\":\"%3\",\"el\":\"%4\"}")
+                    .arg(intToStr(battle_id), jsonEscape(QWarlockDictionary::getInstance()->getStringByCode("ChallengedBy").arg(pc.from)),
+                         jsonEscape(desc), jsonEscape(pc.from));
             result.append(pc.row);
             if (Parsed) {
                 Parsed->append(pc);
@@ -798,7 +837,8 @@ void QWarlockUtils::parsePersonalChallenge(const QString &Data, QStringList &res
 }
 
 void QWarlockUtils::parseUnstartedBattle(QString &Data, QBattleInfo *bi) {
-    int idx1 = 0, idx2, idx3, idx4, idx5;
+    // idx2: where the description is looked for from, the start of a page with no player link
+    int idx1 = 0, idx2 = 0, idx3, idx4, idx5;
     bool challenged, rejected;
     // parse title
     QString title = getStringFromData(Data, "<H2><U", ">", "</U>", idx1);
