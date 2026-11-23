@@ -77,6 +77,17 @@ QMAKE_INTERNAL_INCLUDED_FILES += $$PWD/qml.qrc
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/platforms/android
 
+# The app's version is the one Gradle gives the package (versionName in build.gradle), and the
+# C++ side takes it from there: APP_VERSION_NAME, in the User-Agent of every request to the
+# game server and in a live match's description. One place to change it.
+GRADLE_LINES = $$cat($$PWD/platforms/android/build.gradle, lines)
+APP_VERSION_LINE = $$find(GRADLE_LINES, "^\\s*versionName\\s*=")
+APP_VERSION_NAME = $$replace(APP_VERSION_LINE, "^[^0-9]*([0-9][0-9.]*).*$", "\\1")
+isEmpty(APP_VERSION_NAME): error("no versionName in platforms/android/build.gradle")
+DEFINES += APP_VERSION_NAME=\\\"$$APP_VERSION_NAME\\\"
+# Rerun qmake when the version changes.
+QMAKE_INTERNAL_INCLUDED_FILES += $$PWD/platforms/android/build.gradle
+
 # 16 KB page size support (required by Google Play for apps targeting Android 15+).
 # NDK r28+ does this by default; r27 and older need the flag explicitly.
 android {

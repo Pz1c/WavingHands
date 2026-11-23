@@ -45,7 +45,6 @@ class QWarloksDuelCore : public QGameCore
     Q_PROPERTY(QString login READ login NOTIFY loginChanged)
     Q_PROPERTY(QString password READ password NOTIFY passwordChanged)
     Q_PROPERTY(QString errorMsg READ errorMsg NOTIFY errorOccurred)
-    Q_PROPERTY(QString playerInfo READ playerInfo NOTIFY playerInfoChanged)
     Q_PROPERTY(QString readyInBattles READ readyInBattles NOTIFY readyInBattlesChanged)
     Q_PROPERTY(QString waitingInBattles READ waitingInBattles NOTIFY waitingInBattlesChanged)
     Q_PROPERTY(QString finishedBattles READ finishedBattles NOTIFY finishedBattlesChanged)
@@ -63,8 +62,6 @@ class QWarloksDuelCore : public QGameCore
     Q_PROPERTY(bool isAI READ isAI NOTIFY isAIChanged)
     Q_PROPERTY(bool allowedAccept READ allowedAccept NOTIFY allowedAcceptChanged)
     Q_PROPERTY(bool allowedAdd READ allowedAdd NOTIFY allowedAddChanged)
-    Q_PROPERTY(QString warlockInfo READ warlockInfo NOTIFY warlockInfoChanged)
-    Q_PROPERTY(QString accountMenu READ accountMenu NOTIFY accountMenuChanged)
     Q_PROPERTY(QString battleList READ battleList NOTIFY battleListChanged)
     // Keep me On (https://github.com/Pz1c/WavingHands/issues/149), which the auto matching of
     // https://github.com/Pz1c/WavingHands/issues/216 extends: one setting for both.
@@ -102,7 +99,6 @@ public:
     QString login();
     QString password();
     QString errorMsg();
-    QString playerInfo();
     QString readyInBattles();
     QString waitingInBattles();
     QString finishedBattles();
@@ -121,8 +117,6 @@ public:
     bool isAI();
     bool allowedAdd();
     bool allowedAccept();
-    QString warlockInfo();
-    QString accountMenu();
     QString battleList();
     bool keepMeOn();
     bool pushNotifications();
@@ -138,6 +132,7 @@ signals:
     void loginChanged();
     void passwordChanged();
     void errorOccurred();
+    // The player's statistics or spellbook level changed (GUI.userProfileChanged).
     void playerInfoChanged();
     void readyInBattlesChanged();
     void waitingInBattlesChanged();
@@ -156,8 +151,6 @@ signals:
     void allowedAddChanged();
     void allowedAcceptChanged();
     void topListChanged();
-    void warlockInfoChanged();
-    void accountMenuChanged();
     void battleListChanged();
     void keepMeOnChanged();
     void pushNotificationsChanged();
@@ -234,7 +227,6 @@ public slots:
     QString getWarlockStats(const QString &WarlockName, bool DirtyLogin = false);
     QString findWarlockByName(const QString &warlockName);
     void getSharableLink(const QString &game_level = "vf");
-    void setTimerInterval(int count, int msec);
     int getBotBattle();
     void setUserProperties(const QString &OS, const QString &Screen, const QString &Locale);
     void logEvent(QString EventName, QString EventParams);
@@ -249,6 +241,9 @@ public slots:
     void onProxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
     QString getSpellList(QString left, QString right, bool Enemy);
     QString getSpellBook();
+    // main.qml is up: the first scan (or the login before it), which the player waits for,
+    // and from then on the scan timer.
+    void startScanning();
     int getLoadedBattleTurn();
     QString battleInfo();
     QString battleReadOnly(int BattleID);
@@ -318,6 +313,12 @@ protected slots:
     void onLinkLiveInvite(const QString &by, int battle_id);
     void onLinkLiveSent(const QString &opponent, int battle_id, const QString &result);
     void liveTick();
+    // What a caster server of 1.4.0 adds (see QRosterLink): the CAPS reply, ACTIVE, and the
+    // open challenges it serves (CHAL).
+    void onLinkCapsChanged();
+    void onLinkActive(const QString &by);
+    void onLinkChallenges(const QList<QLinkChallenge> &list, int ageSeconds);
+    void onLinkChallengesFailed(const QString &code);
 
 protected:
     bool processData(QString &Data, int StatusCode, QString url, QString new_url);
@@ -337,6 +338,10 @@ protected:
     void finishBattleHistory(QString &Data, int StatusCode, const QString &url);
     void finishLiveProbe(QString &Data, int StatusCode, const QString &url);
     void finishChallengeList(QString &Data, int StatusCode, QUrl NewUrl);
+    // What the open challenges lead to, wherever they came from (the site's page or CHAL).
+    // FetchedAt: when the copy was read from the site, 0 when it is not to be had.
+    void applyChallengeList(const QList<QBattleInfo *> &List, qint64 FetchedAt);
+    void finishRefuse(const QString &url, const QString &NewUrl);
     void finishTopList(QString &Data, int StatusCode, QUrl NewUrl);
     bool butifyTurnMessage(QString &str, bool CleanGestures = false);
     bool parseTargetList(QString &Data);
@@ -373,10 +378,8 @@ protected:
 
     void setCredentialToAuth(QAuthenticator *authenticator);
 
-    void processNewLogin(bool Silent = false);
+    void processNewLogin();
     void forgetAccountData();
-    QString accountToString();
-    void accountsFromString(QString acc);
 
     void generateBattleList();
     int parseBattleDescription(QString &Data);
@@ -396,6 +399,10 @@ protected:
     void releaseAiBusy(const QString &url);
     bool retryOutlivesSession(const QString &url) const override;
     bool verifiesTls(const QUrl &url) const override;
+    QByteArray userAgent(const QUrl &url) const override;
+    // The other warlock's app need not wait for its next scan (TURN over the caster link).
+    void tellApp(const QString &Warlock);
+    void tellApps(const QStringList &Warlocks);
 
     QString getHintArray(int hint_id);
     QString getBattleHint(QBattleInfo *battle_info);
@@ -413,7 +420,9 @@ protected:
 
     void processWarlockGet(QString &Data);
     void processWarlockPut();
-    void callAI(QString Login, int MagicBookLevel);
+    // KeepAlive: a call for any bot with no reason of the player's own (see the .cpp).
+    void callAI(QString Login, int MagicBookLevel, bool KeepAlive = false);
+    void botRetry();
 
     void countFinishedBattle(QBattleInfo *bi);
     // A win raises the spellbook. Called once per battle, when its result is first delivered
@@ -443,6 +452,9 @@ protected:
     void requestPushToken();
     void registerPushNatives();
     void setServerPushActive(bool active);
+    // The server sends this install "finished" messages (CAPS "fin" on the connection that
+    // PUSHed the token): the Java check then needs no page at all.
+    void setServerFinActive(bool active);
     void setPushTokenStatus(const QString &code, const QString &detail = QString());
 
     // Keep me On / auto matching: after a scan, join an open PvP challenge, or create a game
@@ -462,6 +474,18 @@ protected:
     bool challengeListDue(bool Asked) const;
     void releaseChallengeList(const QString &url);
     void refreshBattleRow(const QBattleInfo *bi, const QString &RowBefore);
+
+    // The scan scheduler, see scanState(): a request for the player page on its way, the
+    // page every redirect that leads there, and the one that came back or never will.
+    bool scanBusy() const;
+    QNetworkReply *getPage(const QString &url, bool Background = false);
+    void releaseScan(const QString &url);
+    int scanInterval() const;
+    // What the caster server is told and asked after a scan of the player page (WATCH), and
+    // the player's own open challenges it watches through CHAL.
+    void updateWatch();
+    void updateOwnChallengeWatch();
+    void markGameDirty();
 
     // Live matches (https://github.com/Pz1c/WavingHands/issues/287), see the .cpp.
     void liveCheckInvites();
@@ -515,6 +539,37 @@ private:
     // next scan. And the player's own Refresh on its way (scanState).
     qint64 _lastChallengeScan;
     bool _challengesAsked;
+    // The list lost a game the player has just joined: the New Game window reads it again.
+    bool _challengeListStale;
+    // CHAL asked for: whether its failure falls back to the page (a request of today's), or
+    // is let go (the minute's look at the player's own open challenge, see
+    // updateOwnChallengeWatch). And the player's own challenges the last list showed.
+    bool _chalFallback;
+    QSet<int> _ownListed;
+    QTimer _chalTimer;
+    // The scan scheduler (scanState): requests for the player page on their way and since
+    // when (ms), one more owed after them, when the last one came back (s).
+    int _scansInFlight;
+    qint64 _scanSentAt;
+    bool _scanAgain;
+    qint64 _lastScanAt;
+    // ACTIVE: a refresh at most once per kActiveRefreshGapMs, a later one folded into it.
+    qint64 _lastActiveRefresh;
+    QTimer _activeTimer;
+    QString _activeBy;
+    // Automatic logins (loginToSite): how many in a row the site gave no page for, the last
+    // one, "Failed Login" said (nothing automatic until the player acts), and given up.
+    int _autoLogins;
+    qint64 _lastAutoLogin;
+    bool _loginRefused;
+    bool _loginGaveUp;
+    // The next call for any bot that only keeps the bots going (callAI), in seconds.
+    qint64 _nextKeepAlive;
+    // A bot whose answer did not come: called again from here, with a growing pause.
+    QTimer _botRetryTimer;
+    int _botRetryMs;
+    // Something of the game group changed since it was last written (saveGameParameters).
+    bool _gameDirty;
     // The bot last called to play, and when (callAI).
     QString _lastAiCall;
     qint64 _lastAiCallAt;
@@ -593,11 +648,9 @@ private:
     int _win_vs_warlock;
     int _play_training_game;
     int _play_pvp_game;
-    QStringList _msg;
-    // Messages (issue #320): the inbox of parseMessages (_msg above keeps its HTML for
-    // playerInfo), as JSON for QML and as a list for the sender -> id lookup; the message
-    // waiting for its recipient's profile page; who the send in flight is addressed to, and
-    // what it says.
+    // Messages (issue #320): the inbox of parseMessages, as JSON for QML and as a list for
+    // the sender -> id lookup; the message waiting for its recipient's profile page; who the
+    // send in flight is addressed to, and what it says.
     struct QPlayerMessage {
         QString from;
         QString id;
@@ -620,7 +673,6 @@ private:
     };
     QList<QSentMessage> _outbox;
     QString _sentMessages = "[]";
-    QList<QValueName> _accounts;
     qint64 _lastPlayersScan;
     // Caster link: the roster source when it is up, plus the delta watermark.
     // See the throttle note in scanTopList before changing any of these.
@@ -688,7 +740,6 @@ private:
     QString _spellListHtml;
     QString _prevGestures;
     QString _topList;
-    QString _warlockInfo;
     QString _warlockId;
     QString _chat;
     QWarlock *_enemy;
@@ -711,8 +762,6 @@ private:
     QWarlockSpellChecker *SpellChecker;
 
     //time
-    int _timerCount;
-    int _timerInterval;
     QTimer _timer;
     QTimer _serviceTimer;
 

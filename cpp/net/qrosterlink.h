@@ -6,6 +6,7 @@
 #include <QList>
 #include <QPair>
 #include <QString>
+#include <QStringList>
 #include <QTimer>
 #include <QNetworkProxy>
 #include <QtNetwork/QSslSocket>
@@ -18,6 +19,17 @@
 // the link (PUSH / UNPUSH written, the reply) and in the core (when and why). Tokens only
 // ever go through redact().
 Q_DECLARE_LOGGING_CATEGORY(lcPush)
+
+// One open challenge of the site's /challenges page as a CHAL reply carries it (a "C" line):
+// the cells the app's own parser reads from the page, see QWarlockUtils::makeChallenge.
+struct QLinkChallenge {
+    int battleId = 0;
+    int level = 0;              // 0 ladder, 1 friendly, 2 very friendly
+    bool fast = false;
+    int need = 0;               // the N of "Need N more"
+    QStringList names;          // participants in page order
+    QString description;        // the third cell, HTML entities untouched
+};
 
 // The ONLY place a socket lives. Deliberately does NOT derive from QGameCore:
 // QSslSocket::sslErrors(QList<QSslError>) has the SAME signature as the
@@ -36,7 +48,7 @@ class QRosterLink : public QObject {
     Q_OBJECT
 public:
     enum State { Disabled, Down, Connecting, Handshaking, Ready };
-    enum Pending { PNone, PAuth, PLogin, PWho, PPing, PLogout, PTurn, PPush, PUnpush, PCaps, PLive };
+    enum Pending { PNone, PAuth, PLogin, PWho, PPing, PLogout, PTurn, PPush, PUnpush, PCaps, PLive, PChal, PWatch };
 
     explicit QRosterLink(QObject *parent = nullptr);
     ~QRosterLink() override;
@@ -99,6 +111,25 @@ public:
     bool isLiveSupported() const        { return _state == Ready && _liveSupported; }
     static QString redact(const QString &secret);       // "<163B:dXkaQ2Pq...>", the only way a token is logged
 
+    // Fewer requests to the site (server 1.4.0). CAPS declares "chal", "watch" and "fin" next
+    // to "live"; a server of today accepts only "live", and a command it does not know costs
+    // a strike, so each of these is used only once its name is in the CAPS reply.
+    // "chal": the site's open challenges, one copy the server fetches for every app. Returns
+    // false when this connection cannot serve them (the caller reads the page itself);
+    // otherwise EXACTLY ONE of challenges() / challengesFailed() follows, asynchronously.
+    // Requests made while one is waiting are answered by the same reply.
+    bool requestChallenges();
+    // "watch": whom the player waits for and the battles still running, so the server can say
+    // when one of those warlocks was active on the site (ACTIVE). One wanted slot like PUSH:
+    // the latest lists win, they go out again after a reconnect, and lists equal to the ones
+    // this connection already sent are not sent again. Names the server would refuse are
+    // left out; past 32 names and 64 battles the rest is cut.
+    void sendWatch(const QStringList &opponents, const QList<int> &battles);
+    bool isChalSupported() const        { return _state == Ready && _chalSupported; }
+    bool isWatchSupported() const       { return _state == Ready && _watchSupported; }
+    // "fin": the server sends this install a "finished" FCM message (with the PUSH of its token).
+    bool isFinSupported() const         { return _state == Ready && _finSupported; }
+
 signals:
     // NOTE: carries only (name, token). The epoch/revision on the OK line are
     // deliberately NOT propagated -- see FIX-2.
@@ -119,6 +150,16 @@ signals:
     void liveInvite(const QString &byName, int battleId);
     // The server's answer to a LIVE: delivered | pushed | offline | busy | <ERR code>.
     void liveSent(const QString &opponent, int battleId, const QString &result);
+    // What the CAPS reply allowed changed: it came in, or the connection that had it is gone.
+    // Queued, so it never runs inside a teardown.
+    void capsChanged();
+    // ACTIVE: <byName>, whom the last WATCH named, was active on the site since the server's
+    // previous roster scan.
+    void active(const QString &byName);
+    // The answer to requestChallenges(): the challenges in page order and the age in seconds
+    // of the server's copy, or why there are none (timeout|malformed|transport|err:<code>).
+    void challenges(const QList<QLinkChallenge> &list, int ageSeconds);
+    void challengesFailed(const QString &code);
 
 private slots:
     void onEncrypted();
@@ -143,6 +184,9 @@ private:
     int  queuedTurnIndex(const QString &name) const;   // case-insensitive, -1 if absent
     void flushPush();               // sends the wanted UNPUSH, else the wanted PUSH, if Ready and idle
     void flushLive();               // sends the wanted CAPS, else the oldest queued LIVE, if Ready and idle
+    void flushChal();               // sends the wanted CHAL if Ready, idle and accepted
+    void flushWatch();              // sends the wanted WATCH likewise, unless this connection sent it
+    bool handleChalLine(const QList<QByteArray> &f, const QByteArray &line);   // false: out of shape
     void handleLine(const QByteArray &line);
     void handleOk(const QList<QByteArray> &f);
     void handleErr(const QList<QByteArray> &f);
@@ -186,6 +230,23 @@ private:
     bool    _liveSupported = false;
     QList<LiveInvite> _liveQueue;
     LiveInvite _liveInFlight;
+    // The other names of the CAPS reply, cleared with the connection like _liveSupported.
+    bool    _chalSupported = false;
+    bool    _watchSupported = false;
+    bool    _finSupported = false;
+    // CHAL: asked for and not written yet; the block being read (valid while PChal).
+    bool    _chalWanted = false;
+    bool    _chalInBlock = false;
+    int     _chalDeclared = 0;
+    int     _chalAge = 0;
+    int     _chalLines = 0;
+    QList<QLinkChallenge> _chalRows;
+    // WATCH: the line wanted, the one this connection sent last (cleared with it), the one
+    // waiting for its OK (valid while PWatch).
+    QByteArray _watchWanted;
+    QByteArray _watchSent;
+    QByteArray _watchInFlight;
+    bool    _dying = false;         // the destructor runs: nothing may be emitted any more
 
     QByteArray  _rx;
     bool        _inBlock = false;

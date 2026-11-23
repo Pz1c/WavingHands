@@ -128,8 +128,7 @@ ApplicationWindow {
                 //core.scanState();
                 // mainWindow's: a bare logEvent in here is the core's own slot
                 mainWindow.logEvent("auto_login_start", {});
-                core.setTimerInterval(1, 0);
-                GUI.prepareLoginMenu(core.accountMenu);
+                core.startScanning();
             }
         }
     }

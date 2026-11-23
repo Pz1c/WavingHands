@@ -491,6 +491,26 @@ QString QBattleInfo::challengedWarlock() const {
     return _challenged.isEmpty() ? QString() : _challenged.first().section(':', 0, 0);
 }
 
+QString QBattleInfo::challengedWarlock(int WarlockId) const {
+    foreach(const QString &c, _challenged) {
+        if (c.section(':', 1, 1).toInt() == WarlockId) {
+            return c.section(':', 0, 0);
+        }
+    }
+    return QString();
+}
+
+QStringList QBattleInfo::challengedWarlocks() const {
+    QStringList res;
+    foreach(const QString &c, _challenged) {
+        const QString name = c.section(':', 0, 0);
+        if (_rejected.indexOf(name, Qt::CaseInsensitive) == -1) {
+            res.append(name);
+        }
+    }
+    return res;
+}
+
 void QBattleInfo::checkRejection() {
     if (!_inviteRejected && !_rejected.empty() && (_status == -1)) {
         bool all_reject = true;

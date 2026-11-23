@@ -181,11 +181,19 @@ bool QGameCore::retryRequest(QNetworkReply *reply) {
     QString url = reply->url().toString();
     QByteArray body = reply->property(kPropBody).toByteArray();
     bool background = isBackground(reply);
+    // What the caller noted on the request (which battle, whom to tell) goes with the retry.
+    QVariantMap noted;
+    foreach(const QByteArray &name, reply->dynamicPropertyNames()) {
+        if ((name != kPropBackground) && (name != kPropReleased) && (name != kPropVerb) && (name != kPropBody) &&
+                (name != kPropAttempt)) {
+            noted.insert(QString::fromLatin1(name), reply->property(name.constData()));
+        }
+    }
     // The retry inherits this reply's share of the overlay, so a user action
     // stays covered while it waits.
     reply->setProperty(kPropReleased, true);
     int epoch = _sessionEpoch;
-    QTimer::singleShot(kRetryDelayMs, this, [this, verb, url, body, background, attempt, epoch]() {
+    QTimer::singleShot(kRetryDelayMs, this, [this, verb, url, body, background, attempt, epoch, noted]() {
         if ((epoch != _sessionEpoch) && !retryOutlivesSession(url)) {
             // The account changed meanwhile: resending would act for the previous
             // one. Give back the overlay share this retry inherited.
@@ -195,7 +203,10 @@ bool QGameCore::retryRequest(QNetworkReply *reply) {
             releaseLoading();
             return;
         }
-        startRequest(verb, url, body, background, attempt + 1, true);
+        QNetworkReply *again = startRequest(verb, url, body, background, attempt + 1, true);
+        for (auto it = noted.constBegin(); it != noted.constEnd(); ++it) {
+            again->setProperty(it.key().toLatin1().constData(), it.value());
+        }
     });
     return true;
 }
@@ -203,6 +214,11 @@ bool QGameCore::retryRequest(QNetworkReply *reply) {
 bool QGameCore::verifiesTls(const QUrl &url) const {
     Q_UNUSED(url)
     return false;
+}
+
+QByteArray QGameCore::userAgent(const QUrl &url) const {
+    Q_UNUSED(url)
+    return QByteArray();
 }
 
 QNetworkReply *QGameCore::sendPostRequest(const QString &url, const QByteArray &data, bool Background) {
@@ -225,6 +241,10 @@ QNetworkReply *QGameCore::startRequest(const QString &Verb, const QString &Url, 
     request.setUrl(QUrl(Url));
     if (is_post) {
         request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
+    }
+    const QByteArray ua = userAgent(request.url());
+    if (!ua.isEmpty()) {
+        request.setHeader(QNetworkRequest::UserAgentHeader, ua);
     }
     request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
     request.setTransferTimeout(kRequestTimeoutMs);

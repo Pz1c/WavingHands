@@ -105,6 +105,10 @@ public:
     void checkRejection();
     // The first warlock invited to this unstarted battle, as far as its page was read.
     QString challengedWarlock() const;
+    // The one whose invite the site knows by this id (the "reject" of its Withdraw link), and
+    // every one whose invite is still open.
+    QString challengedWarlock(int WarlockId) const;
+    QStringList challengedWarlocks() const;
 
     // Live match (https://github.com/Pz1c/WavingHands/issues/287): a private duel played
     // against the clock, see QWarlockUtils::liveDescription. The clock is this player's

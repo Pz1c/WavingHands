@@ -29,10 +29,11 @@ import java.util.Map;
  * every value a string:
  *   v          always "1"; anything else is ignored
  *   type       "ready": battles await the player's orders; "invite": private challenges await
- *              the player's answer. Never mixed in one message. "live": a warlock who is in
- *              the app right now invites the player to a live match
- *              (https://github.com/Pz1c/WavingHands/issues/287); the invite is good for a few
- *              minutes only, so the message is dropped once it is older than that.
+ *              the player's answer; "finished": battles of the player's are over (only to a
+ *              token PUSHed over a connection whose CAPS had "fin"). Never mixed in one
+ *              message. "live": a warlock who is in the app right now invites the player to a
+ *              live match (https://github.com/Pz1c/WavingHands/issues/287); the invite is good
+ *              for a few minutes only, so the message is dropped once it is older than that.
  *   from       "live" only: who invites
  *   battles    ascending battle numbers joined with ';', at least one
  *   battle_id  the number when count is "1", "" otherwise
@@ -67,11 +68,14 @@ public class PushService extends FirebaseMessagingService {
             }
             String type = data.get("type");
             boolean live = "live".equals(type);
+            boolean finished = "finished".equals(type);
             int action_type;
             if ("invite".equals(type) || live) {
                 action_type = 1;
             } else if ("ready".equals(type)) {
                 action_type = 2;
+            } else if (finished) {
+                action_type = 3;
             } else {
                 Log.d(TAG, "onMessageReceived: unknown type " + type + ", dropped");
                 return;
@@ -85,6 +89,11 @@ public class PushService extends FirebaseMessagingService {
             if (age > (live ? MAX_LIVE_AGE_SEC : MAX_AGE_SEC)) {
                 Log.d(TAG, "onMessageReceived: stale, dropped");
                 return;
+            }
+            if (finished) {
+                // Known as finished from here on, shown or not: the check compares the page's
+                // Finished row with this list, and must not announce these a second time.
+                addFinishedGames(context, data.get("battles"));
             }
             if (MainActivity.isForeground) {
                 // The live link and the battle list already cover it.
@@ -114,6 +123,42 @@ public class PushService extends FirebaseMessagingService {
             editor.putInt("notification_action_type", action_type);
             editor.putInt("notification_battle_id", battle_id);
             editor.commit();
+            // The next check follows from this notification (its silence, or the reminder
+            // three days on when the server pushes everything else, CheckScheduler).
+            CheckScheduler.schedule(context);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // The battle numbers of a "finished" message ("battles", joined with ';') added to the
+    // "finished_games" pref (joined with ',', as CheckStatus.performCheck and the core keep it).
+    private static void addFinishedGames(Context context, String battles) {
+        if (battles == null || battles.isEmpty()) {
+            return;
+        }
+        try {
+            SharedPreferences prefs = context.getSharedPreferences("activity", 0);
+            String known = prefs.getString("finished_games", "");
+            java.util.List<String> ids = new java.util.ArrayList<>();
+            for (String id : known.split(",")) {
+                if (!id.trim().isEmpty()) {
+                    ids.add(id.trim());
+                }
+            }
+            boolean added = false;
+            for (String id : battles.split(";")) {
+                String bid = id.trim();
+                if (!bid.isEmpty() && (parseLong(bid, 0L) > 0) && !ids.contains(bid)) {
+                    ids.add(bid);
+                    added = true;
+                }
+            }
+            if (added) {
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("finished_games", String.join(",", ids));
+                editor.commit();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -24,6 +24,11 @@ const int kLogoutDeadlineMs     = 2000;
 const int kTurnDeadlineMs       = 2500;
 const int kPushDeadlineMs       = 2500;    // PUSH / UNPUSH: a map update server side
 const int kLiveDeadlineMs       = 2500;    // CAPS / LIVE: the same
+const int kWatchDeadlineMs      = 2500;    // WATCH: the same
+// CHAL: a copy older than a minute is fetched from the site first, and the server gives
+// each stage of that fetch 30 s; past this the site is in trouble and the caller reads the
+// page itself, as before.
+const int kChalDeadlineMs       = 20000;
 
 const int kKeepaliveMs          = 240000;
 const int kKeepaliveSeconds     = 240;
@@ -43,6 +48,8 @@ const int kMaxQueuedLives       = 4;
 const int kLiveMaxAgeSeconds    = 60;      // an invite lives 5 minutes: later than this is no "now"
 const int kMinPushTokenBytes    = 20;      // the server's rule for PUSH / UNPUSH
 const int kMaxPushTokenBytes    = 4096;
+const int kMaxWatchNames        = 32;      // the server's rule for WATCH
+const int kMaxWatchBattles      = 64;
 
 const int    kMaxRxBytes        = 65536;              // one line may not exceed 64 KiB
 const qint64 kMaxBlockBytes     = 8LL * 1024 * 1024;  // one block may not exceed 8 MiB
@@ -80,6 +87,7 @@ QRosterLink::QRosterLink(QObject *parent) :
 }
 
 QRosterLink::~QRosterLink() {
+    _dying = true;
     _reconnectAllowed = false;
     _reconnect.stop();
     // Empty failCode: a dying object must not emit.
@@ -120,6 +128,7 @@ void QRosterLink::start(const QString &login, const QString &cookieHeader, const
         _liveQueue.clear();                                 // and its live invites
         _pushWanted.clear();                                // and its push registration
         _unpushWanted.clear();
+        _watchWanted.clear();                               // and whom it waited for
         _deltaCapable = false;
         _wrongPlayer = 0;
         _canonical.clear();
@@ -170,6 +179,7 @@ void QRosterLink::clearIdentity() {
     _pushWanted.clear();        // no UNPUSH needed: LOGOUT drops the binding server side
     _unpushWanted.clear();
     _pushInFlight.clear();
+    _watchWanted.clear();       // LOGOUT of the last device drops the WATCH server side too
     _cookie.clear();
     _token.clear();
     _login.clear();
@@ -188,6 +198,7 @@ void QRosterLink::disableForSession(const QString &reason) {
     _liveQueue.clear();
     _pushWanted.clear();
     _unpushWanted.clear();
+    _watchWanted.clear();
     emit protocolMismatch(reason);
 }
 
@@ -281,8 +292,9 @@ void QRosterLink::sendTurn(const QString &opponent) {
 
 void QRosterLink::flushTurns() {
     // _deltaCapable as for WHO: a server too old for the 3-field WHO may not know
-    // TURN either, and its "unknown command" would be a strike.
-    if (_state != Ready || !_deltaCapable || _pending != PNone || !_sock) {
+    // TURN either, and its "unknown command" would be a strike. The connection's CAPS
+    // goes first (flushLive).
+    if (_state != Ready || !_deltaCapable || _pending != PNone || !_sock || _capsWanted) {
         return;
     }
     const qint64 now = QDateTime::currentSecsSinceEpoch();
@@ -376,7 +388,7 @@ void QRosterLink::flushPush() {
     // The TURN discipline: Ready, delta capable (an older server answers "unknown
     // command" with a strike), idle, one request per round trip. UNPUSH before PUSH,
     // so a token rotation unbinds the old token before it binds the new one.
-    if (_state != Ready || !_deltaCapable || _pending != PNone || !_sock || _pushUnsupported) {
+    if (_state != Ready || !_deltaCapable || _pending != PNone || !_sock || _pushUnsupported || _capsWanted) {
         return;
     }
     if (!_unpushWanted.isEmpty()) {
@@ -437,7 +449,8 @@ void QRosterLink::flushLive() {
         _capsWanted = false;                // once per connection, whatever the answer
         _pending = PCaps;
         _deadline.start(kLiveDeadlineMs);
-        sendLine("CAPS\tlive");
+        // A server of today answers "OK caps live" to the whole list and never hears of the rest.
+        sendLine("CAPS\tlive,chal,watch,fin");
         return;
     }
     if (!_liveSupported) {
@@ -462,6 +475,78 @@ void QRosterLink::flushLive() {
     }
 }
 
+bool QRosterLink::requestChallenges() {
+    if (_stickyDisabled || !isChalSupported()) {
+        return false;
+    }
+    _chalWanted = true;                     // one CHAL answers every request made meanwhile
+    flushChal();
+    return true;
+}
+
+void QRosterLink::flushChal() {
+    // The TURN discipline, and only on a connection whose CAPS reply named "chal": a server
+    // that does not know CHAL counts it as a strike.
+    if (_state != Ready || !_chalSupported || _pending != PNone || !_sock || !_chalWanted) {
+        return;
+    }
+    _chalWanted = false;
+    _chalInBlock = false;
+    _chalRows.clear();
+    _pending = PChal;
+    _deadline.start(kChalDeadlineMs);
+    sendLine("CHAL");
+}
+
+void QRosterLink::sendWatch(const QStringList &opponents, const QList<int> &battles) {
+    if (_stickyDisabled || _loginKey.isEmpty()) {
+        return;
+    }
+    // The server's rule: "-" or up to 32 names it would take for a TURN (or "*"), and "-" or
+    // up to 64 battle numbers. Anything else is a bad-request strike, so it is never sent.
+    QStringList names;
+    for (const QString &o : opponents) {
+        const QString name = o.trimmed();
+        const bool ok = (name == QLatin1String("*")) ||
+                        (QRosterWire::validWireName(name) && !name.contains(QLatin1Char(',')) &&
+                         (name.toLower() != _loginKey));
+        if (!ok || names.contains(name, Qt::CaseInsensitive)) {
+            continue;
+        }
+        if (names.size() >= kMaxWatchNames) {
+            break;
+        }
+        names.append(name);
+    }
+    QStringList ids;
+    for (int id : battles) {
+        if ((id <= 0) || (id > 999999999) || ids.contains(QString::number(id))) {
+            continue;
+        }
+        if (ids.size() >= kMaxWatchBattles) {
+            break;
+        }
+        ids.append(QString::number(id));
+    }
+    QByteArray line = "WATCH\t";
+    line += names.isEmpty() ? QByteArray("-") : names.join(QLatin1Char(',')).toUtf8();
+    line += '\t';
+    line += ids.isEmpty() ? QByteArray("-") : ids.join(QLatin1Char(';')).toUtf8();
+    _watchWanted = line;
+    flushWatch();
+}
+
+void QRosterLink::flushWatch() {
+    if (_state != Ready || !_watchSupported || _pending != PNone || !_sock ||
+        _watchWanted.isEmpty() || (_watchWanted == _watchSent)) {
+        return;
+    }
+    _pending = PWatch;
+    _watchInFlight = _watchWanted;
+    _deadline.start(kWatchDeadlineMs);
+    sendLine(_watchInFlight);
+}
+
 void QRosterLink::openSocket() {
     _state = Connecting;
     _sock = new QSslSocket(this);
@@ -484,6 +569,9 @@ void QRosterLink::openSocket() {
 // [FIX-1] THE ONLY TEARDOWN PRIMITIVE.
 void QRosterLink::resetSocket(State next, const QString &failCode) {
     const bool hadWho = (_pending == PWho);
+    // A CHAL asked for or on its way is answered here, whatever the code: its caller waits.
+    const bool hadChal = (_pending == PChal) || _chalWanted;
+    const bool hadCaps = _liveSupported || _chalSupported || _watchSupported || _finSupported;
     if ((_pending == PTurn) && !_turnInFlight.first.isEmpty() &&
         (queuedTurnIndex(_turnInFlight.first) == -1)) {
         // The TURN got no reply (deadline, socket error, a server that idle-closed
@@ -499,6 +587,14 @@ void QRosterLink::resetSocket(State next, const QString &failCode) {
     _liveInFlight = LiveInvite();
     _capsWanted = false;                    // the next handshake asks again
     _liveSupported = false;
+    _chalSupported = false;
+    _watchSupported = false;
+    _finSupported = false;
+    _chalWanted = false;
+    _chalInBlock = false;
+    _chalRows.clear();
+    _watchSent.clear();                     // the next connection sends the wanted WATCH again
+    _watchInFlight.clear();
     _pushInFlight.clear();                  // the wanted slot stays: sent again after the reconnect
     _pushUnsupported = false;               // per connection: the next one may be a newer server
     _pending = PNone;                       // cleared BEFORE anything can re-enter
@@ -514,8 +610,17 @@ void QRosterLink::resetSocket(State next, const QString &failCode) {
     }
     _deltaCapable = false;
     _state = next;
+    if (_dying) {
+        return;
+    }
+    if (hadCaps) {
+        QMetaObject::invokeMethod(this, &QRosterLink::capsChanged, Qt::QueuedConnection);
+    }
     if (hadWho && !failCode.isEmpty()) {
         emit rosterFailed(failCode);        // LAST, with state fully consistent
+    }
+    if (hadChal) {
+        emit challengesFailed(failCode.isEmpty() ? QStringLiteral("transport") : failCode);
     }
 }
 
@@ -594,11 +699,15 @@ void QRosterLink::onReadyRead() {
         return;
     }
     // Every reply that frees the link (OK of a handshake, END, PONG, a TURN's own
-    // OK/ERR) arrives here, so this is where a queued TURN goes out, and after it a
-    // wanted UNPUSH / PUSH.
+    // OK/ERR) arrives here, so this is where the wanted CAPS goes out first (what may be
+    // used on this connection, and whether a PUSH is one the server answers with "finished"
+    // messages, see QWarloksDuelCore::onPushRegistered), then a queued TURN, a wanted
+    // UNPUSH / PUSH, WATCH and CHAL.
+    flushLive();
     flushTurns();
     flushPush();
-    flushLive();
+    flushWatch();
+    flushChal();
 }
 
 // Rows 7, 28 and E.2 #2/#3/#5/#6/#21/#22.
@@ -722,13 +831,19 @@ void QRosterLink::handleLine(const QByteArray &line) {
     const auto structuralFailure = [this](const char *why) {
         qDebug() << "QRosterLink::handleLine structural failure:" << why;
         const bool hadWho = (_pending == PWho);
+        const bool hadChal = (_pending == PChal);
         _inBlock = false;
         _block = QRosterBlock();
         _blockBytes = 0;
+        _chalInBlock = false;
+        _chalRows.clear();
         _pending = PNone;
         _deadline.stop();
         if (hadWho) {
             emit rosterFailed(QStringLiteral("malformed"));
+        }
+        if (hadChal) {
+            emit challengesFailed(QStringLiteral("malformed"));
         }
         if (++_malformed >= kMaxMalformed) {
             disableForSession(QStringLiteral("protocol"));
@@ -742,6 +857,13 @@ void QRosterLink::handleLine(const QByteArray &line) {
     if (verb == "TURNREADY") {
         if (f.size() == 2) {
             emit turnReady(QString::fromUtf8(f.at(1)));
+        }
+        return;
+    }
+    // Likewise, and only ever sent to a connection whose CAPS named "watch".
+    if (verb == "ACTIVE") {
+        if (f.size() == 2) {
+            emit active(QString::fromUtf8(f.at(1)));
         }
         return;
     }
@@ -761,6 +883,15 @@ void QRosterLink::handleLine(const QByteArray &line) {
         if (_pending == PPing) {
             _pending = PNone;
             _deadline.stop();
+        }
+        return;
+    }
+
+    if (_pending == PChal) {
+        if ((verb == "ERR") && !_chalInBlock) {
+            handleErr(f);
+        } else if (!handleChalLine(f, line)) {
+            structuralFailure("CHAL reply out of shape");
         }
         return;
     }
@@ -852,6 +983,87 @@ void QRosterLink::handleLine(const QByteArray &line) {
     structuralFailure("unknown verb");
 }
 
+// The CHAL reply: "CHAL\t<n>\t<age>", n lines "C\t<battle>\t<level>\t<fast>\t<need>\t<names>\t
+// <description>", "END\tchal\t<n>". A C line that is not what the server promises is skipped,
+// as a bad roster row is; anything else out of shape fails the request.
+bool QRosterLink::handleChalLine(const QList<QByteArray> &f, const QByteArray &line) {
+    const QByteArray &verb = f.at(0);
+    bool ok = false;
+    if (!_chalInBlock) {
+        if ((verb != "CHAL") || (f.size() != 3)) {
+            return false;
+        }
+        const int n = f.at(1).toInt(&ok);
+        if (!ok || (n < 0) || (n > 100000)) {
+            return false;
+        }
+        const int age = f.at(2).toInt(&ok);
+        if (!ok || (age < 0)) {
+            return false;
+        }
+        _chalInBlock = true;
+        _chalDeclared = n;
+        _chalAge = age;
+        _chalLines = 0;
+        _chalRows.clear();
+        _blockBytes = line.size();
+        _deadline.start(_deadline.interval());
+        return true;
+    }
+    _blockBytes += line.size();
+    if (_blockBytes > kMaxBlockBytes) {
+        return false;
+    }
+    if (verb == "C") {
+        if (++_chalLines > _chalDeclared) {
+            return false;
+        }
+        QLinkChallenge c;
+        bool good = (f.size() == 7);
+        if (good) {
+            c.battleId = f.at(1).toInt(&ok);
+            good = ok && (c.battleId > 0) && (f.at(1).size() <= 9);
+            c.level = f.at(2).toInt(&ok);
+            good = good && ok && (c.level >= 0) && (c.level <= 2);
+            good = good && ((f.at(3) == "0") || (f.at(3) == "1"));
+            c.fast = (f.at(3) == "1");
+            c.need = f.at(4).toInt(&ok);
+            good = good && ok && (c.need >= 0);
+            for (const QByteArray &n : f.at(5).split(',')) {
+                const QString name = QString::fromUtf8(n);
+                good = good && QRosterWire::validWireName(name);
+                c.names.append(name);
+            }
+            // As the app decodes the site's own pages: UTF-8 (see QWarloksDuelCore::slotReadyRead).
+            c.description = QString::fromUtf8(f.at(6));
+        }
+        if (good) {
+            _chalRows.append(c);
+        } else {
+            qDebug() << "QRosterLink::handleChalLine bad challenge line skipped" << f.size();
+        }
+        _deadline.start(_deadline.interval());
+        return true;
+    }
+    if (verb == "END") {
+        if ((f.size() != 3) || (f.at(1) != "chal") || (f.at(2).toInt() != _chalDeclared) || (_chalLines != _chalDeclared)) {
+            return false;
+        }
+        const QList<QLinkChallenge> rows = _chalRows;
+        const int age = _chalAge;
+        _chalInBlock = false;
+        _chalRows.clear();
+        _blockBytes = 0;
+        _pending = PNone;
+        _deadline.stop();
+        _malformed = 0;
+        qDebug() << "QRosterLink::handleChalLine" << rows.size() << "challenges, copy" << age << "s old";
+        emit challenges(rows, age);
+        return true;
+    }
+    return false;
+}
+
 // Rows 8, 9 and the LOGOUT ack of row 33.
 void QRosterLink::handleOk(const QList<QByteArray> &f) {
     if (_pending == PTurn) {                                // OK<TAB>delivered | OK<TAB>offline
@@ -882,9 +1094,22 @@ void QRosterLink::handleOk(const QList<QByteArray> &f) {
         }
         return;
     }
-    if (_pending == PCaps) {                                // OK<TAB>caps<TAB>live | OK<TAB>caps<TAB>-
-        _liveSupported = (f.size() > 2) && f.at(2).split(',').contains("live");
-        qDebug() << "QRosterLink::handleOk caps, live" << _liveSupported;
+    if (_pending == PCaps) {                                // OK<TAB>caps<TAB>live,chal,... | OK<TAB>caps<TAB>-
+        const QList<QByteArray> accepted = (f.size() > 2) ? f.at(2).split(',') : QList<QByteArray>();
+        _liveSupported = accepted.contains("live");
+        _chalSupported = accepted.contains("chal");
+        _watchSupported = accepted.contains("watch");
+        _finSupported = accepted.contains("fin");
+        qDebug() << "QRosterLink::handleOk caps, live" << _liveSupported << "chal" << _chalSupported
+                 << "watch" << _watchSupported << "fin" << _finSupported;
+        _pending = PNone;
+        _deadline.stop();
+        emit capsChanged();
+        return;
+    }
+    if (_pending == PWatch) {                               // OK<TAB>watch
+        _watchSent = _watchInFlight;
+        _watchInFlight.clear();
         _pending = PNone;
         _deadline.stop();
         return;
@@ -1066,6 +1291,34 @@ void QRosterLink::handleErr(const QList<QByteArray> &f) {
         }
         // busy (invited a moment ago) or a refused name: this one invite is dropped.
         emit liveSent(invite.opponent, invite.battleId, code);
+        return;
+    }
+    if (_pending == PChal || _pending == PWatch) {
+        const bool chal = (_pending == PChal);
+        _pending = PNone;
+        _deadline.stop();
+        _chalInBlock = false;
+        _chalRows.clear();
+        if (chal) {
+            // site-unreachable (no copy, and the fetch failed) or anything else: the caller
+            // reads the page itself.
+            emit challengesFailed(QStringLiteral("err:") + code);
+        } else if (code != QLatin1String("need-auth")) {
+            // bad-request can only mean sendWatch's rule drifted from the server's: the same
+            // lists would only be another strike, so they are not sent again on this connection.
+            _watchSent = _watchInFlight;
+        }
+        _watchInFlight.clear();
+        if (code == QLatin1String("need-auth")) {           // as for TURN, row 25; a WATCH goes out again
+            if (!_reauthedThisConn) {
+                _reauthedThisConn = true;
+                sendHandshake();
+            } else {
+                resetSocket(Down, QString());
+                bumpBackoff();
+                scheduleReconnect();
+            }
+        }
         return;
     }
     if (_pending == PLogout) {

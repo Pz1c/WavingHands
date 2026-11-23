@@ -357,7 +357,45 @@ QString QWarlockUtils::parseChallengeDescription(QString &Data) {
         ++idx1;
         res.append(Data.mid(idx1, Data.length() - idx1));
     }
-    res = res.replace('"', "&quot;").replace("\r", "").replace("\n","<br>")/*.replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive)*/.trimmed();
+    return res;
+}
+
+// The description of a challenge as the app keeps it: the cell's text with its quotes as
+// entities and its line breaks as <br>.
+QString QWarlockUtils::cleanChallengeDescription(const QString &Cell) {
+    QString res = Cell;
+    return res.replace('"', "&quot;").replace("\r", "").replace("\n","<br>")/*.replace("parafc", "", Qt::CaseInsensitive).replace("maladroit", "", Qt::CaseInsensitive)*/.trimmed();
+}
+
+// One open challenge from the cells of its row: the site's /challenges page (parseChallenge)
+// and a CHAL line of the caster link, which carries the same cells, go through here, so both
+// make the same record. DescriptionCell: the text of the third cell, without its tag.
+QBattleInfo *QWarlockUtils::makeChallenge(int BattleId, int Friendly, bool Fast, const QStringList &Logins, int TotalCount,
+                                          const QString &DescriptionCell) {
+    if (BattleId <= 0) {
+        return nullptr;
+    }
+    const bool parafc = DescriptionCell.indexOf("ParaFC", 0, Qt::CaseInsensitive) != -1;
+    const bool maladroit = DescriptionCell.indexOf("Maladroit", 0, Qt::CaseInsensitive) != -1;
+    const bool parafdf = DescriptionCell.indexOf("ParaFDF", 0, Qt::CaseInsensitive) != -1;
+    const QString description = cleanChallengeDescription(DescriptionCell);
+    bool for_bot = (Friendly == 2) && (TotalCount == 2) && (description.indexOf("NO BOT") == -1);
+    //bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
+    QBattleInfo *res = new QBattleInfo();
+    res->setBattleID(BattleId);
+    res->setStatus(BATTLE_INFO_STATUS_NO_START);
+    res->setLevel(Friendly);
+    res->setSize(TotalCount);
+    res->setFast(Fast);
+    res->setMaladroit(maladroit);
+    res->setParafc(parafc);
+    res->setParafdf(parafdf);
+    res->setDescription(description);
+    res->setForBot(for_bot);
+    //res->setWithBot(with_bot);
+    foreach(QString l, Logins) {
+        res->addParticipant(l);
+    }
     return res;
 }
 
@@ -371,14 +409,13 @@ QString QWarlockUtils::parseChallengePart3(QString &Data) {
 
 QBattleInfo * QWarlockUtils::parseChallenge(QString &Data) {
     //qDebug() << "parseChallenge" << Data;
-    QBattleInfo *res = nullptr;
     //bool is_active = Data.indexOf(">Accept</A>") != -1;
     QString search1 = "<TD";
     QString search2 = "</TD>";
     QStringList tmp, logins;
     QString description, battle_id;
     int friendly = -1, total_count = 0;
-    bool parafdf = false, parafc = false, maladroit = false, fast = false;
+    bool fast = false;
     int idx1 = 0, idx2, idx = -1;
     while((idx1 = Data.indexOf(search1, idx1)) != -1) {
         idx1 += search1.length();
@@ -403,9 +440,6 @@ QBattleInfo * QWarlockUtils::parseChallenge(QString &Data) {
                 friendly = tmp.at(1).toInt();
                 break;
             case 2:
-                parafc = part.indexOf("ParaFC", 0, Qt::CaseInsensitive) != -1;
-                maladroit = part.indexOf("Maladroit", 0, Qt::CaseInsensitive) != -1;
-                parafdf = part.indexOf("ParaFDF", 0, Qt::CaseInsensitive) != -1;
                 description = parseChallengeDescription(part);
                 break;
             case 3:
@@ -414,27 +448,7 @@ QBattleInfo * QWarlockUtils::parseChallenge(QString &Data) {
         }
         //res.append(challenge_part);
     }
-    bool for_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("NO BOT") == -1);
-    //bool with_bot = (friendly == 2) && (total_count == 2) && (description.indexOf("Training Battle with AI Player") != -1);
-    int bid = battle_id.toInt();
-    if (bid > 0) {
-        res = new QBattleInfo();
-        res->setBattleID(bid);
-        res->setStatus(BATTLE_INFO_STATUS_NO_START);
-        res->setLevel(friendly);
-        res->setSize(total_count);
-        res->setFast(fast);
-        res->setMaladroit(maladroit);
-        res->setParafc(parafc);
-        res->setParafdf(parafdf);
-        res->setDescription(description);
-        res->setForBot(for_bot);
-        //res->setWithBot(with_bot);
-        foreach(QString l, logins) {
-            res->addParticipant(l);
-        }
-    }
-    return res;
+    return makeChallenge(battle_id.toInt(), friendly, fast, logins, total_count, description);
 }
 
 QList<QBattleInfo *> QWarlockUtils::parseChallengesList(QString &Data) {
@@ -732,7 +746,7 @@ QString QWarlockUtils::liveDescription(qint64 ValidBy, int Total, int Extra) {
     // tail goes, not the deadline.
     return QString("Live match - Valid by UTC %1 - Total:%2:%3m - Extra:%4s - MOBILE GAME ONLY - v%5")
             .arg(QString::number(ValidBy), QString::number(Total / 60), QString::number(Total % 60).rightJustified(2, '0'),
-                 QString::number(Extra), APPLICATION_VERSION_PRINT);
+                 QString::number(Extra), APP_VERSION_NAME);
 }
 
 bool QWarlockUtils::parseLiveDescription(const QString &Description, qint64 *ValidBy, int *Total, int *Extra) {

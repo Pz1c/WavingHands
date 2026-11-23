@@ -6,8 +6,6 @@ var C_FINISHED_PREVIEW_COUNT = 7;
 var G_CHALLENGE_LIST = [];
 var G_PROFILE = {elo:1500,feedback:true,rate_us:true,finished_game_count:0,sbl:-1,win_vs_bot:0,win_vs_warlock:0,last_activity:0,online:1};
 var V_BTN_ACTION = [C_NG_BOT_CODE, C_NG_PLAYER_CODE];
-var V_BEST_BATTLE_ID = 0;
-var G_ACCOUNT_LIST = [];
 var ARR_MAIN_MENU = [{c:"spellbook",t:"SpellbookActionTitle"}, {c:"top",t:"TopList"},
                      // https://github.com/Pz1c/WavingHands/issues/320
                      {c:"messages",t:"Messages"}, {c:"feedback",t:"Feedback"},
@@ -223,73 +221,36 @@ function getSpellBookLevelUpHint(exept_max) {
     }
 }
 
-function getJoinDialogText(b) {
-    var txt = warlockDictionary.getStringByCode(b.need === 1 ? "DialogStartBattle" : "DialogJoinBattle");
-    if (b.need === 1) {
-        txt = txt.replace("#NEED", b.need - 1);
-    }
-    txt = txt.replace("#ID", '#' + b.id);
-    txt = txt.replace("#FL", b.level);
-    txt = txt.replace("#LOGINS", b.participants);
-    txt += "\n" + b.desc;
-    return txt;
-}
-
 // once: the player took "Join only once" in the auto matching offer
 // (https://github.com/Pz1c/WavingHands/issues/216), so no Keep me On offer on top of this game
 function startGameWithPlayerEx(skip_search, once) {
     console.log("startGameWithPlayer", skip_search, once, JSON.stringify(G_CHALLENGE_LIST));
-    var best_idx = -1, battle, bb;
+    var battle;
     if (!skip_search) {
+        // an open friendly duel that needs one more warlock, by someone not far below the player
         for (var i = 0, Ln = G_CHALLENGE_LIST.length; i < Ln; ++i) {
             battle = G_CHALLENGE_LIST[i];
-            if (!battle.active || (battle.size > 2)) {
+            if (!battle.active || (battle.size > 2) || (battle.level !== 1) || (battle.need !== 1)) {
                 continue;
             }
-
-            if ((battle.level === 1) && (battle.need === 1)) {
-                var creator = JSON.parse(core.getWarlockStats(battle.participant, 1));
-                if (creator.found && (G_PROFILE.elo > creator.elo + 200)) {
-                    continue;
-                }
-                logEvent("accept_callenge", {source:"btn_new",Type:"Training",With:"Random warlock",against:creator});
-                core.acceptChallenge(battle.id, false);
-                return;
-            } else if (i !== best_idx) {
-                if (best_idx === -1) {
-                    best_idx = 0;
-                    continue;
-                }
-                bb = G_CHALLENGE_LIST[best_idx];
-                if (bb.need > battle.need) {
-                    continue;
-                }
-                if (bb.level < battle.level) {
-                    continue;
-                }
-                if (bb.fast && !battle.fast) {
-                    continue;
-                }
-                best_idx = i;
+            var creator = JSON.parse(core.getWarlockStats(battle.participant, 1));
+            if (creator.found && (G_PROFILE.elo > creator.elo + 200)) {
+                continue;
             }
+            logEvent("accept_callenge", {source:"btn_new",Type:"Training",With:"Random warlock",against:creator});
+            core.acceptChallenge(battle.id, false);
+            return;
         }
     }
-    //if (best_idx === -1) {
-        var desc = "Created with android app Warlock's Duel.";
-        if (G_PROFILE.elo >= 1700) {
-            desc += " Elo " + (G_PROFILE.elo - 200) + " or more please.";
-        }
-        logEvent("create_callenge", {source:"btn_new",Type:"Training",With:"Random warlock"});
-        if (once) {
-            core.skipKeepMeOnOffer();
-        }
-        core.createNewChallenge(1, 0, 1, 1, 2, 2, desc);
-    /*} else {
-        V_BEST_BATTLE_ID = G_CHALLENGE_LIST[best_idx].battle_id;
-        mdNoGesture.text = getJoinDialogText(G_CHALLENGE_LIST[best_idx]);
-        mdNoGesture.dialogType = 2;
-        mdNoGesture.visible = true;
-    }*/
+    var desc = "Created with android app Warlock's Duel.";
+    if (G_PROFILE.elo >= 1700) {
+        desc += " Elo " + (G_PROFILE.elo - 200) + " or more please.";
+    }
+    logEvent("create_callenge", {source:"btn_new",Type:"Training",With:"Random warlock"});
+    if (once) {
+        core.skipKeepMeOnOffer();
+    }
+    core.createNewChallenge(1, 0, 1, 1, 2, 2, desc);
 }
 
 function startGameWithPlayer(WarlockName, FriendlyLevel, OnlineGame) {
@@ -339,7 +300,6 @@ function startGameByCode(action_code, WarlockName, FriendlyLevel, OnlineGame) {
              }
              break;
     }
-    core.setTimerInterval(10, 10000);
     console.log("!!!FEEDBACK CHECK", G_PROFILE.feedback, G_PROFILE.finished_game_count);
     if (!G_PROFILE.feedback && (G_PROFILE.finished_game_count >= 2)) {
         G_PROFILE.feedback = true;
@@ -354,24 +314,6 @@ function startGameByCode(action_code, WarlockName, FriendlyLevel, OnlineGame) {
 function startGame(actionIdx) {
     startGameByCode(V_BTN_ACTION[actionIdx]);
 }
-
-function prepareLoginMenu(menu_str) {
-    console.log("prepareLoginMenu", menu_str);
-    var arr = JSON.parse(menu_str), i, Ln;
-    G_ACCOUNT_LIST = [warlockDictionary.getStringByCode("LoginAs")];
-    for (i = 0, Ln = arr.lst.length - 1; i < Ln; ++i) {
-        var login = arr.lst[i].trim();
-        if (login.length === 0) {
-            break;
-        }
-        console.log("try to add", login);
-        G_ACCOUNT_LIST.push(login);
-    }
-    //cbLoginAs.model = G_ACCOUNT_LIST;
-    //cbLoginAs.visible = G_ACCOUNT_LIST.length > 2;
-
-    console.log("prepareLoginMenu", JSON.stringify(G_ACCOUNT_LIST));
-}//*/
 
 function isLoadingChanged() {
     var is_loading = core.isLoading;

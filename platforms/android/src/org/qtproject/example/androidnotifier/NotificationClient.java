@@ -260,6 +260,23 @@ public class NotificationClient
         }
     }
 
+    // "1" once the caster server sends this install "finished" messages as well: the token was
+    // PUSHed over a connection whose CAPS the server answered with "fin". With it and a fresh
+    // setServerPushActive the background check needs no page at all (CheckStatus.performCheck).
+    public static void setServerFinActive(Context context, String flag) {
+        try {
+            SharedPreferences sharedPreferences = context.getSharedPreferences("activity", 0);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            boolean active = "1".equals(flag);
+            editor.putInt("server_fin_active", active ? 1 : 0);
+            editor.putLong("server_fin_active_ts", System.currentTimeMillis() / 1000L);
+            editor.commit();
+            Log.d(TAG, "setServerFinActive " + (active ? 1 : 0));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void showToast(Context context, String msg) {
         try {
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();

@@ -28,8 +28,10 @@ import java.util.concurrent.TimeUnit;
  * none while logged out or without the notification permission, none before the silence
  * after an unanswered notification is over, and a rare one while the caster server pushes
  * turns and invites itself (https://github.com/Pz1c/WavingHands/issues/336), which leaves
- * the check the finished battles and the reminder. MainActivity.onPause starts the chain,
- * each run queues the next one from CheckStatusWorker.
+ * the check the finished battles and the reminder. Once the server pushes finished battles
+ * too (CAPS "fin"), the check reads no page and is queued only for the reminder.
+ * MainActivity.onPause starts the chain, each run queues the next one from
+ * CheckStatusWorker, and a push that posts a notification queues it anew (PushService).
  */
 public class CheckScheduler {
     private static final String TAG = "WarlocksDuel.CheckScheduler";
@@ -56,6 +58,9 @@ public class CheckScheduler {
     private static final int POLL_SLOWEST_SEC = DAY_SEC;
     // With the server's push only a finished battle and the reminder are left to find.
     private static final int PUSH_POLL_SEC = 3 * HOUR_SEC;
+    // The reminder comes this long after a notification the player has not answered by
+    // opening the app (CheckStatus.reminderDue).
+    public static final int REMINDER_SEC = 3 * DAY_SEC;
 
     public static void schedule(Context context) {
         try {
@@ -114,6 +119,7 @@ public class CheckScheduler {
                     !sharedPreferences.getString("check_url", "").isEmpty(),
                     canPostNotifications(context),
                     CheckStatus.serverPushActive(sharedPreferences),
+                    CheckStatus.serverFinFreshUntil(sharedPreferences),
                     MainActivity.isForeground);
         } catch (Exception e) {
             e.printStackTrace();
@@ -129,15 +135,26 @@ public class CheckScheduler {
     }
 
     // Seconds until a check could have something to say, 0 when there is nothing to wait
-    // for. No Android in here; the times are unix seconds.
+    // for. No Android in here; the times are unix seconds. finFreshUntil: until when the
+    // caster server pushes finished battles too (CheckStatus.serverFinFreshUntil), 0 if not.
     public static int nextCheckDelaySec(long now, long lastActivity, long lastNotification,
                                         boolean loggedIn, boolean canNotify, boolean pushActive,
-                                        boolean foreground) {
+                                        long finFreshUntil, boolean foreground) {
         if (!loggedIn || !canNotify) {
             return 0;
         }
         if (foreground) {
             return FOREGROUND_SEC;
+        }
+        if (pushActive && (finFreshUntil > now)) {
+            // The server pushes all a check would find: the check reads no page, and is only
+            // queued for the reminder of an unanswered notification and for the day the
+            // server's word goes stale (the poll takes over again then).
+            long next = finFreshUntil;
+            if ((lastNotification > 0) && (lastActivity < lastNotification)) {
+                next = Math.min(next, lastNotification + REMINDER_SEC + MUTE_MARGIN_SEC);
+            }
+            return (int) Math.max(next - now, 60);
         }
         if (muted(now, lastActivity, lastNotification)) {
             return (int) Math.min(lastNotification + MUTE_SEC - now, MUTE_SEC) + MUTE_MARGIN_SEC;

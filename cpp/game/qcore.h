@@ -94,6 +94,8 @@ protected:
     // then ends it like any other network error. Without (the default, as every request
     // went out before) the errors are ignored.
     virtual bool verifiesTls(const QUrl &url) const;
+    // The User-Agent a request to this URL goes with; empty: Qt's own.
+    virtual QByteArray userAgent(const QUrl &url) const;
 
     void saveParameters(bool user = false, bool proxy = false, bool game = false, bool stats = false, bool options = false);
     virtual void loadParameters();

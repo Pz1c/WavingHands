@@ -631,67 +631,6 @@ Item {
         }
     }
 
-    function targetingOnOff(Enable, IsSpell, Permanency, Delay) {
-        console.log("Warlock.targetingOnOff", l_warlock.name, Enable, IsSpell, Permanency, Delay);
-        var opacity = Enable ? 0.3 : 1;
-        var border_width = Enable ? 3 : 0;
-        /*lwGestures.opacity = opacity;
-        iiLeft.opacity = opacity;
-        iiRight.opacity = opacity;
-        iiLeft.active = !Enable;
-        iiRight.active = !Enable;
-        rBottomLine.visible = l_warlock.player || !Enable;
-        if (iiBanked.visible) {
-            iiBanked.opacity = opacity;
-        }*/
-        lwGestures.visible = !Enable;
-        iiLeft.visible = !Enable;
-        iiRight.visible = !Enable;
-        iiLeft.active = !Enable;
-        iiLeft.visible = !Enable;
-        iiRight.active = !Enable;
-        iiRight.visible = !Enable;
-        rBottomLine.visible = l_warlock.player || !Enable;
-        iiBanked.visible = (l_warlock.banked_spell !== "") && !Enable;
-        if (Enable) {
-           iiHP.animate(1);
-        }
-
-        var item, i, Ln;
-
-        for (i = 0, Ln = iCharm.count; i < Ln; ++i) {
-            item = iCharm.itemAtIndex(i) as IconInfo;
-            if (!item) {
-                // Delegate not created (scrolled out of view): it gets its state when built.
-                continue;
-            }
-
-            var has_action = item.hasOwnProperty('l_data') && item.l_data.hasOwnProperty('action');
-            var is_perm = has_action && (item.l_data.action === "permanency");
-            var is_del = has_action && (item.l_data.action === "delay");
-            var perm_or_del =  is_perm || is_del;
-            var perm_or_del_checked = perm_or_del && item.l_data.hasOwnProperty('checked') && (item.l_data.checked || Enable);
-            console.log(JSON.stringify(item.l_data), perm_or_del_checked);
-
-            if (IsSpell && l_warlock.player && perm_or_del_checked) {
-                if (Enable) {
-                    item.animate(1);
-                }
-                if (item.checkbox && ((is_perm && !Permanency) || (is_del && !Delay))) {
-                    if ((is_perm && Permanency) || (is_del && Delay)) {
-                        item.setChecked(true);
-                    } else if ((is_perm && !Permanency) || (is_del && !Delay)) {
-                        item.setChecked(false);
-                    }
-                }
-                item.active = Enable;// || perm_or_del_checked;
-            } else {
-                item.opacity = opacity;
-            }
-            item.visible = !Enable || perm_or_del;
-        }
-    }
-
     function highlightAction(a) {
         console.log("Warlock.highlightAction", a.object_type, a.object);
         if (a.object_type === "warlock") {

@@ -9,9 +9,15 @@
 #define APPLICATION_NAME "WarloksDuel"
 #define APPLICATION_NAME_SERVICE "WarloksDuelService"
 #define APPLICATION_TITLE "Warloks Duel"
-#define APPLICATION_VERSION_PRINT "2.3.6"
+// The format of the settings and of a saved battle record (QBattleInfo::toString), NOT the
+// app's version: settings that carry an older number are wiped when the app starts
+// (loadGameParameters), so this moves only when the old settings must not be read again.
+// The app's version is APP_VERSION_NAME, which WarlocksDuel.pro takes from build.gradle.
 #define APPLICATION_VERSION       "2003006"
 #define APPLICATION_VERSION_INT   2003006
+#ifndef APP_VERSION_NAME
+#error "APP_VERSION_NAME is defined by WarlocksDuel.pro from the versionName of platforms/android/build.gradle"
+#endif
 #define APPLICATION_PACKAGE "net.is.games.WarlocksDuel"
 #define APPLICATION_INSTALLER_PACKAGE ""
 

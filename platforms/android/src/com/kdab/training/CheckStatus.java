@@ -73,10 +73,26 @@ public class CheckStatus {
                     Log.d(TAG, "last notification not answered yet, no check");
                     return;
                 }
+                // The caster server pushes ready battles, invites and finished battles itself
+                // (CAPS "fin"): nothing is left that needs the page. The reminder is decided
+                // from the prefs alone.
+                if (serverPushActive(sharedPreferences) && serverFinActive(sharedPreferences)) {
+                    if (reminderDue(last_notification, app_last_activity, last_sent_notif)) {
+                        Log.d(TAG, "reminder, no page needed");
+                        notifyType(context, 4, 0);
+                        editor.putInt("notification_action_type", 4);
+                        editor.putInt("notification_battle_id", 0);
+                        editor.putInt("last_notification", last_notification);
+                        editor.commit();
+                    } else {
+                        Log.d(TAG, "everything left to the server push, no check");
+                    }
+                    return;
+                }
 
                 String data;
                 try {
-                    data = getContent(check_url);
+                    data = getContent(context, check_url);
                 } catch (IOException ex){
                     ex.printStackTrace();
                     return;
@@ -110,9 +126,8 @@ public class CheckStatus {
                        }
                     }
                 }
-                boolean reminder = !(ready || challenge || finished) && (last_sent_notif > 0)
-                                && (app_last_activity > 0) && (app_last_activity < last_sent_notif)
-                                && ((last_notification - last_sent_notif) > 3 * 24 * 60 * 60);
+                boolean reminder = !(ready || challenge || finished)
+                                && reminderDue(last_notification, app_last_activity, last_sent_notif);
 
                 // https://github.com/Pz1c/WavingHands/issues/336: with a fresh push registration
                 // the caster server tells the player about these two itself. Finished and the
@@ -155,7 +170,26 @@ public class CheckStatus {
         }
     }
 
-    private static String getContent(String path) throws IOException {
+    // Three days after a notification the player has not answered by opening the app: a
+    // nudge ("Great news! You got a new match"). Unix seconds.
+    public static boolean reminderDue(long now, long appLastActivity, long lastSentNotification) {
+        return (lastSentNotification > 0) && (appLastActivity > 0) && (appLastActivity < lastSentNotification)
+                && ((now - lastSentNotification) > CheckScheduler.REMINDER_SEC);
+    }
+
+    // Who asks, as the app's core says it on every request to the game server
+    // (QWarloksDuelCore::userAgent): the version is the package's own.
+    private static String userAgent(Context context) {
+        String version = "";
+        try {
+            version = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "WarlocksDuel/" + version + " (Android; +https://github.com/Pz1c/WavingHands)";
+    }
+
+    private static String getContent(Context context, String path) throws IOException {
             BufferedReader reader=null;
             InputStream stream = null;
             HttpsURLConnection connection = null;
@@ -163,6 +197,7 @@ public class CheckStatus {
                 URL url=new URL(path);
                 connection =(HttpsURLConnection)url.openConnection();
                 connection.setRequestMethod("GET");
+                connection.setRequestProperty("User-Agent", userAgent(context));
                 // Without it a server that does not answer keeps the check, and with it the
                 // phone, up for minutes.
                 connection.setConnectTimeout(10000);
@@ -235,13 +270,35 @@ public class CheckStatus {
     // covers ready and challenge, the poll leaves them to it. Without a fresh confirmation
     // (server down, app not opened, permission lost) the poll takes over again by itself.
     public static boolean serverPushActive(SharedPreferences sharedPreferences) {
+        return flagFresh(sharedPreferences, "server_push_active");
+    }
+
+    // Likewise for "finished" (CAPS "fin", see NotificationClient.setServerFinActive): with both
+    // fresh the check needs no page at all.
+    public static boolean serverFinActive(SharedPreferences sharedPreferences) {
+        return flagFresh(sharedPreferences, "server_fin_active");
+    }
+
+    // Until when (unix seconds) the server's word on push and on "finished" both hold, 0 when
+    // either is not given.
+    public static long serverFinFreshUntil(SharedPreferences sharedPreferences) {
+        if (!serverPushActive(sharedPreferences) || !serverFinActive(sharedPreferences)) {
+            return 0;
+        }
+        return Math.min(sharedPreferences.getLong("server_push_active_ts", 0L),
+                        sharedPreferences.getLong("server_fin_active_ts", 0L)) + FLAG_FRESH_SEC;
+    }
+
+    private static final long FLAG_FRESH_SEC = 7L * 24 * 60 * 60;
+
+    private static boolean flagFresh(SharedPreferences sharedPreferences, String name) {
         try {
-            if (sharedPreferences.getInt("server_push_active", 0) != 1) {
+            if (sharedPreferences.getInt(name, 0) != 1) {
                 return false;
             }
-            long ts = sharedPreferences.getLong("server_push_active_ts", 0L);
+            long ts = sharedPreferences.getLong(name + "_ts", 0L);
             long now = System.currentTimeMillis() / 1000L;
-            return (ts > 0) && (now - ts < 7L * 24 * 60 * 60);
+            return (ts > 0) && (now - ts < FLAG_FRESH_SEC);
         } catch (Exception e) {
             e.printStackTrace();
             return false;

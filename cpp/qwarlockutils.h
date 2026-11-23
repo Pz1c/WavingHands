@@ -53,7 +53,12 @@ public:
     static QString parsePlayerTop(QString &Data);
     static QString parseChallengePart0(QString &Data);
     static QString parseChallengePart1(QString &Data);
+    // The third cell of a challenge row without its tag, and the description as kept of it.
     static QString parseChallengeDescription(QString &Data);
+    static QString cleanChallengeDescription(const QString &Cell);
+    // One open challenge from the cells of its row (the site's page or a CHAL line), see the .cpp.
+    static QBattleInfo *makeChallenge(int BattleId, int Friendly, bool Fast, const QStringList &Logins, int TotalCount,
+                                      const QString &DescriptionCell);
     static QString parseChallengePart3(QString &Data);
     // Parsed: the same challenges in the same order, for a caller that needs more than
     // the rows.
